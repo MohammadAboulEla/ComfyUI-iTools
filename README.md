@@ -10,3 +10,4 @@ The **iTools ImageLoaderPlus** is an enhancement of the original ComfyUI ImageLo
 - `SDXLPromptStyler`
 
 If your prompt is within any of these nodes, you will be able to retrieve it. The `ShowText` node is a convenient addition that can be integrated into any workflow.
+![iTools ImageLoaderPlus](https://github.com/MohammadAboulEla/ComfyUI-iTools/blob/master/examples/Screenshot1.png)
