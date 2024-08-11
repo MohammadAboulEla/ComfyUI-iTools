@@ -65,10 +65,10 @@ def process_nodes(data_dict):
                         number_nodes += 1
                         widgets_values["CLIPTextEncode"] = widgets[0]
 
-                if node_type == "CLIPTextEncodeSDXL" and widgets and len(widgets) > 0:
-                    if widgets[0] not in ["", None]:
+                if node_type == "CLIPTextEncodeSDXL" and widgets and len(widgets) > 6:
+                    if widgets[6] not in ["", None]:
                         number_nodes += 1
-                        widgets_values["CLIPTextEncodeSDXL"] = widgets[0]
+                        widgets_values["CLIPTextEncodeSDXL"] = widgets[6]
 
                 if node_type == "ShowText|pysssss" and widgets and len(widgets) > 0:
                     if widgets[0] not in ["", None]:
@@ -93,11 +93,12 @@ def process_nodes(data_dict):
     except json.JSONDecodeError as e:
         return "JSON decoding failed " + str(e), number_nodes
 
-def get_prompt(img):
+def get_prompt(img, print_workflow=False):
     workflow, img_type = get_image_metadata(img)
     # print("workflow", workflow)
     clean_workflow = fix_workflow(workflow, img_type)
-    # print("clean_workflow", clean_workflow)
+    if print_workflow:
+        print("clean_workflow", clean_workflow)
     r, n = process_nodes(clean_workflow)
     lines = []
     for k, v in r.items():
@@ -106,27 +107,12 @@ def get_prompt(img):
     info = '\n'.join(lines)
     return info
 
+
 if __name__ == '__main__':
-    x = """{"Image": "dina","Mask": 1, "prompt": "sda"}"""
-    y = {1: {},2: {}}
-
-    jpg_files = []
-    path = r"D:\LIBRARY\AI_images\misc"
-    for root,dirs,files in os.walk(path, topdown=True):
-        if root == path:
-            for file in files:
-                if file.endswith(".jpg"):
-                    jpg_files.append(file)
-    jpg_paths = [os.path.join(path, jpg_file) for jpg_file in jpg_files]
-    img = Image.open(jpg_paths[0])
-    img.show()
-
-
-# if __name__ == '__main__':
-#     im_default = r"D:\LIBRARY\AI_images\output\ComfyUI_temp_pforh_00001_.png"
-#     im1 = r"D:\LIBRARY\AI_images\output\ComfyUI_05-29-24_0006.webp"
-#     im2 = r"D:\LIBRARY\AI_images\output\ComfyUI_08-09-24_0050.webp"
-#     im3 = r"D:\LIBRARY\AI_images\output\ComfyUI_05-07-24_0142.webp"
-#     im4 = r"D:\LIBRARY\AI_images\output\ComfyUI_05-29-24_0005.webp"
-#     print(get_prompt(im4))
-#     pass
+    im_default = r"D:\LIBRARY\AI_images\output\ComfyUI_temp_pforh_00001_.png"
+    im1 = r"D:\LIBRARY\AI_images\output\ComfyUI_05-29-24_0006.webp"
+    im2 = r"D:\LIBRARY\AI_images\output\ComfyUI_08-09-24_0050.webp"
+    im3 = r"D:\LIBRARY\AI_images\output\ComfyUI_05-07-24_0142.webp"
+    im4 = r"D:\LIBRARY\AI_images\output\ComfyUI_08-09-24_0033.webp"
+    print(get_prompt(im4,print_workflow=True))
+    pass

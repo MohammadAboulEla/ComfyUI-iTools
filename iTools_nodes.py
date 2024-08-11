@@ -9,7 +9,7 @@ from PIL import Image, ImageSequence, ImageOps
 from .metadata.metadata_extractor import get_prompt
 
 
-class IToolsPrompt:
+class IToolsLoadImagePlus:
     @classmethod
     def INPUT_TYPES(s):
         input_dir = folder_paths.get_input_directory()
@@ -21,7 +21,7 @@ class IToolsPrompt:
     CATEGORY = "iTools"
 
     RETURN_TYPES = ("IMAGE", "MASK", "STRING")
-    RETURN_NAMES = ("IMAGE", "MASK", "Prompt")
+    RETURN_NAMES = ("IMAGE", "MASK", "Possible Prompt")
     FUNCTION = "load_image"
 
     def load_image(self, image):
@@ -88,10 +88,10 @@ class IToolsPrompt:
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
-    "iTools_Prompt": IToolsPrompt
+    "iTools_Prompt": IToolsLoadImagePlus
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "iTools_Prompt": "iTools Prompt Return"
+    "iTools_Prompt": "iTools LoadImagePlus"
 }
