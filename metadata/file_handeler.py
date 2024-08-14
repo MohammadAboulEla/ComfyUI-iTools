@@ -36,7 +36,7 @@ class FileHandler:
 if __name__ == '__main__':
     pass
     # fh = FileHandler('prompts.txt')
-    # p = 'A little cute girl is sitting on the steps outside, the house. a dream bubble speech, inside the bubble speech there flowers within the outlines'
+    # p = 'A little cute bunny sitting on the steps outside the house'
     # fh.append_line(escape_quotes(p))
     # line = fh.read_line(0)  # Reads the third line (0-based index)
     # print(line)
