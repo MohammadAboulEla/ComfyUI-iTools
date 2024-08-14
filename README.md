@@ -1,4 +1,4 @@
-## iTools ImageLoaderPlus
+## iTools
 
 The **iTools ImageLoaderPlus** is an enhancement of the original ComfyUI ImageLoader node. It attempts to return the possible prompt used to create an image. If the prompt isn't found directly, this node will search for the prompt within the following supported nodes in the workflow:
 
