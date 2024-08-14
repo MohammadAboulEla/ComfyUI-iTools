@@ -1,3 +1,5 @@
+import random
+
 import folder_paths
 import os
 import torch
@@ -7,7 +9,79 @@ import hashlib
 import node_helpers
 from PIL import Image, ImageSequence, ImageOps
 from .metadata.metadata_extractor import get_prompt
+from .metadata.file_handeler import FileHandler
 
+class IToolsPromptLoader:
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required":
+                    {
+                        "file_path": ("STRING", {"default": 'prompts.txt',"multiline": False}),
+                        "seed": ("INT", {"default": 0,"control_after_generate":0, "min": 0, "max": 0xfffff})
+                     }
+                }
+
+    CATEGORY = "iTools"
+
+    RETURN_TYPES = ("STRING","STRING",)
+    RETURN_NAMES = ("Prompt at index","Prompt random")
+    FUNCTION = "load_file"
+
+    def load_file(self,file_path, seed):
+        prompt= ""
+        prompt_random = ""
+        cn = folder_paths.folder_names_and_paths["custom_nodes"][0][0]
+        if file_path == "prompts.txt":
+            file = os.path.join(cn, "ComfyUi-iTools\examples\prompts.txt")
+        else:
+            file = file_path.replace('"','')
+        if os.path.exists(file):
+            fh = FileHandler(file)
+            try:
+                line = fh.read_line(seed)
+                prompt = fh.unescape_quotes(line)
+            except IndexError:
+                prompt = f"IndexError: Line {seed} is not available"
+            try:
+                r_index = random.randint(0,fh.len_lines()-1)
+                prompt_random = fh.unescape_quotes(fh.read_line(r_index))
+            except IndexError:
+                prompt = f"IndexError: Line {r_index} is not available"
+        else:
+            prompt = f"File not exist, {file}"
+        return (prompt, prompt_random)
+
+class IToolsPromptSaver:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required":
+                    {   "prompt": ("STRING", {"forceInput": True}),
+                        "file_path": ("STRING", {"default": 'prompts.txt',"multiline": False}),
+                     }
+                }
+
+    CATEGORY = "iTools"
+    RETURN_TYPES = ()
+    OUTPUT_NODE = True
+    FUNCTION = "save_to_file"
+
+    def save_to_file(self,file_path, prompt):
+        cn = folder_paths.folder_names_and_paths["custom_nodes"][0][0]
+        if file_path == "prompts.txt":
+            file = os.path.join(cn, "ComfyUi-iTools\examples\prompts.txt")
+        else:
+            file = file_path.replace('"','')
+        if os.path.exists(file) and prompt is not None and prompt != "":
+            fh = FileHandler(file)
+            try:
+                fh.append_line(prompt)
+                print(f"Prompt: {prompt} saved to {file}")
+            except Exception as e:
+                print(f"Error while writing the prompt: {e}")
+        else:
+            print(f"Error while writing the prompt: {e}")
+        return (True,)
 
 class IToolsLoadImagePlus:
     @classmethod
@@ -88,10 +162,15 @@ class IToolsLoadImagePlus:
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
-    "iTools_Prompt": IToolsLoadImagePlus
+    "iToolsLoadImagePlus": IToolsLoadImagePlus,
+    "iToolsPromptLoader" : IToolsPromptLoader,
+    "iToolsPromptSaver" : IToolsPromptSaver
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "iTools_Prompt": "iTools LoadImagePlus"
+    "iToolsLoadImagePlus": "iTools LoadImagePlus",
+    "iToolsPromptLoader" : "iTools PromptLoader",
+    "iToolsPromptSaver" : "iTools PromptSaver"
 }
+
