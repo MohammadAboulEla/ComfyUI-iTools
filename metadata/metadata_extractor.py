@@ -96,7 +96,10 @@ def process_nodes(data_dict):
 def get_prompt(img, print_workflow=False):
     workflow, img_type = get_image_metadata(img)
     # print("workflow", workflow)
-    clean_workflow = fix_workflow(workflow, img_type)
+    try:
+        clean_workflow = fix_workflow(workflow, img_type)
+    except KeyError:
+        return "This image does not have an assigned workflow"
     if print_workflow:
         print("clean_workflow", clean_workflow)
     r, n = process_nodes(clean_workflow)
@@ -113,6 +116,6 @@ if __name__ == '__main__':
     im1 = r"D:\LIBRARY\AI_images\output\ComfyUI_05-29-24_0006.webp"
     im2 = r"D:\LIBRARY\AI_images\output\ComfyUI_08-09-24_0050.webp"
     im3 = r"D:\LIBRARY\AI_images\output\ComfyUI_05-07-24_0142.webp"
-    im4 = r"D:\LIBRARY\AI_images\output\ComfyUI_08-09-24_0033.webp"
+    im4 = r"C:\Users\Makadi\Desktop\Screenshot\Screenshot 2024-08-14 054937.png"
     print(get_prompt(im4,print_workflow=True))
     pass
