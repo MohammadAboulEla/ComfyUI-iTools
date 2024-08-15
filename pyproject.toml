@@ -1,0 +1,14 @@
+[project]
+name = "comfyui-itools"
+description = "The iTools are some quality of life nodes, like read a possible prompt used to create an image, save a prompt to file as a new line, read prompts from a multiline file."
+version = "0.2.0"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/MohammadAboulEla/ComfyUI-iTools"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = "makadi"
+DisplayName = "ComfyUI-iTools"
+Icon = ""
