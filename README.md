@@ -13,9 +13,9 @@ The iTools are some quality of life nodes, like read a possible prompt used to c
 
 If your prompt is within any of these nodes, you will be able to retrieve it. The `ShowText|pysssss` node is a convenient addition that you can integrate it into any workflow to make sure it will be retrieved by `iTools ImageLoaderPlus`.
 
-![iTools ImageLoaderPlus](https://github.com/MohammadAboulEla/ComfyUI-iTools/blob/master/examples/Screenshot1.jpg)
+![iTools ImageLoaderPlus](examples/Screenshot1.jpg)
 
-**iTools Prompt Loader:** will try to load a prompt from a txt file, you need to provide a full path to a .txt file or try use the default prompt.txt one is the examples folder, the node will return the prompt at given index (line number) not that count start from zero, node also will return a radom prompt from that file.
+**iTools Prompt Loader:** will try to load a prompt from a txt file, you need to provide a full path to a .txt file or try use the default prompt.txt one is the examples folder, the node will return the prompt at given index (line number) not that count start from zero, node also will return a random prompt from that file.
 
 **iTools Prompt Saver:** will append the given prompt as a new line to the given file, provide a full path to a .txt file or try use the default prompt.txt one.
 
@@ -23,6 +23,9 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 
 **iTools Add Text Overlay:** will add an overlay bottom bar to show a given text, you may change the background color of the overlay bar and the fon size
 
-![iTools Add Text Overlay](https://github.com/MohammadAboulEla/ComfyUI-iTools/blob/master/examples/Screenshot2.jpg)
-
-![iTools Add Text Overlay](https://github.com/MohammadAboulEla/ComfyUI-iTools/blob/master/examples/Screenshot3.jpg)
+`example 1` add text overlay
+![iTools Add Text Overlay](examples/Screenshot2.jpg)
+`example 2` add full prompt
+![iTools Add Text Overlay](examples/Screenshot4.jpg)
+`example 3` change background color and font size
+![iTools Add Text Overlay](examples/Screenshot3.jpg)
