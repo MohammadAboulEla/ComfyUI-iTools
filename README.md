@@ -21,7 +21,7 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 
 [![Watch the video](https://github.com/user-attachments/assets/22af7830-066f-498e-a90f-0513b56fa343)](https://github.com/user-attachments/assets/22af7830-066f-498e-a90f-0513b56fa343)
 
-**# iTools Add Text Overlay:** will add an overlay bottom bar to show a given text, you may change the background color of the overlay bar and the fon size
+**# iTools Add Text Overlay:** will add an overlay bottom bar to show a given text, you may change the background color of the overlay bar and the font size
 
 `Example 1:` add text overlay
 ![iTools Add Text Overlay](examples/Screenshot2.jpg)

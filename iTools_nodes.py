@@ -27,6 +27,9 @@ class IToolsLoadImagePlus:
     RETURN_TYPES = ("IMAGE", "MASK", "STRING")
     RETURN_NAMES = ("IMAGE", "MASK", "Possible Prompt")
     FUNCTION = "load_image"
+    DESCRIPTION = ("An enhancement of the original ComfyUI ImageLoader node. It attempts to return the possible prompt "
+                   "used to create an image.")
+
 
     def load_image(self, image):
         image_path = folder_paths.get_annotated_filepath(image)
@@ -105,6 +108,9 @@ class IToolsPromptLoader:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("Prompt",)
     FUNCTION = "load_file"
+    DESCRIPTION = ("Will return a prompt (line number) from txt file at given "
+                   "index, note that count start from zero.")
+
 
     def load_file(self, file_path, seed, fallback="Yes"):
         prompt = ""
@@ -142,6 +148,7 @@ class IToolsPromptSaver:
     RETURN_TYPES = ()
     OUTPUT_NODE = True
     FUNCTION = "save_to_file"
+    DESCRIPTION = "Will append the given prompt as a new line to the given file"
 
     def save_to_file(self, file_path, prompt):
         cn = folder_paths.folder_names_and_paths["custom_nodes"][0][0]
@@ -177,7 +184,8 @@ class IToolsAddOverlay:
     RETURN_TYPES = ("IMAGE",)
     # OUTPUT_NODE = True
     FUNCTION = "add_text_overlay"
-
+    DESCRIPTION = ("Will add an overlay bottom bar to show a given text, you may change the background color of the "
+                   "overlay bar and the font size.")
     def add_text_overlay(self, image, text, font_size, background_color):
         # Remove the batch dimension and rearrange to [C, H, W]
         tensor = image.squeeze(0).permute(2, 0, 1)
@@ -218,6 +226,9 @@ class IToolsLoadImages:
     FUNCTION = 'load_images'
     CATEGORY = 'iTools'
     OUTPUT_IS_LIST = (True, True)
+    DESCRIPTION = ("Will return list of images from a given directory with a given limit, for example if the limit is "
+                   "4 it will return first 4 images in that directory. it will also return the list of these images "
+                   "names.")
 
     def load_images(self, images_directory, load_limit):
         image_extensions = {'.png', '.jpg', '.jpeg', '.webp', '.bmp', '.gif'}
