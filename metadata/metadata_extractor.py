@@ -1,6 +1,4 @@
-import os
-
-from PIL import Image, ExifTags
+from PIL import Image
 import json
 
 
@@ -93,6 +91,7 @@ def process_nodes(data_dict):
     except json.JSONDecodeError as e:
         return "JSON decoding failed " + str(e), number_nodes
 
+
 def get_prompt(img, print_workflow=False):
     workflow, img_type = get_image_metadata(img)
     # print("workflow", workflow)
@@ -117,5 +116,5 @@ if __name__ == '__main__':
     im2 = r"D:\LIBRARY\AI_images\output\ComfyUI_08-09-24_0050.webp"
     im3 = r"D:\LIBRARY\AI_images\output\ComfyUI_05-07-24_0142.webp"
     im4 = r"C:\Users\Makadi\Desktop\Screenshot\Screenshot 2024-08-14 054937.png"
-    print(get_prompt(im4,print_workflow=True))
+    print(get_prompt(im4, print_workflow=True))
     pass

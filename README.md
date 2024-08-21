@@ -2,7 +2,7 @@
 The iTools are some quality of life nodes, like read a possible prompt used to create an image, save a prompt to file as a new line, read prompts from a multiline file.
 
 ### Nodes:
-**iTools Image Loader Plus** is an enhancement of the original ComfyUI ImageLoader node. It attempts to return the possible prompt used to create an image. If the prompt isn't found directly, this node will search for the prompt within the following supported nodes in the workflow:
+**# iTools Image Loader Plus:** is an enhancement of the original ComfyUI ImageLoader node. It attempts to return the possible prompt used to create an image. If the prompt isn't found directly, this node will search for the prompt within the following supported nodes in the workflow:
 
   - `CLIPTextEncodeSDXL`
   - `CLIPTextEncode`
@@ -15,17 +15,20 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 
 ![iTools ImageLoaderPlus](examples/Screenshot1.jpg)
 
-**iTools Prompt Loader:** will try to load a prompt from a txt file, you need to provide a full path to a .txt file or try use the default prompt.txt one is the examples folder, the node will return the prompt at given index (line number) not that count start from zero, node also will return a random prompt from that file.
+**# iTools Prompt Loader:** will try to load a prompt from a txt file, you need to provide a full path to a .txt file or try use the default prompt.txt one is the examples folder, the node will return the prompt at given index (line number) note that count start from zero.
 
-**iTools Prompt Saver:** will append the given prompt as a new line to the given file, provide a full path to a .txt file or try use the default prompt.txt one.
+**# iTools Prompt Saver:** will append the given prompt as a new line to the given file, provide a full path to a .txt file or try use the default prompt.txt one.
 
 [![Watch the video](https://github.com/user-attachments/assets/22af7830-066f-498e-a90f-0513b56fa343)](https://github.com/user-attachments/assets/22af7830-066f-498e-a90f-0513b56fa343)
 
-**iTools Add Text Overlay:** will add an overlay bottom bar to show a given text, you may change the background color of the overlay bar and the fon size
+**# iTools Add Text Overlay:** will add an overlay bottom bar to show a given text, you may change the background color of the overlay bar and the fon size
 
-`example 1` add text overlay
+`Example 1:` add text overlay
 ![iTools Add Text Overlay](examples/Screenshot2.jpg)
-`example 2` add full prompt
+`Example 2:` add full prompt
 ![iTools Add Text Overlay](examples/Screenshot4.jpg)
-`example 3` change background color and font size
+`Example 3:` change background color and font size
 ![iTools Add Text Overlay](examples/Screenshot3.jpg)
+
+**# iTools Load Images:** will return list of images from a given directory with a given limit, for example if the limit is 4 it will return first 4 images in that directory. it will also return the list of these images names.
+![iTools Add Text Overlay](examples/Screenshot5.jpg)

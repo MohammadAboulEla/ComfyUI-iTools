@@ -1,5 +1,4 @@
-import random
-
+from pathlib import Path
 import folder_paths
 import os
 import torch
@@ -11,7 +10,7 @@ import node_helpers
 from PIL import Image, ImageSequence, ImageOps
 from .metadata.metadata_extractor import get_prompt
 from .metadata.file_handeler import FileHandler
-from .metadata.overlay import add_overlay_bar
+from .metadata.overlay import add_overlay_bar, img_to_tensor
 
 
 class IToolsLoadImagePlus:
@@ -206,13 +205,63 @@ class IToolsAddOverlay:
         return (out,)
 
 
+class IToolsLoadImages:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {
+            "images_directory": ("STRING", {"multiline": False}),
+            "load_limit": ("INT", {"default": 20, "min": 2, "max": 200})
+                             }}
+
+    RETURN_TYPES = ('IMAGE', "STRING")
+    RETURN_NAMES = ('images', 'images names')
+    FUNCTION = 'load_images'
+    CATEGORY = 'iTools'
+    OUTPUT_IS_LIST = (True,True )
+
+    def load_images(self, images_directory, load_limit):
+        image_extensions = {'.png', '.jpg', '.jpeg', '.webp', '.bmp', '.gif'}
+
+        images_path = Path(images_directory.replace('"', ''))
+        if not images_path.exists():
+            raise FileNotFoundError(f"Image directory {images_directory} does not exist")
+
+        images = []
+        images_names = []
+        for image_path in images_path.iterdir():
+            if image_path.suffix.lower() in image_extensions:
+                images.append(img_to_tensor(Image.open(image_path)))
+                images_names.append(image_path.stem)  # Add the image name without extension
+                if len(images) >= load_limit:
+                    break
+
+        return images, images_names
+    def load_images_old(self, images_directory, load_limit):
+        image_extensions = {'.png', '.jpg', '.jpeg', '.webp', '.bmp', '.gif'}
+
+        images_path = Path(images_directory.replace('"', ''))
+        if not images_path.exists():
+            raise FileNotFoundError(f"Image directory {images_directory} does not exist")
+
+        images = []
+        images_names = []
+        for image_path in images_path.iterdir():
+            if image_path.suffix.lower() in image_extensions:
+                images.append(img_to_tensor(Image.open(image_path)))
+                if len(images) >= load_limit:
+                    break
+
+        return images, images_names
+
+
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
     "iToolsLoadImagePlus": IToolsLoadImagePlus,
     "iToolsPromptLoader": IToolsPromptLoader,
     "iToolsPromptSaver": IToolsPromptSaver,
-    "iToolsAddOverlay": IToolsAddOverlay
+    "iToolsAddOverlay": IToolsAddOverlay,
+    "iToolsLoadImages": IToolsLoadImages
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -220,5 +269,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsLoadImagePlus": "iTools Load Image Plus",
     "iToolsPromptLoader": "iTools Prompt Loader",
     "iToolsPromptSaver": "iTools Prompt Saver",
-    "iToolsAddOverlay": "iTools Add Text Overlay"
+    "iToolsAddOverlay": "iTools Add Text Overlay",
+    "iToolsLoadImages": "iTools Load Images"
 }
