@@ -98,17 +98,16 @@ class IToolsPromptLoader:
             {
                 "file_path": ("STRING", {"default": 'prompts.txt', "multiline": False}),
                 "seed": ("INT", {"default": 0, "control_after_generate": 0, "min": 0, "max": 0xfffff}),
-                "fallback": (["No", "Yes"], {"default": "No"}),
             }
         }
 
     CATEGORY = "iTools"
 
-    RETURN_TYPES = ("STRING", "STRING",)
-    RETURN_NAMES = ("Prompt at index", "Prompt random")
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("Prompt",)
     FUNCTION = "load_file"
 
-    def load_file(self, file_path, seed, fallback):
+    def load_file(self, file_path, seed, fallback="Yes"):
         prompt = ""
         prompt_random = ""
         cn = folder_paths.folder_names_and_paths["custom_nodes"][0][0]
@@ -126,13 +125,6 @@ class IToolsPromptLoader:
                     seed = seed % fh.len_lines()
                     line = fh.read_line(seed)
                     prompt = fh.unescape_quotes(line)
-                else:
-                    prompt = f"IndexError: Line {seed} is not available"
-            try:
-                r_index = random.randint(0, fh.len_lines() - 1)
-                prompt_random = fh.unescape_quotes(fh.read_line(r_index))
-            except IndexError:
-                prompt = f"IndexError: Line {r_index} is not available"
         else:
             prompt = f"File not exist, {file}"
         return (prompt, prompt_random)
