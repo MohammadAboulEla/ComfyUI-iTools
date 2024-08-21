@@ -148,7 +148,7 @@ class IToolsPromptSaver:
     RETURN_TYPES = ()
     OUTPUT_NODE = True
     FUNCTION = "save_to_file"
-    DESCRIPTION = "Will append the given prompt as a new line to the given file"
+    DESCRIPTION = "Will append the given prompt as a new line to the given txt file"
 
     def save_to_file(self, file_path, prompt):
         cn = folder_paths.folder_names_and_paths["custom_nodes"][0][0]
