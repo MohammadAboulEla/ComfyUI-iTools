@@ -27,11 +27,12 @@ class FileHandler:
         with open(self.filename, 'r') as file:
             return [line.strip() for line in file.readlines()]
 
-    def escape_quotes(self,text):
+    def escape_quotes(self, text):
         return text.replace('"', '\\"').replace("'", "\\'")
 
-    def unescape_quotes(self,text):
+    def unescape_quotes(self, text):
         return text.replace('\\"', '"').replace("\\'", "'")
+
 
 if __name__ == '__main__':
     pass

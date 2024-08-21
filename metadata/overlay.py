@@ -4,7 +4,6 @@ import torch
 import numpy as np
 
 
-
 def tensor_to_img(image):
     # Move tensor to CPU and detach if necessary, then convert to NumPy in one step
     np_img = image.squeeze().mul(255).clamp(0, 255).byte().cpu().numpy()

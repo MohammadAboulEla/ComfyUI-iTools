@@ -111,10 +111,4 @@ def get_prompt(img, print_workflow=False):
 
 
 if __name__ == '__main__':
-    im_default = r"D:\LIBRARY\AI_images\output\ComfyUI_temp_pforh_00001_.png"
-    im1 = r"D:\LIBRARY\AI_images\output\ComfyUI_05-29-24_0006.webp"
-    im2 = r"D:\LIBRARY\AI_images\output\ComfyUI_08-09-24_0050.webp"
-    im3 = r"D:\LIBRARY\AI_images\output\ComfyUI_05-07-24_0142.webp"
-    im4 = r"C:\Users\Makadi\Desktop\Screenshot\Screenshot 2024-08-14 054937.png"
-    print(get_prompt(im4, print_workflow=True))
     pass

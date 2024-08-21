@@ -210,14 +210,14 @@ class IToolsLoadImages:
     def INPUT_TYPES(s):
         return {"required": {
             "images_directory": ("STRING", {"multiline": False}),
-            "load_limit": ("INT", {"default": 20, "min": 2, "max": 200})
-                             }}
+            "load_limit": ("INT", {"default": 4, "min": 2, "max": 200})
+        }}
 
     RETURN_TYPES = ('IMAGE', "STRING")
     RETURN_NAMES = ('images', 'images names')
     FUNCTION = 'load_images'
     CATEGORY = 'iTools'
-    OUTPUT_IS_LIST = (True,True )
+    OUTPUT_IS_LIST = (True, True)
 
     def load_images(self, images_directory, load_limit):
         image_extensions = {'.png', '.jpg', '.jpeg', '.webp', '.bmp', '.gif'}
@@ -232,22 +232,6 @@ class IToolsLoadImages:
             if image_path.suffix.lower() in image_extensions:
                 images.append(img_to_tensor(Image.open(image_path)))
                 images_names.append(image_path.stem)  # Add the image name without extension
-                if len(images) >= load_limit:
-                    break
-
-        return images, images_names
-    def load_images_old(self, images_directory, load_limit):
-        image_extensions = {'.png', '.jpg', '.jpeg', '.webp', '.bmp', '.gif'}
-
-        images_path = Path(images_directory.replace('"', ''))
-        if not images_path.exists():
-            raise FileNotFoundError(f"Image directory {images_directory} does not exist")
-
-        images = []
-        images_names = []
-        for image_path in images_path.iterdir():
-            if image_path.suffix.lower() in image_extensions:
-                images.append(img_to_tensor(Image.open(image_path)))
                 if len(images) >= load_limit:
                     break
 
