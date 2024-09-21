@@ -10,7 +10,7 @@ import node_helpers
 from PIL import Image, ImageSequence, ImageOps
 from .metadata.metadata_extractor import get_prompt
 from .metadata.file_handeler import FileHandler
-from .metadata.overlay import add_overlay_bar, img_to_tensor
+from .metadata.overlay import add_overlay_bar, img_to_tensor, add_underlay_bar
 
 
 class IToolsLoadImagePlus:
@@ -176,7 +176,8 @@ class IToolsAddOverlay:
                 "image": ("IMAGE", {}),
                 "text": ("STRING", {"default": 'img info:', "multiline": False}),
                 "background_color": ("STRING", {"default": '#000000AA', "multiline": False}),
-                "font_size": ("INT", {"default": 40, "min": 10, "max": 1000})
+                "font_size": ("INT", {"default": 40, "min": 10, "max": 1000}),
+                "overlay_mode": ("BOOLEAN", {"default": True}),
             }
         }
 
@@ -186,7 +187,7 @@ class IToolsAddOverlay:
     FUNCTION = "add_text_overlay"
     DESCRIPTION = ("Will add an overlay bottom bar to show a given text, you may change the background color of the "
                    "overlay bar and the font size.")
-    def add_text_overlay(self, image, text, font_size, background_color):
+    def add_text_overlay(self, image, text, font_size, background_color,overlay_mode):
         # Remove the batch dimension and rearrange to [C, H, W]
         tensor = image.squeeze(0).permute(2, 0, 1)
 
@@ -197,8 +198,11 @@ class IToolsAddOverlay:
         to_pil = T.ToPILImage()
         pil_image = to_pil(tensor)
 
-        # Add overlay (assuming add_overlay_bar is defined elsewhere)
-        composite = add_overlay_bar(pil_image, text, font_size=font_size, background_color=background_color)
+        # Add overlay or underlay
+        if overlay_mode:
+            composite = add_overlay_bar(pil_image, text, font_size=font_size, background_color=background_color)
+        else:
+            composite = add_underlay_bar(pil_image, text, font_size=font_size, background_color=background_color)
 
         # Convert back to tensor
         to_tensor = T.ToTensor()
@@ -264,6 +268,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsLoadImagePlus": "iTools Load Image Plus",
     "iToolsPromptLoader": "iTools Prompt Loader",
     "iToolsPromptSaver": "iTools Prompt Saver",
-    "iToolsAddOverlay": "iTools Add Text Overlay",
+    "iToolsAddOverlay": "iTools Add Text",
     "iToolsLoadImages": "iTools Load Images"
 }

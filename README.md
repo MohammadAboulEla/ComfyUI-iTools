@@ -21,14 +21,16 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 
 [![Watch the video](https://github.com/user-attachments/assets/22af7830-066f-498e-a90f-0513b56fa343)](https://github.com/user-attachments/assets/22af7830-066f-498e-a90f-0513b56fa343)
 
-**# iTools Add Text Overlay:** will add an overlay bottom bar to show a given text, you may change the background color of the overlay bar and the font size
+**# iTools Add Text:** will add an overlay bottom bar to show a given text, you may change the background color of the overlay bar and the font size
+
+[![Watch the video](examples/overlay_preview.jpg)](examples/overlay_mode.mp4)
 
 `Example 1:` add text overlay
-![iTools Add Text Overlay](examples/Screenshot2.jpg)
+![iTools Add Text](examples/Screenshot2.jpg)
 `Example 2:` add full prompt
-![iTools Add Text Overlay](examples/Screenshot4.jpg)
+![iTools Add Text](examples/Screenshot4.jpg)
 `Example 3:` change background color and font size
-![iTools Add Text Overlay](examples/Screenshot3.jpg)
+![iTools Add Text](examples/Screenshot3.jpg)
 
 **# iTools Load Images:** will return list of images from a given directory with a given limit, for example if the limit is 4 it will return first 4 images in that directory.it will also return the list of these images names.
-![iTools Add Text Overlay](examples/Screenshot5.jpg)
+![iTools Add Text](examples/Screenshot5.jpg)
