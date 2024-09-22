@@ -28,8 +28,9 @@ def fix_workflow(img_info: dict, _type: str):
         try:
             img_info = str(img_info)
             part1 = img_info.split(r'Workflow:')[1]
-            part2 = part1.split(r"\x")[0]
-            part2 = json.loads(part2.replace('\\', '\\\\'))
+            part1 = part1.replace('\\', '\\\\')
+            part1 = part1.split(r"\x")[0]
+            part2 = json.loads(part1)
             return part2
         except Exception as e:
             print("fix_workflow", e)
@@ -111,4 +112,8 @@ def get_prompt(img, print_workflow=False):
 
 
 if __name__ == '__main__':
+    # m = r"D:\LIBRARY\AI_images\output\ComfyUI_09-22-24_0020.webp"
+    # print(get_prompt(m))
+    # m = r"D:\LIBRARY\AI_images\output\you may delete this\ComfyUI_temp_czbep_00001_.png"
+    # print(get_prompt(m))
     pass

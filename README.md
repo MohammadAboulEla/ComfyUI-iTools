@@ -23,8 +23,6 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 
 **# iTools Add Text:** will add an overlay bottom bar to show a given text, you may change the background color of the overlay bar and the font size
 
-[![Watch the video](examples/overlay_preview.jpg)](examples/overlay_mode.mp4)
-
 `Example 1:` add text overlay
 ![iTools Add Text](examples/Screenshot2.jpg)
 `Example 2:` add full prompt
