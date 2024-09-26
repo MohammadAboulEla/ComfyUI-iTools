@@ -1,0 +1,315 @@
+# Ensure that the formatting is kept the same as in this file.
+# Indents in YAML are critical. Ensure proper indentation, as incorrect spacing can cause errors.
+# Best approach is to copy a block of name, negative_prompt and a prompt and then replace thier values
+
+- name: ART | African Traditional
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: African traditional art style of {prompt},bold patterns, vibrant colors, intricate
+    designs, dynamic compositions, cultural heritage, adds richness and depth
+
+- name: ART | Afrofuturism Art
+  negative_prompt: Signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Afrofuturism art style of {prompt},blend of African culture and aesthetics
+    with futuristic elements, reimagines history and imagines alternative futures,
+    black identity, creativity, and resilience
+
+- name: ART | Ancient Egyptian Mural
+  negative_prompt: Signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Ancient Egyptian mural art style of {prompt},rich cultural heritage, intricate
+    hieroglyphics, vibrant colors, symbolic motifs, depicts scenes from mythology,
+    religion, and daily life, monumental scale, timeless beauty
+
+- name: ART | Atompunk
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Atompunk art style of {prompt},retro-futuristic, atomic age aesthetics, sleek
+    and streamlined designs, nuclear energy motifs, optimism about technological progress
+
+- name: ART | Baroque
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Baroque art style of {prompt},dynamic composition, dramatic lighting, rich
+    colors, intricate details, professional-grade execution, captures the grandeur
+    and theatricality of the Baroque period
+
+- name: ART | Biomechanical
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Biomechanical art style of {prompt},Biology, Machinery, Intricate, Surreal,
+    Organic Forms, Mechanical Structures, Futuristic, Cyberpunk, Fusion, Nature, Technology
+
+- name: ART | Biopunk
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Biopunk art style of {prompt},explores genetic engineering, biohacking, and
+    biotechnology, organic and living elements, dystopian or utopian visions of a
+    genetically modified future
+
+- name: ART | Byzantine Icon
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Byzantine icon oil painting art style of {prompt},intricate details, rich
+    colors, religious symbolism, cultural significance, professional-grade execution,
+    spiritual, religious
+
+- name: ART | Cartoon
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: cartoon art style of {prompt},whimsical character, exaggerated features, vibrant
+    colors, dynamic composition, expressive pose, professional-grade finish, adds
+    humor and charm
+
+- name: ART | Claymation
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Claymation art style of {prompt},tactile and three-dimensional character,
+    dynamic animation, captures the charm and whimsy of stop-motion animation, suitable
+    for various storytelling and advertising
+
+- name: ART | Comic Book Style
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: comic book art style of {prompt},comics, dynamic lines, vibrant colors, expressive
+    characters, action-packed composition, adds energy and excitement
+
+- name: ART | Constructivism
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Constructivism Art Style of {prompt},Industrial materials, geometric abstraction,
+    social purposes, modernity, functional art, the machine age and collective labor,
+    fosters innovation and collaboration
+
+- name: ART | Cubism
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: cubism art style of {prompt},fragmented forms, geometric shapes, dynamic compositions,
+    vibrant colors, innovative technique, cultural significance
+
+- name: ART | Cybergoth Art
+  negative_prompt: Signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Cybergoth art style of {prompt},futuristic and edgy aesthetic, combines cyberpunk
+    and gothic elements, neon colors, industrial motifs, alternative fashion and culture
+
+- name: ART | Cyberpunk
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Cyberpunk art style of {prompt},futuristic cityscapes, neon-lit streets, high-tech
+    and low-life, cybernetic enhancements, dystopian and gritty atmosphere
+
+- name: ART | Dadaism
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Dadaism Art Style of {prompt},Anti-art, absurdity, irony, spontaneity, rejecting
+    conventional aesthetics, collage art
+
+- name: ART | Dark Academia
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Dark Academia art style of {prompt},evokes the atmosphere of scholarly pursuits
+    and literary classics, rich and moody color palettes, intricate details
+
+- name: ART | Deco
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Art Deco style of {prompt},Symmetry, streamlined shapes, geometric patterns,
+    luxury, modernity, glamour, sleek lines
+
+- name: ART | Dieselpunk
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Dieselpunk art style of {prompt},retro-futuristic, industrial aesthetics,
+    mechanical marvels, alternative history, gritty and dystopian atmosphere
+
+- name: ART | Egyptian
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Egyptian art style of {prompt},iconic symbolism, intricate hieroglyphics,
+    dynamic composition, Egyptian cultural significance
+
+- name: ART | Futurism
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Futurism art style of {prompt},dynamic composition, bold geometric forms,
+    vibrant colors, captures the spirit of technological advancement and modernity
+
+- name: ART | Gilded
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Gilded art style of {prompt},opulent, luxurious, metallic elements, divine
+    symbolism, fine craftsmanship
+
+- name: ART | Glitch
+  negative_prompt: Signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Glitch art style of {prompt},embraces digital errors and glitches, distorted
+    and fragmented imagery, experimental and abstract, challenges traditional notions
+    of perfection and beauty
+
+- name: ART | Gothic
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Gothic art style of {prompt},gothic details, dramatic compositions, rich symbolism
+
+- name: ART | Interstellar
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Interstellar art style of {prompt},Cosmic, Space, Celestial, Galactic, Nebulae,
+    Stars, Planets, Exploration, Unknown, Infinity, Futuristic
+
+- name: ART | Japanese Traditional
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Japanese traditional art style of {prompt},delicate lines, subtle colors,
+    intricate details, dynamic compositions, cultural heritage, adds elegance and
+    sophistication
+
+- name: ART | Linocut
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Linocut art style of {prompt},relief printing, bold and graphic imagery with
+    striking contrasts
+
+- name: ART | Lucha Libre
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Lucha libre art style of {prompt},dynamic and colorful compositions, exaggerated
+    characters, captures the excitement and energy of Mexican wrestling culture
+
+- name: ART | Mayan
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Mayan art style of {prompt},rich cultural heritage, intricate geometric patterns,
+    mayan colors,  reflects the spiritual and artistic achievements of the Maya civilization
+
+- name: ART | Minoan
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Minoan art style of {prompt},dynamic composition, Minoan cultural significance,
+    adds depth and richness
+
+- name: ART | Naive
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Naive art style of {prompt},simplistic and childlike aesthetic, spontaneous
+    and untrained, captures innocence and purity, features bold colors, exaggerated
+    perspectives, and whimsical themes
+
+- name: ART | Necropunk
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Necropunk art style of {prompt},dark and macabre, blending of death and technology,
+    eerie and unsettling imagery, explores themes of mortality and decay, unique and
+    thought-provoking concepts
+
+- name: ART | Nouveau
+  negative_prompt: Signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Art Nouveau art style of {prompt},elegant and organic forms, intricate floral
+    motifs, flowing lines, decorative and ornate, influenced architecture, design,
+    and visual arts in the late 19th and early 20th centuries
+
+- name: ART | Pixel Art
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, JPEG artifacts
+  prompt: pixel art style of {prompt},pixelated design, flat, uses pixelated graphics
+    reminiscent of classic video games, charming simplicity, intricate detailing despite
+    limited resolution
+
+- name: ART | Pop Art
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, JPEG artifacts
+  prompt: Pop art style of {prompt},vibrant colors, bold outlines, use of popular culture
+    imagery, iconic and recognizable, consumerism and mass media
+
+- name: ART | Propaganda
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: propaganda art style of {prompt},bold and persuasive imagery, dynamic compositions,
+    serves as a powerful tool for communication and persuasion
+
+- name: ART | Psychedelic
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Psychedelic art style of {prompt},vibrant and surreal imagery, kaleidoscopic
+    patterns, intense colors, mind-expanding and hallucinatory, reflects the psychedelic
+    experience and counterculture movement
+
+- name: ART | Rococo
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Rococo art style of {prompt},ornate, light-hearted, elegant, decorative, playful
+    subjects, asymmetrical designs
+
+- name: ART | Solarpunk
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Solarpunk art style of {prompt},optimistic vision of the future, sustainable
+    technology, renewable energy sources, lush and green landscapes, community and
+    harmony with nature
+
+- name: ART | Stencil
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Street Art of {prompt},Urban setting, graffiti, murals, social messages, public
+    spaces, anonymity, vibrant visuals
+
+- name: ART | Street Art
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Stencil art style of {prompt},urban and contemporary, graphic and bold imagery
+
+- name: ART | Steampunk
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Steampunk art style of {prompt},Victorian-era aesthetics, steam-powered machinery,
+    brass and gears, fantastical inventions, retro-futuristic adventure
+
+- name: ART | Surrealism
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Surrealism art style of {prompt},dreamlike and irrational imagery, explores
+    the unconscious mind, juxtaposition of unlikely elements, challenges reality and
+    logic
+
+- name: ART | Synthwave
+  negative_prompt: Signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Synthwave art style of {prompt},retro-futuristic aesthetic, vibrant neon colors,
+    nostalgic 80s imagery, futuristic landscapes, nostalgic and atmospheric
+
+- name: ART | Ukrainian Folk Art
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Ukrainian folk art style of {prompt},vibrant colors, intricate patterns, dynamic
+    compositions, traditional motifs, cultural heritage, adds richness and depth
+
+- name: ART | Vaporwave
+  negative_prompt: Signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Vaporwave art style of {prompt},nostalgic and surreal aesthetic, 80s and 90s
+    retro imagery, glitch art elements, pastel colors, dreamy and ethereal atmosphere
+
+- name: ART | Westernpunk
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, frame,
+    worst quality, low quality, lowres, JPEG artifacts
+  prompt: Westernpunk art style of {prompt},fusion of Wild West and futuristic elements,
+    rugged landscapes, cowboy aesthetics, steam-powered technology, adventurous spirit
+

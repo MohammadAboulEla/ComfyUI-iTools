@@ -1,0 +1,227 @@
+# Ensure that the formatting is kept the same as in this file.
+# Indents in YAML are critical. Ensure proper indentation, as incorrect spacing can cause errors.
+# Best approach is to copy a block of name, negative_prompt and a prompt and then replace thier values
+
+- name: Painting | Abstract Expressionism
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Abstract Expressionism art style of {prompt},emphasizes spontaneous and gestural
+    brushwork, explores emotions and inner thoughts, non-representational and subjective,
+    influenced by the subconscious and the act of painting itself
+
+- name: Painting | Acrylic
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Acrylic Paint art style of {prompt},fast-drying paint, versatile, vibrant
+    colors, expressive brushwork, rich textures, dynamic compositions, bold contrasts,
+    layered depth, tactile quality, fluid movement, lively energy, immersive atmosphere,
+    professional-grade finish
+
+- name: Painting | Aerosol
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Aerosol paint art style of {prompt},spray painted, vibrant colors, seamless
+    blending, dynamic compositions, bold contrasts, urban aesthetic, professional-grade
+    results
+
+- name: Painting | Children Book Art
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: digital painting of {prompt},whimsical children's book art style,  charming
+    and inviting illustration style, soft and rounded shapes, warm and inviting color
+    palette, creates a friendly and serene atmosphere, simplicity and clarity make
+    it accessible and enjoyable for a wide audience, imaginative scene with fantastical
+    elements in a storybook-like setting, encourages viewer's sense of wonder and
+    exploration
+
+- name: Painting | Chinese Ink Brush
+  negative_prompt: Chinese writing, signature, watermark, photo, photorealistic, realism,
+    ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low
+    quality, lowres, JPEG artifacts
+  prompt: Chinese ink brush art style of {prompt},graceful brushwork, elegant compositions,
+    traditional motifs, professional-grade execution, captures the essence of Chinese
+    culture and aesthetics
+
+- name: Painting | Digital
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Digital painting art style of {prompt},dynamic composition, professional-grade
+    execution
+
+- name: Painting | Digital Fantasy Game Art
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: digital painting art style of {prompt},fantasy video game concept art style,
+    dynamic and richly detailed composition, vibrant colors, action-packed scene,
+    emphasizes dramatic poses and expressive faces, immersive environments with fantasy
+    backgrounds, designed to draw viewers into fantastical worlds, typical for character
+    and environment designs in video games
+
+- name: Painting | Fantasy Art
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Fantasy painting art style of {prompt},imaginative, dynamic composition, professional-grade
+    execution, creates immersive world and landscape, painterly, epic, magical
+
+- name: Painting | Fantasy Cartoon
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Fantasy cartoon concept art style of {prompt},cartoon cute digital painting,
+    imaginative, dynamic composition, whimsical expression, adorable, playful character,
+    professional-grade execution, creates immersive world and landscape, brush strokes
+
+- name: Painting | Fantasy Digital Art
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Fantasy concept art style of {prompt},digital painting, imaginative, dynamic
+    composition, professional-grade execution, creates immersive world and landscape,
+    brush strokes, epic, magical
+
+- name: Painting | Fantasy Game Concept Item
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Fantasy game concept art on solid color background of {prompt},game item design,
+    detailed and painterly style, focus on fantasy elements, attention to texture
+    and additional elements like, suitable for video games or animation
+
+- name: Painting | Fresco
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Fresco painting art style of {prompt},ancient painting technique dating back
+    to antiquity, rich colors and textures, timeless aesthetic, historical significance,
+    evokes a sense of tradition and craftsmanship
+
+- name: Painting | Gouache
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: gouache painting style of {prompt},gouache opaque colors, matte finish, vibrant
+    hues, dynamic compositions, professional-grade result, adds depth and texture
+
+- name: Painting | Gouache Cartoon
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: gouache painting style of {prompt},gouache vibrant colors, adorable, whimsical
+    expression, playful character, dynamic compositions, professional-grade result,
+    adds depth and texture
+
+- name: Painting | Graffiti
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Graffiti aerosol painting art style of {prompt},bold composition, vibrant
+    colors, mural, urban aesthetic, hip hop culture
+
+- name: Painting | Grimdark
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Grimdark painting art style of {prompt},dark and brooding composition, dramatic
+    lighting, captures the sinister and macabre atmosphere
+
+- name: Painting | Impasto
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: impasto painting art style of {prompt},thick and textured brushwork, vibrant
+    colors, tactile quality, expressive strokes, dynamic compositions, bold contrasts,
+    dramatic lighting effects, immersive texture, professional-grade finish, adds
+    depth and dimension, creates visual interest
+
+- name: Painting | Impressionism Painting Style
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Impressionism painting art style of {prompt},loose brushwork, captures the
+    fleeting effects of light and atmosphere
+
+- name: Painting | Magic Realism
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Magic realism painting art style of {prompt},surreal compositions, vibrant
+    colors, blurs the line between reality and fantasy
+
+- name: Painting | Oil Painting
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: oil painting art style of {prompt},rich colors, lush textures, expressive
+    brushwork, blendable layers, dynamic compositions, professional-grade finish,
+    versatile medium, timeless elegance, immersive depth, vibrant hues, intricate
+    detailing, adds depth and dimension
+
+- name: Painting | Palette Knife
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: palette knife painting art style of {prompt},bold textures, impasto effects,
+    expressive strokes, vibrant colors, dynamic compositions, professional-grade finish,
+    adds depth and dimension, creates tactile quality, immersive texture, contemporary
+    aesthetic
+
+- name: Painting | Pointillism
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, JPEG artifacts
+  prompt: Pointillism art style of {prompt},uses dots of color to create images, optical
+    blending creates vibrant and textured surfaces
+
+- name: Painting | Renaissance
+  negative_prompt: painting frame, signature, watermark, photo, photorealistic, realism,
+    ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low
+    quality, lowres, JPEG artifacts
+  prompt: oil painting art style from Renaissance period of {prompt},masterful composition,
+    Renaissance mood, renaissance oil painting, brush strokes
+
+- name: Painting | Retrofuturism
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Retrofuturism painting art style of {prompt},nostalgic composition, combines
+    retro aesthetics with futuristic elements
+
+- name: Painting | Sumi-e Painting
+  negative_prompt: Japanese writing, Chinese writing, chinese stamp, signature, watermark,
+    photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped,
+    frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Sumi-e painting style of {prompt},traditional Japanese ink wash painting,
+    emphasizes simplicity and elegance, expressive brushwork, captures the essence
+    of the subject with minimal strokes, meditative and reflective
+
+- name: Painting | Watercolor
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Watercolor painting art style of {prompt},transparent and delicate layers,
+    luminous and ethereal effects, spontaneous and fluid compositions, subtle gradients
+    and blending, captures light and atmosphere, creates soft and dreamy scenes
+
+- name: Painting | Watercolor > Cartoon
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Cartoon watercolor painting style of {prompt},playful cartoon character, dynamic
+    composition, whimsical expression, soft and fluid texture, adds charm and personality,
+    subtle gradients and blending, captures light and atmosphere, creates soft and
+    dreamy scenes, watercolor texture
+
+- name: Painting | Watercolor on White Background
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Watercolor painting art style of {prompt},isolated on solid white background,
+    transparent and delicate layers, luminous and ethereal effects,  subtle gradients
+    and blending, captures light and atmosphere, creates soft and dreamy scenes
+

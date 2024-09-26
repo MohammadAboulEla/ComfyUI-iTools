@@ -1,0 +1,57 @@
+# Ensure that the formatting is kept the same as in this file.
+# Indents in YAML are critical. Ensure proper indentation, as incorrect spacing can cause errors.
+# Best approach is to copy a block of name, negative_prompt and a prompt and then replace thier values
+
+- name: Vector | Coloring Book Page
+  negative_prompt: painting, signature, shading, gray, gradient, watermark, photo,
+    photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped,
+    frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Vector coloring book page style of {prompt},clean and crisp lines, on solid
+    white background, scalable and editable artwork, suitable for printing and digital
+    coloring, promotes creativity and relaxation, black and white, contrast, profesional,
+    minimalist
+
+- name: Vector | Flat Art Style
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Modern flat vector style art on solid color background of {prompt},minimalist,  flat
+    vector art, corporate artstyle, simplified shapes, modern color palette, modern
+    conceptual art, clean lines, geometric forms, contemporary graphic design influence,
+    stylized character features, playful touch, visually appealing, clear communication
+    of ideas, suitable for modern media, web design, advertising, cheerful and engaging
+    aesthetic, easily adaptable
+
+- name: Vector | Line Art
+  negative_prompt: painting, signature, shading, gradient, watermark, photo, photorealistic,
+    realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality,
+    low quality, lowres, JPEG artifacts
+  prompt: black vector line art on solid white background of {prompt},minimalist, vector
+    line art style, clean lines, scalable graphics, professional-grade execution,
+    stylized, professional vector, sleek, modern, graphic, vector graphics
+
+- name: Vector | Logo Symbol
+  negative_prompt: signature, shading, gradient, painting, watermark, photo, photorealistic,
+    realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality,
+    low quality, lowres, JPEG artifacts
+  prompt: vector logo art style of {prompt},on solid color background, vector logo symbol,
+    stylized logo, logo icon, minimalist, clean, clean and scalable designs, precise
+    lines, professional-grade execution, emphasizes simplicity and versatility
+
+- name: Vector | Silhouette
+  negative_prompt: signature, shading, gradient, painting, watermark, photo, photorealistic,
+    realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality,
+    low quality, lowres, JPEG artifacts
+  prompt: black vector silhouette on solid white background of {prompt},minimalist,
+    SVG silhouette art style, clean lines and shapes, scalable graphics, professional-grade
+    execution, stylized, professional vector
+
+- name: Vector | Silhouette Cute
+  negative_prompt: signature, shading, gradient, painting, watermark, photo, photorealistic,
+    realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality,
+    low quality, lowres, JPEG artifacts
+  prompt: cute cartoon black vector silhouette on solid white background,{prompt}
+    ,minimalist, SVG silhouette art style, adorable, clean lines and shapes, scalable
+    graphics, professional-grade execution, stylized cartoon, professional cartoon
+    vector
+

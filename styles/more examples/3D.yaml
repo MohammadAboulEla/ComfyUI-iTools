@@ -1,0 +1,138 @@
+# Ensure that the formatting is kept the same as in this file.
+# Indents in YAML are critical. Ensure proper indentation, as incorrect spacing can cause errors.
+# Best approach is to copy a block of name, negative_prompt and a prompt and then replace thier values
+
+- name: 3D | Abstract
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
+    ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: abstract 3D render,{prompt} ,abstract 3d art, imaginative design, dynamic
+    lighting, immersive presentation, captivating visuals, high-quality rendering
+    techniques, innovative concept, unique aesthetics, creative compositions, visually
+    stunning results, volumetric, 4k
+
+- name: 3D | Abstract > Fluid Dynamics
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
+    ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: fluid dynamics 3D art style,{prompt} ,3d fluid render, expressive and dynamic,
+    vibrant contrasting colors, lively appearance, mesmerizing flow of shapes, simulation
+    of fluid dynamics, swirling motion, bold colors blending seamlessly, abstract
+    and captivating, fluidity and energy, mesmerizing composition, engaging viewer
+    experience, seamless integration of colors and shapes, volumetric, 4k
+
+- name: 3D | Abstract > Soft Forms
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
+    ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: modern abstract 3D art style,{prompt} ,focusing on organic shapes and objects,
+    soft colors, captivating composition, tactile qualities, smoothness, softness,
+    contrast between matte and shiny textures, depth and interest, blend of textures,
+    minimalistic yet complex aesthetic, volumetric, 4k
+
+- name: 3D | Architectural
+  negative_prompt: painting, low-quality rendering, ugly, worst quality, low quality,
+    lowres, JPEG artifacts
+  prompt: professional 3D architectural rendering,{prompt} ,realistic visualization,
+    intricate detailing, lifelike textures, dynamic lighting, immersive environment,
+    photorealistic representation, captivating visuals, realistic materials, professional
+    rendering techniques, volumetric, 4k
+
+- name: 3D | Character
+  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst
+    quality, low quality, lowres, JPEG artifacts
+  prompt: professional 3D character design,{prompt} , dynamic pose, expert character
+    design, engaging storytelling, captivating visuals, imaginative concept, high-quality
+    rendering, volumetric, 4k
+
+- name: 3D | Character > Cartoon
+  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst
+    quality, low quality, lowres, JPEG artifacts
+  prompt: professional 3D cartoon character design,{prompt} ,whimsical animation,
+    vibrant personality, exaggerated features, dynamic pose, expert character design,
+    colorful textures, engaging storytelling, versatile animation styles, captivating
+    visuals, imaginative concepts, playful interactions, high-quality rendering, volumetric,
+    4k
+
+- name: 3D | Character > Cartoon Cute
+  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst
+    quality, low quality, lowres, JPEG artifacts
+  prompt: professional 3D design of a cute and adorable cartoon character with big
+    eyes,{prompt} ,charming animation, endearing personality, exaggerated features,
+    dynamic pose, captivating expression, expert character design, vibrant and colorful
+    textures, engaging storytelling, versatile animation style, high-quality render,
+    volumetric, 4k
+
+- name: 3D | Game Asset
+  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst
+    quality, low quality, lowres, JPEG artifacts
+  prompt: 3d game item,{prompt} ,high-quality 3D rendering of a game asset, dynamic
+    lighting, captivating visuals, seamless integration, realistic materials, high-quality
+    rendering techniques, versatile application, innovative concepts, optimized for
+    gaming engines, volumetric, 4k
+
+- name: 3D | Hard Surface
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
+    ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: professional hard surface 3D design modeling,{prompt} ,hard surface expert
+    modeling, hard surface 3d render, precise detailing, captivating visuals, professional-grade
+    design, dynamic appearance, attention-grabbing aesthetics, high-quality rendering
+    techniques, volumetric, 4k
+
+- name: 3D | Icon
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
+    ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: 3D icon design,{prompt} ,isolated on solid background, creative icon design,
+    minimalist, depth and dimensionality, dynamic lighting, captivating visuals, high-quality
+    rendering techniques, volumetric, 4k
+
+- name: 3D | Isometric
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
+    ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: isometric 3D render,{prompt} ,isometric 3D design, isometric perspective,
+    precise perspective, clean, dynamic lighting, captivating visuals, immersive presentation,
+    high-quality rendering techniques, volumetric, dramatic lighting, 4k
+
+- name: 3D | Low Poly
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
+    ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Low poly 3D design aesthetic,{prompt} ,minimalist and stylized appearance,
+    expert modeling software, efficient detailing, immersive presentation, captivating
+    visuals, professional-grade design, dynamic and clean appearance, versatile application,
+    attention-grabbing aesthetics, efficient rendering, suitable for performance-sensitive
+    applications such as games and simulations
+
+- name: 3D | Mech
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
+    ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: 3d mechanical render,{prompt} ,mech style, scifi, futuristic, detailed mech
+    3D rendering, intricate design, dynamic lighting, captivating visuals, high-quality
+    rendering techniques, futuristic aesthetics, volumetric, 4k
+
+- name: 3D | Model
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
+    ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: detailed 3D model representation,{prompt} ,3d render, captivating visuals,
+    professional-grade design, dynamic appearance, high-quality rendering techniques,
+    volumetric, 4k
+
+- name: 3D | Product
+  negative_prompt: low poly, blurry, painting, low-quality rendering, photo, photorealistic,
+    realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: professional 3d model,{prompt} ,3D product visualization, octane render,
+    immersive presentation, photorealistic rendering, captivating visuals, realistic
+    materials, highly detailed, volumetric, dramatic lighting, 4k
+
+- name: 3D | Sci-Fi
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
+    ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: futuristic 3D rendering,{prompt} ,imaginative design, dynamic lighting,
+    immersive presentation, volumetric, futuristic elements, captivating visuals,
+    realistic materials, high-quality rendering techniques, innovative concepts, otherworldly
+    atmosphere, futuristic aesthetics, immersive storytelling, 4k
+
+- name: 3D | Vehicle
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
+    ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: professional 3D vehicle render,{prompt} ,realistic representation, intricate
+    detailing, dynamic lighting, immersive presentation, seamless integration, photorealistic
+    rendering, captivating visuals, realistic materials, high-quality rendering techniques,
+    octane render, highly detailed, volumetric, dramatic lighting, 4k
+

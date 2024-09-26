@@ -121,7 +121,7 @@ async def respond_to_js_message(request):
     yaml_data = load_yaml_data(file_path)
     templates = read_styles(yaml_data)
 
-    data = {"a": templates}
+    data = {"new_templates": templates}
     return web.json_response(data=data)
 
 

@@ -1,0 +1,160 @@
+# Ensure that the formatting is kept the same as in this file.
+# Indents in YAML are critical. Ensure proper indentation, as incorrect spacing can cause errors.
+# Best approach is to copy a block of name, negative_prompt and a prompt and then replace thier values
+
+- name: Illustration | Art Deco
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Art Deco illustration style of {prompt},elegant and geometric designs, streamlined
+    and symmetrical compositions, embodies the glamour and sophistication of the Art
+    Deco era, influenced by modernism and machine aesthetics
+
+- name: Illustration | Anime
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: anime art style of {prompt},anime digital art, expressive anime art, dynamic
+    composition, anime style, vibrant, studio anime, highly detailed
+
+- name: Illustration | Anime > Chibi
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Chibi anime art style of {prompt},cute and exaggerated characters, large heads
+    and small bodies, expressive facial features, playful and whimsical, popular in
+    manga and anime fandoms
+
+- name: Illustration | Anime > Kawaii
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Kawaii anime art style of {prompt},cute, adorable characters with big eyes
+    and small mouths, pastel colors, playful and endearing
+
+- name: Illustration | Anime > Mecha
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Mecha anime art style of {prompt},focuses on giant robots and mechanical suits,
+    intricate mechanical designs, dynamic action scenes, futuristic settings, appeals
+    to fans of science fiction and action genres
+
+- name: Illustration | Anime > Realistic
+  negative_prompt: painting, drawing, signature, watermark, ugly, off-center, deformed,
+    cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Realistic anime art style of {prompt},combines anime aesthetics with lifelike
+    details, detailed character designs, intricate backgrounds, immersive storytelling
+
+- name: Illustration | Cartoon
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Cartoon illustration style of {prompt},whimsical and expressive characters,
+    exaggerated features and emotions, versatile and adaptable for various storytelling
+    purposes
+
+- name: Illustration | Cartoon Character on White BG
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: cartoon digital painting art style of {prompt},isolated on solid white background,
+    adorable, big eyes, cute cartoon character
+
+- name: Illustration | Children's book
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Children's book illustration style of {prompt},whimsical and charming imagery,
+    bright and playful colors, engaging characters and storytelling, cartoon
+
+- name: Illustration | Fantasy
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Fantasy illustration style of {prompt},transports viewers to imaginative worlds,
+    epic landscape, and heroic adventures, sparks wonder and inspiration
+
+- name: Illustration | Fantasy Cartoon on White BG
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Watercolor cartoon illustration on solid white background of {prompt},enchanted,
+    adorable, Digital Cartoon Illustration, a simple and charming design
+
+- name: Illustration | Fashion
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Fashion illustration style of {prompt},captures the latest trends and designs
+    in clothing and accessories, elegant and stylized figures, showcases creativity
+    and imagination in the fashion industry
+
+- name: Illustration | Game Art
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Game art illustration style of {prompt},game illustration, diverse and immersive
+    visuals, whimsical, dynamic characters and environments, rich color palettes,
+    enhances storytelling and gameplay experience
+
+- name: Illustration | Illuminated Manuscript
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Illuminated manuscript art style illustration of {prompt},medieval illustration,
+    intricate and detailed illustration, vibrant colors and gold leaf accents,  showcases
+    meticulous craftsmanship and dedication
+
+- name: Illustration | Pop Art
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Pop art illustration style of {prompt},vibrant and bold colors, uses imagery
+    from popular culture, incorporate elements of mass media and consumerism, celebrates
+    the mundane and everyday objects
+
+- name: Illustration | Retro
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Retro illustration style of {prompt},nostalgic and vintage aesthetics, inspired
+    by design elements from past decades, evokes a sense of nostalgia and charm
+
+- name: Illustration | Modern
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Modern illustration style of {prompt},contemporary and cutting-edge, embraces
+    new techniques and technologies, reflects current trends and cultural influences
+
+- name: Illustration | Modernism
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Modernism illustration style of {prompt},embraces experimentation and abstraction,
+    breaks away from traditional representation, explores new forms and techniques,
+    reflects the spirit of innovation and progress.
+
+- name: Illustration | Sticker
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Sticker art style isolated on solid color background
+
+- name: Illustration | Sticker Cute
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Cute adorable cartoon sticker art style isolated on solid color background,
+    {prompt} ,charming and endearing characters or designs, appeals to emotions like
+    joy and affection
+
+- name: Illustration | Sticker Watercolor
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
+    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
+    JPEG artifacts
+  prompt: Sticker art style isolated on solid color background of {prompt},watercolor
+    painting art style, transparent and delicate layers, luminous and ethereal effects,
+    spontaneous and fluid compositions, subtle gradients and blending
+

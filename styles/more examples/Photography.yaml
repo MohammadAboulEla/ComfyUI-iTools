@@ -1,0 +1,359 @@
+# Ensure that the formatting is kept the same as in this file.
+# Indents in YAML are critical. Ensure proper indentation, as incorrect spacing can cause errors.
+# Best approach is to copy a block of name, negative_prompt and a prompt and then replace thier values
+
+- name: Photography | Aerial
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: aerial photography of {prompt},drone photography, sweeping landscapes, unique
+    perspectives, epic scale, capturing from above, revealing hidden beauty, showcasing
+    vastness, immersive experience, precise compositions, expert piloting, dynamic
+    angles, cinematic storytelling, showcasing natural wonders, aerial exploration
+
+- name: Photography | Architecture
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: architecture photography of {prompt},striking structures, clean lines, geometric
+    shapes, dramatic angles, play of light and shadow, capturing architectural details,
+    showcasing design elements, evoking mood, professional lighting, precise compositions,
+    emphasizing scale and proportion, creating depth, architectural storytelling,
+    capturing iconic landmarks, immersive experience
+
+- name: Photography | Black and White
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: black and white photography of {prompt},timeless elegance, classic aesthetic,
+    dramatic contrasts, emphasizing shapes and textures, evoking nostalgia, focusing
+    on light and shadow, monochromatic storytelling, capturing mood and emotion, artistic
+    expression, minimalist compositions, conveying depth and atmosphere, timeless
+    beauty
+
+- name: Photography | Cinematic
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: Cinematic photography of {prompt},movie mood, cinematic light, compelling
+    composition, storytelling elements, conveys emotion, mood, and narrative depth,
+    creating visually striking images that feel like still frames from a film
+
+- name: Photography | Documentary
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: documentary photography of {prompt},capturing reality, social issues, human
+    experiences, photojournalistic storytelling, candid moments, authentic narratives,
+    raising awareness, documenting history, preserving cultural heritage, immersive
+    storytelling, evoking empathy, powerful imagery, journalistic integrity
+
+- name: Photography | Experimental
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: experimental photography of {prompt},pushing the boundaries of creativity,
+    unconventional techniques, innovative concepts, artistic exploration, thought-provoking
+    imagery, pushing the boundaries of traditional photography
+
+- name: Photography | Fashion
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: fashion photography of {prompt},glamorous, stylish attire, captivating pose,
+    dynamic composition, high-fashion aesthetic, professional studio lighting, expert
+    styling, showcasing trend, conveying elegance, conveying attitude, evoking emotion,
+    creating visual impact, editorial storytelling, artistic interpretation, fashion-forward
+    visual
+
+- name: Photography | Fashion Editorial
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: fashion editorial photography of {prompt},high-fashion imagery, avant-garde
+    aesthetics, editorial storytelling, conveying fashion trends and concepts, artistic
+    interpretation, expert styling, professional lighting, capturing fashion-forward
+    visuals, creating visual impact, evoking emotion, pushing creative boundaries
+
+- name: Photography | Fine Art
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: fine art photography of {prompt},conceptual expression, evocative imagery,
+    artistic interpretation, emotional resonance, creative composition, professional
+    lighting, exquisite detail, immersive experience, storytelling through imagery,
+    conveying mood,  unique perspective, thought-provoking concept, capturing beauty,
+    transcending reality
+
+- name: Photography | Flower
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: flower photography of {prompt},capturing nature's beauty, delicate petals,
+    vibrant colors, intricate details, showcasing botanical diversity, evoking emotions,
+    conveying serenity, expert composition, professional lighting, immersive floral
+    portrait, timeless elegance
+
+- name: Photography | Food
+  negative_prompt: bad anatomy, unappetizing, sloppy, unprofessional, comics, cropped,
+    cross-eyed, worst quality, low quality, painting, 3D render, drawing, crayon,
+    sketch, graphite, impressionist, cartoon, anime, noisy, blurry, soft, deformed,
+    ugly, lowres, low details, JPEG artifacts, airbrushed, semi-realistic, CGI, render,
+    Blender, digital art, manga, amateur, mutilated, distorted
+  prompt: food photography of {prompt},mouthwatering dishes, vibrant colors, appetizing
+    presentations, enticing compositions, delicious details, showcasing textures,
+    capturing freshness, professional lighting, expert styling, culinary storytelling,
+    enhancing food appeal
+
+- name: Photography | Landscape
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: landscape photography of {prompt},vast vistas, natural beauty, dynamic compositions,
+    captivating scenery, immersive, serene
+
+- name: Photography | Long exposure
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: long exposure photography of {prompt},streaking lights, smooth motion, dreamy
+    landscapes, ethereal atmosphere, light painting, creative expression, time manipulation,
+    surreal effects, captivating visuals, artistic interpretation, immersive experience,
+    unique perspective
+
+- name: Photography | Low key
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: low key photography of {prompt},dramatic lighting, deep shadows, rich contrast,
+    moody atmosphere, intense emotions, cinematic feel, mysterious ambiance, emphasizing
+    shape and form, creating depth, evoking drama, storytelling through shadows, professional
+    technique
+
+- name: Photography | Macro
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: macro photography of {prompt},extreme close-ups, intricate details, unseen
+    worlds, capturing texture, emphasizing details, revealing beauty in small things,
+    professional lighting, precise focusing, artistic expression, immersive experience,
+    expert technique
+
+- name: Photography | Microscopic
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, drawing, crayon, sketch, graphite, impressionist, cartoon, anime, noisy,
+    blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts, airbrushed,
+    semi-realistic, digital art, manga, amateur, mutilated, distorted
+  prompt: microscopic photography of {prompt},magnified, molecular, unseen worlds revealed,
+    scientific exploration, capturing molecular details, professional imaging techniques,
+    precise focusing, revealing hidden beauty, scientific discovery, artistic interpretation,
+    nano scale, revealing the wonders of the unseen
+
+- name: Photography | Minimalist
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: minimalist photography of {prompt},simplicity in composition, clean lines,
+    uncluttered visuals, negative space, focusing on essential elements, conveying
+    tranquility, understated beauty, elegant aesthetics, subtle storytelling, capturing
+    the essence of minimalism
+
+- name: Photography | Mockup
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: mockup photography of {prompt},professional presentation, blank, empty,  creative
+    composition, versatile use,  professional lighting, expert styling, high-quality
+    imagery, realistic perspective, accurate representation
+
+- name: Photography | Night
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: night photography of {prompt},nocturnal beauty, city lights, starry skies,
+    celestial wonders, moonlit landscapes, urban glow, capturing the essence of darkness,
+    ethereal atmosphere, dramatic shadows, magical ambiance, long exposure techniques,
+    expert use of light sources
+
+- name: Photography | Pet
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: pet photography of {prompt},adorable portrait, playful moment, expressive
+    eyes, showcasing personality, professional lighting, expert composition, capturing
+    joyful interaction, conveying emotion, creative composition, enhancing pet beauty,
+    pet-friendly environment, storytelling through imagery
+
+- name: Photography | Portrait
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: portrait photography of {prompt},capturing emotion, personality, flattering
+    lighting, professional, engaging, compelling composition
+
+- name: Photography | Portrait > Cinematic
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: Cinematic portrait photography of {prompt},capture subject in a way that resembles
+    a still frame from a movie, cinematic lighting, story, narrative quality, drawing
+    viewers into the scene and evoking a sense of cinematic immersion, capturing emotion,
+    professional, engaging, compelling composition
+
+- name: Photography | Portrait > Closeup
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: closeup portrait photography of {prompt},beautiful eyes, capturing emotion,
+    personality, flattering lighting, professional, engaging, compelling composition
+
+- name: Photography | Portrait > Fantasy
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: fantasy portrait photography of {prompt},beautiful eyes, ethereal beauty,
+    magical atmosphere, whimsical element, enchanting composition, mystical storytelling,
+    professional lighting, imaginative concept, creative styling, otherworldly aesthetic,
+    fantasy romance, surreal visual, enchanting character, captivating narrative,
+    intricate detail, vibrant color, fantastical landscape
+
+- name: Photography | Product
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: product photography of {prompt},crisp details, clean composition, attention
+    to detail, professional lighting, precise focus, appealing aesthetics, capturing
+    textures, high-quality imagery, commercial appeal, creative presentation
+
+- name: Photography | Reflection
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: reflection photography of {prompt},mirror-like surfaces, symmetry, visual
+    echoes, capturing dual realities, distorted perspectives, ethereal beauty, introspective
+    imagery, mesmerizing patterns, reflecting mood and emotion, creating visual depth,
+    playing with perception
+
+- name: Photography | Sport
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: sport photography of {prompt},action-packed moment, dynamic, intense competition,
+    thrilling movement, showcasing skill, conveying energy, adrenaline-fueled visuals,
+    immersive experience, storytelling through action, dramatic composition, showcasing
+    passion, capturing decisive moments, vibrant colors, dynamic composition, powerful
+    imagery, engaging perspective
+
+- name: Photography | Still Life
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: still life photography of {prompt},capturing tranquility, timeless beauty,
+    meticulous arrangement, exquisite detail, professional lighting, expert composition,
+    evocative mood, storytelling through objects, artistic interpretation, creative
+    expression, showcasing textures, intricate patterns, enhancing atmosphere, conveying
+    emotions, masterful technique, immersive experience
+
+- name: Photography | Surreal
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: surreal photography of {prompt},dreamlike imagery, subconscious exploration,
+    bending reality, imaginative narratives, juxtaposing elements, evoking wonder
+    and awe, transcending boundaries, challenging perceptions, fantastical landscapes,
+    otherworldly atmospheres
+
+- name: Photography | Time-lapse
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: time-lapse photography of {prompt},dynamic motion, fluid transition, changing
+    landscape, evolving scene, captivating visual storytelling, accelerated time
+
+- name: Photography | Underwater
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: underwater photography of {prompt},otherworldly landscape, unique perspective,
+    ethereal lighting, dynamic composition, captivating underwater scene, immersive,
+    serene, expert lighting technique, breathtaking moment captured
+
+- name: Photography | Vintage
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: vintage photography of {prompt},nostalgic charm, timeless appeal, old-world
+    aesthetics, classic elegance, warm tones, soft focus, aged textures, evoking nostalgia,
+    historical ambiance, storytelling through imagery, vintage atmosphere, timeless
+    compositions, authentic vintage look, professional technique
+
+- name: Photography | Wildlife
+  negative_prompt: bad anatomy, comics, cropped, cross-eyed, worst quality, low quality,
+    painting, 3D render, drawing, crayon, sketch, graphite, impressionist, cartoon,
+    anime, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts,
+    airbrushed, semi-realistic, CGI, render, Blender, digital art, manga, amateur,
+    mutilated, distorted
+  prompt: wildlife photography of {prompt},capturing nature's beauty, breathtaking landscapes,
+    immersive experience, storytelling through imagery, showcasing wildlife behavior,
+    sharp details, evocative composition, unique perspective
+
