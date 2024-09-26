@@ -1,5 +1,5 @@
-from pathlib import Path
 import folder_paths
+from pathlib import Path
 import os
 import torch
 import numpy as np
@@ -8,9 +8,11 @@ import torchvision.transforms.v2 as T
 
 import node_helpers
 from PIL import Image, ImageSequence, ImageOps
+
 from .metadata.metadata_extractor import get_prompt
 from .metadata.file_handeler import FileHandler
 from .metadata.overlay import add_overlay_bar, img_to_tensor, add_underlay_bar
+from .metadata.prompter import read_replace_and_combine, styles, templates
 
 
 class IToolsLoadImagePlus:
@@ -29,7 +31,6 @@ class IToolsLoadImagePlus:
     FUNCTION = "load_image"
     DESCRIPTION = ("An enhancement of the original ComfyUI ImageLoader node. It attempts to return the possible prompt "
                    "used to create an image.")
-
 
     def load_image(self, image):
         image_path = folder_paths.get_annotated_filepath(image)
@@ -111,7 +112,6 @@ class IToolsPromptLoader:
     DESCRIPTION = ("Will return a prompt (line number) from txt file at given "
                    "index, note that count start from zero.")
 
-
     def load_file(self, file_path, seed, fallback="Yes"):
         prompt = ""
         prompt_random = ""
@@ -168,6 +168,40 @@ class IToolsPromptSaver:
         return (True,)
 
 
+class IToolsPromptStyler:
+
+    def __init__(self):
+        # self.comfyClass = "iTools Prompt Styler"
+        pass
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "text_positive": ("STRING", {"default": "", "multiline": True}),
+                "text_negative": ("STRING", {"default": "", "multiline": True}),
+                "style_file": ((styles),),
+                "template_name": ((templates),),
+            },
+        }
+
+    @classmethod
+    def VALIDATE_INPUTS(s, template_name):
+        # YOLO, anything goes!
+        return True
+
+    RETURN_TYPES = ('STRING', 'STRING',)
+    RETURN_NAMES = ('positive_prompt', 'negative_prompt',)
+    FUNCTION = 'prompt_styler'
+    CATEGORY = 'iTools'
+    DESCRIPTION = ("Helps you quickly populate your {prompt} using a template name stored in the YAML file.")
+
+    def prompt_styler(self, text_positive, text_negative, template_name, style_file):
+        positive_prompt, negative_prompt = read_replace_and_combine(template_name, text_positive,
+                                                                    text_negative, style_file)
+        return positive_prompt, negative_prompt
+
+
 class IToolsAddOverlay:
     @classmethod
     def INPUT_TYPES(cls):
@@ -187,7 +221,8 @@ class IToolsAddOverlay:
     FUNCTION = "add_text_overlay"
     DESCRIPTION = ("Will add an overlay bottom bar to show a given text, you may change the background color of the "
                    "overlay bar and the font size.")
-    def add_text_overlay(self, image, text, font_size, background_color,overlay_mode):
+
+    def add_text_overlay(self, image, text, font_size, background_color, overlay_mode):
         # Remove the batch dimension and rearrange to [C, H, W]
         tensor = image.squeeze(0).permute(2, 0, 1)
 
@@ -260,7 +295,8 @@ NODE_CLASS_MAPPINGS = {
     "iToolsPromptLoader": IToolsPromptLoader,
     "iToolsPromptSaver": IToolsPromptSaver,
     "iToolsAddOverlay": IToolsAddOverlay,
-    "iToolsLoadImages": IToolsLoadImages
+    "iToolsLoadImages": IToolsLoadImages,
+    "iToolsPromptStyler": IToolsPromptStyler
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -268,6 +304,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsLoadImagePlus": "iTools Load Image Plus",
     "iToolsPromptLoader": "iTools Prompt Loader",
     "iToolsPromptSaver": "iTools Prompt Saver",
-    "iToolsAddOverlay": "iTools Add Text",
-    "iToolsLoadImages": "iTools Load Images"
+    "iToolsAddOverlay": "iTools Add Text Overlay",
+    "iToolsLoadImages": "iTools Load Images",
+    "iToolsPromptStyler": "iTools Prompt Styler 🖌️"
 }

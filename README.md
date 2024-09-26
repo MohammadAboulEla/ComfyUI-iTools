@@ -21,14 +21,24 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 
 [![Watch the video](https://github.com/user-attachments/assets/22af7830-066f-498e-a90f-0513b56fa343)](https://github.com/user-attachments/assets/22af7830-066f-498e-a90f-0513b56fa343)
 
-**# iTools Add Text:** will add an overlay bottom bar to show a given text, you may change the background color of the overlay bar and the font size
+**# iTools Add Text Overlay:** will add an overlay bottom bar to show a given text, you may change the background color of the overlay bar and the font size
 
 `Example 1:` add text overlay
-![iTools Add Text](examples/Screenshot2.jpg)
+![iTools Add Text Overlay](examples/Screenshot2.jpg)
 `Example 2:` add full prompt
-![iTools Add Text](examples/Screenshot4.jpg)
+![iTools Add Text Overlay](examples/Screenshot4.jpg)
 `Example 3:` change background color and font size
-![iTools Add Text](examples/Screenshot3.jpg)
+![iTools Add Text Overlay](examples/Screenshot3.jpg)
+
+**Edit:** iTools Add Text Overlay has been updated and now you can add the text over or under the image
+
+`Example Add text if overlay off:` 
+![iTools Add Text Overlay](examples/overlay_preview.jpg)
 
 **# iTools Load Images:** will return list of images from a given directory with a given limit, for example if the limit is 4 it will return first 4 images in that directory.it will also return the list of these images names.
-![iTools Add Text](examples/Screenshot5.jpg)
+![iTools Add Text Overlay](examples/Screenshot5.jpg)
+
+**# iTools Prompt Styler 🖌️:** Helps you quickly populate your {prompt} using a template name stored in the yaml file.
+it will load all yaml files in the styles folder so you may add your unlimited files there and easily add your own templates.
+
+![iTools Prompt Styler](examples/prompt_styler.jpg)

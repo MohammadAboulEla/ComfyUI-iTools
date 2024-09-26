@@ -21,7 +21,6 @@ def get_image_metadata(image_path) -> (dict, str):
 def fix_workflow(img_info: dict, _type: str):
     if _type == "PNG":
         d = str(img_info["workflow"])
-        print(d)
         d = json.loads(d)
         return d
     elif _type == "WEBP":
@@ -114,8 +113,8 @@ def get_prompt(img, print_workflow=False):
 
 
 if __name__ == '__main__':
-    m = r"D:\LIBRARY\AI_images\output\ComfyUI_09-22-24_0020.webp"
-    print(get_prompt(m))
+    # m = r"D:\LIBRARY\AI_images\output\ComfyUI_09-22-24_0020.webp"
+    # print(get_prompt(m))
     # m = r"D:\LIBRARY\AI_images\output\you may delete this\ComfyUI_temp_czbep_00001_.png"
     # print(get_prompt(m))
     # m = r"D:\LIBRARY\AI_images\output\ComfyUI_09-22-24_0011.webp"
