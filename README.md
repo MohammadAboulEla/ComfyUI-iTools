@@ -1,5 +1,5 @@
 ## iTools
-The iTools are some quality of life nodes, like read a possible prompt used to create an image, save a prompt to file as a new line, read prompts from a multiline file.
+The iTools are some quality of life nodes, like read a possible prompt used to create an image, save a prompt to file as a new line, read prompts from a multiline file. and the newaly amazing prompt styler node that will helps you quickly populate your {prompt} using a template name stored in an easily editable yaml file.
 
 ### Nodes:
 **# iTools Image Loader Plus:** is an enhancement of the original ComfyUI ImageLoader node. It attempts to return the possible prompt used to create an image. If the prompt isn't found directly, this node will search for the prompt within the following supported nodes in the workflow:
@@ -14,6 +14,11 @@ The iTools are some quality of life nodes, like read a possible prompt used to c
 If your prompt is within any of these nodes, you will be able to retrieve it. The `ShowText|pysssss` node is a convenient addition that you can integrate it into any workflow to make sure it will be retrieved by `iTools ImageLoaderPlus`.
 
 ![iTools ImageLoaderPlus](examples/Screenshot1.jpg)
+
+**# iTools Prompt Styler 🖌️:** Helps you quickly populate your {prompt} using a template name stored in the yaml file.
+it will load all yaml files in the styles folder so you may add your unlimited files there and easily add your own templates.
+
+![iTools Prompt Styler](examples/prompt_styler.jpg)
 
 **# iTools Prompt Loader:** will try to load a prompt from a txt file, you need to provide a full path to a .txt file or try use the default prompt.txt one is the examples folder, the node will return the prompt at given index (line number) note that count start from zero.
 
@@ -38,7 +43,3 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 **# iTools Load Images:** will return list of images from a given directory with a given limit, for example if the limit is 4 it will return first 4 images in that directory.it will also return the list of these images names.
 ![iTools Add Text Overlay](examples/Screenshot5.jpg)
 
-**# iTools Prompt Styler 🖌️:** Helps you quickly populate your {prompt} using a template name stored in the yaml file.
-it will load all yaml files in the styles folder so you may add your unlimited files there and easily add your own templates.
-
-![iTools Prompt Styler](examples/prompt_styler.jpg)
