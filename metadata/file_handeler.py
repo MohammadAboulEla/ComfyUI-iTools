@@ -5,7 +5,7 @@ class FileHandler:
 
     def read_line(self, line_index):
         """Read a specific line from the file by its index (0-based)."""
-        with open(self.filename, 'r') as file:
+        with open(self.filename, 'r', encoding='utf-8') as file:
             lines = file.readlines()
             if self.lines == None:
                 self.lines = lines
@@ -24,7 +24,7 @@ class FileHandler:
 
     def load_lines(self):
         """Load all lines from the file into a list."""
-        with open(self.filename, 'r') as file:
+        with open(self.filename, 'r', encoding='utf-8') as file:
             return [line.strip() for line in file.readlines()]
 
     def escape_quotes(self, text):
