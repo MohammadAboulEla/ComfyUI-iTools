@@ -1,7 +1,7 @@
 ## iTools
 The iTools are some quality of life nodes, like read a possible prompt used to create an image, save a prompt to file as a new line, read prompts from a multiline file. and the newaly amazing prompt styler node that will helps you quickly populate your {prompt} using a template name stored in an easily editable yaml file.
 
-![iTools Prompt Styler](examples/iTools_a.webp)
+![iTools Welcome](examples/iTools_a.webp)
 ### Nodes:
 **# iTools Image Loader Plus:** is an enhancement of the original ComfyUI ImageLoader node. It attempts to return the possible prompt used to create an image. If the prompt isn't found directly, this node will search for the prompt within the following supported nodes in the workflow:
 
