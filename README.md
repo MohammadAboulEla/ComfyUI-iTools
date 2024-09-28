@@ -25,8 +25,6 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 `Example:` here are some examples you just use "cute cat" as a prompt and let `iTools Prompt Styler` do the magic
 ![iTools Prompt Styler Extra](examples/Screenshot7.jpg)
 
-[![Watch the video](https://i.vimeocdn.com/video/1931938580-5f9f910778695aa21e10f83af1fbde91b35b1941403a9981f33b8cc20da4d7b8-d)](https://vimeo.com/1013876993)
-
 **# iTools Prompt Loader:** will try to load a prompt from a txt file, you need to provide a full path to a .txt file or try to use the default prompt.txt one is the examples folder, the node will return the prompt at given index (line number) note that count start from zero.
 
 **# iTools Prompt Saver:** will append the given prompt as a new line to the given file, provide a full path to a .txt file or try to use the default prompt.txt one.
