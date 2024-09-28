@@ -12,7 +12,9 @@ from PIL import Image, ImageSequence, ImageOps
 from .metadata.metadata_extractor import get_prompt
 from .metadata.file_handeler import FileHandler
 from .metadata.overlay import add_overlay_bar, img_to_tensor, add_underlay_bar
-from .metadata.prompter import read_replace_and_combine, styles, templates
+from .metadata.shared import styles
+from .metadata.prompter import read_replace_and_combine, templates
+from .metadata.prompter_multi import combine_multi, templates_basic, templates_extra1, templates_extra2, templates_extra3
 
 
 class IToolsLoadImagePlus:
@@ -288,6 +290,59 @@ class IToolsLoadImages:
         return images, images_names
 
 
+class IToolsPromptStylerExtra:
+
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "text_positive": ("STRING", {"default": "", "multiline": True}),
+                "text_negative": ("STRING", {"default": "", "multiline": True}),
+                "base_file": ((styles),{"default": "basic.yaml"}),
+                "base_style": ((templates_basic),),
+                "second_file": ((styles),{"default": "camera.yaml"}),
+                "second_style": ((templates_extra1),),
+                "third_file": ((styles),{"default": "artist.yaml"}),
+                "third_style": ((templates_extra2),),
+                "fourth_file": ((styles),{"default": "mood.yaml"}),
+                "fourth_style": ((templates_extra3),),
+            },
+        }
+
+    @classmethod
+    def VALIDATE_INPUTS(s,
+                        base_style,
+                        second_style,
+                        third_style,
+                        fourth_style):
+        # YOLO, anything goes!
+        return True
+
+    RETURN_TYPES = ('STRING', 'STRING',)
+    RETURN_NAMES = ('positive_prompt', 'negative_prompt',)
+    FUNCTION = 'prompt_styler_extra'
+    CATEGORY = 'iTools'
+    DESCRIPTION = ("Helps you quickly populate your {prompt} using a template name stored in the YAML file.")
+
+    def prompt_styler_extra(self, text_positive, text_negative,
+                            base_file, base_style,
+                            second_file, second_style,
+                            third_file, third_style,
+                            fourth_file, fourth_style,
+                            ):
+
+        positive_prompt, negative_prompt = combine_multi(
+                            text_positive, text_negative,
+                            base_file, base_style,
+                            second_file, second_style,
+                            third_file, third_style,
+                            fourth_file, fourth_style,) # (read_replace_and_combine_multi(template_name, text_positive,text_negative, style_file))
+        return positive_prompt, negative_prompt
+
+
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -296,7 +351,8 @@ NODE_CLASS_MAPPINGS = {
     "iToolsPromptSaver": IToolsPromptSaver,
     "iToolsAddOverlay": IToolsAddOverlay,
     "iToolsLoadImages": IToolsLoadImages,
-    "iToolsPromptStyler": IToolsPromptStyler
+    "iToolsPromptStyler": IToolsPromptStyler,
+    "iToolsPromptStylerExtra": IToolsPromptStylerExtra
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -306,5 +362,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsPromptSaver": "iTools Prompt Saver",
     "iToolsAddOverlay": "iTools Add Text Overlay",
     "iToolsLoadImages": "iTools Load Images",
-    "iToolsPromptStyler": "iTools Prompt Styler 🖌️"
+    "iToolsPromptStyler": "iTools Prompt Styler 🖌️",
+    "iToolsPromptStylerExtra": "iTools Prompt Styler Extra 🖌️🖌️"
 }
