@@ -182,7 +182,7 @@ class IToolsPromptStyler:
             "required": {
                 "text_positive": ("STRING", {"default": "", "multiline": True}),
                 "text_negative": ("STRING", {"default": "", "multiline": True}),
-                "style_file": ((styles),),
+                "style_file": ((styles),{"default": "basic.yaml"}),
                 "template_name": ((templates),),
             },
         }
