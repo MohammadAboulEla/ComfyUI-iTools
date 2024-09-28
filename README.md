@@ -20,9 +20,11 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 ![iTools Prompt Styler](examples/prompt_styler.jpg)
 
 **# iTools Prompt Styler Extra 🖌️🖌️:** Like iTools Prompt Styler, but you can mix up to 4 styles from up to 4 yaml files. check examples folder for basic workflow for this node.
+
 ![iTools Prompt Styler Extra](examples/Screenshot6.jpg)
 
 `Example:` here are some examples you just use "cute cat" as a prompt and let `iTools Prompt Styler` do the magic
+
 ![iTools Prompt Styler Extra](examples/Screenshot7.jpg)
 
 **# iTools Prompt Loader:** will try to load a prompt from a txt file, you need to provide a full path to a .txt file or try to use the default prompt.txt one is the examples folder, the node will return the prompt at given index (line number) note that count start from zero.
