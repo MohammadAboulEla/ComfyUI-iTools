@@ -39,8 +39,7 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 ![iTools Add Text Overlay](examples/Screenshot4.jpg)
 `Example 3:` change background color and font size
 ![iTools Add Text Overlay](examples/Screenshot3.jpg)
-
-**Edit:** iTools Add Text Overlay has been updated and now you can add the text over or under the image
+**Edit:** iTools Add Text Overlay has been updated, and now you can add the text over or under the image
 
 `Example:` Add text if overlay off: 
 ![iTools Add Text Overlay](examples/overlay_preview.jpg)
