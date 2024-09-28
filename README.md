@@ -19,7 +19,7 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 **# iTools Prompt Styler 🖌️:** Helps you quickly populate your {prompt} using a template name stored in a yaml file. I chose yaml over json because it will be easier for the user to read, edit it or to add his own templates, it will load all yaml files in the styles folder, so you may add your unlimited files there and easily add your own templates.
 ![iTools Prompt Styler](examples/prompt_styler.jpg)
 
-**# iTools Prompt Styler Extra 🖌️🖌️:** Like iTools Prompt Styler, but you can mix up to 4 styles from 4 different yaml files. check examples folder for basic workflow for this node.
+**# iTools Prompt Styler Extra 🖌️🖌️:** Like iTools Prompt Styler, but you can mix up to 4 styles from up to 4 yaml files. check examples folder for basic workflow for this node.
 ![iTools Prompt Styler Extra](examples/Screenshot6.jpg)
 
 `Example:` here are some examples you just use "cute cat" as a prompt and let `iTools Prompt Styler` do the magic
