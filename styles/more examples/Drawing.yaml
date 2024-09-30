@@ -1,104 +1,61 @@
 # Ensure that the formatting is kept the same as in this file.
 # Indents in YAML are critical. Ensure proper indentation, as incorrect spacing can cause errors.
-# Best approach is to copy a block of name, negative_prompt and a prompt and then replace thier values
+#
+# Best approach is to copy a block of name, negative_prompt and a prompt and then replace their values
+# Note that your text_positive will be added in this part {prompt}
 
-- name: Drawing | Blue Ballpoint Pen
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: dark blue color ballpoint pen drawing art style of {prompt},expressive dark
-    blue lines, dynamic compositions, professional-grade execution, captures the spontaneity
-    and fluidity of sketching
+- name: none
+  negative_prompt: ''
+  prompt: ''
 
-- name: Drawing | Caricature
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Caricature art style of {prompt},exaggerated features, humorous interpretation,
-    dynamic composition, professional-grade execution, adds humor and personality,
-    captures essence in a playful manner
+- name: Blue Ballpoint Pen
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: dark blue color ballpoint pen drawing of {prompt}, ballpoint drawing art style, expressive dark blue lines, dynamic compositions, professional-grade execution, captures the spontaneity and fluidity of sketching
 
-- name: Drawing | Caricature Extreme
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: caricature art style of {prompt},highly exaggerated features, humorous interpretation,
-    bold and dynamic composition, professional-grade execution, adds humor and personality,
-    captures essence in a exaggerated playful manner
+- name: Caricature
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Caricature drawing of {prompt}, caricature art style, exaggerated features, humorous interpretation, dynamic composition, professional-grade execution, adds humor and personality, captures essence in a playful manner
 
-- name: Drawing | Charcoal
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: charcoal drawing style of {prompt},dramatic contrast, expressive strokes,
-    rich textures, dynamic composition, professional-grade finish, classic aesthetic
+- name: Caricature Extreme
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: caricature drawing of {prompt}, extreme caricature art style, highly exaggerated features, humorous interpretation, bold and dynamic composition, professional-grade execution, adds humor and personality, captures essence in a exaggerated playful manner
 
-- name: Drawing | Colored Pencil
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Colored pencil drawing art style of {prompt},vibrant colors, delicate shading,
-    professional-grade execution, captures the richness and depth of traditional drawing
-    techniques
+- name: Charcoal
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: charcoal drawing style of {prompt}, dramatic contrast, expressive strokes, rich textures, dynamic composition, professional-grade finish, classic aesthetic
 
-- name: Drawing | Graphite
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: graphite drawing art style of {prompt},subtle tones, delicate shading, precise
-    detailing, fine textures, expressive lines, intricate compositions, timeless elegance,
-    professional-grade finish, immersive depth, classic aesthetic
+- name: Colored Pencil
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Colored pencil drawing art style of {prompt}, vibrant colors, delicate shading, professional-grade execution, captures the richness and depth of traditional drawing techniques
 
-- name: Drawing | Ink
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Ink drawing art style of {prompt},bold lines, expressive strokes, high contrast,
-    intricate details, dynamic compositions, versatile medium, professional-grade
-    finish, classic aesthetic, adds depth and texture, timeless elegance
+- name: Graphite
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: graphite drawing art style of {prompt}, subtle tones, delicate shading, precise detailing, fine textures, expressive lines, intricate compositions, timeless elegance, professional-grade finish, immersive depth, classic aesthetic
 
-- name: Drawing | Pastel
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: pastel drawing art style of {prompt},pastel colors, delicate shading, dynamic
-    composition, soft and velvety pastel textures, amazing pastel drawing
+- name: Ink
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Ink drawing art style of {prompt}, bold lines, expressive strokes, high contrast, intricate details, dynamic compositions, versatile medium, professional-grade finish, classic aesthetic, adds depth and texture, timeless elegance
 
-- name: Drawing | Pen
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: pen drawing art style of {prompt},precise lines, intricate details, high contrast,
-    dynamic compositions, versatile medium, professional-grade finish, timeless elegance,
-    creates bold and expressive strokes
+- name: Pastel
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: pastel drawing art style of {prompt}, pastel colors, delicate shading, dynamic composition, soft and velvety pastel textures, amazing pastel drawing
 
-- name: Drawing | Pencil
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Pencil drawing art style of {prompt},delicate shading, precise lines, professional-grade
-    execution, captures the subtlety and texture of graphite
+- name: Pen
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: pen drawing art style of {prompt}, precise lines, intricate details, high contrast, dynamic compositions, versatile medium, professional-grade finish, timeless elegance, creates bold and expressive strokes
 
-- name: Drawing | Scratchboard
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Scratchboard drawing art style of {prompt},intricate details, dramatic contrast,
-    professional-grade execution, captures the tactile quality and depth of etching
+- name: Pencil
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Pencil drawing art style of {prompt}, delicate shading, precise lines, professional-grade execution, captures the subtlety and texture of graphite
 
-- name: Drawing | Technical
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Technical drawing art style of {prompt},precise and detailed, emphasizes accuracy
-    and clarity, communicates complex ideas visually
+- name: Scratchboard
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Scratchboard drawing art style of {prompt}, intricate details, dramatic contrast, professional-grade execution, captures the tactile quality and depth of etching
 
-- name: Drawing | Zentangle
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Zentangle drawing art style of {prompt},clean, minimalist, meditative and
-    relaxing, uses repetitive patterns and structured designs to create intricate
-    and abstract artworks, precise lines, professional-grade execution, contrast,
-    black and white
+- name: Technical
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Technical drawing art style of {prompt}, precise and detailed, emphasizes accuracy and clarity, communicates complex ideas visually
 
+- name: Zentangle
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Zentangle drawing art style of {prompt}, clean, minimalist, meditative and relaxing, uses repetitive patterns and structured designs to create intricate and abstract artworks, precise lines, professional-grade execution, contrast, black and white

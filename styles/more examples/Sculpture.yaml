@@ -1,0 +1,85 @@
+# Ensure that the formatting is kept the same as in this file.
+# Indents in YAML are critical. Ensure proper indentation, as incorrect spacing can cause errors.
+#
+# Best approach is to copy a block of name, negative_prompt and a prompt and then replace their values
+# Note that your text_positive will be added in this part {prompt}
+
+- name: none
+  negative_prompt: ''
+  prompt: ''
+
+- name: Sculpture
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifact
+  prompt: Sculpture style of {prompt}, three-dimensional art form, allows for the creation of expressive and tactile works using various materials, embodies creativity and artistic vision
+
+- name: Abstract Sculpture
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Abstract sculpture {prompt}, abstract scultpure art style, emphasizes form, shape, and texture over realistic representation, explores the relationships between volume, space, and material, often uses geometric or organic forms, avant-garde and innovative design, dynamic and expressive, minimal or complex, allows for open interpretation and emotional impact
+  
+- name: Alebrije Sculpture
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Alebrije sculpture style of {prompt}, vibrant and fantastical Mexican folk art sculpture, intricate and whimsical figure, handcrafted, celebrates creativity and imagination
+
+- name: Bas-relief
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Bas-relief art style of {prompt}, sculptural technique where figures or designs are raised slightly from the background, creates depth and texture
+
+- name: Bronze Sculpture
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Bronze sculpture craft style of {prompt}, utilizes bronze as the primary material for creating three-dimensional artworks, known for its durability and timeless beauty, allows for intricate detailing and expressive forms
+
+- name: Clay Sculpture
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Clay sculpture craft style of {prompt}, utilizes clay as the primary material for creating three-dimensional artworks, allows for versatile shaping and modeling technique
+
+- name: Fantasy Sculpture
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Fantasy sculpture of {prompt}, fantasy sculpture art style, brings mythical and fantastical creatures or worlds to life, highly imaginative and detailed, often features magical beings, enchanted landscapes, or legendary figures, intricate and expressive design, evokes a sense of wonder and adventure, captures the essence of otherworldly beauty, dynamic and ethereal forms
+
+- name: Haniwa
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Haniwa craft style of {prompt}, ancient Japanese burial sculptures, simplistic and stylized figure, cultural and historical significance, preserves traditional craftsmanship and artistry
+
+- name: Ice Sculpture
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Ice sculpture {prompt}, ice sculpture art style, made of ice, temporary and ephemeral art form using ice, intricate detailing and craftsmanship, dramatic lighting and clear, glass-like appearance
+
+- name: Jade Sculpture
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Jade sculpture craft style of {prompt}, utilizes jade as the primary material for creating three-dimensional artworks, esteemed for its beauty and cultural significance, allows for intricate carving and sculpting techniques
+
+- name: Marble Sculpture
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Marble sculpture craft style of {prompt}, utilizes marble as the primary material for creating three-dimensional artworks, renowned for its elegance and beauty, allows for intricate detailing and smooth finishes, timeless and enduring
+
+- name: Netsuke
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Netsuke craft style of {prompt},traditional Japanese miniature sculpture, intricately carved and detailed, functional and decorative, reflects Japanese culture and craftsmanship
+
+- name: Olmec
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Olmec craft style of {prompt}, ancient Mesoamerican art tradition, iconic stone sculpture and figurine, rich cultural heritage, significant influence on subsequent civilizations
+
+- name: Gold Sculpture
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Gold sculpture craft style of {prompt}, utilizes gold as the primary material for creating three-dimensional artworks, embodies luxury and opulence, allows for intricate detailing and fine craftsmanship
+
+- name: Sand Scultpure
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Sand sculpture art style of {prompt}, temporary and ephemeral art form created by shaping and carving sand, showcases creativity and skill
+
+- name: Stone Sculpture
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Stone sculpture craft style of {prompt},utilizes stone as the primary material for creating three-dimensional artworks, allows for intricate carving and sculpting techniques, durable and long-lasting, embodies strength and solidity
+
+- name: Terracotta Sculpture
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Terracotta sculpture of {prompt}, Terracotta sculpture craft style, traditional clay-based material, earthy and warm tones, versatile and used across cultures, often for architectural or decorative works, allows for textured and organic forms traditional clay-based material
+
+- name: Wooden Sculpture
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Wooden sculpture craft style of {prompt},utilizes wood as the primary material for creating three-dimensional artworks, showcases the natural beauty and texture of wood, allows for intricate detailing and expressive forms
+
+- name: Wood Carving
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Wood carving art style of {prompt},sculptural technique that involves carving wood to create three-dimensional forms, showcases craftsmanship and precision

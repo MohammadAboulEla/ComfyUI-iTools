@@ -1,326 +1,146 @@
 # Ensure that the formatting is kept the same as in this file.
 # Indents in YAML are critical. Ensure proper indentation, as incorrect spacing can cause errors.
-# Best approach is to copy a block of name, negative_prompt and a prompt and then replace thier values
+#
+# Best approach is to copy a block of name, negative_prompt and a prompt and then replace their values
+# Note that your text_positive will be added in this part {prompt}
 
-- name: Craft | Ceramic
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Ceramic craft style of {prompt},versatile and durable, pottery and ceramic
-    artwork, showcases creativity and craftsmanship
+- name: none
+  negative_prompt: ''
+  prompt: ''
 
-- name: Craft | Ceramic > Cibulak
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Cibulak porcelain art style of {prompt},delicate and intricately detailed
-    porcelain creations, traditional Kazakh craftsmanship, exquisite hand-painted
-    designs, cultural heritage preservation
+- name: Ceramic
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Ceramic craft style of {prompt}, versatile and durable, pottery and ceramic artwork, showcases creativity and craftsmanship
 
-- name: Craft | Ceramic > Glass
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Ceramic glass craft style of {prompt},combines ceramic and glass materials
-    to create unique and innovative artwork, offers versatility in texture and transparency,
-    allows for experimentation with light and color
+- name: Ceramic > Cibulak
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Cibulak porcelain art style of {prompt}, delicate and intricately detailed porcelain creations, traditional Kazakh craftsmanship, exquisite hand-painted designs, cultural heritage preservation
 
-- name: Craft | Ceramic > Moche
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Moche craft style of {prompt},ancient Peruvian civilization known for its
-    intricate ceramic vessels and figurines, rich cultural and artistic heritage,
-    showcases advanced craftsmanship and artistic skill
+- name: Ceramic > Glass
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Ceramic glass craft style of {prompt}, combines ceramic and glass materials to create unique and innovative artwork, offers versatility in texture and transparency, allows for experimentation with light and color
 
-- name: Craft | Ceramic > Porcelain
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Ceramic porcelain craft style of {prompt},utilizes porcelain clay to create
-    delicate and translucent artworks, smooth texture and white color, allows for
-    intricate detailing and precise forms
+- name: Ceramic > Moche
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Moche craft style of {prompt}, ancient Peruvian civilization known for its intricate ceramic vessels and figurines, rich cultural and artistic heritage, showcases advanced craftsmanship and artistic skill
 
-- name: Craft | Crochet
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Crochet craft style of {prompt},versatile and creative, yarn
+- name: Ceramic > Porcelain
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Ceramic porcelain craft style of {prompt}, utilizes porcelain clay to create delicate and translucent artworks, smooth texture and white color, allows for intricate detailing and precise forms
 
-- name: Craft | Crochet > Amigurumi
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Amigurumi crochet style of {prompt},Japanese art, cute and whimsical designs,
-    fosters creativity and handcrafting skills
+- name: Crochet
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Crochet craft style of {prompt}, versatile and creative, yarn
 
-- name: Craft | Cross-stitching
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Cross-stitching art style of {prompt},traditional and timeless craft, precise
-    and meticulous stitching technique, intricate and decorative piece
+- name: Crochet > Amigurumi
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Amigurumi crochet style of {prompt}, Japanese crochet art, cute and whimsical designs, fosters creativity and handcrafting skills
 
-- name: Craft | Embossed
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Embossed art style of {prompt},raised and textured surfaces, adds depth and
-    dimension to artwork, tactile and interactive
+- name: Cross-stitching
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Cross-stitching art style of {prompt}, traditional and timeless craft, precise and meticulous stitching technique, intricate and decorative piece
 
-- name: Craft | Embroidery
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Embroidery art style of {prompt},decorative designs on fabric, intricate stitching
-    techniques, adds texture and dimension to artwork
+- name: Embossed
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Embossed art style of {prompt}, raised and textured surfaces, adds depth and dimension to artwork, tactile and interactive
 
-- name: Craft | Felt
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Felt art style of {prompt},tactile and textural, intricate detailing and layering
+- name: Embroidery
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Embroidery art style of {prompt},decorative designs on fabric, intricate stitching techniques, adds texture and dimension to artwork
 
-- name: Craft | Gobelin Tapestry
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Gobelin tapestry art style of {prompt},intricate woven designs, rich colors
-    and textures
+- name: Felt
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Felt art style of {prompt}, tactile and textural, intricate detailing and layering
 
-- name: Craft | Kirigami
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Kirigami art style of {prompt},combines paper cutting with origami folding
-    techniques, creates intricate and dynamic paper sculptures, encourages creativity
-    and precision
+- name: Gobelin Tapestry
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Gobelin tapestry art style of {prompt}, intricate woven designs, rich colors and textures
 
-- name: Craft | Knitting Art
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Knitting art style of {prompt},fabric and patterns, intricate designs and
-    textures
+- name: Kirigami
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Kirigami art style of {prompt}, combines paper cutting with origami folding techniques, creates intricate and dynamic paper sculptures, encourages creativity and precision
 
-- name: Craft | Lapidary
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Lapidary art style of {prompt},intricate and precise craftsmanship in cutting
-    and polishing gemstones, creates dazzling and unique pieces of jewelry and sculpture,
-    showcases the natural beauty of mineral
+- name: Knitting Art
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Knitting art style of {prompt}, fabric and patterns, intricate designs and textures
 
-- name: Craft | Laser Engraving Wood
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Laser engraving art style of {prompt},precise and detailed engraving on plywood,
-    allows for intricate designs and patterns, modern and versatile technique, flat,
-    wood engraving art
+- name: Lapidary
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Lapidary art style of {prompt}, intricate and precise craftsmanship in cutting and polishing gemstones, creates dazzling and unique pieces of jewelry and sculpture, showcases the natural beauty of mineral
 
-- name: Craft | Leatherworking
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Leatherworking art style of {prompt},craftsmanship of creating designs and
-    patterns on leather, carving, stamping, and dyeing techniques
+- name: Laser Engraving Wood
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Laser engraving art style of {prompt}, precise and detailed engraving on plywood, allows for intricate designs and patterns, modern and versatile technique, flat, wood engraving art
 
-- name: Craft | Macrame
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Macrame art style of {prompt},uses knotting techniques to create textiles
-    or decorative items, versatile and tactile craft, allows for intricate patterns
-    and designs
+- name: Leatherworking
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Leatherworking art style of {prompt}, craftsmanship of creating designs and patterns on leather, carving, stamping, and dyeing techniques
 
-- name: Craft | Marquetry
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Marquetry art style of {prompt},intricate wood inlay technique, creates decorative
-    patterns and images using veneers of different woods, showcases craftsmanship
-    and attention to detail
+- name: Macrame
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Macrame art style of {prompt}, uses knotting techniques to create textiles or decorative items, versatile and tactile craft, allows for intricate patterns and designs
 
-- name: Craft | Metalwork
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Metalwork art style of {prompt},manipulation of metal to create sculptures,
-    showcases craftsmanship and technical skill, intricate and durable designs
+- name: Marquetry
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Marquetry art style of {prompt}, intricate wood inlay technique, creates decorative patterns and images using veneers of different woods, showcases craftsmanship and attention to detail
 
-- name: Craft | Mosaic
-  negative_prompt: worst quality, blurry, normal quality, signature, watermark, ugly,
-    off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts,
-    low details, bad photo, bad photography, bad art
-  prompt: mosaic art style of {prompt},versatile and decorative, uses small pieces of
-    tile, adds color and texture, glossy, sharp
+- name: Metalwork
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Metalwork art style of {prompt}, manipulation of metal to create sculptures, showcases craftsmanship and technical skill, intricate and durable designs
 
-- name: Craft | Mosaic > Roman
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Roman mosaic art style of {prompt},intricate and colorful mosaic designs,
-    depict scenes from mythology, daily life, and nature, showcases superb craftsmanship
-    and attention to detail, cultural and historical significance
+- name: Mosaic
+  negative_prompt: worst quality, blurry, normal quality, signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts, low details, bad photo, bad photography, bad art
+  prompt: mosaic art style of {prompt}, versatile and decorative, uses small pieces of tile, adds color and texture, glossy, sharp
 
-- name: Craft | Needlepoint
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Needlepoint art style of {prompt},needlepoint intricate and detailed design
-    created through stitching, rich texture and depth, intricate patterns and color
-    variations, fosters creativity and craftsmanship
+- name: Mosaic > Roman
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Roman mosaic art style of {prompt}, intricate and colorful mosaic designs, depict scenes from mythology, daily life, and nature, showcases superb craftsmanship and attention to detail, cultural and historical significance
 
-- name: Craft | Origami
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Origami art style of {prompt},traditional Japanese paper folding technique,
-    creates intricate sculptures and designs from  paper
+- name: Needlepoint
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Needlepoint art style of {prompt}, needlepoint intricate and detailed design created through stitching, rich texture and depth, intricate patterns and color variations, fosters creativity and craftsmanship
 
-- name: Craft | Paper Cut
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: minimalist Paper cut craft style of {prompt},designs cut from paper, allows
-    for detailed and delicate artwork
+- name: Origami
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Origami art style of {prompt}, traditional Japanese paper folding technique, creates intricate sculptures and designs from  paper
 
-- name: Craft | Plasticine
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Plasticine art style of {prompt},malleable and colorful modeling material,
-    ideal for sculpting and creating 3D artwork
+- name: Paper Cut
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: minimalist Paper cut craft style of {prompt}, designs cut from paper, allows for detailed and delicate artwork
 
-- name: Craft | Pyrography
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Pyrography art style of {prompt},uses heat to burn designs onto wood, creates
-    intricate and permanent markings, showcases craftsmanship and attention to detail
+- name: Plasticine
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Plasticine art style of {prompt}, malleable and colorful modeling material, ideal for sculpting and creating 3D artwork
 
-- name: Craft | Quilted
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Quilted art style of {prompt},combines fabric and stitching to create intricate
-    designs and patterns, reflects cultural traditions and personal stories, tactile
-    and cozy, showcases craftsmanship and creativity
+- name: Pyrography
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Pyrography art style of {prompt},uses heat to burn designs onto wood, creates intricate and permanent markings, showcases craftsmanship and attention to detail
 
-- name: Craft | Scrapbooking
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Scrapbooking art style of {prompt},creative arrangement of photographs, memorabilia,
-    and decorative elements in albums or displays, preserves memories and tells stories
+- name: Quilted
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Quilted art style of {prompt},combines fabric and stitching to create intricate designs and patterns, reflects cultural traditions and personal stories, tactile and cozy, showcases craftsmanship and creativity
 
-- name: Craft | Sculpture
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Sculpture craft style of {prompt},three-dimensional art form, allows for the
-    creation of expressive and tactile works using various materials , embodies creativity
-    and artistic vision
+- name: Scrapbooking
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Scrapbooking art style of {prompt},creative arrangement of photographs, memorabilia, and decorative elements in albums or displays, preserves memories and tells stories
 
-- name: Craft | Sculpture > Bronze
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Bronze sculpture craft style of {prompt},utilizes bronze as the primary material
-    for creating three-dimensional artworks, known for its durability and timeless
-    beauty, allows for intricate detailing and expressive forms
+- name: Shadowbox > Paper
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: 3D papercut shadowbox art style of {prompt},intricate paper cutting technique to create layered scenes or designs, plays with light and shadow, adds depth and dimensionality to artwork, depth, silhouette
 
-- name: Craft | Sculpture > Alebrije
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Alebrije sculpture style of {prompt},vibrant and fantastical Mexican folk
-    art, intricate and whimsical animal figures, handcrafted, celebrates creativity
-    and imagination
+- name: Shadowbox > Wood
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: cat of {prompt},3D wood shadowbox art style, layers of wood cut and assembled to create dimensional scenes or designs, natural textures and tones, adds warmth and depth to artwork, depth, silhouette
 
-- name: Craft | Sculpture > Bas-relief
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Bas-relief art style of {prompt},sculptural technique where figures or designs
-    are raised slightly from the background, creates depth and texture
+- name: 3D Layered Plywood Wall Art
+  negative_prompt: painting, drawing, photo, 2D, flat, high detail, blurry, noisy, disfigured, complex, intricate, signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: 3D plywood laser cut of {prompt}, symmetrical, 3D layered wood wall art style, stacked layers made from plywood, laser cut, on white painted wall, stacked, 3d layered, minimalist, layered, dimensional, depth, silhouette, shadow, handmade, high contrast
 
-- name: Craft | Sculpture > Clay
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Clay sculpture craft style of {prompt},utilizes clay as the primary material
-    for creating three-dimensional artworks, allows for versatile shaping and modeling
-    technique
+- name: Stained Glass
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts, 3d
+  prompt: Stained glass art style of {prompt}, vitrail, isolated on solid color background, vibrant colors, intricate patterns, luminous effects when hit by sunlight, traditional craftsmanship, flat
 
-- name: Craft | Sculpture > Haniwa
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Haniwa craft style of {prompt},ancient Japanese burial sculptures, simplistic
-    and stylized figure, cultural and historical significance, preserves traditional
-    craftsmanship and artistry
-
-- name: Craft | Sculpture > Jade
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Jade sculpture craft style of {prompt},utilizes jade as the primary material
-    for creating three-dimensional artworks, esteemed for its beauty and cultural
-    significance, allows for intricate carving and sculpting techniques
-
-- name: Craft | Sculpture > Marble
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Marble sculpture craft style of {prompt},utilizes marble as the primary material
-    for creating three-dimensional artworks, renowned for its elegance and beauty,
-    allows for intricate detailing and smooth finishes, timeless and enduring
-
-- name: Craft | Sculpture > Netsuke
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Netsuke craft style of {prompt},traditional Japanese miniature sculpture,
-    intricately carved and detailed, functional and decorative, reflects Japanese
-    culture and craftsmanship
-
-- name: Craft | Sculpture > Olmec
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Olmec craft style of {prompt},ancient Mesoamerican art tradition, iconic stone
-    sculpture and figurine, rich cultural heritage, significant influence on subsequent
-    civilizations
-
-- name: Craft | Sculpture > Gold
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Gold sculpture craft style of {prompt},utilizes gold as the primary material
-    for creating three-dimensional artworks, embodies luxury and opulence, allows
-    for intricate detailing and fine craftsmanship
-
-- name: Craft | Sculpture > Sand
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Sand sculpture art style of {prompt},temporary and ephemeral art form created
-    by shaping and carving sand, showcases creativity and skill
-
-- name: Craft | Sculpture > Stone
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Stone sculpture craft style of {prompt},utilizes stone as the primary material
-    for creating three-dimensional artworks, allows for intricate carving and sculpting
-    techniques, durable and long-lasting, embodies strength and solidity
-
-- name: Craft | Sculpture > Wood
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Wooden sculpture craft style of {prompt},utilizes wood as the primary material
-    for creating three-dimensional artworks, showcases the natural beauty and texture
-    of wood, allows for intricate detailing and expressive forms
-
-- name: Craft | Sculpture > Wood Carving
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Wood carving art style of {prompt},sculptural technique that involves carving
-    wood to create three-dimensional forms, showcases craftsmanship and precision
-
-- name: Craft | Shadowbox > Paper
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: 3D papercut shadowbox art style of {prompt},intricate paper cutting technique
-    to create layered scenes or designs, plays with light and shadow, adds depth and
-    dimensionality to artwork, depth, silhouette
-
-- name: Craft | Shadowbox > Wood
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: cat of {prompt},3D wood shadowbox art style, layers of wood cut and assembled
-    to create dimensional scenes or designs, natural textures and tones, adds warmth
-    and depth to artwork, depth, silhouette
-
-- name: Craft | 3D Layered Plywood Wall Art
-  negative_prompt: painting, drawing, photo, 2D, flat, high detail, blurry, noisy,
-    disfigured, complex, intricate, signature, watermark, ugly, off-center, deformed,
-    cropped, worst quality, low quality, lowres, JPEG artifacts
-  prompt: 3D plywood laser cut of {prompt},symmetrical, 3D layered wood wall art style,  stacked
-    layers made from plywood, laser cut, on white painted wall, stacked, 3d layered,
-    minimalist,  layered, dimensional, depth, silhouette, shadow, handmade, high contrast
-
-- name: Craft | Stained Glass
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts, 3d
-  prompt: Stained glass art style of {prompt},vitrail, isolated on solid color background,
-    vibrant colors, intricate patterns, luminous effects when hit by sunlight, traditional
-    craftsmanship, flat
-
-- name: Craft | Tapestry
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts, 3d
-  prompt: Tapestry art style of {prompt},woven textile technique, intricate designs
-    and patterns
+- name: Tapestry
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts, 3d
+  prompt: Tapestry art style of {prompt}, woven textile technique, intricate designs and patterns
 

@@ -1,138 +1,81 @@
 # Ensure that the formatting is kept the same as in this file.
 # Indents in YAML are critical. Ensure proper indentation, as incorrect spacing can cause errors.
-# Best approach is to copy a block of name, negative_prompt and a prompt and then replace thier values
+#
+# Best approach is to copy a block of name, negative_prompt and a prompt and then replace their values
+# Note that your text_positive will be added in this part {prompt}
 
-- name: Fashion | Beachwear
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Beachwear fashion style of {prompt},designed for leisure activities and relaxation,
-    features lightweight and breezy clothing, reflects a carefree and laid-back attitude
+- name: none
+  negative_prompt: ''
+  prompt: ''
 
-- name: Fashion | Boho
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Boho fashion style of {prompt},inspired by bohemian and hippie aesthetics,
-    characterized by free-spirited and eclectic clothing choices, features flowing
-    fabrics, floral prints, and ethnic-inspired details, promotes individuality and
-    self-expression, embraces a laid-back and carefree attitude
+- name: Beachwear
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Beachwear fashion style of {prompt},designed for leisure activities and relaxation, features lightweight and breezy clothing, reflects a carefree and laid-back attitude
 
-- name: Fashion | Cosplay
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Cosplay fashion style of {prompt},allows individuals to embody their favorite
-    fictional characters, promotes creativity and craftsmanship, features elaborate
-    costumes and accessories, celebrates diverse interests and fandoms
+- name: Boho
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Boho fashion style of {prompt},inspired by bohemian and hippie aesthetics, characterized by free-spirited and eclectic clothing choices, features flowing fabrics, floral prints, and ethnic-inspired details, promotes individuality and self-expression, embraces a laid-back and carefree attitude
 
-- name: Fashion | Cyberpunk
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Cyberpunk fashion style of {prompt},inspired by futuristic dystopian settings,
-    features high-tech and futuristic clothing, incorporates elements of technology
-    and urban culture, promotes a bold and avant-garde aesthetic
+- name: Cosplay
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Cosplay fashion style of {prompt},allows individuals to embody their favorite fictional characters, promotes creativity and craftsmanship, features elaborate costumes and accessories, celebrates diverse interests and fandoms
 
-- name: Fashion | Emo Fashion
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Emo fashion style of {prompt},characterized by dark colors, layered clothing,
-    and edgy accessories, allows individuals to express emotions and individuality,
-    often incorporates elements of punk and gothic styles, promotes self-expression
-    and authenticity
+- name: Cyberpunk
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Cyberpunk fashion style of {prompt},inspired by futuristic dystopian settings, features high-tech and futuristic clothing, incorporates elements of technology and urban culture, promotes a bold and avant-garde aesthetic
 
-- name: Fashion | Glamour
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Glamour fashion style of {prompt},epitomizes sophistication and elegance,
-    features luxurious fabrics like silk and satin, embellishments, promotes a polished
-    and glamorous look, opulence and refinement
+- name: Emo Fashion
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Emo fashion style of {prompt},characterized by dark colors, layered clothing, and edgy accessories, allows individuals to express emotions and individuality, often incorporates elements of punk and gothic styles, promotes self-expression and authenticity
 
-- name: Fashion | Goth
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Goth fashion style of {prompt},characterized by dark and dramatic clothing
-    choices, often includes black clothing, lace, leather, and Victorian-inspired
-    elements, promotes a sense of mystery and theatricality, celebrates beauty in
-    the macabre, encourages self-expression and embracing the unconventional
+- name: Glamour
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Glamour fashion style of {prompt},epitomizes sophistication and elegance, features luxurious fabrics like silk and satin, embellishments, promotes a polished and glamorous look, opulence and refinement
 
-- name: Fashion | Metalhead
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Metalhead fashion style of {prompt},inspired by heavy metal music culture,
-    features black clothing, leather jackets, band t-shirts, and metal accessories,
-    promotes individuality and rebellion, celebrates a love for music and expression
-    through clothing
+- name: Goth
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Goth fashion style of {prompt},characterized by dark and dramatic clothing choices, often includes black clothing, lace, leather, and Victorian-inspired elements, promotes a sense of mystery and theatricality, celebrates beauty in the macabre, encourages self-expression and embracing the unconventional
 
-- name: Fashion | Normcore
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Normcore fashion style of {prompt},embraces simplicity and everyday clothing
-    items, focuses on comfort and practicality, promotes a minimalist and unpretentious
-    aesthetic, encourages mixing and matching basic wardrobe staples, celebrates understated
-    elegance and timeless style
+- name: Metalhead
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Metalhead fashion style of {prompt},inspired by heavy metal music culture, features black clothing, leather jackets, band t-shirts, and metal accessories, promotes individuality and rebellion, celebrates a love for music and expression through clothing
 
-- name: Fashion | Preppy
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Preppy fashion style of {prompt},characterized by classic and timeless clothing
-    choices, features tailored silhouettes, vibrant colors, and traditional patterns
-    like plaid and stripes, promotes a polished and sophisticated look, reflects a
-    sense of privilege and tradition associated with elite education
+- name: Normcore
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Normcore fashion style of {prompt},embraces simplicity and everyday clothing items, focuses on comfort and practicality, promotes a minimalist and unpretentious aesthetic, encourages mixing and matching basic wardrobe staples, celebrates understated elegance and timeless style
 
-- name: Fashion | Psychobilly
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Psychobilly fashion style of {prompt},combines elements of rockabilly, punk,
-    and retro influences, characterized by bold prints, vintage-inspired clothing,
-    and edgy accessories, promotes a rebellious and retro aesthetic, encourages individuality
-    and creativity
+- name: Preppy
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Preppy fashion style of {prompt},characterized by classic and timeless clothing choices, features tailored silhouettes, vibrant colors, and traditional patterns like plaid and stripes, promotes a polished and sophisticated look, reflects a sense of privilege and tradition associated with elite education
 
-- name: Fashion | Rave
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Rave fashion style of {prompt},vibrant and colorful clothing choices, featuring
-    neon colors, bold patterns, and futuristic designs, encourages self-expression
-    and creativity, incorporates elements of dance culture and electronic music, promotes
-    a sense of community and celebration
+- name: Psychobilly
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Psychobilly fashion style of {prompt},combines elements of rockabilly, punk, and retro influences, characterized by bold prints, vintage-inspired clothing, and edgy accessories, promotes a rebellious and retro aesthetic, encourages individuality and creativity
 
-- name: Fashion | Sci-Fi
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Sci-Fi Inspired fashion style of {prompt},draws inspiration from science fiction
-    movies, and futurism, features futuristic silhouettes,  and avant-garde designs,
-    promotes imagination and innovation in fashion, explores concepts of technology
+- name: Rave
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Rave fashion style of {prompt},vibrant and colorful clothing choices, featuring neon colors, bold patterns, and futuristic designs, encourages self-expression and creativity, incorporates elements of dance culture and electronic music, promotes a sense of community and celebration
 
-- name: Fashion | Sportswear
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Sportswear fashion style of {prompt},designed for athletic activities and
-    casual wear, features comfortable and functional clothing, and performance fabrics,
-    promotes an active lifestyle and physical fitness
+- name: Sci-Fi
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Sci-Fi Inspired fashion style of {prompt},draws inspiration from science fiction movies, and futurism, features futuristic silhouettes,  and avant-garde designs, promotes imagination and innovation in fashion, explores concepts of technology
 
-- name: Fashion | Steampunk
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Steampunk fashion style of {prompt},inspired by Victorian-era machinery and
-    science fiction, features a mix of vintage clothing with futuristic elements,
-    promotes creativity and craftsmanship, encourages DIY and upcycling, celebrates
-    a love for exploration and adventure
+- name: Sportswear
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Sportswear fashion style of {prompt},designed for athletic activities and casual wear, features comfortable and functional clothing, and performance fabrics, promotes an active lifestyle and physical fitness
 
-- name: Fashion | Streetwear
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Streetwear fashion style of {prompt},influenced by urban culture and street
-    fashion, features casual and comfortable clothing with bold graphics, promotes
-    self-expression and individuality, celebrates creativity and innovation in design,
-    reflects the diverse influences of music, art, and sports
+- name: Steampunk
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Steampunk fashion style of {prompt},inspired by Victorian-era machinery and science fiction, features a mix of vintage clothing with futuristic elements, promotes creativity and craftsmanship, encourages DIY and upcycling, celebrates a love for exploration and adventure
 
-- name: Fashion | Vintage
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Vintage fashion style of {prompt},embraces clothing and accessories from previous
-    eras, celebrates timeless designs and craftsmanship, allows for unique and one-of-a-kind
-    looks, evokes nostalgia and a sense of history
+- name: Streetwear
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Streetwear fashion style of {prompt},influenced by urban culture and street fashion, features casual and comfortable clothing with bold graphics, promotes self-expression and individuality, celebrates creativity and innovation in design, reflects the diverse influences of music, art, and sports
 
-- name: Fashion | Winter
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Winter fashion style of {prompt},designed for cold weather, features cozy
-    and warm clothing, comfort and chicness
+- name: Vintage
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Vintage fashion style of {prompt},embraces clothing and accessories from previous eras, celebrates timeless designs and craftsmanship, allows for unique and one-of-a-kind looks, evokes nostalgia and a sense of history
 
+- name: Winter
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Winter fashion style of {prompt},designed for cold weather, features cozy and warm clothing, comfort and chicness

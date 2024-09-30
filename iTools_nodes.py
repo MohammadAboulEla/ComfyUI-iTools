@@ -196,7 +196,7 @@ class IToolsPromptStyler:
     RETURN_NAMES = ('positive_prompt', 'negative_prompt',)
     FUNCTION = 'prompt_styler'
     CATEGORY = 'iTools'
-    DESCRIPTION = ("Helps you quickly populate your {prompt} using a template name stored in the YAML file.")
+    DESCRIPTION = ("Helps you quickly populate your prompt using a template stored in YAML file.")
 
     def prompt_styler(self, text_positive, text_negative, template_name, style_file):
         positive_prompt, negative_prompt = read_replace_and_combine(template_name, text_positive,
@@ -325,7 +325,7 @@ class IToolsPromptStylerExtra:
     RETURN_NAMES = ('positive_prompt', 'negative_prompt',)
     FUNCTION = 'prompt_styler_extra'
     CATEGORY = 'iTools'
-    DESCRIPTION = ("Helps you quickly populate your {prompt} using a template name stored in the YAML file.")
+    DESCRIPTION = ("Helps you quickly populate your prompt using templates from up to 4 YAML files.")
 
     def prompt_styler_extra(self, text_positive, text_negative,
                             base_file, base_style,

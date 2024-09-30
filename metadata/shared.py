@@ -32,7 +32,7 @@ def clean_text(text):
     text = re.sub(r'\.,|,\.', '.', text)
 
     # Strip leading and trailing spaces
-    return text.strip()
+    return text.strip().replace(" .", ".")
 
 
 def load_yaml_data(file_path):

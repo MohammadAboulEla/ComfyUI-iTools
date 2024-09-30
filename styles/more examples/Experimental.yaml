@@ -1,386 +1,205 @@
 # Ensure that the formatting is kept the same as in this file.
 # Indents in YAML are critical. Ensure proper indentation, as incorrect spacing can cause errors.
-# Best approach is to copy a block of name, negative_prompt and a prompt and then replace thier values
+#
+# Best approach is to copy a block of name, negative_prompt and a prompt and then replace their values
+# Note that your text_positive will be added in this part {prompt}
 
-- name: Experimental | Alien Creature 3D
-  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Professional 3D design of a cute and quirky alien creature with big curious
-    eyes of {prompt},charming animation, endearing personality, exaggerated features,
-    dynamic pose, captivating expression, expert character design, vibrant and otherworldly
-    textures, engaging storytelling, versatile animation style, high-quality render,
-    volumetric, 4k
+- name: none
+  negative_prompt: ''
+  prompt: ''
 
-- name: Experimental | Apocalyptic Surrealism
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Apocalyptic surrealism art style of {prompt},digital painting, eerie and haunting,
-    surreal landscapes, dystopian ruins, twisted reality, dreamlike and nightmarish
-    scenes, vibrant and dark color palette, intricate details, professional-grade
-    execution, evokes a sense of doom and otherworldliness
+- name: Alien Creature 3D
+  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Professional 3D design of a cute and quirky alien creature with big curious eyes of {prompt}, charming animation, endearing personality, exaggerated features, dynamic pose, captivating expression, expert character design, vibrant and otherworldly textures, engaging storytelling, versatile animation style, high-quality render, volumetric, 4k
 
-- name: Experimental | Aztec Sculpture 3D
-  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
-    ugly, worst quality, low quality, lowres, JPEG artifacts
-  prompt: Aztec sculpture 3D art style of {prompt},intricate geometric patterns, stylized
-    figures, rich cultural symbolism, professional-grade execution, volumetric, 4k
+- name: Apocalyptic Surrealism
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Apocalyptic surrealism art style of {prompt}, digital painting, eerie and haunting, surreal landscapes, dystopian ruins, twisted reality, dreamlike and nightmarish scenes, vibrant and dark color palette, intricate details, professional-grade execution, evokes a sense of doom and otherworldliness
 
-- name: Experimental | Bio-Luminous Art
-  negative_prompt: bad anatomy, cropped, cross-eyed, worst quality, low quality, noisy,
-    blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts, mutilated,
-    distorted
-  prompt: Bio-luminous illustration style of {prompt},combines biological forms with
-    luminous effects, vibrant and glowing, dynamic composition, professional-grade
-    execution, captures the essence of living organisms with an ethereal glow, evokes
-    a sense of wonder and fascination
+- name: Aztec Sculpture 3D
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Aztec sculpture 3D art style of {prompt}, intricate geometric patterns, stylized figures, rich cultural symbolism, professional-grade execution, volumetric, 4k
 
-- name: Experimental | Bio-Mechanical Fantasy
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Bio-mechanical fantasy illustration style of {prompt},blends organic and mechanical
-    elements, vibrant and surreal, dynamic composition, professional-grade execution,
-    captures the essence of fantasy and science fiction, detailed and imaginative
-    environment
+- name: Bio-Luminous Art
+  negative_prompt: bad anatomy, cropped, cross-eyed, worst quality, low quality, noisy, blurry, soft, deformed, ugly, lowres, low details, JPEG artifacts, mutilated, distorted
+  prompt: Bio-luminous illustration style of {prompt}, combines biological forms with luminous effects, vibrant and glowing, dynamic composition, professional-grade execution, captures the essence of living organisms with an ethereal glow, evokes a sense of wonder and fascination
 
-- name: Experimental | Biomechanical Angel 3D
-  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
-    ugly, worst quality, low quality, lowres, JPEG artifacts
-  prompt: Biomechanical Angel 3D character art style of {prompt},fusion of organic and
-    mechanical elements, ethereal and divine, metallic wings, mechanical details,
-    dynamic pose, high-quality rendering techniques, professional-grade execution,
-    volumetric, 4k
+- name: Bio-Mechanical Fantasy
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Bio-mechanical fantasy illustration style of {prompt}, blends organic and mechanical elements, vibrant and surreal, dynamic composition, professional-grade execution, captures the essence of fantasy and science fiction, detailed and imaginative environment
 
-- name: Experimental | Cute Animal 3D
-  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Professional 3D design of a cute cartoon animal of {prompt},charming animation,
-    endearing personality, exaggerated features, captivating expression, expert character
-    design, vibrant and magical textures, engaging storytelling, versatile animation
-    style, high-quality render, volumetric, 4k
+- name: Biomechanical Angel 3D
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Biomechanical Angel 3D character art style of {prompt}, fusion of organic and mechanical elements, ethereal and divine, metallic wings, mechanical details, dynamic pose, high-quality rendering techniques, professional-grade execution, volumetric, 4k
 
-- name: Experimental | Cute Boy 3D
-  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Professional 3D design of a cute cartoon boy of {prompt},charming animation,
-    endearing personality, exaggerated features, captivating expression, expert character
-    design, vibrant and magical textures, engaging storytelling, versatile animation
-    style, high-quality render, volumetric, 4k
+- name: Cute Animal 3D
+  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifact
+  prompt: Professional 3D design of a cute cartoon animal of {prompt}, charming animation, endearing personality, exaggerated features, captivating expression, expert character design, vibrant and magical textures, engaging storytelling, versatile animation style, high-quality render, volumetric, 4k
 
-- name: Experimental | Cute Cyber Ninja 3D
-  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Professional 3D design of a cute and stealthy cyber ninja with big alert
-    eyes of {prompt},charming animation, endearing personality, exaggerated features,
-    dynamic pose, captivating expression, expert character design, vibrant and futuristic
-    textures, engaging storytelling, versatile animation style, high-quality render,
-    volumetric, 4k
+- name: Cute Boy 3D
+  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Professional 3D design of a cute cartoon boy of {prompt}, charming animation, endearing personality, exaggerated features, captivating expression, expert character design, vibrant and magical textures, engaging storytelling, versatile animation style, high-quality render, volumetric, 4k
 
-- name: Experimental | Cute Cyberpunk
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Cute Cyberpunk illustration art style of {prompt},combines cyberpunk elements
-    with cute aesthetics, vibrant and neon colors, dynamic and charming compositions,
-    captures the essence of cute futuristic worlds, professional-grade execution,
-    evokes a sense of futuristic cuteness
+- name: Cute Cyber Ninja 3D
+  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Professional 3D design of a cute and stealthy cyber ninja with big alert eyes of {prompt}, charming animation, endearing personality, exaggerated features, dynamic pose, captivating expression, expert character design, vibrant and futuristic textures, engaging storytelling, versatile animation style, high-quality render, volumetric, 4k
 
-- name: Experimental | Cute Girl 3D
-  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Professional 3D design of a cute cartoon girl of {prompt},charming animation,
-    endearing personality, exaggerated features, captivating expression, expert character
-    design, vibrant and magical textures, engaging storytelling, versatile animation
-    style, high-quality render, volumetric, 4k
+- name: Cute Cyberpunk
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Cute Cyberpunk illustration art style of {prompt}, combines cyberpunk elements with cute aesthetics, vibrant and neon colors, dynamic and charming compositions, captures the essence of cute futuristic worlds, professional-grade execution, evokes a sense of futuristic cuteness
 
-- name: Experimental | Cute Knight 3D
-  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Professional 3D design of a cute and brave medieval knight with big noble
-    eyes of {prompt},charming animation, endearing personality, exaggerated features,
-    dynamic pose, captivating expression, expert character design, vibrant and detailed
-    textures, engaging storytelling, versatile animation style, high-quality render,
-    volumetric, 4k
+- name: Cute Girl 3D
+  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Professional 3D design of a cute cartoon girl of {prompt}, charming animation, endearing personality, exaggerated features, captivating expression, expert character design, vibrant and magical textures, engaging storytelling, versatile animation style, high-quality render, volumetric, 4k
 
-- name: Experimental | Cute Monster 3D
-  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Professional 3D design of a cute cartoon monster of {prompt},adorable creature,
-    charming animation, endearing personality, exaggerated features, captivating expression,
-    expert character design, vibrant and magical textures, engaging storytelling,
-    versatile animation style, high-quality render, volumetric, 4k
+- name: Cute Knight 3D
+  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Professional 3D design of a cute and brave medieval knight with big noble eyes of {prompt}, charming animation, endearing personality, exaggerated features, dynamic pose, captivating expression, expert character design, vibrant and detailed textures, engaging storytelling, versatile animation style, high-quality render, volumetric, 4k
 
-- name: Experimental | Cute Robot 3D
-  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Professional 3D design of a cute and friendly futuristic robot with big
-    glowing eyes of {prompt},charming animation, endearing personality, sleek and exaggerated
-    features, dynamic pose, captivating expression, expert character design, vibrant
-    and metallic textures, engaging storytelling, versatile animation style, high-quality
-    render, volumetric, 4k
+- name: Cute Monster 3D
+  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Professional 3D design of a cute cartoon monster of {prompt}, adorable creature, charming animation, endearing personality, exaggerated features, captivating expression, expert character design, vibrant and magical textures, engaging storytelling, versatile animation style, high-quality render, volumetric, 4k
 
-- name: Experimental | Cute Victorian
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Cute Victorian drawing art style of {prompt},combines Victorian-era elegance
-    with cute aesthetics, soft and pastel colors, dynamic and charming compositions,
-    captures the essence of cute and historical worlds, professional-grade execution,
-    evokes a sense of vintage charm and cuteness
+- name: Cute Robot 3D
+  negative_prompt: low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Professional 3D design of a cute and friendly futuristic robot with big glowing eyes of {prompt}, charming animation, endearing personality, sleek and exaggerated features, dynamic pose, captivating expression, expert character design, vibrant and metallic textures, engaging storytelling, versatile animation style, high-quality render, volumetric, 4k
 
-- name: Experimental | Cyber Couture
-  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst
-    quality, low quality, lowres, JPEG artifacts
-  prompt: Cyber couture fashion style of {prompt},inspired by futuristic and cybernetic
-    aesthetics, uses innovative materials and designs, professional-grade execution,
-    captures the essence of high-tech fashion, emphasizes creativity and technological
-    advancement
+- name: Cute Victorian
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Cute Victorian drawing art style of {prompt}, combines Victorian-era elegance with cute aesthetics, soft and pastel colors, dynamic and charming compositions, captures the essence of cute and historical worlds, professional-grade execution, evokes a sense of vintage charm and cuteness
 
-- name: Experimental | Cybernetic Flora
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Cybernetic flora illustration style of {prompt},blends plant life with cybernetic
-    elements, dynamic and futuristic composition, professional-grade execution, captures
-    the beauty of bio-mechanical fusion, evokes a sense of innovation and natural
-    harmony
+- name: Character Sheet Cartoon
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Character sheet style of {prompt}, expressive cartoon character, multiple dynamic poses and exaggerated facial expressions, front, side, and back views, action poses, emotion study, clean lines, vibrant colors, playful and engaging, professional-grade character design, clearly defined features for animation, suitable for creating character personality and storytelling, ideal for animation and game design, well-organized layout showcasing emotions, movement, and body language.
 
-- name: Experimental | Dreamscape Mapping
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Dreamscape mapping illustration style of {prompt},visualizes dreamlike landscapes
-    and surreal environments, uses imaginative and abstract elements, dynamic composition,
-    professional-grade execution, captures the essence of the subconscious mind, evokes
-    a sense of wonder and mystery
+- name: Cyber Couture
+  negative_prompt: signature, watermark, ugly, off-center, deformed, cropped, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Cyber couture fashion style of {prompt}, inspired by futuristic and cybernetic aesthetics, uses innovative materials and designs, professional-grade execution, captures the essence of high-tech fashion, emphasizes creativity and technological advancement
 
-- name: Experimental | Dreamwave
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Dreamwave illustration style of {prompt},blends dreamy and surreal elements
-    with vibrant and fluid composition, uses soft gradients and glowing effects, professional-grade
-    execution, captures the essence of dreamscapes, evokes a sense of wonder and imagination
+- name: Cybernetic Flora
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Cybernetic flora illustration style of {prompt}, blends plant life with cybernetic elements, dynamic and futuristic composition, professional-grade execution, captures the beauty of bio-mechanical fusion, evokes a sense of innovation and natural harmony
 
-- name: Experimental | Dreamy Animal
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Dreamy Animal illustration art style of {prompt},combines dreamy elements
-    with adorable animals, soft and pastel colors, dynamic and charming compositions,
-    captures the essence of cute and dreamlike animal worlds, professional-grade execution,
-    evokes a sense of serenity and cuteness
+- name: Divine Portraiture
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Divine portraiture art style of {prompt}, digital painting, ethereal and spiritual, soft lighting with glowing halos, classical religious influence, rich and muted color palette, captivating expression of serenity and devotion, intricate detailing, professional-grade execution, evokes a sense of holiness and reverence, high contrast between light and shadows, realistic and symbolic elements, 4k
 
-- name: Experimental | Eldritch Minimalism
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Eldritch Minimalism painting art style of {prompt},combines minimalist and
-    eldritch horror elements, stark and haunting compositions, muted and eerie colors,
-    captures the essence of  horror with minimalist precision, professional-grade
-    execution, evokes a sense of existential dread and minimalist terror
+- name: Dreamscape Mapping
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Dreamscape mapping illustration style of {prompt}, visualizes dreamlike landscapes and surreal environments, uses imaginative and abstract elements, dynamic composition, professional-grade execution, captures the essence of the subconscious mind, evokes a sense of wonder and mystery
 
-- name: Experimental | Ethereal Assassin 3D
-  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
-    ugly, worst quality, low quality, lowres, JPEG artifacts
-  prompt: Ethereal Assassin 3D character art style of {prompt},ghostly and stealthy,
-    shadowy figure, dynamic pose, glowing eyes, high-quality rendering techniques,
-    professional-grade execution, volumetric, 4k
+- name: Dreamwave
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Dreamwave illustration style of {prompt}, blends dreamy and surreal elements with vibrant and fluid composition, uses soft gradients and glowing effects, professional-grade execution, captures the essence of dreamscapes, evokes a sense of wonder and imagination
 
-- name: Experimental | Ethereal Fluidity
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Ethereal fluidity painting art style of {prompt},uses fluid and flowing brushstrokes,
-    creates a sense of movement and lightness, dynamic and abstract composition, professional-grade
-    execution, captures the beauty of fluid dynamics, evokes a sense of calm and serenity
+- name: Dreamy Animal
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Dreamy Animal illustration art style of {prompt}, combines dreamy elements with adorable animals, soft and pastel colors, dynamic and charming compositions, captures the essence of cute and dreamlike animal worlds, professional-grade execution, evokes a sense of serenity and cuteness
 
-- name: Experimental | Ethereal Steam
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Ethereal Steam painting art style of {prompt},merges steampunk elements with
-    ethereal, ghostly imagery, soft pastel colors, wispy forms, intricate mechanical
-    details, combines the solidity of steampunk machinery with the lightness of ethereal
-    beings, professional-grade execution
+- name: Eldritch Minimalism
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Eldritch Minimalism painting art style of {prompt}, combines minimalist and eldritch horror elements, stark and haunting compositions, muted and eerie colors, captures the essence of  horror with minimalist precision, professional-grade execution, evokes a sense of existential dread and minimalist terror
 
-- name: Experimental | Fae Fantasy
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Fae Fantasy painting art style of {prompt},blends elements of fairies and
-    fantasy, soft lines, vibrant colors, whimsical compositions, captures the essence
-    of magical creatures and enchanted forests, professional-grade execution, evokes
-    a sense of fairy-tale magic and wonder
+- name: Ethereal Assassin 3D
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Ethereal Assassin 3D character art style of {prompt}, ghostly and stealthy, shadowy figure, dynamic pose, glowing eyes, high-quality rendering techniques, professional-grade execution, volumetric, 4k
 
-- name: Experimental | Fairy Tale Chronicles
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Fairy tale chronicles art style of {prompt},digital painting, storybook-like
-    illustration, charming character, vibrant and pastel colors, whimsical environments,
-    detailed and imaginative scenes, professional-grade execution, creates an enchanting
-    and narrative-driven world
+- name: Ethereal Fluidity
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Ethereal fluidity painting art style of {prompt}, uses fluid and flowing brushstrokes, creates a sense of movement and lightness, dynamic and abstract composition, professional-grade execution, captures the beauty of fluid dynamics, evokes a sense of calm and serenity
 
-- name: Experimental | Fairy Tale Cute
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Fairy Tale Cute painting art style of {prompt},blends fairy tale elements
-    with cute aesthetics, vibrant and pastel colors, imaginative and enchanting compositions,
-    captures the essence of cute fairy tale worlds, professional-grade execution,
-    evokes a sense of magic and charm
+- name: Ethereal Steam
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Ethereal Steam painting art style of {prompt}, merges steampunk elements with ethereal, ghostly imagery, soft pastel colors, wispy forms, intricate mechanical details, combines the solidity of steampunk machinery with the lightness of ethereal beings, professional-grade execution
 
-- name: Experimental | Geomancer 3D
-  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
-    ugly, worst quality, low quality, lowres, JPEG artifacts
-  prompt: Geomancer 3D character art style of {prompt},earth magic user, intricate robes
-    with stone patterns, glowing runes, dynamic pose, high-quality rendering techniques,
-    professional-grade execution, volumetric, 4k
+- name: Fae Fantasy
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Fae Fantasy painting art style of {prompt}, blends elements of fairies and fantasy, soft lines, vibrant colors, whimsical compositions, captures the essence of magical creatures and enchanted forests, professional-grade execution, evokes a sense of fairy-tale magic and wonder
 
-- name: Experimental | Holographic Chic
-  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center,
-    deformed, cropped, worst quality
-  prompt: Holographic chic fashion style of {prompt},incorporates holographic and iridescent
-    materials, futuristic and eye-catching designs, professional-grade execution,
-    captures the essence of modern and high-tech fashion, emphasizes creativity and
-    innovation
+- name: Fairy Tale Chronicles
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Fairy tale chronicles art style of {prompt}, digital painting, storybook-like illustration, charming character, vibrant and pastel colors, whimsical environments, detailed and imaginative scenes, professional-grade execution, creates an enchanting and narrative-driven world
 
-- name: Experimental | Legends Digital Painting
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: legends art style of {prompt},digital painting, epic and mystical, game character
-    with magical abilities, intricate details, rich color palette, atmospheric effects,
-    professional-grade execution, captures the essence of ancient legends and powerful
-    magic
+- name: Fairy Tale Cute
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Fairy Tale Cute painting art style of {prompt}, blends fairy tale elements with cute aesthetics, vibrant and pastel colors, imaginative and enchanting compositions, captures the essence of cute fairy tale worlds, professional-grade execution, evokes a sense of magic and charm
 
-- name: Experimental | Liquid Light
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Liquid light painting art style of {prompt},uses fluid and luminous colors,
-    creates a sense of light and movement, dynamic and abstract composition, professional-grade
-    execution, captures the beauty of illuminated art, evokes a sense of wonder and
-    serenity
+- name: Geomancer 3D
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Geomancer 3D character art style of {prompt}, earth magic user, intricate robes with stone patterns, glowing runes, dynamic pose, high-quality rendering techniques, professional-grade execution, volumetric, 4k
 
-- name: Experimental | Mythical Mechanica 3D
-  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
-    ugly, worst quality, low quality, lowres, JPEG artifacts
-  prompt: Mythical Mechanica 3D render of {prompt},blend of mythical creatures with
-    mechanical elements, dynamic lighting, vibrant colors, high-quality rendering
-    techniques, professional-grade execution, captivating visuals, volumetric, 4k
+- name: Holographic Chic
+  negative_prompt: signature, watermark, low quality, JPEG artifacts, off-center, deformed, cropped, worst quality
+  prompt: Holographic chic fashion style of {prompt}, incorporates holographic and iridescent materials, futuristic and eye-catching designs, professional-grade execution, captures the essence of modern and high-tech fashion, emphasizes creativity and innovation
 
-- name: Experimental | Nebula Dreams
-  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
-    ugly, worst quality, low quality, lowres, JPEG artifacts
-  prompt: Nebula Dreams 3D render of {prompt},cosmic clouds and nebulas, vibrant colors,
-    dynamic lighting, surreal and dreamlike, high-quality rendering techniques, professional-grade
-    execution, captivating visuals, volumetric, 4k
+- name: Legends Digital Painting
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: legends art style of {prompt}, digital painting, epic and mystical, game character with magical abilities, intricate details, rich color palette, atmospheric effects, professional-grade execution, captures the essence of ancient legends and powerful magic
 
-- name: Experimental | Neural Dreams
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Neural dreams illustration style of {prompt},inspired by neural networks and
-    artificial intelligence, abstract and surreal, dynamic compositions, vibrant and
-    fluid colors, professional-grade execution, captures the essence of machine learning
-    and human creativity
+- name: Liquid Light
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Liquid light painting art style of {prompt}, uses fluid and luminous colors, creates a sense of light and movement, dynamic and abstract composition, professional-grade execution, captures the beauty of illuminated art, evokes a sense of wonder and serenity
 
-- name: Experimental | Occult Expressionism
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Occult Expressionism painting art style of {prompt},merges abstract expressionism
-    and occult themes, dark and chaotic compositions, vibrant and eerie colors, expressive
-    brushwork, captures the essence of emotional turmoil and supernatural elements,
-    professional-grade execution, evokes a sense of mystical chaos and expressive
-    darkness
+- name: Mechanical Titan 3D
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Mechanical Titan 3D character of {prompt}, 3D mech, 3D render art style, massive robotic entity, mechanical and industrial design, glowing power cores, dynamic pose, high-quality rendering techniques, professional-grade execution, volumetric, 4k
 
-- name: Experimental | Pastel Goth Cute
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Pastel Goth Cute illustration art style of {prompt},combines pastel goth elements
-    with cute aesthetics, soft and pastel colors, dynamic and charming compositions,
-    captures the essence of cuteness with a goth twist, professional-grade execution,
-    evokes a sense of sweet darkness and charm
+- name: Mythical Mechanica 3D
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Mythical Mechanica 3D render of {prompt}, blend of mythical creatures with mechanical elements, dynamic lighting, vibrant colors, high-quality rendering techniques, professional-grade execution, captivating visuals, volumetric, 4k
 
-- name: Experimental | Phantasmagoric Abstract
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Phantasmagoric Abstract painting art style of {prompt},blends abstract expressionism
-    with phantasmagoric elements, chaotic and dreamlike compositions, surreal colors,
-    captures the essence of abstract horror and surreal beauty, professional-grade
-    execution, evokes a sense of nightmarish abstraction and phantasmagoric wonder
+- name: Nebula Dreams
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Nebula Dreams 3D render of {prompt}, cosmic clouds and nebulas, vibrant colors, dynamic lighting, surreal and dreamlike, high-quality rendering techniques, professional-grade execution, captivating visuals, volumetric, 4k
 
-- name: Experimental | Phantasmal Visions
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Phantasmal visions illustration style of {prompt},blends ghostly and surreal
-    elements with vibrant and fluid compositions, uses soft gradients and glowing
-    effects, professional-grade execution, captures the essence of ethereal beauty,
-    evokes a sense of wonder and mystery
+- name: Neural Dreams
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Neural dreams illustration style of {prompt}, inspired by neural networks and artificial intelligence, abstract and surreal, dynamic compositions, vibrant and fluid colors, professional-grade execution, captures the essence of machine learning and human creativity
 
-- name: Experimental | Phantom Rococo
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Phantom Rococo painting art style of {prompt},blends rococo and ghostly elements,
-    ornate and intricate compositions, soft and eerie colors, captures the elegance
-    of rococo with a spectral twist, professional-grade execution, evokes a sense
-    of haunted beauty and rococo grace
+- name: Occult Expressionism
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Occult Expressionism painting art style of {prompt}, merges abstract expressionism and occult themes, dark and chaotic compositions, vibrant and eerie colors, expressive brushwork, captures the essence of emotional turmoil and supernatural elements, professional-grade execution, evokes a sense of mystical chaos and expressive darkness
 
-- name: Experimental | Quantum Sketching
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Quantum sketching art style of {prompt},abstract and dynamic, inspired by
-    quantum physics, uses fluid lines and shapes, professional-grade execution, captures
-    the essence of quantum mechanics, evokes a sense of mystery and complexity
+- name: Pastel Goth Cute
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Pastel Goth Cute illustration art style of {prompt}, combines pastel goth elements with cute aesthetics, soft and pastel colors, dynamic and charming compositions, captures the essence of cuteness with a goth twist, professional-grade execution, evokes a sense of sweet darkness and charm
 
-- name: Experimental | Radiant Fantasy
-  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
-    ugly, worst quality, low quality, lowres, JPEG artifacts
-  prompt: Radiant Fantasy 3D render of {prompt},glowing fantasy landscapes, vibrant
-    colors, dynamic lighting, immersive presentation, high-quality rendering techniques,
-    professional-grade execution, captivating visuals, volumetric, 4k
+- name: Phantasmagoric Abstract
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Phantasmagoric Abstract painting art style of {prompt}, blends abstract expressionism with phantasmagoric elements, chaotic and dreamlike compositions, surreal colors, captures the essence of abstract horror and surreal beauty, professional-grade execution, evokes a sense of nightmarish abstraction and phantasmagoric wonder
 
-- name: Experimental | Robot Cute
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Robot Cute illustration art style of {prompt},blends robotic elements with
-    cute aesthetics, vibrant and pastel colors, dynamic and charming compositions,
-    captures the essence of cute robots in playful scenes, professional-grade execution,
-    evokes a sense of mechanical cuteness and whimsy
+- name: Phantasmal Visions
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Phantasmal visions illustration style of {prompt}, blends ghostly and surreal elements with vibrant and fluid compositions, uses soft gradients and glowing effects, professional-grade execution, captures the essence of ethereal beauty, evokes a sense of wonder and mystery
 
-- name: Experimental | Shadow Mage 3D
-  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism,
-    ugly, worst quality, low quality, lowres, JPEG artifacts
-  prompt: Shadow Mage 3D character art style of {prompt},master of dark magic, ethereal
-    and mysterious, glowing eyes, shadowy effects, dynamic pose, high-quality rendering
-    techniques, professional-grade execution, volumetric, 4k
+- name: Phantom Rococo
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Phantom Rococo painting art style of {prompt}, blends rococo and ghostly elements, ornate and intricate compositions, soft and eerie colors, captures the elegance of rococo with a spectral twist, professional-grade execution, evokes a sense of haunted beauty and rococo grace
 
-- name: Experimental | Voodoo Surrealism
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Voodoo Surrealism painting art style of {prompt},combines voodoo and surrealist
-    elements, dark and mystical composition, vibrant and eerie colors, symbolic and
-    dreamlike imagery, captures the essence of spiritual mysticism and surreal fantasy,
-    professional-grade execution, evokes a sense of supernatural wonder and surreal
-    mystery
+- name: Quantum Sketching
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Quantum sketching art style of {prompt}, abstract and dynamic, inspired by quantum physics, uses fluid lines and shapes, professional-grade execution, captures the essence of quantum mechanics, evokes a sense of mystery and complexity
 
-- name: Experimental | Whimsical Chibi
-  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center,
-    deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres,
-    JPEG artifacts
-  prompt: Whimsical Chibi painting art style of {prompt},combines whimsical elements
-    with chibi character, soft and pastel colors, dynamic and playful compositions,
-    captures the essence of cuteness and whimsy, professional-grade execution, evokes
-    a sense of joy and delight
+- name: Radiant Fantasy
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Radiant Fantasy 3D render of {prompt}, glowing fantasy landscapes, vibrant colors, dynamic lighting, immersive presentation, high-quality rendering techniques, professional-grade execution, captivating visuals, volumetric, 4k
 
+- name: Robot Cute
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Robot Cute illustration art style of {prompt}, blends robotic elements with cute aesthetics, vibrant and pastel colors, dynamic and charming compositions, captures the essence of cute robots in playful scenes, professional-grade execution, evokes a sense of mechanical cuteness and whimsy
+
+- name: Shadow Mage 3D
+  negative_prompt: painting, low-quality rendering, photo, photorealistic, realism, ugly, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Shadow Mage 3D character art style of {prompt}, master of dark magic, ethereal and mysterious, glowing eyes, shadowy effects, dynamic pose, high-quality rendering techniques, professional-grade execution, volumetric, 4k
+
+- name: Voodoo Surrealism
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Voodoo Surrealism painting art style of {prompt}, combines voodoo and surrealist elements, dark and mystical composition, vibrant and eerie colors, symbolic and dreamlike imagery, captures the essence of spiritual mysticism and surreal fantasy, professional-grade execution, evokes a sense of supernatural wonder and surreal mystery
+
+- name: Whimsical Chibi
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Whimsical Chibi painting art style of {prompt}, combines whimsical elements with chibi character, soft and pastel colors, dynamic and playful compositions, captures the essence of cuteness and whimsy, professional-grade execution, evokes a sense of joy and delight
+  
+- name: Whimsical Love
+  negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts
+  prompt: Whimsical cartoon illustration style of {prompt}, digital painting illustration, characters in a charming, playful pose, soft and heartwarming color palette, exaggerated features and expressions, dynamic yet simple composition, captures the essence of love and joy, lighthearted, cute, and endearing, professional-grade execution, evokes a sense of warmth and affection, with heart symbols and playful elements to enhance the emotional connection

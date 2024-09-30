@@ -27,11 +27,9 @@ app.registerExtension({
                 // Await the response from send_style_message
                 this.widgets[3]["value"] = "loading ...";
                 const options = await send_style_message(style.value);
-                if (options) {
-                    this.widgets[3]["options"]["values"] = options.new_templates;
-                    this.widgets[3]["value"] = options.new_templates[0];
-                    this.setDirtyCanvas(true, true);
-                }
+                this.widgets[3]["options"]["values"] = options.new_templates;
+                this.widgets[3]["value"] = options.new_templates[0];
+                this.setDirtyCanvas(true, true);
             }
             fix_start_up_init(this, style);
             return me;
@@ -43,12 +41,9 @@ app.registerExtension({
 async function fix_start_up_init(node, style) {
     // Wait until node and style are fully initialized
     await waitForInitialization(node, style);
-
     // Proceed with sending the style message and updating node widgets
     const options = await send_style_message(style.value);
-    if (options) {
-        node.widgets[3]["options"]["values"] = options.new_templates;
-    }
+    node.widgets[3]["options"]["values"] = options.new_templates;
 }
 
 

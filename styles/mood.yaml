@@ -6,6 +6,7 @@
 #
 # Ensure that the formatting is kept the same as in this file.
 # Indents in YAML are critical. Ensure proper indentation, as incorrect spacing can cause errors.
+#
 # Best approach is to copy a block of name, negative_prompt and a prompt and then replace their values
 # Note that your text_positive will be added in this part {prompt}
 
@@ -13,102 +14,52 @@
   negative_prompt: ''
   prompt: ''
 
+- name: Abyssal Silence
+  negative_prompt: Unsilenced, ordinary, lacking darkness, uninhabited, mundane.
+  prompt: A profound and eerie mood of deep silence, where the world is shrouded in
+    darkness and an overwhelming sense of isolation prevails.
+
 - name: Aggressive
   negative_prompt: calm
-  prompt: aggressive  {prompt}
+  prompt: aggressive {prompt}
+
+- name: Bittersweet Nostalgia
+  negative_prompt: Unbittersweet, ordinary, lacking nostalgia, unreflective, mundane.
+  prompt: A bittersweet and nostalgic mood where the world is tinged with memories
+    of the past, evoking a sense of longing and reflection.
 
 - name: Calm
   negative_prompt: energetic
-  prompt: calm  {prompt}
+  prompt: calm {prompt}
+
+- name: Celestial Harmony
+  negative_prompt: Unharmonious, ordinary, lacking celestial bodies, uncosmic, mundane.
+  prompt: A harmonious and celestial mood where the world is adorned with celestial
+    bodies, and a sense of cosmic unity and serenity prevails.
+
+- name: Chaos and Discord
+  negative_prompt: Unchaotic, ordinary, lacking discord, unharmonious, mundane.
+  prompt: A chaotic and discordant mood where the world is filled with cacophonous
+    sounds and jarring visuals, creating a sense of disarray and confusion.
 
 - name: Chaotic
   negative_prompt: serene
-  prompt: chaotic  {prompt}
-
-- name: Energetic
-  negative_prompt: relaxed
-  prompt: energetic  {prompt}
-
-- name: Happy
-  negative_prompt: sad
-  prompt: happy  {prompt}
-
-- name: Mysterious
-  negative_prompt: clear
-  prompt: mysterious  {prompt}
-
-- name: Relaxed
-  negative_prompt: excited
-  prompt: relaxed  {prompt}
-
-- name: Romantic
-  negative_prompt: depressed
-  prompt: romantic  {prompt}
-
-- name: Sad
-  negative_prompt: happy
-  prompt: sad  {prompt}
-
-- name: Serene
-  negative_prompt: chaotic
-  prompt: serene  {prompt}
-
-- name: Ethereal Tranquility
-  negative_prompt: Untranquil, ordinary, lacking music, unrelaxing, mundane.
-  prompt: A serene and otherworldly mood where soft, ambient music plays, and the
-    world seems to slow down, evoking a sense of peace and relaxation.
-
-- name: Enigmatic Wonder
-  negative_prompt: Unenigmatic, ordinary, lacking wonders, uncurious, mundane.
-  prompt: A mysterious and awe-inspiring mood where the world is filled with enigmatic
-    phenomena and hidden wonders waiting to be uncovered, inspiring curiosity and
-    fascination.
-
-- name: Whimsical Delight
-  negative_prompt: Unwhimsical, ordinary, lacking playfulness, unjoyful, mundane.
-  prompt: A playful and lighthearted mood where the world is filled with whimsical
-    characters, magical creatures, and joyful surprises, inviting laughter and joy.
-
-- name: Melancholic Reflection
-  negative_prompt: Unmelancholic, ordinary, lacking reflection, unreflective, mundane.
-  prompt: A contemplative and melancholic mood where the world is bathed in soft,
-    muted colors, and a sense of nostalgia and introspection fills the air.
+  prompt: chaotic {prompt}
 
 - name: Dark, Brooding Atmosphere
   negative_prompt: Unbrooding, ordinary, lacking darkness, ununeasy, mundane.
   prompt: A moody and ominous mood where shadows loom large, and a sense of foreboding
     and tension hangs in the air, creating a sense of unease and suspense.
 
-- name: Joyful Celebration
-  negative_prompt: Unjoyful, ordinary, lacking celebration, uncamaraderie, mundane.
-  prompt: A festive and celebratory mood where the world is alive with music, dancing,
-    and laughter, evoking a sense of joy and camaraderie.
-
-- name: Surreal Euphoria
-  negative_prompt: Uneuphoric, ordinary, lacking surrealism, undreamlike, mundane.
-  prompt: A surreal and euphoric mood where the boundaries of reality are blurred,
-    and a sense of euphoria and elation fills the world, creating a dreamlike and
-    euphoric experience.
-
-- name: Hushed Reverence
-  negative_prompt: Unreverent, ordinary, lacking silence, unawe-inspiring, mundane.
-  prompt: A reverent and tranquil mood where silence reigns, and the world is filled
-    with a sense of awe and sacredness, inviting contemplation and meditation.
-
-- name: Tense, Suspenseful Ambiance
-  negative_prompt: Untense, ordinary, lacking suspense, unintriguing, mundane.
-  prompt: A tense and suspenseful mood where every moment is charged with anticipation
-    and uncertainty, creating a sense of adrenaline and intrigue.
-
 - name: Dreamy Serenity
   negative_prompt: Undreamy, ordinary, lacking serenity, unsoothing, mundane.
   prompt: A dreamlike and serene mood where the world is bathed in soft, pastel colors,
     and a sense of calm and tranquility pervades, creating a soothing and dreamy atmosphere.
 
-- name: Chaos and Discord
-  negative_prompt: Unchaotic, ordinary, lacking discord, unharmonious, mundane.
-  prompt: A chaotic and discordant mood where the world is filled with cacophonous
-    sounds and jarring visuals, creating a sense of disarray and confusion.
+- name: Dystopian Desolation
+  negative_prompt: Undystopian, ordinary, lacking desolation, unhopeful, mundane.
+  prompt: A mood of dystopian desolation where the world is a bleak and desolate landscape,
+    and a sense of despair and isolation hangs in the air.
 
 - name: Enchanted Whispers
   negative_prompt: Unenchanted, ordinary, lacking whispers, unmysterious, mundane.
@@ -116,43 +67,92 @@
     magic and wonder are carried on the wind, igniting a sense of enchantment and
     mystery.
 
-- name: Frenetic Energy
-  negative_prompt: Unfrenetic, ordinary, lacking energy, unexciting, mundane.
-  prompt: A high-energy and frenetic mood where the world pulsates with vitality and
-    motion, creating a sense of exhilaration and excitement.
+- name: Energetic
+  negative_prompt: relaxed
+  prompt: energetic {prompt}
+
+- name: Enigmatic Wonder
+  negative_prompt: Unenigmatic, ordinary, lacking wonders, uncurious, mundane.
+  prompt: A mysterious and awe-inspiring mood where the world is filled with enigmatic
+    phenomena and hidden wonders waiting to be uncovered, inspiring curiosity and
+    fascination.
 
 - name: Eternal Twilight
   negative_prompt: Untwilight, ordinary, lacking light, untimeless, mundane.
   prompt: A perpetual twilight mood where the world is bathed in soft, muted light,
     evoking a sense of timeless serenity and contemplation.
 
-- name: Abyssal Silence
-  negative_prompt: Unsilenced, ordinary, lacking darkness, uninhabited, mundane.
-  prompt: A profound and eerie mood of deep silence, where the world is shrouded in
-    darkness and an overwhelming sense of isolation prevails.
+- name: Ethereal Tranquility
+  negative_prompt: Untranquil, ordinary, lacking music, unrelaxing, mundane.
+  prompt: A serene and otherworldly mood where soft, ambient music plays, and the
+    world seems to slow down, evoking a sense of peace and relaxation.
+
+- name: Frenetic Energy
+  negative_prompt: Unfrenetic, ordinary, lacking energy, unexciting, mundane.
+  prompt: A high-energy and frenetic mood where the world pulsates with vitality and
+    motion, creating a sense of exhilaration and excitement.
 
 - name: Gothic Elegance
   negative_prompt: Ungothic, ordinary, lacking elegance, unbeguiling, mundane.
   prompt: A mood of dark and gothic elegance, where the world is adorned with intricate
     architecture, opulent decor, and a sense of brooding beauty.
 
-- name: Bittersweet Nostalgia
-  negative_prompt: Unbittersweet, ordinary, lacking nostalgia, unreflective, mundane.
-  prompt: A bittersweet and nostalgic mood where the world is tinged with memories
-    of the past, evoking a sense of longing and reflection.
+- name: Happy
+  negative_prompt: sad
+  prompt: happy  {prompt}
+
+- name: Hushed Reverence
+  negative_prompt: Unreverent, ordinary, lacking silence, unawe-inspiring, mundane.
+  prompt: A reverent and tranquil mood where silence reigns, and the world is filled
+    with a sense of awe and sacredness, inviting contemplation and meditation.
+
+- name: Joyful Celebration
+  negative_prompt: Unjoyful, ordinary, lacking celebration, uncamaraderie, mundane.
+  prompt: A festive and celebratory mood where the world is alive with music, dancing,
+    and laughter, evoking a sense of joy and camaraderie.
+
+- name: Melancholic Reflection
+  negative_prompt: Unmelancholic, ordinary, lacking reflection, unreflective, mundane.
+  prompt: A contemplative and melancholic mood where the world is bathed in soft,
+    muted colors, and a sense of nostalgia and introspection fills the air.
+
+- name: Mysterious
+  negative_prompt: clear
+  prompt: mysterious {prompt}
+
+- name: Relaxed
+  negative_prompt: excited
+  prompt: relaxed {prompt}
+
+- name: Romantic
+  negative_prompt: depressed
+  prompt: romantic {prompt}
+
+- name: Sad
+  negative_prompt: happy
+  prompt: sad {prompt}
+
+- name: Serene
+  negative_prompt: chaotic
+  prompt: serene {prompt}
 
 - name: Spectral Whispers
   negative_prompt: Unspectral, ordinary, lacking whispers, unhaunted, mundane.
   prompt: A spectral and haunting mood where ghostly whispers fill the air, and the
     world is haunted by the echoes of the past, creating an eerie and ethereal atmosphere.
 
-- name: Celestial Harmony
-  negative_prompt: Unharmonious, ordinary, lacking celestial bodies, uncosmic, mundane.
-  prompt: A harmonious and celestial mood where the world is adorned with celestial
-    bodies, and a sense of cosmic unity and serenity prevails.
+- name: Surreal Euphoria
+  negative_prompt: Uneuphoric, ordinary, lacking surrealism, undreamlike, mundane.
+  prompt: A surreal and euphoric mood where the boundaries of reality are blurred,
+    and a sense of euphoria and elation fills the world, creating a dreamlike and
+    euphoric experience.
 
-- name: Dystopian Desolation
-  negative_prompt: Undystopian, ordinary, lacking desolation, unhopeful, mundane.
-  prompt: A mood of dystopian desolation where the world is a bleak and desolate landscape,
-    and a sense of despair and isolation hangs in the air.
+- name: Tense, Suspenseful Ambiance
+  negative_prompt: Untense, ordinary, lacking suspense, unintriguing, mundane.
+  prompt: A tense and suspenseful mood where every moment is charged with anticipation
+    and uncertainty, creating a sense of adrenaline and intrigue.
 
+- name: Whimsical Delight
+  negative_prompt: Unwhimsical, ordinary, lacking playfulness, unjoyful, mundane.
+  prompt: A playful and lighthearted mood where the world is filled with whimsical
+    characters, magical creatures, and joyful surprises, inviting laughter and joy.
