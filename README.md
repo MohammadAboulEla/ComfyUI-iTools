@@ -51,5 +51,5 @@ Wait for more...
 
 Support me on PayPal
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/mohammadmoustafa1)
+[![Donate](https://img.shields.io/badge/Support-PayPal-blue.svg)](https://paypal.me/mohammadmoustafa1)
 
