@@ -47,7 +47,7 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 **# iTools Load Images:** will return list of images from a given directory with a given limit, for example if the limit is 4 it will return first 4 images in that directory.it will also return the list of these images names.
 ![iTools Add Text Overlay](examples/Screenshot5.jpg)
 
-Wait for more...
+_Wait for more..._
 
 Support me on PayPal
 
