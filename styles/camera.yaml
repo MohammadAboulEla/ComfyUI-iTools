@@ -1,5 +1,16 @@
+# It is recommended not to modify this file,
+# as it serves as the initialization file for the node.
+#
+# Instead, create a copy, place it in the same folder,
+# and the iTools Prompt Styler node will read all your style files from there.
+#
+# Ensure that the formatting is kept the same as in this file.
+# Indents in YAML are critical. Ensure proper indentation, as incorrect spacing can cause errors.
+# Best approach is to copy a block of name, negative_prompt and a prompt and then replace their values
+# Note that your text_positive will be added in this part {prompt}
+
 - name: none
-  negative_prompt: ' '
+  negative_prompt: ''
   prompt: ''
 
 - name: Canon EOS 90D
