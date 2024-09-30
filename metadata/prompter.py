@@ -29,8 +29,10 @@ def read_replace_and_combine(template_name, positive_prompt, negative_prompt, fi
             # If the template name matches, process it
             if template['name'] == template_name:
                 # Replace {prompt} in the positive prompt if present
-                if template['prompt']:
+                if template['prompt'] and "{prompt}" in template['prompt']:
                     positive_prompt = template['prompt'].replace("{prompt}", positive_prompt)
+                else:
+                    positive_prompt = f"{positive_prompt}, {template['prompt']}"
 
                 # Handle negative prompts
                 yaml_negative_prompt = template.get('negative_prompt', "")
@@ -40,7 +42,7 @@ def read_replace_and_combine(template_name, positive_prompt, negative_prompt, fi
                     negative_prompt = yaml_negative_prompt  # Only YAML negative prompt
                 # If both are empty, negative_prompt remains empty
 
-                return positive_prompt, negative_prompt
+                return clean_text(positive_prompt), clean_text(negative_prompt)
 
         # If no matching template is found, raise an error
         raise ValueError(f"No template found with name '{template_name}'.")

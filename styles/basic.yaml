@@ -23,7 +23,7 @@
   prompt: expressionist painting of {prompt}. energetic brushwork, bold colors, abstract
     forms, expressive, emotional
 
-- name: Art Deco
+- name: art Deco
   negative_prompt: ugly, deformed, noisy, blurry, low contrast, realism, photorealistic,
     modernist, minimalist
   prompt: art deco style of {prompt}. geometric shapes, bold colors, luxurious, elegant,
@@ -66,7 +66,7 @@
   prompt: anime artwork of {prompt}. anime style, key visual, vibrant, studio anime,
     highly detailed
 
-- name: Pixel Art
+- name: Pixel art
   negative_prompt: sloppy, messy, blurry, noisy, highly detailed, ultra textured,
     photo, realistic
   prompt: pixel-art of {prompt}. low-res, blocky, pixel art style, 8-bit graphics
@@ -84,7 +84,7 @@
   prompt: isometric style of {prompt}. vibrant, beautiful, crisp, detailed, ultra detailed,
     intricate
 
-- name: Line Art
+- name: Line art
   negative_prompt: anime, photorealistic, 35mm film, deformed, glitch, blurry, noisy,
     off-center, deformed, cross-eyed, closed eyes, bad anatomy, ugly, disfigured,
     mutated, realism, realistic, impressionism, expressionism, oil, acrylic
@@ -116,7 +116,7 @@
 - name: Pop
   negative_prompt: ugly, deformed, noisy, blurry, low contrast, realism, photorealistic,
     minimalist
-  prompt: pop Art style of {prompt}. bright colors, bold outlines, popular culture themes,
+  prompt: pop art style of {prompt}. bright colors, bold outlines, popular culture themes,
     ironic or kitsch
 
 - name: Hyperreal

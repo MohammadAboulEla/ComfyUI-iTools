@@ -66,7 +66,10 @@ def combine_multi(text_positive, text_negative,
                   third_file, third_style,
                   fourth_file, fourth_style, ):
     base_p, base_n = get_template_value_from_yaml_file(base_file, base_style)
-    base_p = base_p.replace("{prompt}", f"{text_positive}")
+    if "{prompt}" in base_p:
+        base_p = base_p.replace("{prompt}", f"{text_positive}")
+    else:
+        base_p = f"{text_positive}. {base_p}"
 
     if base_p == "":
         base_p = text_positive
@@ -83,7 +86,7 @@ def combine_multi(text_positive, text_negative,
     total_p = f"{base_p},{s2_p},{s3_p},{s4_p}"
     total_n = f"{text_negative},{base_n},{s2_n},{s3_n},{s4_n}"
 
-    return total_p, total_n
+    return clean_text(total_p), clean_text(total_n)
 
 
 # def read_replace_and_combine_multi(template_name, positive_prompt, negative_prompt, file_name):

@@ -1,6 +1,40 @@
 import yaml
 import os
 import folder_paths
+import re
+
+import re
+
+
+def clean_text_combined(text):
+    # Combine the regular expressions into one to avoid multiple passes
+    text = re.sub(r',(\S)|\s+,|,+|(\.,|,\.)', lambda m: ', ' if m.group(1) else '.' if m.group(2) else ',', text)
+
+    # Replace multiple spaces with a single space
+    text = re.sub(r'\s+', ' ', text)
+
+    # Strip leading and trailing spaces
+    return text.strip()
+
+
+def clean_text(text):
+    # Remove duplicate commas
+    text = re.sub(r',+', ',', text)
+
+    # Replace any occurrence of " ," with ","
+    text = re.sub(r'\s+,', ',', text)
+
+    # Ensure there's a space after commas followed by a word without space
+    text = re.sub(r',(\S)', r', \1', text)
+
+    # Replace multiple spaces with a single space
+    text = re.sub(r'\s+', ' ', text)
+
+    # Replace any occurrence of ".,", ",." with "."
+    text = re.sub(r'\.,|,\.', '.', text)
+
+    # Strip leading and trailing spaces
+    return text.strip()
 
 
 def load_yaml_data(file_path):
