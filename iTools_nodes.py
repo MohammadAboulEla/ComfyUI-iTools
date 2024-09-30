@@ -363,5 +363,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsAddOverlay": "iTools Add Text Overlay",
     "iToolsLoadImages": "iTools Load Images",
     "iToolsPromptStyler": "iTools Prompt Styler 🖌️",
-    "iToolsPromptStylerExtra": "iTools Prompt Styler Extra 🖌️🖌️"
+    "iToolsPromptStylerExtra": "iTools Prompt Styler Extra 🖌️"
 }

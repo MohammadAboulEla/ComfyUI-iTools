@@ -3,8 +3,6 @@ import os
 import folder_paths
 import re
 
-import re
-
 
 def clean_text_combined(text):
     # Combine the regular expressions into one to avoid multiple passes
