@@ -4,14 +4,13 @@ from .shared import *
 
 
 file_name = "basic.yaml"
-file_path = os.path.join(p, f"ComfyUi-iTools\styles\{file_name}")
+file_path = os.path.join(p, "ComfyUi-iTools", "styles", file_name)
 yaml_data = load_yaml_data(file_path)
 templates = read_styles(yaml_data)
 
 
 def read_replace_and_combine(template_name, positive_prompt, negative_prompt, file_name):
-    p = folder_paths.folder_names_and_paths["custom_nodes"][0][0]
-    file_path = os.path.join(p, f"ComfyUi-iTools\styles\{file_name}")
+    file_path = os.path.join(p, "ComfyUi-iTools", "styles", file_name)
 
     _yaml_data = load_yaml_data(file_path)
 
@@ -64,7 +63,7 @@ async def respond_to_js_message(request):
     file_name = post.get('message')
     # print("Post received", file_name)
 
-    file_path = os.path.join(p, f"ComfyUi-iTools\styles\{file_name}")
+    file_path = os.path.join(p, "ComfyUi-iTools", "styles", file_name)
     yaml_data = load_yaml_data(file_path)
     templates = read_styles(yaml_data)
 

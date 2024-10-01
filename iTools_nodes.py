@@ -8,13 +8,15 @@ import torchvision.transforms.v2 as T
 
 import node_helpers
 from PIL import Image, ImageSequence, ImageOps
-
+from .metadata.shared import p
 from .metadata.metadata_extractor import get_prompt
 from .metadata.file_handeler import FileHandler
 from .metadata.overlay import add_overlay_bar, img_to_tensor, add_underlay_bar
 from .metadata.shared import styles
 from .metadata.prompter import read_replace_and_combine, templates
-from .metadata.prompter_multi import combine_multi, templates_basic, templates_extra1, templates_extra2, templates_extra3
+from .metadata.prompter_multi import combine_multi, templates_basic, templates_extra1, templates_extra2, \
+    templates_extra3
+from .metadata.grid_filler import fill_grid_with_images_new, tensor_to_images, image_to_tensor
 
 
 class IToolsLoadImagePlus:
@@ -117,9 +119,8 @@ class IToolsPromptLoader:
     def load_file(self, file_path, seed, fallback="Yes"):
         prompt = ""
         prompt_random = ""
-        cn = folder_paths.folder_names_and_paths["custom_nodes"][0][0]
         if file_path == "prompts.txt":
-            file = os.path.join(cn, "ComfyUi-iTools\examples\prompts.txt")
+            file = os.path.join(p, "ComfyUi-iTools", "examples", "prompts.txt")
         else:
             file = file_path.replace('"', '')
         if os.path.exists(file):
@@ -153,9 +154,8 @@ class IToolsPromptSaver:
     DESCRIPTION = "Will append the given prompt as a new line to the given txt file"
 
     def save_to_file(self, file_path, prompt):
-        cn = folder_paths.folder_names_and_paths["custom_nodes"][0][0]
         if file_path == "prompts.txt":
-            file = os.path.join(cn, "ComfyUi-iTools\examples\prompts.txt")
+            file = os.path.join(p, "ComfyUi-iTools", "examples", "prompts.txt")
         else:
             file = file_path.replace('"', '')
         if os.path.exists(file) and prompt is not None and prompt != "":
@@ -182,7 +182,7 @@ class IToolsPromptStyler:
             "required": {
                 "text_positive": ("STRING", {"default": "", "multiline": True}),
                 "text_negative": ("STRING", {"default": "", "multiline": True}),
-                "style_file": ((styles),{"default": "basic.yaml"}),
+                "style_file": ((styles), {"default": "basic.yaml"}),
                 "template_name": ((templates),),
             },
         }
@@ -301,13 +301,13 @@ class IToolsPromptStylerExtra:
             "required": {
                 "text_positive": ("STRING", {"default": "", "multiline": True}),
                 "text_negative": ("STRING", {"default": "", "multiline": True}),
-                "base_file": ((styles),{"default": "basic.yaml"}),
+                "base_file": ((styles), {"default": "basic.yaml"}),
                 "base_style": ((templates_basic),),
-                "second_file": ((styles),{"default": "camera.yaml"}),
+                "second_file": ((styles), {"default": "camera.yaml"}),
                 "second_style": ((templates_extra1),),
-                "third_file": ((styles),{"default": "artist.yaml"}),
+                "third_file": ((styles), {"default": "artist.yaml"}),
                 "third_style": ((templates_extra2),),
-                "fourth_file": ((styles),{"default": "mood.yaml"}),
+                "fourth_file": ((styles), {"default": "mood.yaml"}),
                 "fourth_style": ((templates_extra3),),
             },
         }
@@ -333,14 +333,55 @@ class IToolsPromptStylerExtra:
                             third_file, third_style,
                             fourth_file, fourth_style,
                             ):
-
         positive_prompt, negative_prompt = combine_multi(
-                            text_positive, text_negative,
-                            base_file, base_style,
-                            second_file, second_style,
-                            third_file, third_style,
-                            fourth_file, fourth_style,) # (read_replace_and_combine_multi(template_name, text_positive,text_negative, style_file))
+            text_positive, text_negative,
+            base_file, base_style,
+            second_file, second_style,
+            third_file, third_style,
+            fourth_file,
+            fourth_style, )  # (read_replace_and_combine_multi(template_name, text_positive,text_negative, style_file))
         return positive_prompt, negative_prompt
+
+
+class IToolsGridFiller:
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required":
+            {
+                "images": ("IMAGE", {}),
+                "width": ("INT", {"default": 1024, "min": 512, "max": 8192}),
+                "height": ("INT", {"default": 1024, "min": 512, "max": 8192}),
+                "rows": ("INT", {"default": 3, "min": 2, "max": 10}),
+                "cols": ("INT", {"default": 3, "min": 2, "max": 10}),
+                "gaps": ("FLOAT", {"default": 2, "min": 0.0, "max": 50, "steps": 1}),
+                "background_color": ("STRING", {"default": '#000000AA', "multiline": False}),
+            }
+        }
+
+    RETURN_TYPES = ('IMAGE',)
+    RETURN_NAMES = ('images',)
+    FUNCTION = 'fill_grid'
+    CATEGORY = 'iTools'
+    INPUT_IS_LIST = (True, False, False, False, False, False, False)
+    OUTPUT_IS_LIST = (False, False, False, False, False, False, False)
+    DESCRIPTION = ("Arranging a set of images into specified rows and columns, applying "
+                   "optional spacing and background color")
+
+    def fill_grid(self, images, width, height, rows, cols, gaps, background_color):
+        print("IMAGES", images)
+        # Convert tensor to Pillow images
+        pillow_images = tensor_to_images(images)
+
+        # Process images using the provided function
+        processed_image = fill_grid_with_images_new(pillow_images, rows=rows, cols=cols, grid_size=(width, height),
+                                                gap=gaps,
+                                                bg_color=background_color)
+
+        # Convert the processed Pillow image back to a tensor
+        output_tensor = image_to_tensor(processed_image)
+
+        return (output_tensor,)
 
 
 # A dictionary that contains all nodes you want to export with their names
@@ -352,7 +393,8 @@ NODE_CLASS_MAPPINGS = {
     "iToolsAddOverlay": IToolsAddOverlay,
     "iToolsLoadImages": IToolsLoadImages,
     "iToolsPromptStyler": IToolsPromptStyler,
-    "iToolsPromptStylerExtra": IToolsPromptStylerExtra
+    "iToolsPromptStylerExtra": IToolsPromptStylerExtra,
+    "iToolsGridFiller": IToolsGridFiller
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -363,5 +405,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsAddOverlay": "iTools Add Text Overlay",
     "iToolsLoadImages": "iTools Load Images",
     "iToolsPromptStyler": "iTools Prompt Styler 🖌️",
-    "iToolsPromptStylerExtra": "iTools Prompt Styler Extra 🖌️"
+    "iToolsPromptStylerExtra": "iTools Prompt Styler Extra 🖌️",
+    "iToolsGridFiller": "iTools Grid Filler 📲"
 }
