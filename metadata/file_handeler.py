@@ -7,6 +7,7 @@ class FileHandler:
         """Read a specific line from the file by its index (0-based)."""
         with open(self.filename, 'r', encoding='utf-8') as file:
             lines = file.readlines()
+            lines = [line for line in lines if line.strip()]  # Ignore empty lines
             if self.lines == None:
                 self.lines = lines
             if 0 <= line_index < len(lines):
