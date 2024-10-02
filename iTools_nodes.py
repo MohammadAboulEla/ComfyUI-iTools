@@ -261,6 +261,7 @@ class IToolsLoadImages:
     def INPUT_TYPES(s):
         return {"required": {
             "images_directory": ("STRING", {"multiline": False}),
+            "start_index": ("INT", {"default": 0, "min": 0, "max": 200}),
             "load_limit": ("INT", {"default": 4, "min": 2, "max": 200})
         }}
 
@@ -273,7 +274,7 @@ class IToolsLoadImages:
                    "4 it will return first 4 images in that directory. it will also return the list of these images "
                    "names.")
 
-    def load_images(self, images_directory, load_limit):
+    def load_images(self, images_directory, load_limit, start_index):
         image_extensions = {'.png', '.jpg', '.jpeg', '.webp', '.bmp', '.gif'}
 
         images_path = Path(images_directory.replace('"', ''))
@@ -282,7 +283,9 @@ class IToolsLoadImages:
 
         images = []
         images_names = []
-        for image_path in images_path.iterdir():
+        for idx, image_path in enumerate(images_path.iterdir()):
+            if idx < start_index:
+                continue  # Skip images until reaching the start_index
             if image_path.suffix.lower() in image_extensions:
                 images.append(img_to_tensor(Image.open(image_path)))
                 images_names.append(image_path.stem)  # Add the image name without extension
