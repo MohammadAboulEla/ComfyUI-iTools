@@ -30,15 +30,15 @@ class IToolsLoadImagePlus:
 
     CATEGORY = "iTools"
 
-    RETURN_TYPES = ("IMAGE", "MASK", "STRING")
-    RETURN_NAMES = ("IMAGE", "MASK", "Possible Prompt")
+    RETURN_TYPES = ("IMAGE", "MASK", "STRING", "STRING")
+    RETURN_NAMES = ("IMAGE", "MASK", "possible prompt","image name")
     FUNCTION = "load_image"
     DESCRIPTION = ("An enhancement of the original ComfyUI ImageLoader node. It attempts to return the possible prompt "
                    "used to create an image.")
 
     def load_image(self, image):
         image_path = folder_paths.get_annotated_filepath(image)
-
+        filename = image.rsplit('.', 1)[0]  # get image name
         img = node_helpers.pillow(Image.open, image_path)
 
         output_images = []
@@ -79,7 +79,7 @@ class IToolsLoadImagePlus:
             output_mask = output_masks[0]
 
         output_prompt = get_prompt(image_path)
-        return (output_image, output_mask, output_prompt)
+        return (output_image, output_mask, output_prompt, filename)
 
     @classmethod
     def IS_CHANGED(s, image):
@@ -110,15 +110,15 @@ class IToolsPromptLoader:
 
     CATEGORY = "iTools"
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("Prompt",)
+    RETURN_TYPES = ("STRING", "INT")
+    RETURN_NAMES = ("prompt", "count")
     FUNCTION = "load_file"
     DESCRIPTION = ("Will return a prompt (line number) from txt file at given "
                    "index, note that count start from zero.")
 
     def load_file(self, file_path, seed, fallback="Yes"):
         prompt = ""
-        prompt_random = ""
+        count = 0
         if file_path == "prompts.txt":
             file = os.path.join(p, "ComfyUi-iTools", "examples", "prompts.txt")
         else:
@@ -126,6 +126,7 @@ class IToolsPromptLoader:
         if os.path.exists(file):
             fh = FileHandler(file)
             try:
+                count = fh.len_lines()
                 line = fh.read_line(seed)
                 prompt = fh.unescape_quotes(line)
             except IndexError:
@@ -135,7 +136,7 @@ class IToolsPromptLoader:
                     prompt = fh.unescape_quotes(line)
         else:
             prompt = f"File not exist, {file}"
-        return (prompt, prompt_random)
+        return prompt, count
 
 
 class IToolsPromptSaver:
@@ -384,6 +385,46 @@ class IToolsGridFiller:
         return (output_tensor,)
 
 
+class IToolsLineLoader:
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required":
+            {
+                "lines": ("STRING", {"default": 'cat\ndog\nbunny', "multiline": True}),
+                "seed": ("INT", {"default": 0, "control_after_generate": "increment", "min": 0, "max": 0xfff}),
+            }
+        }
+
+    CATEGORY = "iTools"
+
+    RETURN_TYPES = ("STRING", "INT")
+    RETURN_NAMES = ("line loaded", "count")
+    FUNCTION = "load_line"
+    DESCRIPTION = ("Will return a line from a multi line text at given "
+                   "index, note that count start from zero.")
+
+    def load_line(self, lines, seed, fallback="Yes"):
+        # Split the multiline string into individual lines
+        line_list = lines.splitlines()
+
+        # Count the total number of lines
+        count = len(line_list)
+
+        # Check if the seed index is valid
+        if 0 <= seed < count:
+            line = line_list[seed]
+        elif fallback == "Yes" and count > 0:
+            # If fallback is "Yes", mod the seed by the line count to wrap around
+            seed_mod = seed % count
+            line = line_list[seed_mod]
+        else:
+            # If the index is out of range and no fallback, return an empty string
+            line = ""
+
+        return line, count
+
+
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -394,7 +435,8 @@ NODE_CLASS_MAPPINGS = {
     "iToolsLoadImages": IToolsLoadImages,
     "iToolsPromptStyler": IToolsPromptStyler,
     "iToolsPromptStylerExtra": IToolsPromptStylerExtra,
-    "iToolsGridFiller": IToolsGridFiller
+    "iToolsGridFiller": IToolsGridFiller,
+    "iToolsLineLoader": IToolsLineLoader
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -406,5 +448,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsLoadImages": "iTools Load Images",
     "iToolsPromptStyler": "iTools Prompt Styler 🖌️",
     "iToolsPromptStylerExtra": "iTools Prompt Styler Extra 🖌️",
-    "iToolsGridFiller": "iTools Grid Filler 📲"
+    "iToolsGridFiller": "iTools Grid Filler 📲",
+    "iToolsLineLoader": "iTools Line Loader"
 }

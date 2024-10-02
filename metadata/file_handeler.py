@@ -16,7 +16,10 @@ class FileHandler:
                 raise IndexError("Line index out of range.")
 
     def len_lines(self):
-        return len(self.lines)
+        with open(self.filename, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+            lines = [line for line in lines if line.strip()]  # Ignore empty lines
+        return len(lines)
 
     def append_line(self, line):
         """Append a line to the end of the file."""
