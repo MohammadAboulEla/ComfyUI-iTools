@@ -31,7 +31,7 @@ class IToolsLoadImagePlus:
     CATEGORY = "iTools"
 
     RETURN_TYPES = ("IMAGE", "MASK", "STRING", "STRING")
-    RETURN_NAMES = ("IMAGE", "MASK", "possible prompt","image name")
+    RETURN_NAMES = ("image", "mask", "possible prompt", "image name")
     FUNCTION = "load_image"
     DESCRIPTION = ("An enhancement of the original ComfyUI ImageLoader node. It attempts to return the possible prompt "
                    "used to create an image.")
@@ -220,6 +220,7 @@ class IToolsAddOverlay:
 
     CATEGORY = "iTools"
     RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
     # OUTPUT_NODE = True
     FUNCTION = "add_text_overlay"
     DESCRIPTION = ("Will add an overlay bottom bar to show a given text, you may change the background color of the "
@@ -425,6 +426,30 @@ class IToolsLineLoader:
         return line, count
 
 
+class IToolsTextReplacer:
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required":
+            {
+                "text_in": ("STRING", {"forceInput": True, "multiline": False}),
+                "match": ("STRING", {"forceInput": False, "multiline": False}),
+                "replace": ("STRING", {"forceInput": False, "multiline": False}),
+            }
+        }
+
+    CATEGORY = "iTools"
+
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("text_out",)
+    FUNCTION = "replace_text"
+    DESCRIPTION = "Help you replace a match in a given text."
+
+    def replace_text(self, text_in, match, replace):
+        print(text_in)
+        return text_in.replace(match, replace),
+
+
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -436,7 +461,8 @@ NODE_CLASS_MAPPINGS = {
     "iToolsPromptStyler": IToolsPromptStyler,
     "iToolsPromptStylerExtra": IToolsPromptStylerExtra,
     "iToolsGridFiller": IToolsGridFiller,
-    "iToolsLineLoader": IToolsLineLoader
+    "iToolsLineLoader": IToolsLineLoader,
+    "iToolsTextReplacer": IToolsTextReplacer,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -449,5 +475,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsPromptStyler": "iTools Prompt Styler 🖌️",
     "iToolsPromptStylerExtra": "iTools Prompt Styler Extra 🖌️",
     "iToolsGridFiller": "iTools Grid Filler 📲",
-    "iToolsLineLoader": "iTools Line Loader"
+    "iToolsLineLoader": "iTools Line Loader",
+    "iToolsTextReplacer": "iTools Text Replacer"
 }
