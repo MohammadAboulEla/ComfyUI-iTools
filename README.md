@@ -47,6 +47,22 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 **# iTools Load Images:** will return list of images from a given directory with a given limit, for example if the limit is 4 it will return first 4 images in that directory.it will also return the list of these images names.
 ![iTools Add Text Overlay](examples/Screenshot5.jpg)
 
+**# iTools Grid Filler:** Arranging a set of images into specified rows and columns, applying optional spacing and background color
+
+**# iTools Line Loader:**
+Will return a line from a multi line text at given index, help ypu make your own list of words or prompts and load them one by one or randomized.
+![iTools Line Loader](examples/Screenshot9.jpg)
+
+**# iTools Text Replacer:** A text replacer tool that might also be useful
+`Example1:` with line loader tool you may quickly paste your prompts in lines and load them one by one or randomized, then you combine it with text replacer to get prompt variations. The total count of lines will be returned, allowing it to be used as a batch counter.
+![iTools Text Replacer](examples/Screenshot10.jpg)
+
+`Example2:` Another example useful for randomization: with two lists of just 5 elements each, you can get up to 25 possible outputs
+![iTools Text Replacer](examples/Screenshot11.jpg)
+
+`Example3:` With three lists you get up to 125 possible outputs
+![iTools Text Replacer](examples/Screenshot12.jpg)
+
 _Wait for more..._
 
 Support me on PayPal
