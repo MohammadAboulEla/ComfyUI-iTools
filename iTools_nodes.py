@@ -265,11 +265,11 @@ class IToolsLoadImages:
             "load_limit": ("INT", {"default": 4, "min": 2, "max": 200})
         }}
 
-    RETURN_TYPES = ('IMAGE', "STRING")
-    RETURN_NAMES = ('images', 'images names')
+    RETURN_TYPES = ('IMAGE', "STRING", "INT")
+    RETURN_NAMES = ('images', 'images names', 'count')
     FUNCTION = 'load_images'
     CATEGORY = 'iTools'
-    OUTPUT_IS_LIST = (True, True)
+    OUTPUT_IS_LIST = (True, True, False)
     DESCRIPTION = ("Will return list of images from a given directory with a given limit, for example if the limit is "
                    "4 it will return first 4 images in that directory. it will also return the list of these images "
                    "names.")
@@ -292,7 +292,7 @@ class IToolsLoadImages:
                 if len(images) >= load_limit:
                     break
 
-        return images, images_names
+        return images, images_names, len(images)
 
 
 class IToolsPromptStylerExtra:
@@ -474,7 +474,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsPromptLoader": "iTools Prompt Loader",
     "iToolsPromptSaver": "iTools Prompt Saver",
     "iToolsAddOverlay": "iTools Add Text Overlay",
-    "iToolsLoadImages": "iTools Load Images",
+    "iToolsLoadImages": "iTools Load Images 📦",
     "iToolsPromptStyler": "iTools Prompt Styler 🖌️",
     "iToolsPromptStylerExtra": "iTools Prompt Styler Extra 🖌️",
     "iToolsGridFiller": "iTools Grid Filler 📲",
