@@ -2,18 +2,14 @@ import yaml
 import os
 import folder_paths
 import re
+import time
 
-
-def clean_text_combined(text):
-    # Combine the regular expressions into one to avoid multiple passes
-    text = re.sub(r',(\S)|\s+,|,+|(\.,|,\.)', lambda m: ', ' if m.group(1) else '.' if m.group(2) else ',', text)
-
-    # Replace multiple spaces with a single space
-    text = re.sub(r'\s+', ' ', text)
-
-    # Strip leading and trailing spaces
-    return text.strip()
-
+def time_it(func, *args, **kwargs):
+    start_time = time.time()  # Record start time
+    result = func(*args, **kwargs)  # Call the passed function with arguments
+    end_time = time.time()  # Record end time
+    print(f"Execution time: {end_time - start_time:.6f} seconds")
+    return result
 
 def clean_text(text):
     # Remove duplicate commas
@@ -34,11 +30,10 @@ def clean_text(text):
     # Strip leading and trailing spaces
     return text.strip().replace(" .", ".")
 
-
-def load_yaml_data(file_path):
+def load_yaml_data(_file_path):
     try:
         # Open the file with UTF-8 encoding
-        with open(file_path, 'r', encoding='utf-8') as yaml_file:
+        with open(_file_path, 'r', encoding='utf-8') as yaml_file:
             # Load YAML content as Python objects
             _yaml_data = yaml.safe_load(yaml_file)
 
@@ -49,7 +44,7 @@ def load_yaml_data(file_path):
             raise ValueError("YAML content is not a list of objects.")
 
     except FileNotFoundError:
-        print(f"Error: The file '{file_path}' was not found.")
+        print(f"Error: The file '{_file_path}' was not found.")
     except yaml.YAMLError as e:
         print(f"Error: Invalid YAML format. {e}")
     except Exception as e:
@@ -57,16 +52,14 @@ def load_yaml_data(file_path):
 
     return None
 
-
-def get_yaml_names(folder_path):
+def get_yaml_names(_folder_path):
     names = []
 
-    for file_name in os.listdir(folder_path):
+    for file_name in os.listdir(_folder_path):
         if file_name.endswith(".yaml") or file_name.endswith(".yml"):
             names.append(file_name)
 
     return names
-
 
 def read_styles(_yaml_data):
     if not isinstance(_yaml_data, list):

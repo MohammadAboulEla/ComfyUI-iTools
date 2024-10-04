@@ -1,22 +1,25 @@
-import folder_paths
-from pathlib import Path
-import os
-import torch
-import numpy as np
 import hashlib
-import torchvision.transforms.v2 as T
-
+import os
+import time
+from pathlib import Path
+import comfy.samplers
+import folder_paths
 import node_helpers
+import numpy as np
+import torch
+import torchvision.transforms.v2 as T
 from PIL import Image, ImageSequence, ImageOps
-from .metadata.shared import p
-from .metadata.metadata_extractor import get_prompt
-from .metadata.file_handeler import FileHandler
-from .metadata.overlay import add_overlay_bar, img_to_tensor, add_underlay_bar
-from .metadata.shared import styles
-from .metadata.prompter import read_replace_and_combine, templates
-from .metadata.prompter_multi import combine_multi, templates_basic, templates_extra1, templates_extra2, \
+from nodes import common_ksampler
+
+from .backend.file_handeler import FileHandler
+from .backend.grid_filler import fill_grid_with_images_new, tensor_to_images, image_to_tensor
+from .backend.metadata_extractor import get_prompt
+from .backend.overlay import add_overlay_bar, img_to_tensor, add_underlay_bar
+from .backend.prompter import read_replace_and_combine, templates
+from .backend.prompter_multi import combine_multi, templates_basic, templates_extra1, templates_extra2, \
     templates_extra3
-from .metadata.grid_filler import fill_grid_with_images_new, tensor_to_images, image_to_tensor
+# from .backend.shared import *
+from .backend.shared import p, styles
 
 
 class IToolsLoadImagePlus:
@@ -276,8 +279,8 @@ class IToolsLoadImages:
 
     def load_images(self, images_directory, load_limit, start_index):
         image_extensions = {'.png', '.jpg', '.jpeg', '.webp', '.bmp', '.gif'}
-
         images_path = Path(images_directory.replace('"', ''))
+
         if not images_path.exists():
             raise FileNotFoundError(f"Image directory {images_directory} does not exist")
 
@@ -326,8 +329,8 @@ class IToolsPromptStylerExtra:
         # YOLO, anything goes!
         return True
 
-    RETURN_TYPES = ('STRING', 'STRING',)
-    RETURN_NAMES = ('positive_prompt', 'negative_prompt',)
+    RETURN_TYPES = ('STRING', 'STRING', 'STRING',)
+    RETURN_NAMES = ('positive_prompt', 'negative_prompt', 'used_templates')
     FUNCTION = 'prompt_styler_extra'
     CATEGORY = 'iTools'
     DESCRIPTION = ("Helps you quickly populate your prompt using templates from up to 4 YAML files.")
@@ -338,14 +341,26 @@ class IToolsPromptStylerExtra:
                             third_file, third_style,
                             fourth_file, fourth_style,
                             ):
+        def get_template_format(f, t, i):
+            i = str(i)  # may use later for other formats
+            if t != "none":
+                return f"({f[:-5]}:{t})".replace(" | ", "|").replace(" > ", ">")
+            else:
+                return ""
+
+        t1 = get_template_format(base_file, base_style, 1)
+        t2 = get_template_format(second_file, second_style, 2)
+        t3 = get_template_format(third_file, third_style, 3)
+        t4 = get_template_format(fourth_file, fourth_style, 4)
+        _templates = f"{t1}{t2}{t3}{t4}"  # [:-1]
         positive_prompt, negative_prompt = combine_multi(
             text_positive, text_negative,
             base_file, base_style,
             second_file, second_style,
             third_file, third_style,
             fourth_file,
-            fourth_style, )  # (read_replace_and_combine_multi(template_name, text_positive,text_negative, style_file))
-        return positive_prompt, negative_prompt
+            fourth_style, )
+        return positive_prompt, negative_prompt, _templates
 
 
 class IToolsGridFiller:
@@ -380,8 +395,8 @@ class IToolsGridFiller:
 
         # Process images using the provided function
         processed_image = fill_grid_with_images_new(pillow_images, rows=rows, cols=cols, grid_size=(width, height),
-                                                gap=gaps,
-                                                bg_color=background_color)
+                                                    gap=gaps,
+                                                    bg_color=background_color)
 
         # Convert the processed Pillow image back to a tensor
         output_tensor = image_to_tensor(processed_image)
@@ -453,6 +468,49 @@ class IToolsTextReplacer:
         return text_in.replace(match, replace),
 
 
+class IToolsKSampler:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "model": ("MODEL", {"tooltip": "The model used for denoising the input latent."}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "The random seed used for creating the noise."}),
+                "steps": ("INT", {"default": 20, "min": 1, "max": 10000, "tooltip": "The number of steps used in the denoising process."}),
+                "cfg": ("FLOAT", {"default": 8.0, "min": 0.0, "max": 100.0, "step":0.1, "round": 0.01, "tooltip": "The Classifier-Free Guidance scale balances creativity and adherence to the prompt. Higher values result in images more closely matching the prompt however too high values will negatively impact quality."}),
+                "sampler_name": (comfy.samplers.KSampler.SAMPLERS, {"tooltip": "The algorithm used when sampling, this can affect the quality, speed, and style of the generated output."}),
+                "scheduler": (comfy.samplers.KSampler.SCHEDULERS, {"tooltip": "The scheduler controls how noise is gradually removed to form the image."}),
+                "positive": ("CONDITIONING", {"tooltip": "The conditioning describing the attributes you want to include in the image."}),
+                "negative": ("CONDITIONING", {"tooltip": "The conditioning describing the attributes you want to exclude from the image."}),
+                "latent_image": ("LATENT", {"tooltip": "The latent image to denoise."}),
+                "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01, "tooltip": "The amount of denoising applied, lower values will maintain the structure of the initial image allowing for image to image sampling."}),
+            }
+        }
+
+    RETURN_TYPES = ("LATENT", "STRING")
+    RETURN_NAMES = ("LATENT", "settings")
+    OUTPUT_TOOLTIPS = ("The denoised latent.",)
+    FUNCTION = "sample"
+
+    CATEGORY = "iTools"
+    DESCRIPTION = "Same as the original KSampler but also returns settings used to generate the image and the execution time."
+
+    def sample(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=1.0):
+        start_time = time.time()
+        result = common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise)
+        end_time = time.time()
+        execution_time = f"{end_time - start_time:.3f}s"
+
+        info = f"time:{execution_time} "
+        info += f"seed:{seed} "
+        info += f"steps:{steps} "
+        info += f"cfg:{cfg} "
+        info += f"sampler:{sampler_name} "
+        info += f"scheduler:{scheduler} "
+
+        return result[0], info
+
+
+
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -466,6 +524,7 @@ NODE_CLASS_MAPPINGS = {
     "iToolsGridFiller": IToolsGridFiller,
     "iToolsLineLoader": IToolsLineLoader,
     "iToolsTextReplacer": IToolsTextReplacer,
+    "iToolsKSampler":  IToolsKSampler
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -479,5 +538,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsPromptStylerExtra": "iTools Prompt Styler Extra 🖌️",
     "iToolsGridFiller": "iTools Grid Filler 📲",
     "iToolsLineLoader": "iTools Line Loader",
-    "iToolsTextReplacer": "iTools Text Replacer"
+    "iToolsTextReplacer": "iTools Text Replacer",
+    "iToolsKSampler": "iTools KSampler"
 }

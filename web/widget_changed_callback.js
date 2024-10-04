@@ -1,7 +1,7 @@
 import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js"
 const _id = "iToolsPromptStyler"
-
+// code here is a mess!
 async function send_style_message(style) {
     const body = new FormData();
     body.append('message',style);
@@ -54,7 +54,7 @@ async function waitForInitialization(node, style) {
     }
 }
 
-
+// not used
 function executeAfterDelay(func, delay) {
     if (allow_debug) {console.log(my_node, my_file)}
     setTimeout(() => {

@@ -23,7 +23,6 @@ app.registerExtension({
             const me = onNodeCreated?.apply(this);
             if (allow_debug) {console.log("iToolsPromptStylerExtra", this);}
 
-
             const base_file = this.widgets.find(w => w.name == 'base_file');
             base_file.callback = async ()=> {
             this.widgets[3]["value"] = "loading ...";
@@ -61,6 +60,9 @@ app.registerExtension({
             }
 
             fix_start_up_init(this, base_file,second_file,third_file,fourth_file);
+            this.addWidget("button", "reset all", null, ()=> {
+            reset_func(this,fourth_file)
+            });
             return me;
         };
 },
@@ -68,7 +70,35 @@ app.registerExtension({
 });
 
 
+async function reset_func(node,fourth_file){
+if (allow_debug) {console.log(node, this);}
+    await waitForInitialization(node, fourth_file);
 
+    node.widgets[2]["value"] = "basic.yaml";
+    node.widgets[3]["value"] = "none";
+
+    node.widgets[4]["value"] = "camera.yaml";
+    node.widgets[5]["value"] = "none";
+
+    node.widgets[6]["value"] = "artist.yaml";
+    node.widgets[7]["value"] = "none";
+
+    node.widgets[8]["value"] = "mood.yaml";
+    node.widgets[9]["value"] = "none";
+
+    const options = await send_request_templates_for_file("basic.yaml")
+    const options2 = await send_request_templates_for_file("camera.yaml")
+    const options3 = await send_request_templates_for_file("artist.yaml")
+    const options4 = await send_request_templates_for_file("mood.yaml")
+
+    node.widgets[3]["options"]["values"] = options.templates;
+    node.widgets[5]["options"]["values"] = options2.templates;
+    node.widgets[7]["options"]["values"] = options3.templates;
+    node.widgets[9]["options"]["values"] = options4.templates;
+
+    this.setDirtyCanvas(true, true);
+
+}
 
 
 
@@ -124,6 +154,7 @@ function injectBackgroundColor(me,nodeData,app) {
     });
 }
 
+// not used
 function executeAfterDelay(func, delay) {
     if (allow_debug) {console.log(my_node, my_file)}
     setTimeout(() => {

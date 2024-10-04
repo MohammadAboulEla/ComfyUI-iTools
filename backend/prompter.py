@@ -1,7 +1,7 @@
-from server import PromptServer
 from aiohttp import web
-from .shared import *
+from server import PromptServer
 
+from .shared import *
 
 file_name = "basic.yaml"
 file_path = os.path.join(p, "ComfyUi-iTools", "styles", file_name)

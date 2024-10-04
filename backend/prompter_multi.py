@@ -1,6 +1,7 @@
 from server import PromptServer
 from aiohttp import web
 from .shared import *
+import random
 
 file_name_basic = "basic.yaml"
 file_path_basic = os.path.join(p, "ComfyUi-iTools", "styles", file_name_basic)
@@ -22,12 +23,18 @@ file_path_extra3 = os.path.join(p, "ComfyUi-iTools", "styles", file_name_extra3)
 yaml_data_extra3 = load_yaml_data(file_path_extra3)
 templates_extra3 = read_styles(yaml_data_extra3)
 
+def get_random_template_name(lst):
+    return random.choice([s for s in lst if s not in ["none", "randomized"]])
 
 def get_template_value_from_yaml_file(file_name, template_name):
     positive_prompt = ""
     negative_prompt = ""
     file_path = os.path.join(p, "ComfyUi-iTools", "styles", file_name)
     _yaml_data = load_yaml_data(file_path)
+
+    # if template_name == "randomize":
+    #     templates = read_styles(load_yaml_data(file_path))
+    #     template_name = get_random_template_name(templates)
 
     try:
         # Ensure the data is a list of templates
