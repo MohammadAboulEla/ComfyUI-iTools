@@ -48,6 +48,16 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 ![iTools Add Text Overlay](examples/Screenshot5.jpg)
 
 **# iTools Grid Filler:** Arranging a set of images into specified rows and columns, applying optional spacing and background color
+`Example1:` when one image provided
+![iTools Grid Filler](examples/Screenshot13.jpg)
+`Example2:` when multi-images provided
+![iTools Grid Filler](examples/Screenshot14.jpg)
+
+**# iTools KSampler:** Identical to the original KSampler, but additionally provides the settings used to generate the image and the execution time.
+![iTools KSampler](examples/Screenshot15.jpg)
+
+**# iTools Vae Preview:** Merges VAE decoding and image preview into one node.
+![iTools Vae Preview](examples/Screenshot16.jpg)
 
 **# iTools Line Loader:**
 Will return a line from a multi line text at given index, help ypu make your own list of words or prompts and load them one by one or randomized.

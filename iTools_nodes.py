@@ -494,7 +494,8 @@ class IToolsKSampler:
     FUNCTION = "sample"
 
     CATEGORY = "iTools"
-    DESCRIPTION = "Same as the original KSampler but also returns settings used to generate the image and the execution time."
+    DESCRIPTION = ("Identical to the original KSampler, but additionally provides the settings used to generate the "
+                   "image and the execution time.")
 
     def sample(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=1.0):
         start_time = time.time()
@@ -511,7 +512,7 @@ class IToolsKSampler:
 
         return result[0], info
 
-class IToolsPreviewImage:
+class IToolsVaePreview:
     def __init__(self):
         self.output_dir = folder_paths.get_temp_directory()
         self.type = "temp"
@@ -529,14 +530,14 @@ class IToolsPreviewImage:
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
                 }
     RETURN_TYPES = ()
-    FUNCTION = "save_images"
+    FUNCTION = "vae_preview"
 
     OUTPUT_NODE = True
 
-    CATEGORY = "image"
-    DESCRIPTION = "Saves the input images to your ComfyUI output directory."
+    CATEGORY = "iTools"
+    DESCRIPTION = "Merges VAE decoding and image preview into one node."
 
-    def save_images(self, samples, vae, filename_prefix="ComfyUI", prompt=None, extra_pnginfo=None,):
+    def vae_preview(self, samples, vae, filename_prefix="ComfyUI", prompt=None, extra_pnginfo=None,):
         images = (vae.decode(samples["samples"]), )[0]
         filename_prefix += self.prefix_append
         full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
@@ -579,12 +580,12 @@ NODE_CLASS_MAPPINGS = {
     "iToolsLineLoader": IToolsLineLoader,
     "iToolsTextReplacer": IToolsTextReplacer,
     "iToolsKSampler":  IToolsKSampler,
-    "iToolsPreviewImage": IToolsPreviewImage
+    "iToolsVaePreview": IToolsVaePreview
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "iToolsLoadImagePlus": "iTools Load Image Plus",
+    "iToolsLoadImagePlus": "iTools Load Image 🏕️",
     "iToolsPromptLoader": "iTools Prompt Loader",
     "iToolsPromptSaver": "iTools Prompt Saver",
     "iToolsAddOverlay": "iTools Add Text Overlay",
@@ -595,5 +596,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsLineLoader": "iTools Line Loader",
     "iToolsTextReplacer": "iTools Text Replacer",
     "iToolsKSampler": "iTools KSampler",
-    "iToolsPreviewImage": "iTools PreviewImage"
+    "iToolsVaePreview": "iTools Vae Preview"
 }
