@@ -77,5 +77,5 @@ def read_styles(_yaml_data):
 
 
 p = folder_paths.folder_names_and_paths["custom_nodes"][0][0]
-folder_path = os.path.join(p, "ComfyUi-iTools", "styles")
+folder_path = os.path.join(p, "ComfyUI-iTools", "styles")
 styles = get_yaml_names(folder_path)

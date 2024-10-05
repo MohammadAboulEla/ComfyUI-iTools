@@ -123,7 +123,7 @@ class IToolsPromptLoader:
         prompt = ""
         count = 0
         if file_path == "prompts.txt":
-            file = os.path.join(p, "ComfyUi-iTools", "examples", "prompts.txt")
+            file = os.path.join(p, "ComfyUI-iTools", "examples", "prompts.txt")
         else:
             file = file_path.replace('"', '')
         if os.path.exists(file):
@@ -159,7 +159,7 @@ class IToolsPromptSaver:
 
     def save_to_file(self, file_path, prompt):
         if file_path == "prompts.txt":
-            file = os.path.join(p, "ComfyUi-iTools", "examples", "prompts.txt")
+            file = os.path.join(p, "ComfyUI-iTools", "examples", "prompts.txt")
         else:
             file = file_path.replace('"', '')
         if os.path.exists(file) and prompt is not None and prompt != "":
