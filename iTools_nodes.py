@@ -2,6 +2,8 @@ import hashlib
 import os
 import time
 from pathlib import Path
+import random
+from PIL.PngImagePlugin import PngInfo
 import comfy.samplers
 import folder_paths
 import node_helpers
@@ -10,7 +12,7 @@ import torch
 import torchvision.transforms.v2 as T
 from PIL import Image, ImageSequence, ImageOps
 from nodes import common_ksampler
-
+import json
 from .backend.file_handeler import FileHandler
 from .backend.grid_filler import fill_grid_with_images_new, tensor_to_images, image_to_tensor
 from .backend.metadata_extractor import get_prompt
@@ -20,7 +22,7 @@ from .backend.prompter_multi import combine_multi, templates_basic, templates_ex
     templates_extra3
 # from .backend.shared import *
 from .backend.shared import p, styles
-
+from comfy.cli_args import args
 
 class IToolsLoadImagePlus:
     @classmethod
@@ -34,7 +36,7 @@ class IToolsLoadImagePlus:
     CATEGORY = "iTools"
 
     RETURN_TYPES = ("IMAGE", "MASK", "STRING", "STRING")
-    RETURN_NAMES = ("image", "mask", "possible prompt", "image name")
+    RETURN_NAMES = ("IMAGE", "MASK", "possible prompt", "image name")
     FUNCTION = "load_image"
     DESCRIPTION = ("An enhancement of the original ComfyUI ImageLoader node. It attempts to return the possible prompt "
                    "used to create an image.")
@@ -487,7 +489,7 @@ class IToolsKSampler:
         }
 
     RETURN_TYPES = ("LATENT", "STRING")
-    RETURN_NAMES = ("LATENT", "settings")
+    RETURN_NAMES = ("LATENT", "INFO")
     OUTPUT_TOOLTIPS = ("The denoised latent.",)
     FUNCTION = "sample"
 
@@ -509,7 +511,59 @@ class IToolsKSampler:
 
         return result[0], info
 
+class IToolsPreviewImage:
+    def __init__(self):
+        self.output_dir = folder_paths.get_temp_directory()
+        self.type = "temp"
+        self.prefix_append = "_temp_" + ''.join(random.choice("abcdefghijklmnopqrstupvxyz") for x in range(5))
+        self.compress_level = 1
 
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required":
+                    {
+                        # "images": ("IMAGE", ),
+                        "samples": ("LATENT", {"tooltip": "The latent to be decoded."}),
+                        "vae": ("VAE", {"tooltip": "The VAE model used for decoding the latent."}),
+                     },
+                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+                }
+    RETURN_TYPES = ()
+    FUNCTION = "save_images"
+
+    OUTPUT_NODE = True
+
+    CATEGORY = "image"
+    DESCRIPTION = "Saves the input images to your ComfyUI output directory."
+
+    def save_images(self, samples, vae, filename_prefix="ComfyUI", prompt=None, extra_pnginfo=None,):
+        images = (vae.decode(samples["samples"]), )[0]
+        filename_prefix += self.prefix_append
+        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
+        results = list()
+        for (batch_number, image) in enumerate(images):
+            i = 255. * image.cpu().numpy()
+            img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
+            metadata = None
+            if not args.disable_metadata:
+                metadata = PngInfo()
+                if prompt is not None:
+                    metadata.add_text("prompt", json.dumps(prompt))
+                if extra_pnginfo is not None:
+                    for x in extra_pnginfo:
+                        metadata.add_text(x, json.dumps(extra_pnginfo[x]))
+
+            filename_with_batch_num = filename.replace("%batch_num%", str(batch_number))
+            file = f"{filename_with_batch_num}_{counter:05}_.png"
+            img.save(os.path.join(full_output_folder, file), pnginfo=metadata, compress_level=self.compress_level)
+            results.append({
+                "filename": file,
+                "subfolder": subfolder,
+                "type": self.type
+            })
+            counter += 1
+
+        return { "ui": { "images": results } }
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -524,7 +578,8 @@ NODE_CLASS_MAPPINGS = {
     "iToolsGridFiller": IToolsGridFiller,
     "iToolsLineLoader": IToolsLineLoader,
     "iToolsTextReplacer": IToolsTextReplacer,
-    "iToolsKSampler":  IToolsKSampler
+    "iToolsKSampler":  IToolsKSampler,
+    "iToolsPreviewImage": IToolsPreviewImage
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -539,5 +594,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsGridFiller": "iTools Grid Filler 📲",
     "iToolsLineLoader": "iTools Line Loader",
     "iToolsTextReplacer": "iTools Text Replacer",
-    "iToolsKSampler": "iTools KSampler"
+    "iToolsKSampler": "iTools KSampler",
+    "iToolsPreviewImage": "iTools PreviewImage"
 }
