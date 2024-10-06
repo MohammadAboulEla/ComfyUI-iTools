@@ -1,18 +1,18 @@
+import os
 from aiohttp import web
 from server import PromptServer
-
-from .shared import *
+from .shared import cn, load_yaml_data, read_styles, clean_text
 
 file_name = "basic.yaml"
-file_path = os.path.join(p, "ComfyUI-iTools", "styles", file_name)
+file_path = os.path.join(cn, "ComfyUI-iTools", "styles", file_name)
 yaml_data = load_yaml_data(file_path)
 templates = read_styles(yaml_data)
 
 
-def read_replace_and_combine(template_name, positive_prompt, negative_prompt, file_name):
-    file_path = os.path.join(p, "ComfyUI-iTools", "styles", file_name)
+def read_replace_and_combine(template_name, positive_prompt, negative_prompt, _file_name):
+    _file_path = os.path.join(cn, "ComfyUI-iTools", "styles", _file_name)
 
-    _yaml_data = load_yaml_data(file_path)
+    _yaml_data = load_yaml_data(_file_path)
 
     try:
         # Ensure the data is a list of templates
@@ -63,7 +63,7 @@ async def respond_to_js_message(request):
     file_name = post.get('message')
     # print("Post received", file_name)
 
-    file_path = os.path.join(p, "ComfyUI-iTools", "styles", file_name)
+    file_path = os.path.join(cn, "ComfyUI-iTools", "styles", file_name)
     yaml_data = load_yaml_data(file_path)
     templates = read_styles(yaml_data)
 
@@ -71,16 +71,5 @@ async def respond_to_js_message(request):
     return web.json_response(data=data)
 
 
-
 if __name__ == '__main__':
-    # # Get the current file parent directory
-    # p = Path(__file__).resolve().parent.parent
-    # # Join with the relative path to 'styles/example.yaml'
-    # file_path = p / 'styles' / 'example.yaml'
-    #
-    # # Read yaml from file
-    # y_data = load_yaml_data(file_path)
-    # # Retrieve styles from JSON data
-    # styles = read_replace_and_combine(y_data, "2D Game Art", "test_positive", "test_negative")
-    # print(styles)
     ...

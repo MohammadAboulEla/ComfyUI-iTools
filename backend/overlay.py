@@ -1,21 +1,5 @@
 import os
 from PIL import Image, ImageDraw, ImageFont, ImageColor
-import torch
-import numpy as np
-
-
-def tensor_to_img(image):
-    # Move tensor to CPU and detach if necessary, then convert to NumPy in one step
-    np_img = image.squeeze().mul(255).clamp(0, 255).byte().cpu().numpy()
-
-    # Create a PIL image from the NumPy array
-    return Image.fromarray(np_img)
-
-
-def img_to_tensor(image):
-    np_img = np.asarray(image, dtype=np.float32) / 255.0
-    return torch.from_numpy(np_img).unsqueeze(0)
-
 
 def add_overlay_bar(image, info, font_size=32, background_color="#000000AA"):
     font_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Inconsolata.otf")

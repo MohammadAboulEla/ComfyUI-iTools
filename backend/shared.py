@@ -3,6 +3,12 @@ import os
 import folder_paths
 import re
 import time
+import numpy as np
+import torch
+from PIL import Image
+
+cn = folder_paths.folder_names_and_paths["custom_nodes"][0][0]
+
 
 def time_it(func, *args, **kwargs):
     start_time = time.time()  # Record start time
@@ -10,6 +16,7 @@ def time_it(func, *args, **kwargs):
     end_time = time.time()  # Record end time
     print(f"Execution time: {end_time - start_time:.6f} seconds")
     return result
+
 
 def clean_text(text):
     # Remove duplicate commas
@@ -29,6 +36,7 @@ def clean_text(text):
 
     # Strip leading and trailing spaces
     return text.strip().replace(" .", ".")
+
 
 def load_yaml_data(_file_path):
     try:
@@ -52,6 +60,7 @@ def load_yaml_data(_file_path):
 
     return None
 
+
 def get_yaml_names(_folder_path):
     names = []
 
@@ -60,6 +69,10 @@ def get_yaml_names(_folder_path):
             names.append(file_name)
 
     return names
+
+
+styles = get_yaml_names(os.path.join(cn, "ComfyUI-iTools", "styles"))
+
 
 def read_styles(_yaml_data):
     if not isinstance(_yaml_data, list):
@@ -76,6 +89,24 @@ def read_styles(_yaml_data):
     return names
 
 
-p = folder_paths.folder_names_and_paths["custom_nodes"][0][0]
-folder_path = os.path.join(p, "ComfyUI-iTools", "styles")
-styles = get_yaml_names(folder_path)
+def tensor2pil(image):
+    return Image.fromarray(
+        np.clip(255.0 * image.cpu().numpy().squeeze(), 0, 255).astype(np.uint8)
+    )
+
+
+# suggested by devs
+def pil2tensor(image):
+    return torch.from_numpy(np.array(image).astype(np.float32) / 255.0).unsqueeze(0)
+
+
+def pil2mask(image):
+    # Convert grayscale image to numpy array
+    numpy_array = torch.tensor(np.array(image), dtype=torch.float32)
+    # Normalize to binary mask: 0 for transparent (or dark), 1 for opaque (or bright)
+    mask = (numpy_array > 0).float()  # Converts values to 1 if > 0, otherwise 0
+    # Adding a batch dimension
+    if mask.dim() == 2:
+        mask = mask.unsqueeze(0)  # Shape: [1, H, W]
+    return mask
+

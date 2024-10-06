@@ -9,20 +9,20 @@ import folder_paths
 import node_helpers
 import numpy as np
 import torch
-import torchvision.transforms.v2 as T
 from PIL import Image, ImageSequence, ImageOps
+from .backend.checker_board import ChessTensor, ChessPattern
 from nodes import common_ksampler
 import json
 from .backend.file_handeler import FileHandler
 from .backend.grid_filler import fill_grid_with_images_new, tensor_to_images, image_to_tensor
 from .backend.metadata_extractor import get_prompt
-from .backend.overlay import add_overlay_bar, img_to_tensor, add_underlay_bar
+from .backend.overlay import add_overlay_bar, add_underlay_bar
 from .backend.prompter import read_replace_and_combine, templates
 from .backend.prompter_multi import combine_multi, templates_basic, templates_extra1, templates_extra2, \
     templates_extra3
-# from .backend.shared import *
-from .backend.shared import p, styles
+from .backend.shared import cn, styles, tensor2pil, pil2tensor, pil2mask
 from comfy.cli_args import args
+
 
 class IToolsLoadImagePlus:
     @classmethod
@@ -87,7 +87,7 @@ class IToolsLoadImagePlus:
         return (output_image, output_mask, output_prompt, filename)
 
     @classmethod
-    def IS_CHANGED(s, image):
+    def IS_CHANGED(cls, image):
         image_path = folder_paths.get_annotated_filepath(image)
         m = hashlib.sha256()
         with open(image_path, 'rb') as f:
@@ -95,7 +95,7 @@ class IToolsLoadImagePlus:
         return m.digest().hex()
 
     @classmethod
-    def VALIDATE_INPUTS(s, image):
+    def VALIDATE_INPUTS(cls, image):
         if not folder_paths.exists_annotated_filepath(image):
             return "Invalid image file: {}".format(image)
 
@@ -125,7 +125,7 @@ class IToolsPromptLoader:
         prompt = ""
         count = 0
         if file_path == "prompts.txt":
-            file = os.path.join(p, "ComfyUI-iTools", "examples", "prompts.txt")
+            file = os.path.join(cn, "ComfyUI-iTools", "examples", "prompts.txt")
         else:
             file = file_path.replace('"', '')
         if os.path.exists(file):
@@ -161,7 +161,7 @@ class IToolsPromptSaver:
 
     def save_to_file(self, file_path, prompt):
         if file_path == "prompts.txt":
-            file = os.path.join(p, "ComfyUI-iTools", "examples", "prompts.txt")
+            file = os.path.join(cn, "ComfyUI-iTools", "examples", "prompts.txt")
         else:
             file = file_path.replace('"', '')
         if os.path.exists(file) and prompt is not None and prompt != "":
@@ -179,7 +179,6 @@ class IToolsPromptSaver:
 class IToolsPromptStyler:
 
     def __init__(self):
-        # self.comfyClass = "iTools Prompt Styler"
         pass
 
     @classmethod
@@ -188,13 +187,13 @@ class IToolsPromptStyler:
             "required": {
                 "text_positive": ("STRING", {"default": "", "multiline": True}),
                 "text_negative": ("STRING", {"default": "", "multiline": True}),
-                "style_file": ((styles), {"default": "basic.yaml"}),
-                "template_name": ((templates),),
+                "style_file": (styles, {"default": "basic.yaml"}),
+                "template_name": (templates,),
             },
         }
 
     @classmethod
-    def VALIDATE_INPUTS(s, template_name):
+    def VALIDATE_INPUTS(cls, template_name):
         # YOLO, anything goes!
         return True
 
@@ -202,7 +201,7 @@ class IToolsPromptStyler:
     RETURN_NAMES = ('positive_prompt', 'negative_prompt',)
     FUNCTION = 'prompt_styler'
     CATEGORY = 'iTools'
-    DESCRIPTION = ("Helps you quickly populate your prompt using a template stored in YAML file.")
+    DESCRIPTION = "Helps you quickly populate your prompt using a template stored in YAML file."
 
     def prompt_styler(self, text_positive, text_negative, template_name, style_file):
         positive_prompt, negative_prompt = read_replace_and_combine(template_name, text_positive,
@@ -212,7 +211,7 @@ class IToolsPromptStyler:
 
 class IToolsAddOverlay:
     @classmethod
-    def INPUT_TYPES(cls):
+    def INPUT_TYPES(s):
         return {"required":
             {
                 "image": ("IMAGE", {}),
@@ -226,21 +225,13 @@ class IToolsAddOverlay:
     CATEGORY = "iTools"
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("image",)
-    # OUTPUT_NODE = True
     FUNCTION = "add_text_overlay"
     DESCRIPTION = ("Will add an overlay bottom bar to show a given text, you may change the background color of the "
                    "overlay bar and the font size.")
 
     def add_text_overlay(self, image, text, font_size, background_color, overlay_mode):
-        # Remove the batch dimension and rearrange to [C, H, W]
-        tensor = image.squeeze(0).permute(2, 0, 1)
-
-        # Ensure the values are in the range [0, 1]
-        tensor = tensor.clamp(0, 1)
-
-        # Convert to PIL Image
-        to_pil = T.ToPILImage()
-        pil_image = to_pil(tensor)
+        # Convert image to tensor
+        pil_image = tensor2pil(image)
 
         # Add overlay or underlay
         if overlay_mode:
@@ -249,14 +240,7 @@ class IToolsAddOverlay:
             composite = add_underlay_bar(pil_image, text, font_size=font_size, background_color=background_color)
 
         # Convert back to tensor
-        to_tensor = T.ToTensor()
-        out = to_tensor(composite)
-
-        # Add batch dimension to match original input
-        out = out.unsqueeze(0)
-
-        # Rearrange back to [B, H, W, C] to match input format
-        out = out.permute(0, 2, 3, 1)
+        out = pil2tensor(composite)
 
         return (out,)
 
@@ -292,7 +276,7 @@ class IToolsLoadImages:
             if idx < start_index:
                 continue  # Skip images until reaching the start_index
             if image_path.suffix.lower() in image_extensions:
-                images.append(img_to_tensor(Image.open(image_path)))
+                images.append(pil2tensor(Image.open(image_path)))
                 images_names.append(image_path.stem)  # Add the image name without extension
                 if len(images) >= load_limit:
                     break
@@ -368,14 +352,14 @@ class IToolsPromptStylerExtra:
 class IToolsGridFiller:
 
     @classmethod
-    def INPUT_TYPES(cls):
+    def INPUT_TYPES(s):
         return {"required":
             {
                 "images": ("IMAGE", {}),
-                "width": ("INT", {"default": 1024, "min": 512, "max": 8192}),
-                "height": ("INT", {"default": 1024, "min": 512, "max": 8192}),
-                "rows": ("INT", {"default": 3, "min": 2, "max": 10}),
-                "cols": ("INT", {"default": 3, "min": 2, "max": 10}),
+                "width": ("INT", {"default": 1024, "min": 256, "max": 8192}),
+                "height": ("INT", {"default": 1024, "min": 256, "max": 8192}),
+                "rows": ("INT", {"default": 3, "min": 1, "max": 10}),
+                "cols": ("INT", {"default": 3, "min": 1, "max": 10}),
                 "gaps": ("FLOAT", {"default": 2, "min": 0.0, "max": 50, "steps": 1}),
                 "background_color": ("STRING", {"default": '#000000AA', "multiline": False}),
             }
@@ -476,15 +460,23 @@ class IToolsKSampler:
         return {
             "required": {
                 "model": ("MODEL", {"tooltip": "The model used for denoising the input latent."}),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "The random seed used for creating the noise."}),
-                "steps": ("INT", {"default": 20, "min": 1, "max": 10000, "tooltip": "The number of steps used in the denoising process."}),
-                "cfg": ("FLOAT", {"default": 8.0, "min": 0.0, "max": 100.0, "step":0.1, "round": 0.01, "tooltip": "The Classifier-Free Guidance scale balances creativity and adherence to the prompt. Higher values result in images more closely matching the prompt however too high values will negatively impact quality."}),
-                "sampler_name": (comfy.samplers.KSampler.SAMPLERS, {"tooltip": "The algorithm used when sampling, this can affect the quality, speed, and style of the generated output."}),
-                "scheduler": (comfy.samplers.KSampler.SCHEDULERS, {"tooltip": "The scheduler controls how noise is gradually removed to form the image."}),
-                "positive": ("CONDITIONING", {"tooltip": "The conditioning describing the attributes you want to include in the image."}),
-                "negative": ("CONDITIONING", {"tooltip": "The conditioning describing the attributes you want to exclude from the image."}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff,
+                                 "tooltip": "The random seed used for creating the noise."}),
+                "steps": ("INT", {"default": 20, "min": 1, "max": 10000,
+                                  "tooltip": "The number of steps used in the denoising process."}),
+                "cfg": ("FLOAT", {"default": 8.0, "min": 0.0, "max": 100.0, "step": 0.1, "round": 0.01,
+                                  "tooltip": "The Classifier-Free Guidance scale balances creativity and adherence to the prompt. Higher values result in images more closely matching the prompt however too high values will negatively impact quality."}),
+                "sampler_name": (comfy.samplers.KSampler.SAMPLERS, {
+                    "tooltip": "The algorithm used when sampling, this can affect the quality, speed, and style of the generated output."}),
+                "scheduler": (comfy.samplers.KSampler.SCHEDULERS,
+                              {"tooltip": "The scheduler controls how noise is gradually removed to form the image."}),
+                "positive": ("CONDITIONING", {
+                    "tooltip": "The conditioning describing the attributes you want to include in the image."}),
+                "negative": ("CONDITIONING", {
+                    "tooltip": "The conditioning describing the attributes you want to exclude from the image."}),
                 "latent_image": ("LATENT", {"tooltip": "The latent image to denoise."}),
-                "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01, "tooltip": "The amount of denoising applied, lower values will maintain the structure of the initial image allowing for image to image sampling."}),
+                "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01,
+                                      "tooltip": "The amount of denoising applied, lower values will maintain the structure of the initial image allowing for image to image sampling."}),
             }
         }
 
@@ -499,7 +491,8 @@ class IToolsKSampler:
 
     def sample(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=1.0):
         start_time = time.time()
-        result = common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise)
+        result = common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image,
+                                 denoise=denoise)
         end_time = time.time()
         execution_time = f"{end_time - start_time:.3f}s"
 
@@ -512,6 +505,7 @@ class IToolsKSampler:
 
         return result[0], info
 
+
 class IToolsVaePreview:
     def __init__(self):
         self.output_dir = folder_paths.get_temp_directory()
@@ -522,13 +516,14 @@ class IToolsVaePreview:
     @classmethod
     def INPUT_TYPES(s):
         return {"required":
-                    {
-                        # "images": ("IMAGE", ),
-                        "samples": ("LATENT", {"tooltip": "The latent to be decoded."}),
-                        "vae": ("VAE", {"tooltip": "The VAE model used for decoding the latent."}),
-                     },
-                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
-                }
+            {
+                # "images": ("IMAGE", ),
+                "samples": ("LATENT", {"tooltip": "The latent to be decoded."}),
+                "vae": ("VAE", {"tooltip": "The VAE model used for decoding the latent."}),
+            },
+            "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+        }
+
     RETURN_TYPES = ()
     FUNCTION = "vae_preview"
 
@@ -537,10 +532,11 @@ class IToolsVaePreview:
     CATEGORY = "iTools"
     DESCRIPTION = "Merges VAE decoding and image preview into one node."
 
-    def vae_preview(self, samples, vae, filename_prefix="ComfyUI", prompt=None, extra_pnginfo=None,):
-        images = (vae.decode(samples["samples"]), )[0]
+    def vae_preview(self, samples, vae, filename_prefix="ComfyUI", prompt=None, extra_pnginfo=None, ):
+        images = (vae.decode(samples["samples"]),)[0]
         filename_prefix += self.prefix_append
-        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
+        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(
+            filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
         results = list()
         for (batch_number, image) in enumerate(images):
             i = 255. * image.cpu().numpy()
@@ -564,7 +560,44 @@ class IToolsVaePreview:
             })
             counter += 1
 
-        return { "ui": { "images": results } }
+        return {"ui": {"images": results}}
+
+
+class IToolsCheckerBoard:
+    def __init__(self):
+        ...
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required":
+            {
+                "width": ("INT", {"default": 1024, "min": 256, "max": 8192}),
+                "height": ("INT", {"default": 1024, "min": 256, "max": 8192}),
+                "rows": ("INT", {"default": 4, "min": 1, "max": 32}),
+                "cols": ("INT", {"default": 4, "min": 1, "max": 32}),
+                "pattern": (ChessPattern.to_list(), {"default": ChessPattern.to_list()[1]}),
+                "is_colored": ("BOOLEAN", {"default": False}),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE", "MASK")
+    FUNCTION = "generate_checkerboard"
+    # OUTPUT_NODE = True
+    CATEGORY = "iTools"
+    DESCRIPTION = "Generates chessboard-like patterns, either in black and white or with random colors"
+
+    def generate_checkerboard(self, width, height, rows, cols, pattern, is_colored):
+
+        _tensor = ChessTensor(width=width, height=height, rows=rows, cols=cols,
+                              pattern=ChessPattern.from_string(pattern), colored=is_colored)
+        _img = pil2tensor(_tensor.pil_img)
+
+        # _masked_tensor = ChessTensor(width=width, height=height, rows=rows, cols=cols,
+        #                              pattern=ChessPattern.from_string(pattern), colored=False)
+        # _mask_image = _masked_tensor.pil_img
+        _mask = _img[:, :, :, 0]
+        return _img, _mask
+
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -579,8 +612,9 @@ NODE_CLASS_MAPPINGS = {
     "iToolsGridFiller": IToolsGridFiller,
     "iToolsLineLoader": IToolsLineLoader,
     "iToolsTextReplacer": IToolsTextReplacer,
-    "iToolsKSampler":  IToolsKSampler,
-    "iToolsVaePreview": IToolsVaePreview
+    "iToolsKSampler": IToolsKSampler,
+    "iToolsVaePreview": IToolsVaePreview,
+    "iToolsCheckerBoard": IToolsCheckerBoard
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -596,5 +630,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsLineLoader": "iTools Line Loader",
     "iToolsTextReplacer": "iTools Text Replacer",
     "iToolsKSampler": "iTools KSampler",
-    "iToolsVaePreview": "iTools Vae Preview"
+    "iToolsVaePreview": "iTools Vae Preview ⛳",
+    "iToolsCheckerBoard": "iTools Checkerboard 🏁"
 }
