@@ -573,8 +573,8 @@ class IToolsCheckerBoard:
             {
                 "width": ("INT", {"default": 1024, "min": 256, "max": 8192}),
                 "height": ("INT", {"default": 1024, "min": 256, "max": 8192}),
-                "rows": ("INT", {"default": 4, "min": 1, "max": 128}),
-                "cols": ("INT", {"default": 4, "min": 1, "max": 128}),
+                "rows": ("INT", {"default": 9, "min": 1, "max": 128}),
+                "cols": ("INT", {"default": 9, "min": 1, "max": 128}),
                 "pattern": (ChessPattern.to_list(), {"default": ChessPattern.to_list()[1]}),
                 "is_colored": ("BOOLEAN", {"default": False}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xfff}),

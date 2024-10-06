@@ -147,11 +147,6 @@ class ChessTensor:
                 case ChessPattern.RANDOM:
                     return torch.randint(0, 256, (3, self.rows, self.cols))   # Random RGB colors
 
-                # case ChessPattern.RANDOM_UNIFORM:  # works for force gradiant
-                #     # Generate random values for each pixel and repeat them across the 3 channels
-                #     random_colors = torch.randint(0, 256, (self.rows, self.cols))  # Random grayscale values
-                #     return random_colors.unsqueeze(0).repeat(3, 1, 1)  # Repeat across 3 channels
-
                 case ChessPattern.RANDOM_UNIFORM:
                     if self.colored:
                         random_grayscale = torch.randint(0, 256, (self.rows, self.cols))
@@ -164,6 +159,13 @@ class ChessTensor:
                     else:
                         random_colors = torch.randint(0, 256, (self.rows, self.cols))  # Random grayscale values
                         return random_colors.unsqueeze(0).repeat(3, 1, 1)  # Repeat across 3 channels
+
+                case ChessPattern.CHECKERBOARD:
+                    for i in range(self.rows):
+                        for j in range(self.cols):
+                            if (i + j) % 2 == 0:
+                                base_tensor[:, i, j] = torch.randint(0, 256, (3,))  # Assign random color
+                    return base_tensor
 
                 case ChessPattern.STRIPES_HORIZONTAL:
                     for i in range(self.rows):
