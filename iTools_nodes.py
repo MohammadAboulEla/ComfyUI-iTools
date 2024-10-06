@@ -20,7 +20,7 @@ from .backend.overlay import add_overlay_bar, add_underlay_bar
 from .backend.prompter import read_replace_and_combine, templates
 from .backend.prompter_multi import combine_multi, templates_basic, templates_extra1, templates_extra2, \
     templates_extra3
-from .backend.shared import cn, styles, tensor2pil, pil2tensor, pil2mask
+from .backend.shared import cn, styles, tensor2pil, pil2tensor
 from comfy.cli_args import args
 
 
@@ -573,10 +573,11 @@ class IToolsCheckerBoard:
             {
                 "width": ("INT", {"default": 1024, "min": 256, "max": 8192}),
                 "height": ("INT", {"default": 1024, "min": 256, "max": 8192}),
-                "rows": ("INT", {"default": 4, "min": 1, "max": 32}),
-                "cols": ("INT", {"default": 4, "min": 1, "max": 32}),
+                "rows": ("INT", {"default": 4, "min": 1, "max": 128}),
+                "cols": ("INT", {"default": 4, "min": 1, "max": 128}),
                 "pattern": (ChessPattern.to_list(), {"default": ChessPattern.to_list()[1]}),
                 "is_colored": ("BOOLEAN", {"default": False}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xfff}),
             },
         }
 
@@ -586,15 +587,12 @@ class IToolsCheckerBoard:
     CATEGORY = "iTools"
     DESCRIPTION = "Generates chessboard-like patterns, either in black and white or with random colors"
 
-    def generate_checkerboard(self, width, height, rows, cols, pattern, is_colored):
+    def generate_checkerboard(self, width, height, rows, cols, pattern, is_colored, seed):
 
         _tensor = ChessTensor(width=width, height=height, rows=rows, cols=cols,
                               pattern=ChessPattern.from_string(pattern), colored=is_colored)
         _img = pil2tensor(_tensor.pil_img)
 
-        # _masked_tensor = ChessTensor(width=width, height=height, rows=rows, cols=cols,
-        #                              pattern=ChessPattern.from_string(pattern), colored=False)
-        # _mask_image = _masked_tensor.pil_img
         _mask = _img[:, :, :, 0]
         return _img, _mask
 
