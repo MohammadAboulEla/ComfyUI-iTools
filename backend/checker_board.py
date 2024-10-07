@@ -10,16 +10,18 @@ class ChessPattern(Enum):
     STRIPES_HORIZONTAL = "horizontal stripes"
     STRIPES_VERTICAL = "vertical stripes"
     STRIPES_DIAGONAL = "diagonal stripes"
-    BORDER = "border"
-    BORDER_RANDOM = "border random"
+    RING = "rings"
     CROSS = "cross"
+    PLUS = "plus"
+    PORTAL = "portal"
     GRADIENT_VERTICAL = "gradient vertical"
     GRADIENT_HORIZONTAL = "gradient horizontal"
     DIAMOND = "diamond"
     DIAMOND_FILL = "diamond fill"
     DOTTED_FRAME = "dotted frame"
-    PORTAL = "portal"
-    RING = "ring"
+    BORDER = "border"
+    EDGES = "border edge"
+
 
     @staticmethod
     def to_list():
@@ -32,6 +34,7 @@ class ChessPattern(Enum):
                 return pattern
         raise ValueError(f"{pattern_str} is not a valid ChessPattern")
 
+
 class ChessTensor:
     def __init__(self, pattern: ChessPattern, colored=False, width=512, height=512, rows=4, cols=4):
         self.pattern = pattern
@@ -41,13 +44,13 @@ class ChessTensor:
         self.height = height
         self.colored = colored
 
-        if pattern not in [ChessPattern.GRADIENT_VERTICAL, ChessPattern.GRADIENT_HORIZONTAL, ChessPattern.RANDOM_UNIFORM, ChessPattern.PORTAL]:
+        if pattern not in [ChessPattern.GRADIENT_VERTICAL, ChessPattern.GRADIENT_HORIZONTAL,
+                           ChessPattern.RANDOM_UNIFORM, ChessPattern.PORTAL, ChessPattern.EDGES]:
             self.tensor = self.tensor_prepare()
             self.pil_img = self.generate_image_from_tensor_colored() if colored else self.generate_image_from_tensor()
         else:
             self.tensor = self.tensor_prepare(force_gradient=True)
             self.pil_img = self.generate_image_from_tensor_colored()
-
 
     def tensor_prepare(self, force_gradient=False):
         colored = self.colored
@@ -76,9 +79,10 @@ class ChessTensor:
                          range(self.rows)]).unsqueeze(0)
 
                 case ChessPattern.STRIPES_DIAGONAL:
-                    return torch.tensor([[(i + j) % 3 == 0 for j in range(self.cols)] for i in range(self.rows)]).unsqueeze(0)
+                    return torch.tensor(
+                        [[(i + j) % 3 == 0 for j in range(self.cols)] for i in range(self.rows)]).unsqueeze(0)
 
-                case ChessPattern.BORDER | ChessPattern.BORDER_RANDOM:
+                case ChessPattern.BORDER | ChessPattern.EDGES:
                     base_tensor = torch.zeros((self.rows, self.cols))
                     base_tensor[0, :] = 1
                     base_tensor[-1, :] = 1
@@ -92,6 +96,19 @@ class ChessTensor:
                     center_col = self.cols // 2
                     base_tensor[center_row, :] = 1
                     base_tensor[:, center_col] = 1
+                    return base_tensor.unsqueeze(0)
+
+                case ChessPattern.PLUS:
+                    base_tensor = torch.zeros((self.rows, self.cols))
+                    center_row = self.rows // 2
+                    center_col = self.cols // 2
+
+                    # Fill the plus shape
+                    if 0 < center_row < self.rows:
+                        base_tensor[center_row, 1:-1] = 1  # Horizontal arm of the plus
+                    if 0 < center_col < self.cols:
+                        base_tensor[1:-1, center_col] = 1  # Vertical arm of the plus
+
                     return base_tensor.unsqueeze(0)
 
                 case ChessPattern.DIAMOND:
@@ -154,7 +171,7 @@ class ChessTensor:
             base_tensor = torch.zeros((3, self.rows, self.cols), dtype=torch.uint8)
             match self.pattern:
                 case ChessPattern.RANDOM:
-                    return torch.randint(0, 256, (3, self.rows, self.cols))   # Random RGB colors
+                    return torch.randint(0, 256, (3, self.rows, self.cols))  # Random RGB colors
 
                 case ChessPattern.RANDOM_UNIFORM:
                     if self.colored:
@@ -195,20 +212,34 @@ class ChessTensor:
                                 stripe_index = i + j  # Use a unique index for each diagonal stripe
                                 if stripe_index not in color_map:
                                     color_map[stripe_index] = torch.randint(0, 256, (
-                                    3,))  # Assign a random color for this stripe
+                                        3,))  # Assign a random color for this stripe
                                 base_tensor[:, i, j] = color_map[stripe_index]  # Use the assigned color
                     return base_tensor
 
-                case ChessPattern.BORDER_RANDOM:
-                    border_color_top = torch.randint(0, 256, (3,))
-                    border_color_bottom = torch.randint(0, 256, (3,))
-                    border_color_left = torch.randint(0, 256, (3,))
-                    border_color_right = torch.randint(0, 256, (3,))
-                    base_tensor[:, 0, :] = border_color_top.view(3, 1)  # Expand to match dimension
-                    base_tensor[:, -1, :] = border_color_bottom.view(3, 1)  # Expand to match dimension
-                    base_tensor[:, :, 0] = border_color_left.view(3, 1)  # Expand to match dimension
-                    base_tensor[:, :, -1] = border_color_right.view(3, 1)  # Expand to match dimension
-                    return base_tensor
+                case ChessPattern.EDGES:
+                    if self.colored:
+                        border_color_top = torch.randint(0, 256, (3,))
+                        border_color_bottom = torch.randint(0, 256, (3,))
+                        border_color_left = torch.randint(0, 256, (3,))
+                        border_color_right = torch.randint(0, 256, (3,))
+                        base_tensor[:, 0, :] = border_color_top.view(3, 1)  # Expand to match dimension
+                        base_tensor[:, -1, :] = border_color_bottom.view(3, 1)  # Expand to match dimension
+                        base_tensor[:, :, 0] = border_color_left.view(3, 1)  # Expand to match dimension
+                        base_tensor[:, :, -1] = border_color_right.view(3, 1)  # Expand to match dimension
+                        return base_tensor
+                    else:
+                        # Generate a random grayscale value for each border
+                        border_color_top = torch.randint(0, 256, (1,)).repeat(3)  # Random grayscale color for top border
+                        border_color_bottom = torch.randint(0, 256, (1,)).repeat(3)  # Random grayscale color for bottom border
+                        border_color_left = torch.randint(0, 256, (1,)).repeat(3)  # Random grayscale color for left border
+                        border_color_right = torch.randint(0, 256, (1,)).repeat(3)  # Random grayscale color for right border
+
+                        base_tensor[:, 0, :] = border_color_top.view(3, 1)  # Expand to match dimension for top border
+                        base_tensor[:, -1, :] = border_color_bottom.view(3, 1)  # Expand to match dimension for bottom border
+                        base_tensor[:, :, 0] = border_color_left.view(3, 1)  # Expand to match dimension for left border
+                        base_tensor[:, :, -1] = border_color_right.view(3, 1)  # Expand to match dimension for right border
+
+                        return base_tensor
 
                 case ChessPattern.BORDER:
                     border_color = torch.randint(0, 256, (3,))
@@ -250,7 +281,7 @@ class ChessTensor:
                         for step in range(self.rows * self.cols):
                             base_tensor[:, row, col] = grayscale_value
                             if direction == 0:  # moving right
-                                if col + 1 < self.cols and torch.all(base_tensor[:, row, col + 1] == 0):
+                                if col + 1 < self.cols and torch.all(torch.eq(base_tensor[:, row, col + 1], 0)):
                                     col += 1
                                 else:
                                     direction = 1
@@ -258,21 +289,21 @@ class ChessTensor:
                                     # Decrease grayscale value for next step
                                     grayscale_value = max(grayscale_value - 15, 0)  # Adjust the decrement as needed
                             elif direction == 1:  # moving down
-                                if row + 1 < self.rows and torch.all(base_tensor[:, row + 1, col] == 0):
+                                if row + 1 < self.rows and torch.all(torch.eq(base_tensor[:, row + 1, col], 0)):
                                     row += 1
                                 else:
                                     direction = 2
                                     col -= 1
                                     grayscale_value = max(grayscale_value - 15, 0)
                             elif direction == 2:  # moving left
-                                if col - 1 >= 0 and torch.all(base_tensor[:, row, col - 1] == 0):
+                                if col - 1 >= 0 and torch.all(torch.eq(base_tensor[:, row, col - 1], 0)):
                                     col -= 1
                                 else:
                                     direction = 3
                                     row -= 1
                                     grayscale_value = max(grayscale_value - 15, 0)
                             elif direction == 3:  # moving up
-                                if row - 1 >= 0 and torch.all(base_tensor[:, row - 1, col] == 0):
+                                if row - 1 >= 0 and torch.all(torch.eq(base_tensor[:, row - 1, col], 0)):
                                     row -= 1
                                 else:
                                     direction = 0
@@ -286,28 +317,28 @@ class ChessTensor:
                         for step in range(self.rows * self.cols):
                             base_tensor[:, row, col] = random_color
                             if direction == 0:  # moving right
-                                if col + 1 < self.cols and torch.all(base_tensor[:, row, col + 1] == 0):
+                                if col + 1 < self.cols and torch.all(torch.eq(base_tensor[:, row, col + 1], 0)):
                                     col += 1
                                 else:
                                     direction = 1
                                     row += 1
                                     random_color = torch.randint(0, 256, (3,))  # New color for new direction
                             elif direction == 1:  # moving down
-                                if row + 1 < self.rows and torch.all(base_tensor[:, row + 1, col] == 0):
+                                if row + 1 < self.rows and torch.all(torch.eq(base_tensor[:, row + 1, col], 0)):
                                     row += 1
                                 else:
                                     direction = 2
                                     col -= 1
                                     random_color = torch.randint(0, 256, (3,))
                             elif direction == 2:  # moving left
-                                if col - 1 >= 0 and torch.all(base_tensor[:, row, col - 1] == 0):
+                                if col - 1 >= 0 and torch.all(torch.eq(base_tensor[:, row, col - 1], 0)):
                                     col -= 1
                                 else:
                                     direction = 3
                                     row -= 1
                                     random_color = torch.randint(0, 256, (3,))
                             elif direction == 3:  # moving up
-                                if row - 1 >= 0 and torch.all(base_tensor[:, row - 1, col] == 0):
+                                if row - 1 >= 0 and torch.all(torch.eq(base_tensor[:, row - 1, col], 0)):
                                     row -= 1
                                 else:
                                     direction = 0
@@ -328,25 +359,25 @@ class ChessTensor:
 
                         # Move in the specified direction
                         if direction == 0:  # moving right
-                            if col + 1 < self.cols and torch.all(base_tensor[row, col + 1] == 0):
+                            if col + 1 < self.cols and torch.all(torch.eq(base_tensor[row, col + 1], 0)):
                                 col += 1
                             else:
                                 direction = 1
                                 row += 1
                         elif direction == 1:  # moving down
-                            if row + 1 < self.rows and torch.all(base_tensor[row + 1, col] == 0):
+                            if row + 1 < self.rows and torch.all(torch.eq(base_tensor[row + 1, col], 0)):
                                 row += 1
                             else:
                                 direction = 2
                                 col -= 1
                         elif direction == 2:  # moving left
-                            if col - 1 >= 0 and torch.all(base_tensor[row, col - 1] == 0):
+                            if col - 1 >= 0 and torch.all(torch.eq(base_tensor[row, col - 1], 0)):
                                 col -= 1
                             else:
                                 direction = 3
                                 row -= 1
                         elif direction == 3:  # moving up
-                            if row - 1 >= 0 and torch.all(base_tensor[row - 1, col] == 0):
+                            if row - 1 >= 0 and torch.all(torch.eq(base_tensor[row - 1, col], 0)):
                                 row -= 1
                             else:
                                 direction = 0
@@ -358,9 +389,9 @@ class ChessTensor:
                     random_color = torch.randint(0, 256, (3,))  # Generate a random color
                     for i in range(3):  # For each RGB channel
                         if force_gradient and not self.colored:
-                            base_tensor[i, :, :] = torch.linspace(0, 255, self.rows).unsqueeze(1).expand(self.rows,self.cols) * 1.0
+                            base_tensor[i, :, :] = torch.linspace(0, 255, self.rows).unsqueeze(1).expand(self.rows, self.cols) * 1.0
                         else:
-                            base_tensor[i, :, :] = torch.linspace(0, 255, self.rows).unsqueeze(1).expand(self.rows,self.cols) * (random_color[i] / 255.0)
+                            base_tensor[i, :, :] = torch.linspace(0, 255, self.rows).unsqueeze(1).expand(self.rows, self.cols) * (random_color[i] / 255.0)
                     return base_tensor
 
                 case ChessPattern.GRADIENT_HORIZONTAL:
@@ -390,7 +421,7 @@ class ChessTensor:
 
                     return result.permute(2, 0, 1)  # Permute to match (C, H, W) format
 
-    def generate_image_from_tensor_colored(self, white_gradient=False):
+    def generate_image_from_tensor_colored(self):
         colored_tensor = self.tensor
         width = self.width
         height = self.height

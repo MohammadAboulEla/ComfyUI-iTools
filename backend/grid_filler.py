@@ -41,111 +41,8 @@ def image_to_tensor(image):
     return tensor_image
 
 
-def windows_fill_grid(image_path, rows, cols):
-    # Open the input image
-    img = Image.open(image_path)
-
-    # Get the dimensions of the original image
-    img_width, img_height = img.size
-
-    # Create a new image with the total size of the grid
-    new_width = cols * img_width
-    new_height = rows * img_height
-    grid_image = Image.new('RGB', (new_width, new_height))
-
-    # Paste the original image into the grid
-    for row in range(rows):
-        for col in range(cols):
-            grid_image.paste(img, (col * img_width, row * img_height))
-
-    return grid_image
-
-
-def windows_fill_grid_with_images(image_paths, rows, cols, grid_size=(1024, 1024), gap=0.05, bg_color='#ffffff'):
-    # Calculate the grid dimensions and create a new grid
-    grid_image = Image.new('RGB', grid_size, bg_color)
-    img_width = grid_image.width // cols
-    img_height = grid_image.height // rows
-    size = (img_width, img_height)
-
-    # Pre-calculate the extended amount for centering later
-    extend_amount = round(img_width * gap) - round(gap * 200)
-
-    # Loop through the specified number of rows and columns
-    for row in range(rows):
-        for col in range(cols):
-            index = row * cols + col
-            if index < len(image_paths):
-                # Open and resize the image
-                img = Image.open(image_paths[index])
-                img.thumbnail(size, Resampling.LANCZOS)
-                img = img.resize((int(img.width * (1 - gap)), int(img.height * (1 - gap))))
-
-                # Calculate the position to paste the image centered in the grid
-                position = (col * img_width + (img_width - img.width) // 2,
-                            row * img_height + (img_height - img.height) // 2)
-
-                # Paste the resized image into the grid
-                grid_image.paste(img, position)
-
-    # Create an extended image with additional padding
-    extended_image = Image.new('RGB', (grid_image.width + 2 * extend_amount, grid_image.height + 2 * extend_amount),
-                               bg_color)
-    extended_image.paste(grid_image, (extend_amount, extend_amount))
-    extended_image.resize(grid_size, Resampling.LANCZOS)
-
-    return extended_image.resize(grid_size, Resampling.LANCZOS)
-
-
-def fill_grid_with_images(images, rows, cols, grid_size=(1024, 1024), gap=0.05, bg_color='#ffffff'):
-    print("Len Images", len(images))
-    print(type(images[0]))
-    rows = rows[0]
-    cols = cols[0]
-    grid_size = (grid_size[0][0], grid_size[1][0])
-    gap = gap[0] / 100.0
-    bg_color = bg_color[0]
-
-    # Calculate the grid dimensions and create a new grid
-    grid_image = Image.new('RGB', grid_size, bg_color)
-    img_width = grid_image.width // cols
-    img_height = grid_image.height // rows
-    size = (img_width, img_height)
-
-    # Pre-calculate the extended amount for centering later
-    extend_amount = round(img_width * gap) - round(gap * 200)
-
-    # Loop through the specified number of rows and columns
-    for row in range(rows):
-        for col in range(cols):
-            index = row * cols + col
-            if index < len(images):
-                # Resize the image
-                img = images[index]
-                img.thumbnail(size, Resampling.LANCZOS)
-
-                # Further resize for gap if necessary
-                img = img.resize((int(img.width * (1 - gap)), int(img.height * (1 - gap))), Resampling.LANCZOS)
-
-                # Calculate the position to paste the image centered in the grid
-                position = (col * img_width + (img_width - img.width) // 2,
-                            row * img_height + (img_height - img.height) // 2)
-
-                # Paste the resized image into the grid
-                grid_image.paste(img, position)
-
-    # Create an extended image with additional padding
-    extended_image = Image.new('RGB', (grid_image.width + 2 * extend_amount, grid_image.height + 2 * extend_amount),
-                               bg_color)
-    extended_image.paste(grid_image, (extend_amount, extend_amount))
-    extended_image = extended_image.resize(grid_size, Resampling.LANCZOS)
-
-    return extended_image
-
-
-def fill_grid_with_images_new(images, rows, cols, grid_size=(1024, 1024), gap=0.05, bg_color='#ffffff'):
-    # print("Len Images", len(images))
-    # print(type(images[0]))
+def fill_grid_with_images_new(images, rows, cols, grid_size=(1024, 1024), gap=0.05, bg_color='#ffffff', direction='rows'):
+    # Unpack the input parameters
     rows = rows[0]
     cols = cols[0]
     grid_size = (grid_size[0][0], grid_size[1][0])
@@ -169,35 +66,52 @@ def fill_grid_with_images_new(images, rows, cols, grid_size=(1024, 1024), gap=0.
         # Further resize for gap if necessary
         img = img.resize((int(img.width * (1 - gap)), int(img.height * (1 - gap))), Resampling.LANCZOS)
 
-        # Loop through the specified number of rows and columns to paste the single image
-        for row in range(rows):
-            for col in range(cols):
-                # Calculate the position to paste the image centered in the grid
-                position = (col * img_width + (img_width - img.width) // 2,
-                            row * img_height + (img_height - img.height) // 2)
+        # Calculate the position to paste the image centered in the grid
+        position = (0, 0)
 
-                # Paste the resized image into the grid
-                grid_image.paste(img, position)
+        # Paste the resized image into the grid
+        grid_image.paste(img, position)
 
     else:
         # Loop through the specified number of rows and columns for multiple images
-        for row in range(rows):
+        if direction == 'rows':
+            for row in range(rows):
+                for col in range(cols):
+                    index = row * cols + col
+                    if index < len(images):
+                        # Resize the image
+                        img = images[index]
+                        img.thumbnail(size, Resampling.LANCZOS)
+
+                        # Further resize for gap if necessary
+                        img = img.resize((int(img.width * (1 - gap)), int(img.height * (1 - gap))), Resampling.LANCZOS)
+
+                        # Calculate the position to paste the image centered in the grid
+                        position = (col * img_width + (img_width - img.width) // 2,
+                                    row * img_height + (img_height - img.height) // 2)
+
+                        # Paste the resized image into the grid
+                        grid_image.paste(img, position)
+        elif direction == 'cols':
             for col in range(cols):
-                index = row * cols + col
-                if index < len(images):
-                    # Resize the image
-                    img = images[index]
-                    img.thumbnail(size, Resampling.LANCZOS)
+                for row in range(rows):
+                    index = row * cols + col
+                    if index < len(images):
+                        # Resize the image
+                        img = images[index]
+                        img.thumbnail(size, Resampling.LANCZOS)
 
-                    # Further resize for gap if necessary
-                    img = img.resize((int(img.width * (1 - gap)), int(img.height * (1 - gap))), Resampling.LANCZOS)
+                        # Further resize for gap if necessary
+                        img = img.resize((int(img.width * (1 - gap)), int(img.height * (1 - gap))), Resampling.LANCZOS)
 
-                    # Calculate the position to paste the image centered in the grid
-                    position = (col * img_width + (img_width - img.width) // 2,
-                                row * img_height + (img_height - img.height) // 2)
+                        # Calculate the position to paste the image centered in the grid
+                        position = (row * img_height + (img_height - img.height) // 2,
+                                    col * img_width + (img_width - img.width) // 2)
 
-                    # Paste the resized image into the grid
-                    grid_image.paste(img, position)
+                        # Paste the resized image into the grid
+                        grid_image.paste(img, position)
+        else:
+            raise ValueError("Invalid direction. Choose either 'rows' or 'cols'.")
 
     # Create an extended image with additional padding
     extended_image = Image.new('RGB', (grid_image.width + 2 * extend_amount, grid_image.height + 2 * extend_amount),
@@ -206,6 +120,7 @@ def fill_grid_with_images_new(images, rows, cols, grid_size=(1024, 1024), gap=0.
     extended_image = extended_image.resize(grid_size, Resampling.LANCZOS)
 
     return extended_image
+
 
 
 if __name__ == '__main__':
