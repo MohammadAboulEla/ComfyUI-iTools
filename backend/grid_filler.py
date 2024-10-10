@@ -66,11 +66,15 @@ def fill_grid_with_images_new(images, rows, cols, grid_size=(1024, 1024), gap=0.
         # Further resize for gap if necessary
         img = img.resize((int(img.width * (1 - gap)), int(img.height * (1 - gap))), Resampling.LANCZOS)
 
-        # Calculate the position to paste the image centered in the grid
-        position = (0, 0)
+        # Loop through the specified number of rows and columns to paste the single image
+        for row in range(rows):
+            for col in range(cols):
+                # Calculate the position to paste the image centered in the grid
+                position = (col * img_width + (img_width - img.width) // 2,
+                            row * img_height + (img_height - img.height) // 2)
 
-        # Paste the resized image into the grid
-        grid_image.paste(img, position)
+                # Paste the resized image into the grid
+                grid_image.paste(img, position)
 
     else:
         # Loop through the specified number of rows and columns for multiple images

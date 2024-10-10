@@ -99,6 +99,24 @@ def tensor2pil(image):
 def pil2tensor(image):
     return torch.from_numpy(np.array(image).astype(np.float32) / 255.0).unsqueeze(0)
 
+def pil2tensor_2(image):
+    return torch.from_numpy(np.array(image).astype(np.float32) / 255.0).unsqueeze(1)
+
+
+def pil2tensor_3(image):
+    # Convert the PIL image to a NumPy array and normalize it to [0, 1]
+    image_array = np.array(image).astype(np.float32) / 255.0
+
+    # Move the channel dimension to the last position if needed (e.g., for RGB images)
+    if image_array.ndim == 2:  # Grayscale image, no channel dimension
+        image_array = np.expand_dims(image_array, axis=-1)
+
+    # Add a batch dimension at the start
+    tensor = torch.from_numpy(image_array).unsqueeze(0)  # Shape: (1, w, h, c)
+
+    return tensor
+
+
 
 def pil2mask(image):
     # Convert grayscale image to numpy array
