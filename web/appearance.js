@@ -25,6 +25,13 @@ app.registerExtension({
                 case "iToolsLineLoader":
                     node.setSize([200, 180]);
                     break;
+                case "iToolsGridFiller":
+                    node.setSize([240, 200]);
+                    break;
+                case "iToolsLoadImagePlus":
+                    node.setSize([210, 170]);
+                    node.color = LGraphCanvas.node_colors.pale_blue.color;
+                    break;
             }
         }
 });
