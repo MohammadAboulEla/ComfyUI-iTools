@@ -25,7 +25,6 @@ app.registerExtension({
                 case "iToolsLineLoader":
                     node.setSize([200, 180]);
                     break;
-
             }
         }
 });

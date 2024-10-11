@@ -42,6 +42,7 @@ app.registerExtension({
 async function fix_start_up_init(node, style) {
     // Wait until node and style are fully initialized
     await waitForInitialization(node, style);
+    if (node.size[0] <= 300 | node.size[1] <= 230) {node.setSize([300, 230]);}
     // Proceed with sending the style message and updating node widgets
     const options = await send_style_message(style.value);
     node.widgets[3]["options"]["values"] = options.new_templates;

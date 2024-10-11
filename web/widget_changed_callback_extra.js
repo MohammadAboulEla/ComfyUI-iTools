@@ -105,7 +105,7 @@ if (allow_debug) {console.log(node, this);}
 async function fix_start_up_init(node, base,s1,s2,s3) {
     // Wait until node and style are fully initialized
     await waitForInitialization(node, s3);
-
+    if (node.size[0] <= 300 | node.size[1] <= 420) {node.setSize([300, 420]);}
     const options = await send_request_templates_for_file(base.value);
     if (options) {
         node.widgets[3]["options"]["values"] = options.templates;

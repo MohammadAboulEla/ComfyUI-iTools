@@ -182,11 +182,11 @@ class IToolsPromptStyler:
         pass
 
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(cls):
         return {
             "required": {
                 "text_positive": ("STRING", {"default": "", "multiline": True}),
-                "text_negative": ("STRING", {"default": "", "multiline": True}),
+                "text_negative": ("STRING", {"default": "", "multiline": False}),
                 "style_file": (styles, {"default": "basic.yaml"}),
                 "template_name": (templates,),
             },
@@ -290,11 +290,11 @@ class IToolsPromptStylerExtra:
         pass
 
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(cls):
         return {
             "required": {
                 "text_positive": ("STRING", {"default": "", "multiline": True}),
-                "text_negative": ("STRING", {"default": "", "multiline": True}),
+                "text_negative": ("STRING", {"default": "", "multiline": False}),
                 "base_file": ((styles), {"default": "basic.yaml"}),
                 "base_style": ((templates_basic),),
                 "second_file": ((styles), {"default": "camera.yaml"}),
@@ -307,7 +307,7 @@ class IToolsPromptStylerExtra:
         }
 
     @classmethod
-    def VALIDATE_INPUTS(s,
+    def VALIDATE_INPUTS(cls,
                         base_style,
                         second_style,
                         third_style,
