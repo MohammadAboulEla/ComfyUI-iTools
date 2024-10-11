@@ -1,7 +1,8 @@
 import { app } from "../../../scripts/app.js"
+import { allow_debug } from "./js_shared.js";
+
 const _id = "iToolsCheckerBoard"
 
-const allow_debug = true;
 
 app.registerExtension({
     name: 'makadi.' + _id,

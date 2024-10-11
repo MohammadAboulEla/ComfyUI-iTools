@@ -1,6 +1,9 @@
 import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js"
+import { allow_debug } from "./js_shared.js";
+
 const _id = "iToolsPromptStyler"
+
 // code here is a mess!
 async function send_style_message(style) {
     const body = new FormData();
@@ -8,8 +11,6 @@ async function send_style_message(style) {
     const r = await api.fetchApi("/itools/style_change", { method: "POST", body, });
     return r.json();
 }
-
-const allow_debug = false;
 
 app.registerExtension({
     name: 'makadi.' + _id,

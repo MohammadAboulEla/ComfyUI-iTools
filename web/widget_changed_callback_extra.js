@@ -1,8 +1,8 @@
 import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js"
+import { allow_debug } from "./js_shared.js";
 
 const _id = "iToolsPromptStylerExtra"
-const allow_debug = false;
 
 async function send_request_templates_for_file(file_name) {
     const body = new FormData();
