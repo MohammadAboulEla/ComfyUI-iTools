@@ -32,6 +32,10 @@ app.registerExtension({
                     node.setSize([210, 170]);
                     node.color = LGraphCanvas.node_colors.pale_blue.color;
                     break;
+                case "iToolsCheckerBoard":
+                    node.setSize([270, 250]);
+                    //node.color = LGraphCanvas.node_colors.pale_blue.color;
+                    break;
             }
         }
 });
