@@ -515,7 +515,7 @@ class IToolsVaePreview:
         self.compress_level = 1
 
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(cls):
         return {"required":
             {
                 # "images": ("IMAGE", ),
@@ -525,7 +525,8 @@ class IToolsVaePreview:
             "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
         }
 
-    RETURN_TYPES = ()
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("images",)
     FUNCTION = "vae_preview"
 
     OUTPUT_NODE = True
@@ -534,7 +535,8 @@ class IToolsVaePreview:
     DESCRIPTION = "Merges VAE decoding and image preview into one node."
 
     def vae_preview(self, samples, vae, filename_prefix="ComfyUI", prompt=None, extra_pnginfo=None, ):
-        images = (vae.decode(samples["samples"]),)[0]
+        return_options = (vae.decode(samples["samples"]),)
+        images = return_options[0]
         filename_prefix += self.prefix_append
         full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(
             filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
@@ -561,7 +563,7 @@ class IToolsVaePreview:
             })
             counter += 1
 
-        return {"ui": {"images": results}}
+        return {"ui": {"images": results}, "result": return_options}
 
 
 class IToolsCheckerBoard:
