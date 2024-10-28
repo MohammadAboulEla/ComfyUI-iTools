@@ -73,6 +73,16 @@ Will return a line from a multi line text at given index, help ypu make your own
 `Example3:` With three lists you get up to 125 possible outputs
 ![iTools Text Replacer](examples/Screenshot12.jpg)
 
+**# iTools Vae Preview:**
+Merges VAE decoding and image preview into one node, The goal of `iTools Vae Preview`  is to Decode & Preview the image at same node, so you do not have to use the `VAEDecod` node every time before preview an image.
+![iTools Vae Preview](examples/Screenshot16.jpg)
+
+**# iTools Checkerboard:**
+Generates chessboard-like patterns, either in black and white or with random colors.
+![iTools Checkerboard](examples/Screenshot18.jpg)
+`Example1:`
+![iTools Checkerboard](examples/Screenshot17.jpg)
+
 _Wait for more..._
 
 Support me on PayPal
