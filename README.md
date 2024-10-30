@@ -8,9 +8,12 @@ The iTools are some quality of life nodes, like read a possible prompt used to c
   - `CLIPTextEncodeSDXL`
   - `CLIPTextEncode`
   - `easy positive`
+  - `easy showAnything`
   - `ShowText|pysssss`
   - `Eff. Loader SDXL`
   - `SDXLPromptStyler`
+  - `iToolsPromptStyler`
+  - `iToolsPromptStylerExtra`
 
 If your prompt is within any of these nodes, you will be able to retrieve it. The `ShowText|pysssss` node is a convenient addition that you can integrate it into any workflow to make sure it will be retrieved by `iTools ImageLoaderPlus`.
 

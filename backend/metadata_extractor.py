@@ -27,23 +27,25 @@ def fix_workflow(img_info: dict, _type: str):
         try:
             img_info = str(img_info)
             part1 = img_info.split(r'Workflow:')[1]
-            part1 = part1.replace('\\', '\\\\').replace('\\"', '"')
-            part1 = part1.split(r"}\\x")[0] + "}"
-            part2 = json.loads(part1)
+            part1 = part1.replace('\\', '\\\\').replace('\\"', '"') #.replace('\\\"', '"')
+            try:
+                part1 = part1.split(r"}\\x")[0] + "}"
+                part2 = json.loads(part1)
+            except:
+                part1 = part1.replace('\\', '\\\\').replace('\\"', '"').replace('\\\"', '"')
+                part2 = json.loads(part1)
             return part2
         except Exception as e:
             print("fix_workflow", e)
-            # print(img_info)
-            # print(part1)
             return {}
     else:
         return {}
 
-
 def process_nodes(data_dict):
     supported_types = ["CLIPTextEncodeSDXL", "CLIPTextEncode",
                        "easy positive", "ShowText|pysssss",
-                       "Eff. Loader SDXL", "SDXLPromptStyler"]
+                       "Eff. Loader SDXL", "SDXLPromptStyler",
+                       "easy showAnything", "iToolsPromptStyler","iToolsPromptStylerExtra"]
     number_nodes = 0
     widgets_values = {}
 
@@ -58,35 +60,50 @@ def process_nodes(data_dict):
                 if node_type == "easy positive" and widgets and len(widgets) > 0:
                     if widgets[0] not in ["", None]:
                         number_nodes += 1
-                        widgets_values["easy positive"] = widgets[0]
+                        widgets_values[f"{number_nodes}_easy-positive"] = widgets[0]
+
+                if node_type == "easy showAnything" and widgets and len(widgets) > 0:
+                    if widgets[0] not in ["", None]:
+                        number_nodes += 1
+                        widgets_values[f"{number_nodes}_easy-showAnything"] = widgets[0]
+
+                if node_type == "iToolsPromptStyler" and widgets and len(widgets) > 0:
+                    if widgets[0] not in ["", None]:
+                        number_nodes += 1
+                        widgets_values[f"{number_nodes}_iToolsPromptStyler"] = widgets[0]
+
+                if node_type == "iToolsPromptStylerExtra" and widgets and len(widgets) > 0:
+                    if widgets[0] not in ["", None]:
+                        number_nodes += 1
+                        widgets_values[f"{number_nodes}_iToolsPromptStylerExtra"] = widgets[0]
 
                 if node_type == "CLIPTextEncode" and widgets and len(widgets) > 0:
                     if widgets[0] not in ["", None]:
                         number_nodes += 1
-                        widgets_values["CLIPTextEncode"] = widgets[0]
+                        widgets_values[f"{number_nodes}_CLIPTextEncode"] = widgets[0]
 
                 if node_type == "CLIPTextEncodeSDXL" and widgets and len(widgets) > 6:
                     if widgets[6] not in ["", None]:
                         number_nodes += 1
-                        widgets_values["CLIPTextEncodeSDXL"] = widgets[6]
+                        widgets_values[f"{number_nodes}_CLIPTextEncodeSDXL"] = widgets[6]
 
                 if node_type == "ShowText|pysssss" and widgets and len(widgets) > 0:
                     if widgets[0] not in ["", None]:
                         number_nodes += 1
-                        widgets_values["ShowText|pysssss"] = widgets[0]
+                        widgets_values[f"{number_nodes}_ShowText|pysssss"] = widgets[0]
 
                 if node_type == "SDXLPromptStyler" and widgets and len(widgets) > 1:
                     if widgets[0] not in ["", None]:
                         number_nodes += 1
-                        widgets_values["SDXLPromptStyler positive"] = widgets[0]
+                        widgets_values[f"{number_nodes}_SDXLPromptStyler-positive"] = widgets[0]
                     if widgets[1] not in ["", None]:
                         number_nodes += 1
-                        widgets_values["SDXLPromptStyler negative"] = widgets[1]
+                        widgets_values[f"{number_nodes}_SDXLPromptStyler-negative"] = widgets[1]
 
                 if node_type == "Eff. Loader SDXL" and widgets and len(widgets) > 7:
                     if widgets[7] not in ["", None]:
                         number_nodes += 1
-                        widgets_values["Eff. Loader SDXL"] = widgets[7]
+                        widgets_values[f"{number_nodes}_Eff-Loader-SDXL"] = widgets[7]
 
         return widgets_values, number_nodes
 
