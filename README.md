@@ -85,7 +85,8 @@ Generates chessboard-like patterns, either in black and white or with random col
 ![iTools Checkerboard](examples/Screenshot18.jpg)
 `Example1:`
 ![iTools Checkerboard](examples/Screenshot17.jpg)
-
+`Example2:`
+![iTools Checkerboard](examples/Screenshot19.jpg)
 _Wait for more..._
 
 Support me on PayPal
