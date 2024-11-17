@@ -16,7 +16,7 @@ import json
 from .backend.file_handeler import FileHandler
 from .backend.grid_filler import fill_grid_with_images_new, tensor_to_images, image_to_tensor
 from .backend.metadata_extractor import get_prompt
-from .backend.overlay import add_overlay_bar, add_underlay_bar
+from .backend.overlay import add_text_bar
 from .backend.prompter import read_replace_and_combine, templates
 from .backend.prompter_multi import combine_multi, templates_basic, templates_extra1, templates_extra2, \
     templates_extra3
@@ -228,16 +228,17 @@ class IToolsAddOverlay:
     FUNCTION = "add_text_overlay"
     DESCRIPTION = ("Will add an overlay bottom bar to show a given text, you may change the background color of the "
                    "overlay bar and the font size.")
-
+    
     def add_text_overlay(self, image, text, font_size, background_color, overlay_mode):
+              
         # Convert image to tensor
         pil_image = tensor2pil(image)
 
         # Add overlay or underlay
         if overlay_mode:
-            composite = add_overlay_bar(pil_image, text, font_size=font_size, background_color=background_color)
+            composite = add_text_bar(pil_image, text, font_size=font_size, background_color=background_color,position="overlay")
         else:
-            composite = add_underlay_bar(pil_image, text, font_size=font_size, background_color=background_color)
+            composite = add_text_bar(pil_image, text, font_size=font_size, background_color=background_color,position="underlay")
 
         # Convert back to tensor
         out = pil2tensor(composite)

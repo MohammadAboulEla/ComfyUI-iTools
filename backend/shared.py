@@ -94,28 +94,21 @@ def tensor2pil(image):
         np.clip(255.0 * image.cpu().numpy().squeeze(), 0, 255).astype(np.uint8)
     )
 
+# not used
+def tensor2pil_hi(image):
+    try:
+        # Handle single image
+        return Image.fromarray(np.clip(255.0 * image.cpu().numpy().squeeze(), 0, 255).astype(np.uint8))
+    except:
+        # Handle batch of images
+        images = [Image.fromarray(
+            np.clip(255.0 * img.cpu().numpy().squeeze(), 0, 255).astype(np.uint8)
+        ) for img in image]
+        return images
 
-# suggested by devs
+
 def pil2tensor(image):
     return torch.from_numpy(np.array(image).astype(np.float32) / 255.0).unsqueeze(0)
-
-def pil2tensor_2(image):
-    return torch.from_numpy(np.array(image).astype(np.float32) / 255.0).unsqueeze(1)
-
-
-def pil2tensor_3(image):
-    # Convert the PIL image to a NumPy array and normalize it to [0, 1]
-    image_array = np.array(image).astype(np.float32) / 255.0
-
-    # Move the channel dimension to the last position if needed (e.g., for RGB images)
-    if image_array.ndim == 2:  # Grayscale image, no channel dimension
-        image_array = np.expand_dims(image_array, axis=-1)
-
-    # Add a batch dimension at the start
-    tensor = torch.from_numpy(image_array).unsqueeze(0)  # Shape: (1, w, h, c)
-
-    return tensor
-
 
 
 def pil2mask(image):
