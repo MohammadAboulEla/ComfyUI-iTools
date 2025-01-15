@@ -1,26 +1,26 @@
 from server import PromptServer
 from aiohttp import web
-from .shared import cn, load_yaml_data, read_styles, clean_text
+from .shared import cn, load_yaml_data, read_styles, clean_text, project_name
 import os
 import random
 
 file_name_basic = "basic.yaml"
-file_path_basic = os.path.join(cn, "ComfyUI-iTools", "styles", file_name_basic)
+file_path_basic = os.path.join(cn, project_name, "styles", file_name_basic)
 yaml_data_basic = load_yaml_data(file_path_basic)
 templates_basic = read_styles(yaml_data_basic)
 
 file_name_extra1 = "camera.yaml"
-file_path_extra1 = os.path.join(cn, "ComfyUI-iTools", "styles", file_name_extra1)
+file_path_extra1 = os.path.join(cn, project_name, "styles", file_name_extra1)
 yaml_data_extra1 = load_yaml_data(file_path_extra1)
 templates_extra1 = read_styles(yaml_data_extra1)
 
 file_name_extra2 = "artist.yaml"
-file_path_extra2 = os.path.join(cn, "ComfyUI-iTools", "styles", file_name_extra2)
+file_path_extra2 = os.path.join(cn, project_name, "styles", file_name_extra2)
 yaml_data_extra2 = load_yaml_data(file_path_extra2)
 templates_extra2 = read_styles(yaml_data_extra2)
 
 file_name_extra3 = "mood.yaml"
-file_path_extra3 = os.path.join(cn, "ComfyUI-iTools", "styles", file_name_extra3)
+file_path_extra3 = os.path.join(cn, project_name, "styles", file_name_extra3)
 yaml_data_extra3 = load_yaml_data(file_path_extra3)
 templates_extra3 = read_styles(yaml_data_extra3)
 
@@ -32,7 +32,7 @@ def get_random_template_name(lst):
 def get_template_value_from_yaml_file(file_name, template_name):
     positive_prompt = ""
     negative_prompt = ""
-    file_path = os.path.join(cn, "ComfyUI-iTools", "styles", file_name)
+    file_path = os.path.join(cn, project_name, "styles", file_name)
     _yaml_data = load_yaml_data(file_path)
 
     # if template_name == "randomize":
@@ -103,7 +103,7 @@ def combine_multi(text_positive, text_negative,
 async def respond_to_request_templates_for_file(request):
     post = await request.post()
     file_name = post.get("file_name")
-    file_path = os.path.join(cn, "ComfyUI-iTools", "styles", file_name)
+    file_path = os.path.join(cn, project_name, "styles", file_name)
     yaml_data = load_yaml_data(file_path)
     templates = read_styles(yaml_data)
     data = {"templates": templates}

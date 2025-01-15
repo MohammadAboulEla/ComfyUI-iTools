@@ -70,8 +70,24 @@ def get_yaml_names(_folder_path):
 
     return names
 
+def get_exact_project_name(parent_dir, target_folder_lower):
+    try:
+        entries = os.listdir(parent_dir)
+        for entry in entries:
+            if os.path.isdir(os.path.join(parent_dir, entry)) and entry.lower() == target_folder_lower.lower():
+                return entry
+    except FileNotFoundError:
+        print(f"Directory {parent_dir} not found.")
+    return None
 
-styles = get_yaml_names(os.path.join(cn, "ComfyUI-iTools", "styles"))
+target_folder = "comfyui-itools"
+
+project_name = get_exact_project_name(cn, target_folder)
+
+if not project_name:
+    print(f"Folder '{target_folder}' not found in {cn}.")
+
+styles = get_yaml_names(os.path.join(cn, project_name, "styles"))
 
 
 def read_styles(_yaml_data):
