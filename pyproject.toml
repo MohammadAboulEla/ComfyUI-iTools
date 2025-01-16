@@ -1,5 +1,5 @@
 [project]
-name = "comfyui-itools"
+name = "ComfyUI-iTools"
 description = "The iTools are some quality of life nodes, like read a possible prompt used to create an image, save a prompt to file as a new line, read prompts from a multiline file."
 version = "0.4.5"
 license = {file = "LICENSE"}
