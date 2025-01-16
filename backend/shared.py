@@ -78,7 +78,7 @@ def detect_project_name(base_path, possible_names):
     raise FileNotFoundError("No valid project name found on the device.")
 
 
-project_name = detect_project_name(cn, ["ComfyUI-iTools", "comfyui-itools"])
+project_name = detect_project_name(cn, ["comfyui-itools","ComfyUI-iTools"])
 
 styles = get_yaml_names(os.path.join(cn, project_name, "styles"))
 
