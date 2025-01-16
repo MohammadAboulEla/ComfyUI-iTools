@@ -70,22 +70,15 @@ def get_yaml_names(_folder_path):
 
     return names
 
-def get_exact_project_name(parent_dir, target_folder_lower):
-    try:
-        entries = os.listdir(parent_dir)
-        for entry in entries:
-            if os.path.isdir(os.path.join(parent_dir, entry)) and entry.lower() == target_folder_lower.lower():
-                return entry
-    except FileNotFoundError:
-        print(f"Directory {parent_dir} not found.")
-    return None
 
-target_folder = "comfyui-itools"
+def detect_project_name(base_path, possible_names):
+    for name in possible_names:
+        if os.path.exists(os.path.join(base_path, name)):
+            return name
+    raise FileNotFoundError("No valid project name found on the device.")
 
-project_name = get_exact_project_name(cn, target_folder)
 
-if not project_name:
-    print(f"Folder '{target_folder}' not found in {cn}.")
+project_name = detect_project_name(cn, ["ComfyUI-iTools", "comfyui-itools"])
 
 styles = get_yaml_names(os.path.join(cn, project_name, "styles"))
 
