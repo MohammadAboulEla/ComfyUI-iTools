@@ -7,9 +7,6 @@ import numpy as np
 import torch
 from PIL import Image
 
-cn = folder_paths.folder_names_and_paths["custom_nodes"][0][0]
-
-
 def time_it(func, *args, **kwargs):
     start_time = time.time()  # Record start time
     result = func(*args, **kwargs)  # Call the passed function with arguments
@@ -70,17 +67,20 @@ def get_yaml_names(_folder_path):
 
     return names
 
+possible_names = ["comfyui-itools","ComfyUI-iTools"]
 
-def detect_project_name(base_path, possible_names):
-    for name in possible_names:
-        if os.path.exists(os.path.join(base_path, name)):
-            return name
-    raise FileNotFoundError("No valid project name found on the device.")
+def check_detect_project_dir():
+    paths = folder_paths.folder_names_and_paths["custom_nodes"][0]
+    for path in paths:
+        for name in possible_names:
+            proj_dir = os.path.join(path, name)
+            if os.path.exists(proj_dir):
+                return proj_dir
+    raise FileNotFoundError("No valid project directory found on the device.")
 
+project_dir = check_detect_project_dir()
 
-project_name = detect_project_name(cn, ["comfyui-itools","ComfyUI-iTools"])
-
-styles = get_yaml_names(os.path.join(cn, project_name, "styles"))
+styles = get_yaml_names(os.path.join(project_dir, "styles"))
 
 
 def read_styles(_yaml_data):

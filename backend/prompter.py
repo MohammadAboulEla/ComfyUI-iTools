@@ -1,16 +1,16 @@
 import os
 from aiohttp import web
 from server import PromptServer
-from .shared import cn, load_yaml_data, read_styles, clean_text, project_name
+from .shared import load_yaml_data, read_styles, clean_text, project_dir
 
 file_name = "basic.yaml"
-file_path = os.path.join(cn, project_name, "styles", file_name)
+file_path = os.path.join(project_dir, "styles", file_name)
 yaml_data = load_yaml_data(file_path)
 templates = read_styles(yaml_data)
 
 
 def read_replace_and_combine(template_name, positive_prompt, negative_prompt, _file_name):
-    _file_path = os.path.join(cn, project_name, "styles", _file_name)
+    _file_path = os.path.join(project_dir, "styles", _file_name)
 
     _yaml_data = load_yaml_data(_file_path)
 
@@ -63,7 +63,7 @@ async def respond_to_js_message(request):
     file_name = post.get('message')
     # print("Post received", file_name)
 
-    file_path = os.path.join(cn, project_name, "styles", file_name)
+    file_path = os.path.join(project_dir, "styles", file_name)
     yaml_data = load_yaml_data(file_path)
     templates = read_styles(yaml_data)
 

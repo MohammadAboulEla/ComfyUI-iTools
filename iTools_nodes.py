@@ -20,7 +20,7 @@ from .backend.overlay import add_text_bar
 from .backend.prompter import read_replace_and_combine, templates
 from .backend.prompter_multi import combine_multi, templates_basic, templates_extra1, templates_extra2, \
     templates_extra3
-from .backend.shared import cn, styles, tensor2pil, pil2tensor, project_name
+from .backend.shared import styles, tensor2pil, pil2tensor, project_dir
 from comfy.cli_args import args
 
 
@@ -125,7 +125,7 @@ class IToolsPromptLoader:
         prompt = ""
         count = 0
         if file_path == "prompts.txt":
-            file = os.path.join(cn, project_name, "examples", "prompts.txt")
+            file = os.path.join(project_dir, "examples", "prompts.txt")
         else:
             file = file_path.replace('"', '')
         if os.path.exists(file):
@@ -161,7 +161,7 @@ class IToolsPromptSaver:
 
     def save_to_file(self, file_path, prompt):
         if file_path == "prompts.txt":
-            file = os.path.join(cn, project_name, "examples", "prompts.txt")
+            file = os.path.join(project_dir, "examples", "prompts.txt")
         else:
             file = file_path.replace('"', '')
         if os.path.exists(file) and prompt is not None and prompt != "":
