@@ -177,10 +177,6 @@ class IToolsPromptSaver:
 
 
 class IToolsPromptStyler:
-
-    def __init__(self):
-        pass
-
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -196,6 +192,11 @@ class IToolsPromptStyler:
     def VALIDATE_INPUTS(cls, template_name):
         # YOLO, anything goes!
         return True
+    
+    def IS_CHANGED(text_positive, text_negative, template_name, style_file):
+        if template_name == "random":
+            return float("nan")  # Force re-execution if template is "random"
+
 
     RETURN_TYPES = ('STRING', 'STRING',)
     RETURN_NAMES = ('positive_prompt', 'negative_prompt',)
@@ -315,6 +316,15 @@ class IToolsPromptStylerExtra:
                         fourth_style):
         # YOLO, anything goes!
         return True
+
+    def IS_CHANGED(text_positive, text_negative,
+                   base_file, base_style,
+                   second_file,second_style,
+                   third_file,third_style,
+                   fourth_file,fourth_style
+                   ):
+        if base_style == "random" or second_style == "random" or third_style == "random" or fourth_style== "random":
+            return float("nan")  # Force re-execution if template is "random"
 
     RETURN_TYPES = ('STRING', 'STRING', 'STRING',)
     RETURN_NAMES = ('positive_prompt', 'negative_prompt', 'used_templates')

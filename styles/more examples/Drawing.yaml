@@ -3,10 +3,15 @@
 #
 # Best approach is to copy a block of name, negative_prompt and a prompt and then replace their values
 # Note that your text_positive will be added in this part {prompt}
+# Adding - name: random will allow the node to pick random name from this file
 
 - name: none
   negative_prompt: ''
   prompt: ''
+
+- name: random
+  negative_prompt: ''
+  prompt: ''  
 
 - name: Blue Ballpoint Pen
   negative_prompt: signature, watermark, photo, photorealistic, realism, ugly, off-center, deformed, 35mm film, dslr, cropped, frame, worst quality, low quality, lowres, JPEG artifacts

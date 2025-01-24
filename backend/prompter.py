@@ -2,6 +2,7 @@ import os
 from aiohttp import web
 from server import PromptServer
 from .shared import load_yaml_data, read_styles, clean_text, project_dir
+import random
 
 file_name = "basic.yaml"
 file_path = os.path.join(project_dir, "styles", file_name)
@@ -14,6 +15,13 @@ def read_replace_and_combine(template_name, positive_prompt, negative_prompt, _f
 
     _yaml_data = load_yaml_data(_file_path)
 
+    if template_name == "random":
+        # Pick a random template
+        available_templates = [t['name'] for t in _yaml_data if 'name' in t and 'prompt' in t and t['name'] != "random" and t['name'] != "none"]
+        if not available_templates:
+            raise ValueError("No valid templates found in the YAML file.")
+        template_name = random.choice(available_templates)
+
     try:
         # Ensure the data is a list of templates
         if not isinstance(_yaml_data, list):
@@ -24,7 +32,7 @@ def read_replace_and_combine(template_name, positive_prompt, negative_prompt, _f
             # Skip if the template does not have 'name' or 'prompt' fields
             if 'name' not in template or 'prompt' not in template:
                 continue
-
+            
             # If the template name matches, process it
             if template['name'] == template_name:
                 # Replace {prompt} in the positive prompt if present

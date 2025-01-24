@@ -25,8 +25,8 @@ yaml_data_extra3 = load_yaml_data(file_path_extra3)
 templates_extra3 = read_styles(yaml_data_extra3)
 
 
-def get_random_template_name(lst):
-    return random.choice([s for s in lst if s not in ["none", "randomized"]])
+# def get_random_template_name(lst):
+#     return random.choice([s for s in lst if s not in ["none", "randomized"]])
 
 
 def get_template_value_from_yaml_file(file_name, template_name):
@@ -35,9 +35,12 @@ def get_template_value_from_yaml_file(file_name, template_name):
     file_path = os.path.join(project_dir, "styles", file_name)
     _yaml_data = load_yaml_data(file_path)
 
-    # if template_name == "randomize":
-    #     templates = read_styles(load_yaml_data(file_path))
-    #     template_name = get_random_template_name(templates)
+    if template_name == "random":
+        # Pick a random template
+        available_templates = [t['name'] for t in _yaml_data if 'name' in t and 'prompt' in t and t['name'] != "random" and t['name'] != "none"]
+        if not available_templates:
+            raise ValueError("No valid templates found in the YAML file.")
+        template_name = random.choice(available_templates)
 
     try:
         # Ensure the data is a list of templates
