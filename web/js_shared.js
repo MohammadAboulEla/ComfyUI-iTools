@@ -1,4 +1,4 @@
-export const allow_debug = false;
+export const allow_debug = true;
 
 // // Register TogetherApi setting not needed for now
 // app.registerExtension({

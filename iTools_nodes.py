@@ -610,7 +610,89 @@ class IToolsCheckerBoard:
         _mask = _img[:, :, :, 0]
         return _img, _mask
 
+class IToolsLoadRandomImage:
 
+    @classmethod
+    def INPUT_TYPES(s):
+        default_dir = folder_paths.output_directory
+        return {"required": {
+            "images_directory": ("STRING", {"default": default_dir, "multiline": False}),
+            # "load_limit": ("INT", {"default": 100, "min": 2, "max": 200}),
+            "seed": ("INT", {"default": 0, "min": 0, "max": 0xfff}),
+        }}
+
+    RETURN_TYPES = ('IMAGE', "STRING",)
+    RETURN_NAMES = ('image', 'image name',)
+    FUNCTION = 'load_random_image'
+    CATEGORY = 'iTools'
+    DESCRIPTION = "Will return image from a given directory. it will also return the name of these image."
+
+    def load_random_image(self, images_directory, seed):
+        image_extensions = {'.png', '.jpg', '.jpeg', '.webp', '.bmp', '.gif'}
+        images_path = Path(images_directory.replace('"', ''))
+
+        if not images_path.exists():
+            raise FileNotFoundError(f"Image directory {images_directory} does not exist")
+
+        all_images = []  # Store all valid image paths
+
+        for image_path in images_path.iterdir():
+            if image_path.suffix.lower() in image_extensions:
+                all_images.append(image_path)
+
+        if not all_images:
+            raise ValueError("No valid images found in the directory")
+
+        # Calculate the random index based on the seed
+        random_index = seed % len(all_images)
+        selected_image_path = all_images[random_index]
+
+        # Load the selected image
+        image = pil2tensor(Image.open(selected_image_path))
+        image_name = selected_image_path.stem
+
+        return image, image_name
+
+class IToolsPreviewText:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "text": ("STRING", {"forceInput": True}),
+            },
+                "hidden": {
+                "unique_id": "UNIQUE_ID",
+                "extra_pnginfo": "EXTRA_PNGINFO",
+            },
+        }
+    
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ('text',)
+    FUNCTION = 'preview_text'
+    CATEGORY = 'iTools'
+    DESCRIPTION = "Will show text from string input."
+    INPUT_IS_LIST = True
+    OUTPUT_NODE = True
+    OUTPUT_IS_LIST = (True,)
+    
+    def preview_text(s, text,extra_pnginfo,unique_id):
+        if unique_id is not None and extra_pnginfo is not None:
+            if not isinstance(extra_pnginfo, list):
+                print("Error: extra_pnginfo is not a list")
+            elif (
+                not isinstance(extra_pnginfo[0], dict)
+                or "workflow" not in extra_pnginfo[0]
+            ):
+                print("Error: extra_pnginfo[0] is not a dict or missing 'workflow' key")
+            else:        
+                workflow = extra_pnginfo[0]["workflow"]
+                node = next((x for x in workflow["nodes"] if str(x["id"]) == str(unique_id[0])),
+                            None,)
+                if node:
+                    node["widgets_values"] = [text]
+
+        return {"ui": {"text": text}, "result": (text,)}
+    
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -626,7 +708,9 @@ NODE_CLASS_MAPPINGS = {
     "iToolsTextReplacer": IToolsTextReplacer,
     "iToolsKSampler": IToolsKSampler,
     "iToolsVaePreview": IToolsVaePreview,
-    "iToolsCheckerBoard": IToolsCheckerBoard
+    "iToolsCheckerBoard": IToolsCheckerBoard,
+    "iToolsLoadRandomImage": IToolsLoadRandomImage,
+    "iToolsPreviewText": IToolsPreviewText
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -643,5 +727,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsTextReplacer": "iTools Text Replacer",
     "iToolsKSampler": "iTools KSampler",
     "iToolsVaePreview": "iTools Vae Preview ⛳",
-    "iToolsCheckerBoard": "iTools Checkerboard 🏁"
+    "iToolsCheckerBoard": "iTools Checkerboard 🏁",
+    "iToolsLoadRandomImage": "iTools Load Random Image 🎲",
+    "iToolsPreviewText": "iTools Text Preview"
 }

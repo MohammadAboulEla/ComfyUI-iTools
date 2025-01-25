@@ -15,14 +15,11 @@ import json
 import folder_paths
 
 class IToolsFreeSchnell:
-    # user\default
     
     def __init__(self):
-        
         ud_dir = os.path.join(folder_paths.base_path, "user","default")
-        
         settings_file = os.path.join(ud_dir,'comfy.settings.json')
-
+        
         with open(settings_file, 'r') as file:
             settings = json.load(file)
 
@@ -74,15 +71,6 @@ class IToolsFreeSchnell:
         image_data = base64.b64decode(response.data[0].b64_json)
         image = Image.open(io.BytesIO(image_data))
         images.append(pil2tensor(image))
-        # Iterate through all generated images in the batch
-        # for img_data in response.data:
-        #     # Decode each base64 image
-        #     image_data = base64.b64decode(img_data.b64_json)
-        #     image = Image.open(io.BytesIO(image_data))
-
-        #     # Convert the image to a tensor and append to the list
-        #     images.append(pil2tensor(image))
-
         return images
 
 class AnyType(str):
@@ -102,34 +90,27 @@ class FlexibleOptionalInputType(dict):
     return True
 
 class IToolsTestNode:
+    
     @classmethod
-    def INPUT_TYPES(s):
-        return {"required":
-            {
-                "test": ("STRING", {"default": 'test', "multiline": False}),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffff}),
-            },
+    def INPUT_TYPES(self):
+        return {
+            "required":{},
             "optional": FlexibleOptionalInputType(any_type),
-            "hidden": {},
         }
 
     CATEGORY = "iTools"
 
-    RETURN_TYPES = ("STRING", "INT")
-    RETURN_NAMES = ("prompt", "count")
+    RETURN_TYPES = ("STRING","INT")
+    RETURN_NAMES = ("my_counter_string","my_counter")
     FUNCTION = "test_func"
-    DESCRIPTION = ("Will..")
+    DESCRIPTION = ("Will Learn You Something!")
 
-    def test_func(self, test, seed, **kwargs):
-        print("start test")
-        prompt = f"{test}"
+    def test_func(self, **kwargs):
         for key, value in kwargs.items():
-            print("key: ", key)
-            print("value: ", value)
-            if value:
-                prompt += f"{value}"
-        count = seed
-        return prompt, count
+            print(key,value)
+            if key == "Click":
+                Click = int(value)
+        return str(Click), Click
 
 
 

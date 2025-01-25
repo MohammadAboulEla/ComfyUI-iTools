@@ -4,8 +4,8 @@ allow_test_nodes = True
 if allow_test_nodes:
     try:
         from .experimental.experimental_nodes import *
-        # NODE_CLASS_MAPPINGS["iToolsTestNode"] = IToolsTestNode
-        # NODE_DISPLAY_NAME_MAPPINGS["iToolsTestNode"] = "iTools Test Node"
+        NODE_CLASS_MAPPINGS["iToolsTestNode"] = IToolsTestNode
+        NODE_DISPLAY_NAME_MAPPINGS["iToolsTestNode"] = "iTools Test Node"
 
         NODE_CLASS_MAPPINGS["iToolsFreeSchnell"] = IToolsFreeSchnell
         NODE_DISPLAY_NAME_MAPPINGS["iToolsFreeSchnell"] = "iTools Free Schnell"
