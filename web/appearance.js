@@ -6,7 +6,7 @@ app.registerExtension({
   name: "makadi_iTools_color",
   settings: [
     {
-      id: "iTools.Auto Color",
+      id: "iTools.Nodes.Auto Color",
       name: "Auto color nodes when created",
       type: "boolean",
       defaultValue: true,
@@ -23,18 +23,18 @@ app.registerExtension({
         if (allow_debug) {
           console.log("iToolsPromptStyler", node);
         }
-        if (!app.ui.settings.getSettingValue("iTools.Auto Color")) break;
+        if (!app.ui.settings.getSettingValue("iTools.Nodes.Auto Color")) break;
         node.color = LGraphCanvas.node_colors.green.color;
         node.bgcolor = LGraphCanvas.node_colors.green.bgcolor;
         break;
       case "iToolsPromptStylerExtra":
-        if (!app.ui.settings.getSettingValue("iTools.Auto Color")) break;
+        if (!app.ui.settings.getSettingValue("iTools.Nodes.Auto Color")) break;
         node.color = LGraphCanvas.node_colors.green.color;
         node.bgcolor = LGraphCanvas.node_colors.green.bgcolor;
         break;
       case "iToolsTextReplacer":
         node.setSize([200, 58]);
-        if (!app.ui.settings.getSettingValue("iTools.Auto Color")) break;
+        if (!app.ui.settings.getSettingValue("iTools.Nodes.Auto Color")) break;
         node.color = LGraphCanvas.node_colors.green.color;
         node.bgcolor = LGraphCanvas.node_colors.green.bgcolor;
         break;
@@ -53,7 +53,7 @@ app.registerExtension({
       case "iToolsLoadImagePlus":
         //node.setSize([210, 170]);
         node.size[0] = 210;
-        if (!app.ui.settings.getSettingValue("iTools.Auto Color")) break;
+        if (!app.ui.settings.getSettingValue("iTools.Nodes.Auto Color")) break;
         node.color = LGraphCanvas.node_colors.pale_blue.color;
         break;
       case "iToolsCheckerBoard":
@@ -63,4 +63,18 @@ app.registerExtension({
         break;
     }
   },
+});
+
+// Register a new setting
+app.registerExtension({
+  name: "makadi_iTools_dev_mode",
+  settings: [
+    {
+      id: "iTools.Nodes.Dev Mode",
+      name: "Enable iTools experimental nodes",
+      type: "boolean",
+      defaultValue: false,
+      tooltip: "Will show some experimental nodes, restart ComfyUI after changing this value.",
+    },
+  ],
 });

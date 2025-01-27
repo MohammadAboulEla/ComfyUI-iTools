@@ -3,7 +3,7 @@ try:
 except ImportError:
     import subprocess
     import sys
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "together", "--no-deps"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "together"])
     from together import Together  # Retry the import after installation  
 import base64
 from PIL import Image
@@ -103,7 +103,7 @@ class IToolsTestNode:
     RETURN_TYPES = ("STRING","INT")
     RETURN_NAMES = ("my_counter_string","my_counter")
     FUNCTION = "test_func"
-    DESCRIPTION = ("Will Learn You Something!")
+    DESCRIPTION = ("The widgets and logic of this node runs in javascript code, only the result is sent to python class")
 
     def test_func(self, **kwargs):
         for key, value in kwargs.items():

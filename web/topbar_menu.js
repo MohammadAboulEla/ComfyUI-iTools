@@ -9,7 +9,7 @@ app.registerExtension({
       name: "Enable iTools tab on menubar",
       type: "boolean",
       defaultValue: false,
-      tooltip: "Refresh your browser after changing this value",
+      tooltip: "Refresh your browser after changing this value.",
     },
   ],
 });
