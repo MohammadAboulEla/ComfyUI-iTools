@@ -112,5 +112,23 @@ class IToolsTestNode:
                 Click = int(value)
         return str(Click), Click
 
+class IToolsPaintNode:
+    
+    @classmethod
+    def INPUT_TYPES(self):
+        return {
+            "required":{},
+            "optional": FlexibleOptionalInputType(any_type),
+        }
+
+    CATEGORY = "iTools"
+
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("image_str",)
+    FUNCTION = "paint_func"
+    DESCRIPTION = ("Will paint")
+
+    def paint_func(self, **kwargs):
+        return str("test")
 
 

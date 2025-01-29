@@ -19,9 +19,13 @@ allow_test_nodes = get_user_dev_mode()
 if allow_test_nodes:
     try:
         from .experimental.experimental_nodes import *
+        
         NODE_CLASS_MAPPINGS["iToolsTestNode"] = IToolsTestNode
         NODE_DISPLAY_NAME_MAPPINGS["iToolsTestNode"] = "iTools Test Node (Dev)"
 
+        NODE_CLASS_MAPPINGS["iToolsPaintNode"] = IToolsPaintNode
+        NODE_DISPLAY_NAME_MAPPINGS["iToolsPaintNode"] = "iTools Paint Node (Beta)"
+        
         NODE_CLASS_MAPPINGS["iToolsFreeSchnell"] = IToolsFreeSchnell
         NODE_DISPLAY_NAME_MAPPINGS["iToolsFreeSchnell"] = "iTools Free Schnell (Beta)"
 
