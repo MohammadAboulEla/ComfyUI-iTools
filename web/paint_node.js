@@ -1,3 +1,4 @@
+import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
 
@@ -37,17 +38,15 @@ class DrawingApp {
       //   "#008080", // 5 new colors
     ];
 
-    // app.canvas.pointer.pointer.onDragStart = (e) => {
-    //   console.log('drag start',);
-    // };
-
     this.node.onMouseEnter = (e) => {};
 
-    this.node.onMouseLeave = (e) => {
-      this.node.allow_dragnodes = true;
-      console.log("pox =", this.pos[0]);
-      // if(this.pos[0] > node.width + this.brushSize)
+    this.node.onMouseLeave = (e,node) => {
+      //console.log('node.allow_dragnodes',node.allow_dragnodes);
+      //node.allow_dragnodes = true;
+      this.node.flags.pinned = false
       this.endPosition();
+      this.sendDrawingToAPI("itools_painted_image")
+
     };
 
     this.node.onMouseMove = (event, pos, node) => {
@@ -57,9 +56,9 @@ class DrawingApp {
       }
 
       if (this.pos[1] > 30) {
-        node.allow_dragnodes = false;
+        this.node.flags.pinned = true
       } else {
-        node.allow_dragnodes = true;
+        this.node.flags.pinned = false
       }
 
       this.pos = pos;
@@ -89,9 +88,7 @@ class DrawingApp {
 
   init(ctx) {
     this.ctx = ctx;
-    // this.node = node;
-    // this.canvas = app.canvas;
-    // Create a new canvas element or use an existing one
+
     const newCanvas = document.createElement("canvas");
     newCanvas.width = this.node.width; // Match the dimensions of the original canvas
     newCanvas.height = this.node.height;
@@ -237,95 +234,37 @@ class DrawingApp {
 
     this.drawUI();
   }
+
+  async sendDrawingToAPI(filename) {
+    if (!this.newCanvas) {
+      console.error("Canvas is not initialized.");
+      return;
+    }
+
+    // Convert the canvas content to a data URL
+    const dataURL = this.newCanvas.toDataURL("image/png");
+    
+    // Convert the data URL to a Blob
+    const blob = await fetch(dataURL).then((res) => res.blob());
+    
+    // Create a FormData object to send the file
+    const formData = new FormData();
+    formData.append("file", blob, `${filename}.png`);
+
+    // Send the file to the API endpoint
+    try {
+        await api.fetchApi("/itools/request_save_paint", {
+        method: "POST",
+        body: formData,
+      });
+      console.log("Drawing sent successfully.");
+    } catch (error) {
+      console.error("Error sending the drawing:", error);
+    }
+  }
+
 }
 
-class WidgetBase {
-  constructor(node, name = "custom widget") {
-    this.name = name;
-    this.node = node;
-
-    node.onMouseEnter = (event) => {
-      //if (allow_debug) console.log("Mouse_Enter");
-    };
-
-    node.onMouseLeave = (event) => {
-      //if (allow_debug) console.log("Mouse_Left");
-    };
-
-    node.onMouseMove = (event, pos, node) => {
-      //if (allow_debug) console.log("Mouse_Move");
-    };
-
-    node.onMouseUp = (event, pos, node) => {
-      //if (allow_debug) console.log("Mouse_Up");
-    };
-
-    node.onMouseDown = (event, pos, node) => {
-      //if (allow_debug) console.log("Mouse_Down");
-    };
-  }
-}
-
-class Button {
-  constructor(x, y, width, height, color, name) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.color = color;
-    this.name = name;
-  }
-
-  draw(ctx) {
-    // Draw rectangle
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-
-    // Draw text
-    ctx.fillStyle = "white";
-    ctx.font = "16px Arial";
-    ctx.fillText(this.name, this.x + 10, this.y + this.height / 2 + 5);
-  }
-
-  isClicked(pos) {
-    const x = pos[0];
-    const y = pos[1];
-    return (
-      x >= this.x &&
-      x <= this.x + this.width &&
-      y >= this.y &&
-      y <= this.y + this.height
-    );
-  }
-
-  onClick() {
-    console.log(this.name, "clicked");
-  }
-}
-
-class CanvasObjectManager {
-  constructor() {
-    this.pos = [0, 0];
-    this.objects = [];
-  }
-
-  addObject(obj) {
-    this.objects.push(obj);
-  }
-
-  draw(ctx) {
-    this.objects.forEach((obj) => obj.draw(ctx));
-  }
-
-  handleOnMouseDown(pos) {
-    console.log(pos);
-    this.objects.forEach((obj) => {
-      if (obj.isClicked && obj.isClicked(pos)) {
-        obj.onClick();
-      }
-    });
-  }
-}
 
 app.registerExtension({
   name: "iTools.paintNode",
@@ -361,5 +300,7 @@ app.registerExtension({
     //node.setDirtyCanvas(true, false);
     const drawing_app = new DrawingApp(node);
     node.addCustomWidget(drawing_app);
+
+
   },
 });

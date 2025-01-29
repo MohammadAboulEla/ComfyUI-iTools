@@ -14,6 +14,7 @@ from server import PromptServer
 import json
 import folder_paths
 
+
 class IToolsFreeSchnell:
     
     def __init__(self):
@@ -123,12 +124,44 @@ class IToolsPaintNode:
 
     CATEGORY = "iTools"
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("image_str",)
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
     FUNCTION = "paint_func"
     DESCRIPTION = ("Will paint")
 
     def paint_func(self, **kwargs):
-        return str("test")
+        image_path = folder_paths.temp_directory
+        image_path = os.path.join(image_path, "itools_painted_image.png")
+        img = Image.open(image_path)
 
+        # Define crop box (left, upper, right, lower)
+        width, height = img.size  # (512, 592)
+        crop_box = (0, height - 512, 512, height)  # Crop from bottom
 
+        # Crop the image
+        cropped_image = img.crop(crop_box)
+        result = [cropped_image]        
+        return pil2tensor(result)
+
+    def IS_CHANGED(cls,):
+        return True
+
+@PromptServer.instance.routes.post("/itools/request_save_paint")
+async def respond_to_request_save_paint(request):
+    post = await request.post()
+
+    # Get the uploaded file
+    file_item = post["file"]
+
+    # Define the directory where the image will be saved
+    save_directory = folder_paths.temp_directory
+
+    # Define the file path
+    file_path = os.path.join(save_directory, file_item.filename)
+
+    # Save the file
+    with open(file_path, "wb") as f:
+        f.write(file_item.file.read())
+
+    
+    
