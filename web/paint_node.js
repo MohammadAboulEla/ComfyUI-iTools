@@ -25,19 +25,60 @@ class DrawingApp {
     this.sliderPicked = false;
 
     this.colors = [
-      "#ffffff",
-      "#000000",
-      "#ff0000",
-      "#00ff00",
-      "#0000ff",
-      "#ffff00",
-      //   "#ff00ff",
-      //   "#00ffff",
-      //   "#ffa500",
-      //   "#800080",
-      //   "#008080", // 5 new colors
+      "#ffffff", // White
+      "#000000", // Black
+      "#ff0000", // Red
+      "#00ff00", // Green
+      "#0000ff", // Blue
+      "#ffff00", // Yellow
+      "#ff00ff", // Magenta
+      "#00ffff", // Cyan
+      "#ffa500", // Orange
+      "#800080", // Purple
+      "#008000", // Dark Green
+      "#800000", // Maroon
+      "#808000", // Olive
+      "#008080", // Teal
+      "#000080", // Navy
+      "#ffc0cb", // Pink
+      "#a52a2a", // Brown
+      "#d3d3d3", // Light Gray
+      "#ff4500", // Orange Red
+      "#4b0082", // Indigo
+      "#ffd700", // Gold
+      "#add8e6", // Light Blue
+      "#90ee90", // Light Green
+      "#ffb6c1", // Light Pink
+      "#f0e68c", // Khaki
+      "#c0c0c0", // Silver
+      "#696969", // Dim Gray
+      "#1e90ff", // Dodger Blue
+      "#32cd32", // Lime Green
+      "#ff6347", // Tomato
+      "#dc143c", // Crimson
+      "#4682b4", // Steel Blue
+      "#8b4513", // Saddle Brown
+      "#ffdab9", // Peach Puff
+      "#b22222", // Firebrick
+      "#228b22", // Forest Green
+      "#f5deb3", // Wheat
+      "#2f4f4f", // Dark Slate Gray
+      "#6a5acd", // Slate Blue
+      "#e9967a", // Dark Salmon
+      "#ff69b4", // Hot Pink
+      "#bc8f8f", // Rosy Brown
+      "#deb887", // Burlywood
+      "#7fffd4", // Aquamarine
+      "#ff8c00", // Dark Orange
     ];
 
+    this.rectSize = 16.666; // Size of each color rectangle
+    this.padding = 0; // Padding between rectangles
+    this.startX = 280; // Starting X position for the color picker
+    this.startY = 30; // Starting Y position for the color picker
+    this.rowLimit = 3;
+    this.colLimit = 12;
+    
     this.node.onMouseEnter = (e) => {};
 
     this.node.onMouseLeave = (e,node) => {
@@ -142,11 +183,17 @@ class DrawingApp {
     // Check if color picker buttons are clicked
     const x = this.pos[0];
     const y = this.pos[1];
-    //console.log("check for color", x,y)
-    for (let i = 0; i < this.colors.length; i++) {
-      if (x >= 280 + i * 30 && x <= 310 + i * 30 && y >= 40 && y <= 70) {
-        //console.log("color changed")
-        this.brushColor = this.colors[i];
+  
+    for (let row = 0; row < this.rowLimit; row++) {
+      for (let col = 0; col < this.colLimit; col++) {
+        const index = row * this.colLimit + col;
+        if (index < this.colors.length) {
+          const rectX = this.startX + col * (this.rectSize + this.padding);
+          const rectY = this.startY + row * (this.rectSize + this.padding);
+          if (x >= rectX && x <= rectX + this.rectSize && y >= rectY && y <= rectY + this.rectSize) {
+            this.brushColor = this.colors[index];
+          }
+        }
       }
     }
   }
@@ -183,18 +230,18 @@ class DrawingApp {
     const y = 30; // Vertical offset for the UI
     const uiHeight = 50; // Height of the top part
     const centerY = y + uiHeight / 2; // Vertical center of the UI
-
+  
     this.ctx.drawImage(this.newCanvas, 0, 0);
-
+  
     // Clear the top part of the canvas for UI
     this.ctx.fillStyle = LiteGraph.WIDGET_BGCOLOR; //"#2c455b";
     this.ctx.fillRect(0, y, this.node.width, uiHeight);
-
+  
     // Draw brush size label
     this.ctx.fillStyle = LiteGraph.WIDGET_TEXT_COLOR; //"#000000";
     this.ctx.font = "14px Arial";
     this.ctx.fillText("Brush Size:", 10, centerY + 5); // Adjusted for vertical center alignment
-
+  
     // Draw brush size slider
     this.ctx.fillStyle = "#484848";
     this.ctx.fillRect(100, centerY - 5, 100, 10); // Slider track, centered vertically
@@ -205,15 +252,24 @@ class DrawingApp {
       10,
       20
     ); // Slider thumb, centered vertically
-
+  
     // Draw color picker label
     this.ctx.fillStyle = LiteGraph.WIDGET_TEXT_COLOR; //"#000000";
     this.ctx.fillText("Color:", 220, centerY + 5); // Adjusted for vertical center alignment
-
-    // Draw color picker buttons
-    for (let i = 0; i < this.colors.length; i++) {
-      this.ctx.fillStyle = this.colors[i];
-      this.ctx.fillRect(280 + i * 30, centerY - 15, 30, 30); // Buttons vertically aligned
+  
+    for (let row = 0; row < this.rowLimit; row++) {
+      for (let col = 0; col < this.colLimit; col++) {
+        const index = row * this.colLimit + col;
+        if (index < this.colors.length) {
+          this.ctx.fillStyle = this.colors[index];
+          this.ctx.fillRect(
+            this.startX + col * (this.rectSize + this.padding),
+            this.startY + row * (this.rectSize + this.padding),
+            this.rectSize,
+            this.rectSize
+          );
+        }
+      }
     }
   }
 
@@ -264,6 +320,7 @@ class DrawingApp {
   }
 
 }
+
 
 
 app.registerExtension({
