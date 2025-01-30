@@ -31,53 +31,60 @@ class DrawingApp {
       "#00ff00", // Green
       "#0000ff", // Blue
       "#ffff00", // Yellow
+      
       "#ff00ff", // Magenta
       "#00ffff", // Cyan
       "#ffa500", // Orange
       "#800080", // Purple
       "#008000", // Dark Green
       "#800000", // Maroon
+      
       "#808000", // Olive
       "#008080", // Teal
+      "#d3d3d3", // Light Gray
       "#000080", // Navy
       "#ffc0cb", // Pink
       "#a52a2a", // Brown
-      "#d3d3d3", // Light Gray
-      "#ff4500", // Orange Red
-      "#4b0082", // Indigo
-      "#ffd700", // Gold
+      
       "#add8e6", // Light Blue
+      "#ff4500", // Orange Red
       "#90ee90", // Light Green
+      "#4b0082", // Indigo
       "#ffb6c1", // Light Pink
+      "#ffd700", // Gold
+      
       "#f0e68c", // Khaki
       "#c0c0c0", // Silver
       "#696969", // Dim Gray
       "#1e90ff", // Dodger Blue
       "#32cd32", // Lime Green
       "#ff6347", // Tomato
+      
       "#dc143c", // Crimson
       "#4682b4", // Steel Blue
       "#8b4513", // Saddle Brown
       "#ffdab9", // Peach Puff
       "#b22222", // Firebrick
       "#228b22", // Forest Green
+      
       "#f5deb3", // Wheat
       "#2f4f4f", // Dark Slate Gray
       "#6a5acd", // Slate Blue
       "#e9967a", // Dark Salmon
       "#ff69b4", // Hot Pink
       "#bc8f8f", // Rosy Brown
+      
       "#deb887", // Burlywood
       "#7fffd4", // Aquamarine
       "#ff8c00", // Dark Orange
     ];
 
-    this.rectSize = 16.666; // Size of each color rectangle
+    this.rectSize = 15; // Size of each color rectangle
     this.padding = 0; // Padding between rectangles
-    this.startX = 280; // Starting X position for the color picker
-    this.startY = 30; // Starting Y position for the color picker
-    this.rowLimit = 3;
-    this.colLimit = 12;
+    this.startX = 270; // Starting X position for the color picker
+    this.startY = 40; // Starting Y position for the color picker
+    this.rowLimit = 2;
+    this.colLimit = 15;
     
     this.node.onMouseEnter = (e) => {};
 
@@ -92,6 +99,7 @@ class DrawingApp {
 
     this.node.onMouseMove = (event, pos, node) => {
       //console.log('app.canvas.pointer',app.canvas.pointer.isDown);
+      //console.log('isPainting',this.painting);
       if (this.pos[1] < 80) {
         this.endPosition();
       }
@@ -183,7 +191,7 @@ class DrawingApp {
     // Check if color picker buttons are clicked
     const x = this.pos[0];
     const y = this.pos[1];
-  
+
     for (let row = 0; row < this.rowLimit; row++) {
       for (let col = 0; col < this.colLimit; col++) {
         const index = row * this.colLimit + col;
