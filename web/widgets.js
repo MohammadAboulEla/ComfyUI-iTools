@@ -1,6 +1,21 @@
-function lightenColor(color, percent) {
-  color = color.replace(/^#/, "");
+import { app } from "../../../scripts/app.js";
 
+
+function lightenColor(color, percent) {
+  const ctx = document.createElement("canvas").getContext("2d");
+  ctx.fillStyle = color;
+  color = ctx.fillStyle; 
+
+  if (!color.startsWith("#")) {
+    const rgbMatch = color.match(/\d+/g);
+    if (rgbMatch) {
+      color = `#${rgbMatch
+        .map((x) => parseInt(x).toString(16).padStart(2, "0"))
+        .join("")}`;
+    }
+  }
+
+  color = color.replace(/^#/, "");
   let r = parseInt(color.substring(0, 2), 16);
   let g = parseInt(color.substring(2, 4), 16);
   let b = parseInt(color.substring(4, 6), 16);
@@ -74,7 +89,215 @@ export const Colors = [
   "#ff8c00", // Dark Orange
 ];
 
-export class Button {
+export class WidgetGlobal {
+  constructor(
+    x,
+    y,
+    width = 50,
+    height = 50,
+    color = "crimson",
+    outline = false,
+    outlineColor = "dark-grey",
+    outlineWidth = 0.5,
+    onClick = null,
+    onMouseIn = null,
+    onMouseOut = null
+  ) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.color = color;
+    this.outline = outline;
+    this.outlineColor = outlineColor;
+    this.outlineWidth = outlineWidth;
+    this.onClick = onClick;
+    this.onMouseIn = onMouseIn;
+    this.onMouseOut = onMouseOut;
+
+    this.mousePos = [0, 0];
+  }
+
+  updateNodePos(nodePos) {
+    this.nodePos = nodePos;
+  }
+
+  updateMousePos(nodePos) {
+    this.nodePos = nodePos;
+    const canvasX = app.canvas.canvas_mouse[0] || 0;
+    const canvasY = app.canvas.canvas_mouse[1] || 0;
+    this.mousePos[0] = nodePos[0] - canvasX;
+    this.mousePos[1] = nodePos[1] - canvasY;
+  }
+
+  draw(ctx) {
+    this.trackMouse(this.mousePos[0], this.mousePos[1]);
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+    ctx.fillText("Test", this.x + 50, this.y + 50);
+  }
+
+  trackMouse(x, y) {
+    if (
+      x >= this.x &&
+      x <= this.x + this.width &&
+      y >= this.y &&
+      y <= this.y + this.height
+    ) {
+      console.log("mouse in"); //this.onMouseIn()
+    }
+  }
+}
+
+export class Widget {
+  constructor(
+    x,
+    y,
+    width = 50,
+    height = 50,
+    onClick = null
+  ) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.color = "crimson";
+    this.radius = width / 2;
+    this.outline = true;
+    this.outlineColor = "#434343";
+    this.outlineWidth = .5;
+    this.allowVisualClick = true;
+    this.onClick = onClick;
+    this._shape = Shapes.SQUARE;
+  }
+
+  draw(ctx) {
+    // Draw rectangle
+    if (this.shape === Shapes.SQUARE) {
+      ctx.fillStyle = this.color;
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+
+      // Draw outline if enabled
+      if (this.outline) {
+        ctx.strokeStyle = this.outlineColor;
+        ctx.lineWidth = this.outlineWidth;
+        ctx.strokeRect(this.x, this.y, this.width, this.height);
+      }
+    }
+
+    // Draw circle
+    if (this.shape === Shapes.CIRCLE) {
+      ctx.beginPath();
+      ctx.arc(
+        this.x + this.radius,
+        this.y + this.radius,
+        this.radius,
+        0,
+        Math.PI * 2
+      );
+      ctx.fillStyle = this.color;
+      ctx.fill();
+
+      // Draw outline if enabled
+      if (this.outline) {
+        ctx.strokeStyle = this.outlineColor;
+        ctx.lineWidth = this.outlineWidth;
+        ctx.stroke();
+      }
+    }
+  }
+
+  isClicked(x, y) {
+    if (this.shape === Shapes.SQUARE) {
+      return (
+        x >= this.x &&
+        x <= this.x + this.width &&
+        y >= this.y &&
+        y <= this.y + this.height
+      );
+    } else if (this.shape === Shapes.CIRCLE) {
+      const distance = Math.sqrt(
+        (x - (this.x + this.radius)) ** 2 + (y - (this.y + this.radius)) ** 2
+      );
+      return distance <= this.radius;
+    }
+    return false;
+  }
+
+  visualClick() {
+    const originalColor = this.color;
+    const originalPosX = this.x;
+    const originalPosY = this.y;
+    setTimeout(() => {
+      this.color = originalColor;
+      this.x = originalPosX;
+      this.y = originalPosY;
+    }, 100);
+    this.color = lightenColor(this.color, 20);
+    this.x = originalPosX + 1;
+    this.y = originalPosY + 1;
+  }
+
+  handleClick(x, y) {
+    if (this.isClicked(x, y)) {
+      if (this.allowVisualClick) this.visualClick();
+      if (this.onClick) this.onClick();
+    } else {
+      //console.log("clicked"); // Default behavior
+    }
+  }
+
+  set shape(value) {
+    this._shape = value;
+    if (value === Shapes.CIRCLE) this.height = this.width;
+  }
+
+  get shape() {
+    return this._shape;
+  }
+}
+
+export class Button extends Widget {
+  constructor(
+    x,
+    y,
+    width = 20,
+    height = 20,
+    text = null,
+    onClick = null
+  ) {
+    super(
+      x,
+      y,
+      width,
+      height,
+      text,
+      onClick
+    );
+    this.text = text;
+    this.textColor = "black";
+    this.font = "8px Arial";
+  }
+
+  draw(ctx) {
+    super.draw(ctx); // Call the draw method of the Widget class
+
+    // Draw text
+    if (this.text) {
+      ctx.fillStyle = this.textColor;
+      ctx.font = this.font;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle"; //"bottom";
+      ctx.fillText(
+        this.text,
+        this.x + this.width / 2,
+        this.y + this.height / 2
+      );
+    }
+  }
+}
+
+export class ButtonOLd {
   constructor(
     x,
     y,
@@ -92,8 +315,7 @@ export class Button {
     this.width = width;
     this.height = height;
     this.color = color;
-    this._shape = Shapes.SQUARE,
-    this.text = text;
+    (this._shape = Shapes.SQUARE), (this.text = text);
     this.radius = width / 2; // Radius for circle
     this.outline = outline; // Outline property
     this.outlineColor = outlineColor; // Outline color
@@ -103,9 +325,9 @@ export class Button {
     this.textColor = "black";
     this.font = "8px Arial";
 
-    if (this.shape == Shapes.CIRCLE){
-      console.log('yes it is',);
-      this.height = this.width
+    if (this.shape == Shapes.CIRCLE) {
+      console.log("yes it is");
+      this.height = this.width;
     }
   }
 
@@ -150,7 +372,11 @@ export class Button {
       ctx.font = this.font;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle"; //"bottom";
-      ctx.fillText(this.text, this.x + this.width / 2 , this.y + this.height / 2);
+      ctx.fillText(
+        this.text,
+        this.x + this.width / 2,
+        this.y + this.height / 2
+      );
     }
   }
 
@@ -194,7 +420,7 @@ export class Button {
 
   set shape(value) {
     this._shape = value;
-    if (value === Shapes.CIRCLE) this.height = this.width
+    if (value === Shapes.CIRCLE) this.height = this.width;
   }
 
   get shape() {
@@ -254,17 +480,24 @@ export class Slider {
     this.handleWidth = 20;
     this.handleHeight = 20;
     this.isDragging = false;
-
   }
 
   draw(ctx) {
     // Draw the track
     ctx.fillStyle = this.trackColor;
-    ctx.fillRect(this.x, this.y + (this.handleHeight - this.height) / 2, this.width, this.height);
-  
+    ctx.fillRect(
+      this.x,
+      this.y + (this.handleHeight - this.height) / 2,
+      this.width,
+      this.height
+    );
+
     // Calculate the handle position
-    const handleX = this.x + ((this.value - this.min) / (this.max - this.min)) * (this.width - this.handleWidth);
-  
+    const handleX =
+      this.x +
+      ((this.value - this.min) / (this.max - this.min)) *
+        (this.width - this.handleWidth);
+
     // Draw the handle
     ctx.fillStyle = this.handleColor;
     ctx.beginPath();
@@ -275,18 +508,18 @@ export class Slider {
   //   // Draw the track
   //   ctx.fillStyle = this.trackColor;
   //   ctx.fillRect(this.x, this.y + (this.handleHeight - this.height) / 2, this.width, this.height);
-  
+
   //   // Calculate the handle position
   //   const handleX = this.x + ((this.value - this.min) / (this.max - this.min)) * (this.width - this.handleWidth);
-  
+
   //   // Draw the handle as a standard rectangle
   //   ctx.fillStyle = this.handleColor;
   //   ctx.fillRect(handleX, this.y, this.handleWidth, this.handleHeight);
   // }
 
   isHandleClicked(mousePos) {
-    const x = mousePos[0]
-    const y = mousePos[1]
+    const x = mousePos[0];
+    const y = mousePos[1];
     // if ((
     //   x >= this.x - 20 &&
     //   x <= this.x + this.width + 20 &&
@@ -304,19 +537,19 @@ export class Slider {
   }
 
   handleMouseDown(mousePos) {
-    console.log('click',);
+    console.log("click");
     if (this.isHandleClicked(mousePos) && app.canvas.pointer.isDown) {
       this.isDragging = true;
-    } else { this.isDragging = false;}
+    } else {
+      this.isDragging = false;
+    }
   }
 
   handleMouseMove(mousePos) {
-
-
-
-    const x = mousePos[0]
+    const x = mousePos[0];
     if (this.isDragging) {
-      let newValue = ((x - this.x) / this.width) * (this.max - this.min) + this.min;
+      let newValue =
+        ((x - this.x) / this.width) * (this.max - this.min) + this.min;
       newValue = Math.max(this.min, Math.min(this.max, newValue));
       this.value = newValue;
 
@@ -330,193 +563,6 @@ export class Slider {
     this.isDragging = false;
   }
 }
-
-
-// export class DropdownMenu {
-//   #isOpen = false;
-//   #selectedOptionIndex = 0;
-
-//   constructor(
-//     x = 0,
-//     y = 0,
-//     options = [],
-//     {
-//       textColor = "white",
-//       font = "16px Arial",
-//       textAlign = "left",
-//       textBaseline = "middle",
-//       boxWidth = 100,
-//       boxHeight = 20,
-//       optionHeight = 25,
-//       backgroundColor = "black",
-//       hoverColor = "gray",
-//     } = {}
-//   ) {
-//     this.x = x;
-//     this.y = y;
-//     this.options = options;
-//     this.textColor = textColor;
-//     this.font = font;
-//     this.textAlign = textAlign;
-//     this.textBaseline = textBaseline;
-//     this.boxWidth = boxWidth;
-//     this.boxHeight = boxHeight;
-//     this.optionHeight = optionHeight;
-//     this.backgroundColor = backgroundColor;
-//     this.hoverColor = hoverColor;
-//   }
-
-//   draw(ctx) {
-//     if (!ctx) throw new Error("Canvas context is required.");
-
-//     this.#drawMainBox(ctx);
-//     if (this.#isOpen) {
-//       this.#drawOptions(ctx);
-//     } else {
-//       this.#drawSelectedOption(ctx);
-//     }
-//   }
-
-//   #drawMainBox(ctx) {
-//     ctx.strokeStyle = this.textColor;
-//     ctx.strokeRect(this.x, this.y, this.boxWidth, this.boxHeight);
-//   }
-
-//   #drawOptions(ctx) {
-//     ctx.fillStyle = this.backgroundColor;
-//     ctx.fillRect(this.x, this.y + this.boxHeight, this.boxWidth, this.options.length * this.optionHeight);
-
-//     ctx.fillStyle = this.textColor;
-//     ctx.font = this.font;
-//     ctx.textAlign = this.textAlign;
-//     ctx.textBaseline = this.textBaseline;
-
-//     this.options.forEach((option, index) => {
-//       const textY = this.y + this.boxHeight + this.optionHeight / 2 + index * this.optionHeight;
-//       if (index === this.#selectedOptionIndex) {
-//         ctx.fillStyle = this.hoverColor;
-//         ctx.fillRect(this.x, textY - this.optionHeight / 2, this.boxWidth, this.optionHeight);
-//         ctx.fillStyle = this.textColor;
-//       }
-//       ctx.fillText(option, this.x + 5, textY);
-//     });
-//   }
-
-//   #drawSelectedOption(ctx) {
-//     const selectedText = this.options[this.#selectedOptionIndex];
-//     ctx.fillStyle = this.textColor;
-//     ctx.font = this.font;
-//     ctx.textAlign = this.textAlign;
-//     ctx.textBaseline = this.textBaseline;
-//     ctx.fillText(selectedText, this.x + 5, this.y + this.boxHeight / 2);
-//   }
-
-//   toggle() {
-//     this.#isOpen = !this.#isOpen;
-//   }
-
-//   selectNextOption() {
-//     if (this.#selectedOptionIndex < this.options.length - 1) {
-//       this.#selectedOptionIndex++;
-//     }
-//   }
-
-//   selectPreviousOption() {
-//     if (this.#selectedOptionIndex > 0) {
-//       this.#selectedOptionIndex--;
-//     }
-//   }
-
-//   selectOption(index) {
-//     if (index >= 0 && index < this.options.length) {
-//       this.#selectedOptionIndex = index;
-//     } else {
-//       throw new Error("Invalid option index.");
-//     }
-//   }
-
-//   handleClick(mouseX, mouseY) {
-//     console.log('clicked dm',);
-//     if (
-//       mouseX >= this.x &&
-//       mouseX <= this.x + this.boxWidth &&
-//       mouseY >= this.y &&
-//       mouseY <= this.y + this.boxHeight
-//     ) {
-//       this.toggle();
-//     } else if (this.#isOpen) {
-//       const optionIndex = Math.floor((mouseY - (this.y + this.boxHeight)) / this.optionHeight);
-//       if (optionIndex >= 0 && optionIndex < this.options.length) {
-//         this.selectOption(optionIndex);
-//         this.toggle();
-//       }
-//     }
-//   }
-
-//   get selectedOption() {
-//     return this.options[this.#selectedOptionIndex];
-//   }
-// }
-export class DropdownMenu {
-  constructor(x, y, width, height, options) {
-      this.x = x;
-      this.y = y;
-      this.width = width;
-      this.height = height;
-      this.options = options;
-      this.isOpen = false;
-      this.selectedOption = null;
-  }
-
-  draw(ctx) {
-      // Draw the main dropdown button
-      ctx.fillStyle = '#4CAF50';
-      ctx.fillRect(this.x, this.y, this.width, this.height);
-      ctx.fillStyle = '#000';
-      ctx.font = '16px Arial';
-      ctx.fillText(this.selectedOption || 'Select an option', this.x + 10, this.y + 25);
-
-      // Draw the dropdown arrow
-      ctx.beginPath();
-      ctx.moveTo(this.x + this.width - 20, this.y + 10);
-      ctx.lineTo(this.x + this.width - 10, this.y + 10);
-      ctx.lineTo(this.x + this.width - 15, this.y + 20);
-      ctx.closePath();
-      ctx.fillStyle = '#000';
-      ctx.fill();
-
-      // Draw the dropdown options if open
-      if (this.isOpen) {
-          for (let i = 0; i < this.options.length; i++) {
-              const optionY = this.y + this.height + (i * 30);
-              ctx.fillStyle = '#4CAF50';
-              ctx.fillRect(this.x, optionY, this.width, 30);
-              ctx.fillStyle = '#000';
-              ctx.fillText(this.options[i], this.x + 10, optionY + 20);
-          }
-      }
-  }
-
-  handleClick(mouseX, mouseY) {
-      // Check if the main button is clicked
-      if (mouseX >= this.x && mouseX <= this.x + this.width &&
-          mouseY >= this.y && mouseY <= this.y + this.height) {
-          this.isOpen = !this.isOpen;
-      } else if (this.isOpen) {
-          // Check if an option is clicked
-          for (let i = 0; i < this.options.length; i++) {
-              const optionY = this.y + this.height + (i * 30);
-              if (mouseX >= this.x && mouseX <= this.x + this.width &&
-                  mouseY >= optionY && mouseY <= optionY + 30) {
-                  this.selectedOption = this.options[i];
-                  this.isOpen = false;
-                  break;
-              }
-          }
-      }
-  }
-}
-
 
 export class Checkbox {
   constructor(
@@ -592,6 +638,65 @@ export class Checkbox {
   }
 }
 
+export class DropdownMenu {
+  constructor(x, y, width, height, options) {
+      this.x = x;
+      this.y = y;
+      this.width = width;
+      this.height = height;
+      this.options = options;
+      this.isOpen = false;
+      this.selectedOption = null;
+  }
+
+  draw(ctx) {
+      // Draw the main dropdown button
+      ctx.fillStyle = '#4CAF50';
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+      ctx.fillStyle = '#000';
+      ctx.font = '16px Arial';
+      ctx.fillText(this.selectedOption || 'Select an option', this.x + 10, this.y + 25);
+
+      // Draw the dropdown arrow
+      ctx.beginPath();
+      ctx.moveTo(this.x + this.width - 20, this.y + 10);
+      ctx.lineTo(this.x + this.width - 10, this.y + 10);
+      ctx.lineTo(this.x + this.width - 15, this.y + 20);
+      ctx.closePath();
+      ctx.fillStyle = '#000';
+      ctx.fill();
+
+      // Draw the dropdown options if open
+      if (this.isOpen) {
+          for (let i = 0; i < this.options.length; i++) {
+              const optionY = this.y + this.height + (i * 30);
+              ctx.fillStyle = '#4CAF50';
+              ctx.fillRect(this.x, optionY, this.width, 30);
+              ctx.fillStyle = '#000';
+              ctx.fillText(this.options[i], this.x + 10, optionY + 20);
+          }
+      }
+  }
+
+  handleClick(mouseX, mouseY) {
+      // Check if the main button is clicked
+      if (mouseX >= this.x && mouseX <= this.x + this.width &&
+          mouseY >= this.y && mouseY <= this.y + this.height) {
+          this.isOpen = !this.isOpen;
+      } else if (this.isOpen) {
+          // Check if an option is clicked
+          for (let i = 0; i < this.options.length; i++) {
+              const optionY = this.y + this.height + (i * 30);
+              if (mouseX >= this.x && mouseX <= this.x + this.width &&
+                  mouseY >= optionY && mouseY <= optionY + 30) {
+                  this.selectedOption = this.options[i];
+                  this.isOpen = false;
+                  break;
+              }
+          }
+      }
+  }
+}
 
 export class CanvasObjectManager {
   constructor(ctx) {
