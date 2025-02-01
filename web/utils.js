@@ -26,6 +26,43 @@ export function lightenColor(color, percent) {
     .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 }
 
+export function isLowQuality() {
+  var _a;
+  const canvas = app.canvas;
+  return (
+    (((_a = canvas.ds) === null || _a === void 0 ? void 0 : _a.scale) || 1) <=
+    0.5
+  );
+}
+
+export function hexToImageData(hex) {
+  const byteArray = new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  const imageData = ctx.createImageData(canvas.width, canvas.height);
+  
+  // Assuming the image is in RGBA format (4 bytes per pixel)
+  imageData.data.set(byteArray);
+  return imageData;
+}
+
+// Function to convert hex data to a Blob
+export function hexToBlob(hex) {
+  const byteArray = new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+  return new Blob([byteArray], { type: 'image/png' });  // Use 'image/png' for PNG images
+}
+
+// Function to convert hex data to an Image
+export function hexDataToImage(hexData) {
+  const blob = hexToBlob(hexData);
+  const url = URL.createObjectURL(blob);
+
+  const img = new Image();
+  img.src = url;  // Set the image source to the created URL
+
+  return img;  // Return the image object
+}
+
 export const Shapes = Object.freeze({
   SQUARE: "square",
   CIRCLE: "circle",
@@ -105,26 +142,66 @@ export const Colors = [
     "#deb887", // Burlywood
     "#7fffd4", // Aquamarine
     "#ff8c00", // Dark Orange
+  
   ];
-  
-  
 
 
-// LiteGraph.NODE_TITLE_COLOR,
-// LiteGraph.NODE_SELECTED_TITLE_COLOR,
-// LiteGraph.NODE_TEXT_COLOR,
-// LiteGraph.NODE_DEFAULT_COLOR,
-// LiteGraph.NODE_TEXT_SIZE,
-// LiteGraph.NODE_DEFAULT_BGCOLOR,
-// LiteGraph.NODE_DEFAULT_BOXCOLOR,
-// LiteGraph.NODE_BOX_OUTLINE_COLOR,
-// LiteGraph.DEFAULT_SHADOW_COLOR,
+/*
+LiteGraph.NODE_TITLE_COLOR,
+LiteGraph.NODE_SELECTED_TITLE_COLOR,
+LiteGraph.NODE_TEXT_COLOR,
+LiteGraph.NODE_DEFAULT_COLOR,
+LiteGraph.NODE_TEXT_SIZE,
+LiteGraph.NODE_DEFAULT_BGCOLOR,
+LiteGraph.NODE_DEFAULT_BOXCOLOR,
+LiteGraph.NODE_BOX_OUTLINE_COLOR,
+LiteGraph.DEFAULT_SHADOW_COLOR,
 
-// LiteGraph.WIDGET_BGCOLOR,
-// LiteGraph.WIDGET_OUTLINE_COLOR,
-// LiteGraph.WIDGET_TEXT_COLOR,
-// LiteGraph.WIDGET_SECONDARY_TEXT_COLOR,
+LiteGraph.WIDGET_BGCOLOR,
+LiteGraph.WIDGET_OUTLINE_COLOR,
+LiteGraph.WIDGET_TEXT_COLOR,
+LiteGraph.WIDGET_SECONDARY_TEXT_COLOR,
 
-// LiteGraph.LINK_COLOR,
-// LiteGraph.EVENT_LINK_COLOR,
-// LiteGraph.CONNECTING_LINK_COLOR
+LiteGraph.LINK_COLOR,
+LiteGraph.EVENT_LINK_COLOR,
+LiteGraph.CONNECTING_LINK_COLOR
+*/
+
+/*
+import { api } from "../../../scripts/api.js";
+import { app } from "../../../scripts/app.js";
+import { allow_debug } from "./js_shared.js";
+import {
+  Button,
+  Label,
+  Slider,
+  DropdownMenu,
+  Widget,
+  Checkbox,
+  ColorPicker
+} from "./widgets.js";
+import { Shapes, Colors,} from "./utils.js";
+
+*/
+
+      // //console.log('pointer',app.pointer);
+      // console.log('app',app);
+      // console.log('node',node);
+      // if (w.isClicked(pos[0],pos[1]))
+      //   w.isChecked = !w.isChecked
+      // w.handleClick(pos[0],pos[1])
+      // //c.handleOnClick(pos)
+      // l.textColor = c.selectedColor;
+
+
+          // const drawing_app = new DrawingApp(node);
+    // node.addCustomWidget(drawing_app);
+    // const w = new Checkbox(75,5);
+    // node.addCustomWidget(w);
+
+    // const l = new Label(5,5,"Selected Color:");
+    // node.addCustomWidget(l);
+
+    // const c = new ColorPicker(5,20,100,100,);
+    // node.addCustomWidget(c);
+    

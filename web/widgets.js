@@ -1,5 +1,6 @@
 import { app } from "../../../scripts/app.js";
-import { Shapes, lightenColor } from "./utils.js";
+import { Shapes, lightenColor, hexDataToImage } from "./utils.js";
+import { api } from "../../../scripts/api.js";
 
 export class Widget {
   constructor(x, y, width = 50, height = 50, onClick = null) {
@@ -104,11 +105,11 @@ export class Widget {
 }
 
 export class Button extends Widget {
-  constructor(x, y, width = 20, height = 20, text = null, onClick = null) {
+  constructor(x, y, text, width = 30, height = 30, onClick = null) {
     super(x, y, width, height, text, onClick);
     this.text = text;
     this.textColor = "black";
-    this.font = "8px Arial";
+    this.font = "12px Arial";
   }
 
   draw(ctx) {
@@ -167,7 +168,7 @@ export class Label {
     this.y = y;
     this.text = text;
     this.textColor = LiteGraph.WIDGET_SECONDARY_TEXT_COLOR;
-    this.font = "12px Arial";
+    this.font = "14px Arial";
     this.textAlign = "left";
     this.textBaseline = "middle";
     this.xOffset = 0;
@@ -369,7 +370,322 @@ export class DropdownMenu {
   }
 }
 
-export class ColorPicker0 {
+export class ColorPicker {
+  constructor(x, y, width, height) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.selectedColor = null;
+    this.ctx = null;
+  }
+
+  draw(ctx) {
+    // Ensure the context is set
+    if (this.ctx === null) this.ctx = ctx;
+
+    // Create a horizontal gradient for hue
+    const hueGradient = this.ctx.createLinearGradient(
+      this.x,
+      this.y,
+      this.x + this.width,
+      this.y
+    );
+    hueGradient.addColorStop(0, "red");
+    hueGradient.addColorStop(0.17, "orange");
+    hueGradient.addColorStop(0.34, "yellow");
+    hueGradient.addColorStop(0.51, "green");
+    hueGradient.addColorStop(0.68, "blue");
+    hueGradient.addColorStop(0.85, "indigo");
+    hueGradient.addColorStop(1, "violet");
+
+    // Fill the canvas with the hue gradient
+    this.ctx.fillStyle = hueGradient;
+    this.ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    // Create a vertical gradient for brightness
+    const brightnessGradient = this.ctx.createLinearGradient(
+      this.x,
+      this.y,
+      this.x,
+      this.y + this.height
+    );
+    brightnessGradient.addColorStop(0, "rgba(255, 255, 255, 1)"); // White
+    brightnessGradient.addColorStop(0.5, "rgba(255, 255, 255, 0)"); // Transparent
+    brightnessGradient.addColorStop(0.5, "rgba(0, 0, 0, 0)"); // Transparent
+    brightnessGradient.addColorStop(1, "rgba(0, 0, 0, 1)"); // Black
+
+    // Use global composite operation to blend the gradients
+    this.ctx.globalCompositeOperation = "multiply";
+    this.ctx.fillStyle = brightnessGradient;
+    this.ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    // Reset the global composite operation to default
+    this.ctx.globalCompositeOperation = "source-over";
+
+    this.displaySelectedColor();
+  }
+
+  handleOnClick(event, pos, node) {
+    const rect = this.ctx.canvas.getBoundingClientRect();
+    const scaleX = this.ctx.canvas.width / rect.width;
+    const scaleY = this.ctx.canvas.height / rect.height;
+
+    const canvasX = (event.clientX - rect.left) * scaleX;
+    const canvasY = (event.clientY - rect.top) * scaleY;
+
+    const pixel = this.ctx.getImageData(canvasX, canvasY, 1, 1).data;
+    this.selectedColor = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+  }
+
+  displaySelectedColor() {
+    // // Clear a small area below the canvas to display the selected color
+    // this.ctx.clearRect(0, this.canvas.height - 30, this.canvas.width, 30); // Adjusted coordinates
+    this.ctx.fillStyle = this.selectedColor;
+    this.ctx.fillRect(this.x, this.y + this.height, this.width, 10); // Adjusted coordinates
+    // // Add text to show the RGB value
+    // this.ctx.fillStyle = "#000";
+    // this.ctx.font = "16px Arial";
+    // this.ctx.fillText(
+    //   `Selected Color: ${this.selectedColor}`,
+    //   10,
+    //   this.canvas.height - 10
+    // ); // Adjusted coordinates
+  }
+}
+
+export class PaintArea extends Widget {
+  constructor(x, y, width, height) {
+    super(x, y, width, height);
+    this.color = "white";
+    this.clearColor = null;
+    this.ctx = null;
+    this.paintCanvas = null;
+    this.paintCtx = null;
+    this.lastImage = null;
+    this.loadedImage = null;
+    this.tempImage = null;
+    this.isPainting = false;
+    this.brushSize = 20;
+    this.brushColor = "#000000";
+    this.mousePos = [0, 0];
+    this.yOffset = 30
+
+    this.init();
+    this.getDrawingFromAPI();
+  }
+
+  init() {
+    // init paint canvas
+    this.paintCanvas = document.createElement("canvas");
+    this.paintCanvas.width = this.width; // Match the dimensions of the original canvas
+    this.paintCanvas.height = this.height;
+    this.paintCtx = this.paintCanvas.getContext("2d");
+
+    // Fill the new canvas with a white background
+    this.paintCtx.fillStyle = "white";
+    this.paintCtx.fillRect(
+      this.x,
+      this.y,
+      this.paintCanvas.width,
+      this.paintCanvas.height
+    );
+  }
+
+  clearWithColor(color) {
+    this.clearColor = color;
+  }
+
+  updateMousePos(pos) {
+    const x = pos[0]
+    const y = pos[1] - this.yOffset;
+    this.mousePos = [x,y];
+  }
+
+  togglePainting() {
+    this.isPainting = !this.isPainting;
+  }
+
+  isDragging() {
+    return app.canvas.pointer.isDown;
+  }
+
+  isMouseDown(){
+    this.isPainting = app.canvas.pointer.isDown;
+  }
+
+  saveTempImage() {
+    console.log("image saved");
+    this.tempImage = this.paintCanvas.toDataURL();
+  }
+
+  loadTempImage() {
+    let img = new Image();
+    img.src = this.tempImage;
+    img.onload = () => {
+      this.loadedImage = img;
+    };
+  }
+
+  // send image to be saved by python
+  async sendDrawingToAPI() {
+    const filename = "iToolsPaintedImage";
+    if (!this.paintCanvas) {
+      console.error("Canvas is not initialized.");
+      return;
+    }
+
+    // Convert the canvas content to a data URL
+    const dataURL = this.paintCanvas.toDataURL("image/png");
+
+    // Convert the data URL to a Blob
+    const blob = await fetch(dataURL).then((res) => res.blob());
+
+    // Create a FormData object to send the file
+    const formData = new FormData();
+    formData.append("file", blob, `${filename}.png`);
+
+    // Send the file to the API endpoint
+    try {
+      const response = await api.fetchApi("/itools/request_save_paint", {
+        method: "POST",
+        body: formData,
+      });
+      //console.log(response.json());
+      console.log("Drawing sent successfully.");
+    } catch (error) {
+      console.error("Error sending the drawing:", error);
+    }
+  }
+
+  // request last image saved by python
+  async getDrawingFromAPI() {
+    const filename = "iToolsPaintedImage.png";
+
+    const formData = new FormData();
+    formData.append("filename", filename);
+    try {
+      const response = await api.fetchApi("/itools/request_the_paint_file", {
+        method: "POST",
+        body: formData,
+      });
+
+      console.log("response", response);
+
+      // Ensure the response is properly parsed as JSON
+      const result = await response.json();
+
+      // Check if the response is successful
+      if (result.status === "success") {
+        console.log("Drawing received successfully.", result);
+        this.loadedImage = hexDataToImage(result["data"]);
+      } else {
+        console.error("Error:", result.message);
+      }
+    } catch (error) {
+      console.error("iTools No Temp Drawing Found", error);
+    }
+  }
+
+  draw(ctx) {
+    if (this.ctx === null) this.ctx = ctx;
+
+    // use loaded image once
+    if (this.loadedImage !== null) {
+      console.log("loaded image used");
+      this.paintCtx.drawImage(this.loadedImage, 0, 0);
+      //ctx.drawImage(this.paintCanvas, 0, 0);
+      this.loadedImage = null;
+    }
+
+    // use clear color once
+    if (this.clearColor !== null) {
+      this.paintCtx.fillStyle = this.clearColor;
+      this.paintCtx.fillRect(
+        0,
+        0,
+        this.paintCanvas.width,
+        this.paintCanvas.height
+      );
+      this.sendDrawingToAPI(); // save after clear
+      this.clearColor = null;
+    }
+
+    // draw phase
+    if (this.isPainting && this.isDragging()) {
+      // Set the drawing properties
+      this.paintCtx.lineWidth = this.brushSize;
+      this.paintCtx.lineCap = "round";
+      this.paintCtx.strokeStyle = this.brushColor;
+
+      // Draw on the new canvas
+      this.paintCtx.lineTo(this.mousePos[0], this.mousePos[1]);
+      this.paintCtx.stroke();
+
+      this.paintCtx.beginPath();
+      this.paintCtx.moveTo(this.mousePos[0], this.mousePos[1]);
+
+      // Store the last drawn image
+      this.lastImage = this.paintCanvas.toDataURL();
+    } else {
+      // in case mouse up miss
+      this.isPainting = false;
+      this.paintCtx.beginPath();
+    }
+    // keep drawing on screen
+    ctx.drawImage(this.paintCanvas, this.x, this.y);
+  }
+}
+
+export class Preview {
+  constructor() {
+    this.mousePos = [0, 0];
+    this.brushSize = 10;
+    this.color = "rgba(128, 128, 128, 0.2)"; // 50% transparent gray
+    this.dashColor = "black"
+    this.widthLimit = 400;
+    this.heightLimit = 400;
+    this.isMouseIn = true;
+    this.init();
+  }
+
+  updateBrushSize(size) {
+    this.brushSize = size;
+  }
+
+  updateMousePos(pos) {
+    this.mousePos = pos;
+  }
+
+  init() {
+    //init preview canvas
+    this.previewCanvas = document.createElement("canvas");
+    this.previewCanvas.width = this.brushSize; //app.canvasContainer.width;
+    this.previewCanvas.height = this.brushSize; //app.canvasContainer.height;
+    this.previewCtx = this.previewCanvas.getContext("2d");
+  }
+  draw(ctx) {
+    if(this.mousePos[0] > this.widthLimit) return;
+    if(this.mousePos[1] > this.heightLimit) return;
+    if(!this.isMouseIn) return;
+
+    ctx.beginPath();
+    ctx.arc(this.mousePos[0], this.mousePos[1], this.brushSize, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
+    ctx.fill();
+
+    // Draw dotted outline
+    ctx.setLineDash([3, 3]); // [dash length, gap length]
+    ctx.strokeStyle = this.dashColor; // Outline color
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.setLineDash([]); // Reset line dash to solid
+  }
+}
+
+// DEPRECATED
+
+export class ColorPickerOld {
   constructor(x, y, width, height) {
     this.x = x;
     this.y = y;
@@ -454,91 +770,6 @@ export class ColorPicker0 {
       this.x + 10,
       this.height - 10
     ); // Adjusted coordinates
-  }
-}
-
-export class ColorPicker {
-  constructor(x, y, width, height) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.selectedColor = null;
-    this.ctx = null;
-  }
-
-  draw(ctx) {
-    // Ensure the context is set
-    if (this.ctx === null) this.ctx = ctx;
-
-    // Create a horizontal gradient for hue
-    const hueGradient = this.ctx.createLinearGradient(
-      this.x,
-      this.y,
-      this.x + this.width,
-      this.y
-    );
-    hueGradient.addColorStop(0, "red");
-    hueGradient.addColorStop(0.17, "orange");
-    hueGradient.addColorStop(0.34, "yellow");
-    hueGradient.addColorStop(0.51, "green");
-    hueGradient.addColorStop(0.68, "blue");
-    hueGradient.addColorStop(0.85, "indigo");
-    hueGradient.addColorStop(1, "violet");
-
-    // Fill the canvas with the hue gradient
-    this.ctx.fillStyle = hueGradient;
-    this.ctx.fillRect(this.x, this.y, this.width, this.height);
-
-    // Create a vertical gradient for brightness
-    const brightnessGradient = this.ctx.createLinearGradient(
-      this.x,
-      this.y,
-      this.x,
-      this.y + this.height
-    );
-    brightnessGradient.addColorStop(0, "rgba(255, 255, 255, 1)"); // White
-    brightnessGradient.addColorStop(0.5, "rgba(255, 255, 255, 0)"); // Transparent
-    brightnessGradient.addColorStop(0.5, "rgba(0, 0, 0, 0)"); // Transparent
-    brightnessGradient.addColorStop(1, "rgba(0, 0, 0, 1)"); // Black
-
-    // Use global composite operation to blend the gradients
-    this.ctx.globalCompositeOperation = "multiply";
-    this.ctx.fillStyle = brightnessGradient;
-    this.ctx.fillRect(this.x, this.y, this.width, this.height);
-
-    // Reset the global composite operation to default
-    this.ctx.globalCompositeOperation = "source-over";
-
-    this.displaySelectedColor();
-  }
-
-
-  handleOnClick(event, pos, node) {
-    const rect = this.ctx.canvas.getBoundingClientRect();
-    const scaleX = this.ctx.canvas.width / rect.width;
-    const scaleY = this.ctx.canvas.height / rect.height;
-
-    const canvasX = (event.clientX - rect.left) * scaleX;
-    const canvasY = (event.clientY - rect.top) * scaleY;
-
-    const pixel = this.ctx.getImageData(canvasX, canvasY, 1, 1).data;
-    this.selectedColor = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
-  }
-
-  displaySelectedColor() {
-    // // Clear a small area below the canvas to display the selected color
-    // this.ctx.clearRect(0, this.canvas.height - 30, this.canvas.width, 30); // Adjusted coordinates
-    this.ctx.fillStyle = this.selectedColor;
-    this.ctx.fillRect(this.x, this.y + this.height, this.width, 30); // Adjusted coordinates
-    // // Add text to show the RGB value
-    // this.ctx.fillStyle = "#000";
-    // this.ctx.font = "16px Arial";
-    // this.ctx.fillText(
-    //   `Selected Color: ${this.selectedColor}`,
-    //   10,
-    //   this.canvas.height - 10
-    // ); // Adjusted coordinates
   }
 }
 

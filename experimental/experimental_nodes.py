@@ -8,9 +8,10 @@ except ImportError:
 import base64
 from PIL import Image
 import io
-from ..backend.shared import pil2tensor
+from ..backend.shared import pil2tensor, project_dir
 import os
 from server import PromptServer
+from aiohttp import web
 import json
 import folder_paths
 
@@ -130,17 +131,17 @@ class IToolsPaintNode:
     DESCRIPTION = ("Will paint")
 
     def paint_func(self, **kwargs):
-        image_path = folder_paths.temp_directory
-        image_path = os.path.join(image_path, "itools_painted_image.png")
+        image_path = os.path.join(project_dir, "examples")
+        image_path = os.path.join(image_path, "iToolsPaintedImage.png")
         img = Image.open(image_path)
 
-        # Define crop box (left, upper, right, lower)
-        width, height = img.size  # (512, 592)
-        crop_box = (0, height - 512, 512, height)  # Crop from bottom
+        # # Define crop box (left, upper, right, lower)
+        # width, height = img.size  # (512, 592)
+        # crop_box = (0, height - 512, 512, height)  # Crop from bottom
 
-        # Crop the image
-        cropped_image = img.crop(crop_box)
-        result = [cropped_image]        
+        # # Crop the image
+        # cropped_image = img.crop(crop_box)
+        result = [img]        
         return pil2tensor(result)
 
     def IS_CHANGED(cls,):
@@ -154,8 +155,10 @@ async def respond_to_request_save_paint(request):
     file_item = post["file"]
 
     # Define the directory where the image will be saved
-    save_directory = folder_paths.temp_directory
+    # save_directory = folder_paths.temp_directory
 
+    save_directory = os.path.join(project_dir, "examples")
+    
     # Define the file path
     file_path = os.path.join(save_directory, file_item.filename)
 
@@ -163,5 +166,28 @@ async def respond_to_request_save_paint(request):
     with open(file_path, "wb") as f:
         f.write(file_item.file.read())
 
+    return web.json_response({"status": "success", "file": file_path,})
+
+@PromptServer.instance.routes.post("/itools/request_the_paint_file")
+async def respond_to_request_the_paint_file(request):
+    post = await request.post()
     
+    file_item = post["filename"]
+    # Define the directory where the image is saved
+    # save_directory = folder_paths.temp_directory
+    save_directory = os.path.join(project_dir, "examples")
+    file_path = os.path.join(save_directory, file_item)
+    
+    # Check if file exists
+    if not os.path.exists(file_path):
+        return web.json_response({"status": "error", "message": "File not found"}, status=404)
+
+    print("iTools file exist")
+    
+    # Read the file
+    with open(file_path, "rb") as f:
+        file_data = f.read()
+
+    return web.json_response({"status": "success", "file": file_path, "data": file_data.hex()})
+   
     
