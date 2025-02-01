@@ -1,6 +1,17 @@
 import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
+import {
+  Button,
+  Label,
+  Slider,
+  DropdownMenu,
+  Widget,
+  Checkbox,
+  ColorPicker
+} from "./widgets.js";
+import { Shapes, Colors,} from "./utils.js";
+
 
 function isLowQuality() {
   var _a;
@@ -31,49 +42,49 @@ class DrawingApp {
       "#00ff00", // Green
       "#0000ff", // Blue
       "#ffff00", // Yellow
-      
+
       "#ff00ff", // Magenta
       "#00ffff", // Cyan
       "#ffa500", // Orange
       "#800080", // Purple
       "#008000", // Dark Green
       "#800000", // Maroon
-      
+
       "#808000", // Olive
       "#008080", // Teal
       "#d3d3d3", // Light Gray
       "#000080", // Navy
       "#ffc0cb", // Pink
       "#a52a2a", // Brown
-      
+
       "#add8e6", // Light Blue
       "#ff4500", // Orange Red
       "#90ee90", // Light Green
       "#4b0082", // Indigo
       "#ffb6c1", // Light Pink
       "#ffd700", // Gold
-      
+
       "#f0e68c", // Khaki
       "#c0c0c0", // Silver
       "#696969", // Dim Gray
       "#1e90ff", // Dodger Blue
       "#32cd32", // Lime Green
       "#ff6347", // Tomato
-      
+
       "#dc143c", // Crimson
       "#4682b4", // Steel Blue
       "#8b4513", // Saddle Brown
       "#ffdab9", // Peach Puff
       "#b22222", // Firebrick
       "#228b22", // Forest Green
-      
+
       "#f5deb3", // Wheat
       "#2f4f4f", // Dark Slate Gray
       "#6a5acd", // Slate Blue
       "#e9967a", // Dark Salmon
       "#ff69b4", // Hot Pink
       "#bc8f8f", // Rosy Brown
-      
+
       "#deb887", // Burlywood
       "#7fffd4", // Aquamarine
       "#ff8c00", // Dark Orange
@@ -85,16 +96,15 @@ class DrawingApp {
     this.startY = 40; // Starting Y position for the color picker
     this.rowLimit = 2;
     this.colLimit = 15;
-    
+
     this.node.onMouseEnter = (e) => {};
 
-    this.node.onMouseLeave = (e,node) => {
+    this.node.onMouseLeave = (e, node) => {
       //console.log('node.allow_dragnodes',node.allow_dragnodes);
       //node.allow_dragnodes = true;
-      this.node.flags.pinned = false
+      this.node.flags.pinned = false;
       this.endPosition();
-      this.sendDrawingToAPI("itools_painted_image")
-
+      this.sendDrawingToAPI("itools_painted_image");
     };
 
     this.node.onMouseMove = (event, pos, node) => {
@@ -105,9 +115,9 @@ class DrawingApp {
       }
 
       if (this.pos[1] > 30) {
-        this.node.flags.pinned = true
+        this.node.flags.pinned = true;
       } else {
-        this.node.flags.pinned = false
+        this.node.flags.pinned = false;
       }
 
       this.pos = pos;
@@ -119,7 +129,7 @@ class DrawingApp {
       if (this.sliderPicked) {
         this.sliderPicked = false;
       }
-    
+
       this.endPosition();
     };
 
@@ -198,7 +208,12 @@ class DrawingApp {
         if (index < this.colors.length) {
           const rectX = this.startX + col * (this.rectSize + this.padding);
           const rectY = this.startY + row * (this.rectSize + this.padding);
-          if (x >= rectX && x <= rectX + this.rectSize && y >= rectY && y <= rectY + this.rectSize) {
+          if (
+            x >= rectX &&
+            x <= rectX + this.rectSize &&
+            y >= rectY &&
+            y <= rectY + this.rectSize
+          ) {
             this.brushColor = this.colors[index];
           }
         }
@@ -238,18 +253,18 @@ class DrawingApp {
     const y = 30; // Vertical offset for the UI
     const uiHeight = 50; // Height of the top part
     const centerY = y + uiHeight / 2; // Vertical center of the UI
-  
+
     this.ctx.drawImage(this.newCanvas, 0, 0);
-  
+
     // Clear the top part of the canvas for UI
     this.ctx.fillStyle = LiteGraph.WIDGET_BGCOLOR; //"#2c455b";
     this.ctx.fillRect(0, y, this.node.width, uiHeight);
-  
+
     // Draw brush size label
     this.ctx.fillStyle = LiteGraph.WIDGET_TEXT_COLOR; //"#000000";
     this.ctx.font = "14px Arial";
     this.ctx.fillText("Brush Size:", 10, centerY + 5); // Adjusted for vertical center alignment
-  
+
     // Draw brush size slider
     this.ctx.fillStyle = "#484848";
     this.ctx.fillRect(100, centerY - 5, 100, 10); // Slider track, centered vertically
@@ -260,11 +275,11 @@ class DrawingApp {
       10,
       20
     ); // Slider thumb, centered vertically
-  
+
     // Draw color picker label
     this.ctx.fillStyle = LiteGraph.WIDGET_TEXT_COLOR; //"#000000";
     this.ctx.fillText("Color:", 220, centerY + 5); // Adjusted for vertical center alignment
-  
+
     for (let row = 0; row < this.rowLimit; row++) {
       for (let col = 0; col < this.colLimit; col++) {
         const index = row * this.colLimit + col;
@@ -294,7 +309,11 @@ class DrawingApp {
       this.init(ctx);
     }
     this.checkForSliderPick();
-    if (this.isDragging()) {this.paint();} else { this.endPosition()}
+    if (this.isDragging()) {
+      this.paint();
+    } else {
+      this.endPosition();
+    }
 
     this.drawUI();
   }
@@ -307,17 +326,17 @@ class DrawingApp {
 
     // Convert the canvas content to a data URL
     const dataURL = this.newCanvas.toDataURL("image/png");
-    
+
     // Convert the data URL to a Blob
     const blob = await fetch(dataURL).then((res) => res.blob());
-    
+
     // Create a FormData object to send the file
     const formData = new FormData();
     formData.append("file", blob, `${filename}.png`);
 
     // Send the file to the API endpoint
     try {
-        await api.fetchApi("/itools/request_save_paint", {
+      await api.fetchApi("/itools/request_save_paint", {
         method: "POST",
         body: formData,
       });
@@ -326,10 +345,7 @@ class DrawingApp {
       console.error("Error sending the drawing:", error);
     }
   }
-
 }
-
-
 
 app.registerExtension({
   name: "iTools.paintNode",
@@ -351,21 +367,88 @@ app.registerExtension({
     }
 
     node.setSize([512, 592]);
+    
     node.resizable = false;
 
     while (node.graph === null) {
       console.log("loading ...");
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
-
+    node.pos = [0, 0];
     if (allow_debug) {
       console.log("node", node);
     }
 
-    //node.setDirtyCanvas(true, false);
-    const drawing_app = new DrawingApp(node);
-    node.addCustomWidget(drawing_app);
+    node.setDirtyCanvas(true, false);
+    // const drawing_app = new DrawingApp(node);
+    // node.addCustomWidget(drawing_app);
+    const w = new Checkbox(350,80);
+    node.addCustomWidget(w);
 
+    const l = new Label(5,5,"Brush Size:");
+    node.addCustomWidget(l);
 
+    const l2 = new Label(5,20,"Adam:");
+    node.addCustomWidget(l2);
+
+    const c = new ColorPicker(100,100,200,200,"Bruch Size:");
+    node.addCustomWidget(c);
+    
+    
+
+    node.onMouseDown = (e, pos, node) => {
+      //console.log('pointer',app.pointer);
+      console.log('app',app);
+      console.log('node',node);
+      if (w.isClicked(pos[0],pos[1]))
+        w.isChecked = !w.isChecked
+      w.handleClick(pos[0],pos[1])
+      //c.handleOnClick(pos)
+      l.textColor = c.selectedColor;
+    };
+
+    node.onMouseMove = (e, pos, node) => {
+      c.handleOnClick(e,pos,node)
+    };
+
+    node.onMouseUp = (e, pos, node) => {
+      console.log('mouse up',);
+      console.log('pos',pos);
+    };
   },
 });
+
+// usage //const e1 = new Example1(node);
+class Example1 {
+  constructor(node) {
+    this.node = node;
+
+    const lbl = new Label(50, 80, "test");
+    this.node.addCustomWidget(lbl);
+
+    const buttons = [];
+    // Loop to create buttons
+    for (let i = 1; i < 10; i++) {
+      let btn = new Button(10 + i * 25, 100);
+      btn.shape = Shapes.CIRCLE;
+      btn.color = Colors[i];
+      btn.outline = true;
+      btn.text = "B" + i;
+      btn.onClick = () => {
+        lbl.text = btn.text + " " + btn.color;
+        //console.log(btn.color);
+      };
+      buttons.push(btn);
+    }
+
+    buttons.forEach((bt) => {
+      this.node.addCustomWidget(bt);
+    });
+
+    this.node.onMouseDown = (e, pos, node) => {
+      buttons.forEach((bt) => {
+        bt.handleClick(pos[0], pos[1]);
+      });
+    };
+  }
+}
