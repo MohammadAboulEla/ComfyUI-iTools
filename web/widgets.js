@@ -117,7 +117,7 @@ export class Widget {
   // }
 
   isClicked(x, y) {
-    if (this.shape === Shapes.SQUARE) {
+    if ( this.shape === Shapes.SQUARE || this.shape === Shapes.ROUND ) {
       return (
         x >= this.x &&
         x <= this.x + this.width &&
@@ -128,40 +128,40 @@ export class Widget {
       const distance = Math.sqrt(
         (x - (this.x + this.radius)) ** 2 + (y - (this.y + this.radius)) ** 2
       );
-      return distance <= this.radius;
-    } else if (this.shape === Shapes.ROUND) {
-      const radius = Math.min(this.width, this.height) / 5;
+      return distance <= this.radius;}
+    // } else if (this.shape === Shapes.ROUND) {
+    //   const radius = Math.min(this.width, this.height) / 5;
 
-      // Check if the point is inside the main rectangle (excluding rounded corners)
-      if (
-        x >= this.x + radius &&
-        x <= this.x + this.width - radius &&
-        y >= this.y &&
-        y <= this.y + this.height
-      ) {
-        return true;
-      }
-      if (
-        x >= this.x &&
-        x <= this.x + this.width &&
-        y >= this.y + radius &&
-        y <= this.y + this.height - radius
-      ) {
-        return true;
-      }
+    //   // Check if the point is inside the main rectangle (excluding rounded corners)
+    //   if (
+    //     x >= this.x + radius &&
+    //     x <= this.x + this.width - radius &&
+    //     y >= this.y &&
+    //     y <= this.y + this.height
+    //   ) {
+    //     return true;
+    //   }
+    //   if (
+    //     x >= this.x &&
+    //     x <= this.x + this.width &&
+    //     y >= this.y + radius &&
+    //     y <= this.y + this.height - radius
+    //   ) {
+    //     return true;
+    //   }
 
-      // Check if the point is inside the rounded corners
-      const cornerCenters = [
-        { cx: this.x + radius, cy: this.y + radius }, // Top-left
-        { cx: this.x + this.width - radius, cy: this.y + radius }, // Top-right
-        { cx: this.x + radius, cy: this.y + this.height - radius }, // Bottom-left
-        { cx: this.x + this.width - radius, cy: this.y + this.height - radius }, // Bottom-right
-      ];
+    //   // Check if the point is inside the rounded corners
+    //   const cornerCenters = [
+    //     { cx: this.x + radius, cy: this.y + radius }, // Top-left
+    //     { cx: this.x + this.width - radius, cy: this.y + radius }, // Top-right
+    //     { cx: this.x + radius, cy: this.y + this.height - radius }, // Bottom-left
+    //     { cx: this.x + this.width - radius, cy: this.y + this.height - radius }, // Bottom-right
+    //   ];
 
-      return cornerCenters.some(({ cx, cy }) => {
-        return (x - cx) ** 2 + (y - cy) ** 2 <= radius ** 2;
-      });
-    }
+    //   return cornerCenters.some(({ cx, cy }) => {
+    //     return (x - cx) ** 2 + (y - cy) ** 2 <= radius ** 2;
+    //   });
+    // }
 
     return false;
   }
@@ -472,14 +472,17 @@ export class ColorPicker {
 
   open() {
     this.isVisible = true;
+    
     setTimeout(() => {
-      this.isSelecting = true;
-    }, 300);
+      if (this.isVisible) this.isSelecting = true;
+    }, 200);
   }
 
   close() {
-      this.isSelecting = false;
-      this.isVisible = false;
+    if(this.isVisible){
+    this.isVisible = false;
+    }
+    this.isSelecting = false;
   }
 
   toggleShow() {
@@ -788,6 +791,7 @@ export class Preview {
     this.heightLimit = 592;
     this.yOffset = 80;
     this.isMouseIn = true;
+    this.allowInnerCircle = false;
     this.init();
   }
 
@@ -814,7 +818,7 @@ export class Preview {
 
     ctx.beginPath();
     ctx.arc(this.mousePos[0], this.mousePos[1], this.brushSize, 0, Math.PI * 2);
-    ctx.fillStyle = this.color;
+    ctx.fillStyle = this.allowInnerCircle? this.color : "rgba(255, 255, 255, 0)";
     ctx.fill();
 
     // Draw dotted outline

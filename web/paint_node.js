@@ -40,7 +40,7 @@ app.registerExtension({
     node.setSize([512, 592]);
     //node.pos = [0, 0];
     node.resizable = false;
-    node.setDirtyCanvas(true, false);
+    node.setDirtyCanvas(true, true);
     node.bgcolor = LiteGraph.NODE_DEFAULT_BGCOLOR;
     if (allow_debug) {
       console.log("node", node);
@@ -52,18 +52,18 @@ app.registerExtension({
     pa.yOffset = 80;
     node.addCustomWidget(pa);
 
-    const ui = new Widget(0, 30, 512, 50);
-    ui.color = lightenColor(LiteGraph.NODE_DEFAULT_BGCOLOR, 5);
-    node.addCustomWidget(ui);
+    // const ui = new Widget(0, 30, 512, 50);
+    // ui.color = lightenColor(LiteGraph.NODE_DEFAULT_BGCOLOR, 5);
+    // node.addCustomWidget(ui);
 
     const cp = new ColorPicker(0, 80, 100, 100);
     node.addCustomWidget(cp);
 
-    const bColor = new Button(10, 35, "🎨");
-    bColor.shape = Shapes.SQUARE;
+    const bColor = new Button(462 - 150, 35, "🎨");
+    bColor.shape = Shapes.ROUND;
     bColor.color = "crimson";
     bColor.onClick = () => {
-      cp.open();
+     cp.open();
     };
     node.addCustomWidget(bColor);
 
