@@ -53,7 +53,68 @@ export class Widget {
         ctx.stroke();
       }
     }
+
+    // Draw rounded rectangle
+    if (this.shape === Shapes.ROUND) {
+      const radius = Math.min(this.width, this.height) / 5; // Adjust rounding level
+      ctx.beginPath();
+      ctx.moveTo(this.x + radius, this.y);
+      ctx.lineTo(this.x + this.width - radius, this.y);
+      ctx.arcTo(
+        this.x + this.width,
+        this.y,
+        this.x + this.width,
+        this.y + radius,
+        radius
+      );
+      ctx.lineTo(this.x + this.width, this.y + this.height - radius);
+      ctx.arcTo(
+        this.x + this.width,
+        this.y + this.height,
+        this.x + this.width - radius,
+        this.y + this.height,
+        radius
+      );
+      ctx.lineTo(this.x + radius, this.y + this.height);
+      ctx.arcTo(
+        this.x,
+        this.y + this.height,
+        this.x,
+        this.y + this.height - radius,
+        radius
+      );
+      ctx.lineTo(this.x, this.y + radius);
+      ctx.arcTo(this.x, this.y, this.x + radius, this.y, radius);
+      ctx.closePath();
+
+      ctx.fillStyle = this.color;
+      ctx.fill();
+
+      // Draw outline if enabled
+      if (this.outline) {
+        ctx.strokeStyle = this.outlineColor;
+        ctx.lineWidth = this.outlineWidth;
+        ctx.stroke();
+      }
+    }
   }
+
+  // isClicked(x, y) {
+  //   if (this.shape === Shapes.SQUARE) {
+  //     return (
+  //       x >= this.x &&
+  //       x <= this.x + this.width &&
+  //       y >= this.y &&
+  //       y <= this.y + this.height
+  //     );
+  //   } else if (this.shape === Shapes.CIRCLE) {
+  //     const distance = Math.sqrt(
+  //       (x - (this.x + this.radius)) ** 2 + (y - (this.y + this.radius)) ** 2
+  //     );
+  //     return distance <= this.radius;
+  //   }
+  //   return false;
+  // }
 
   isClicked(x, y) {
     if (this.shape === Shapes.SQUARE) {
@@ -68,7 +129,40 @@ export class Widget {
         (x - (this.x + this.radius)) ** 2 + (y - (this.y + this.radius)) ** 2
       );
       return distance <= this.radius;
+    } else if (this.shape === Shapes.ROUND) {
+      const radius = Math.min(this.width, this.height) / 5;
+
+      // Check if the point is inside the main rectangle (excluding rounded corners)
+      if (
+        x >= this.x + radius &&
+        x <= this.x + this.width - radius &&
+        y >= this.y &&
+        y <= this.y + this.height
+      ) {
+        return true;
+      }
+      if (
+        x >= this.x &&
+        x <= this.x + this.width &&
+        y >= this.y + radius &&
+        y <= this.y + this.height - radius
+      ) {
+        return true;
+      }
+
+      // Check if the point is inside the rounded corners
+      const cornerCenters = [
+        { cx: this.x + radius, cy: this.y + radius }, // Top-left
+        { cx: this.x + this.width - radius, cy: this.y + radius }, // Top-right
+        { cx: this.x + radius, cy: this.y + this.height - radius }, // Bottom-left
+        { cx: this.x + this.width - radius, cy: this.y + this.height - radius }, // Bottom-right
+      ];
+
+      return cornerCenters.some(({ cx, cy }) => {
+        return (x - cx) ** 2 + (y - cy) ** 2 <= radius ** 2;
+      });
     }
+
     return false;
   }
 
@@ -369,16 +463,23 @@ export class ColorPicker {
     this.y = y;
     this.width = width;
     this.height = height;
+    this.heightDisplay = 20;
     this.selectedColor = null;
     this.ctx = null;
     this.isVisible = false;
-  }
+    this.allowDisplayColor = false;
+    this.isSelecting = false; }
 
   open() {
     this.isVisible = true;
+    setTimeout(() => {
+      this.isSelecting = true;
+    }, 300);
   }
+
   close() {
-    this.isVisible = false;
+      this.isSelecting = false;
+      this.isVisible = false;
   }
 
   toggleShow() {
@@ -429,12 +530,12 @@ export class ColorPicker {
     // Reset the global composite operation to default
     this.ctx.globalCompositeOperation = "source-over";
 
-    this.displaySelectedColor();
+    if(this.allowDisplayColor) this.displaySelectedColor();
   }
 
-  handleOnMouseMove() {}
 
-  handleOnClick(event, pos, node) {
+  setColorUnderCurser(event) {
+    if (!this.ctx) return;
     const rect = this.ctx.canvas.getBoundingClientRect();
     const scaleX = this.ctx.canvas.width / rect.width;
     const scaleY = this.ctx.canvas.height / rect.height;
@@ -446,11 +547,17 @@ export class ColorPicker {
     this.selectedColor = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
   }
 
+
   displaySelectedColor() {
     // // Clear a small area below the canvas to display the selected color
     // this.ctx.clearRect(0, this.canvas.height - 30, this.canvas.width, 30); // Adjusted coordinates
     this.ctx.fillStyle = this.selectedColor;
-    this.ctx.fillRect(this.x, this.y + this.height, this.width, 10); // Adjusted coordinates
+    this.ctx.fillRect(
+      this.x,
+      this.y + this.height,
+      this.width,
+      this.heightDisplay
+    ); // Adjusted coordinates
     // // Add text to show the RGB value
     // this.ctx.fillStyle = "#000";
     // this.ctx.font = "16px Arial";
@@ -599,31 +706,31 @@ export class PaintArea extends Widget {
 
   draw(ctx) {
     if (this.ctx === null) this.ctx = ctx;
-    if (this.blockPainting) {
-      if (!this.isImageSaved) {
-        this.savedImage = this.paintCtx.getImageData(
-          0,
-          0,
-          this.paintCanvas.width,
-          this.paintCanvas.height
-        );
-        this.isImageSaved = true; // Ensure it runs only once
-        this.paintCtx.fillStyle = "rgba(128, 128, 128, 0.5)";
-        this.paintCtx.fillRect(
-          0,
-          0,
-          this.paintCanvas.width,
-          this.paintCanvas.height
-        );
-        ctx.drawImage(this.paintCanvas, this.x, this.y);
-      }
-    } else {
-      if (this.isImageSaved) {
-        this.paintCtx.putImageData(this.savedImage, 0, 0);
-        this.isImageSaved = false; // Reset flag to allow saving again
-      }
-    } 
-    console.log('here',);
+    //if (this.blockPainting)
+    // if (this.blockPainting) {
+    //   if (!this.isImageSaved) {
+    //     this.savedImage = this.paintCtx.getImageData(
+    //       0,
+    //       0,
+    //       this.paintCanvas.width,
+    //       this.paintCanvas.height
+    //     );
+    //     this.isImageSaved = true; // Ensure it runs only once
+    //     this.paintCtx.fillStyle = "rgba(128, 128, 128, 0.5)";
+    //     this.paintCtx.fillRect(
+    //       0,
+    //       0,
+    //       this.paintCanvas.width,
+    //       this.paintCanvas.height
+    //     );
+    //     ctx.drawImage(this.paintCanvas, this.x, this.y);
+    //   }
+    // } else {
+    //   if (this.isImageSaved) {
+    //     this.paintCtx.putImageData(this.savedImage, 0, 0);
+    //     this.isImageSaved = false; // Reset flag to allow saving again
+    //   }
+    // }
     // use loaded image once
     if (this.loadedImage !== null) {
       console.log("loaded image used");

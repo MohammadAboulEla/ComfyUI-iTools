@@ -56,24 +56,19 @@ app.registerExtension({
     ui.color = lightenColor(LiteGraph.NODE_DEFAULT_BGCOLOR, 5);
     node.addCustomWidget(ui);
 
-    const cP = new ColorPicker(512/2-100, 80, 200, 200);
-    node.addCustomWidget(cP);
+    const cp = new ColorPicker(0, 80, 100, 100);
+    node.addCustomWidget(cp);
 
-    const bColor = new Button(220, 35, "color");
-    bColor.shape = Shapes.CIRCLE;
+    const bColor = new Button(10, 35, "🎨");
+    bColor.shape = Shapes.SQUARE;
     bColor.color = "crimson";
     bColor.onClick = () => {
-      cP.toggleShow();
-      if (cP.isVisible) {
-        pa.blockPainting = true;
-      } else {
-        pa.blockPainting = false;
-      }
+      cp.open();
     };
     node.addCustomWidget(bColor);
 
     const b2 = new Button(462 - 100, 35, "save");
-    b2.shape = Shapes.CIRCLE;
+    b2.shape = Shapes.ROUND;
     b2.color = "#5d8aa8";
     b2.onClick = () => {
       pa.saveTempImage();
@@ -81,7 +76,7 @@ app.registerExtension({
     node.addCustomWidget(b2);
 
     const b3 = new Button(462 - 50, 35, "load");
-    b3.shape = Shapes.CIRCLE;
+    b3.shape = Shapes.ROUND;
     b3.color = "#915c83";
     b3.onClick = () => {
       pa.loadTempImage();
@@ -100,7 +95,7 @@ app.registerExtension({
     p.dashColor = "red";
     node.addCustomWidget(p);
 
-    const s = new Slider(10, 40);
+    const s = new Slider(60, 40);
     s.onChange = (v) => {
       p.brushSize = v;
       pa.brushSize = v;
@@ -108,13 +103,17 @@ app.registerExtension({
     node.addCustomWidget(s);
 
     node.onMouseDown = (e, pos, node) => {
-      if (pos[1] > 80) pa.isPainting = true;
+      if (pos[1] > 80 && !cp.isSelecting) pa.isPainting = true;
       bClear.handleClick(pos[0], pos[1]);
       bColor.handleClick(pos[0], pos[1]);
       b2.handleClick(pos[0], pos[1]);
       b3.handleClick(pos[0], pos[1]);
 
-      cP.handleOnClick(e, pos);
+      if(cp.isSelecting){
+        cp.close()
+      }
+
+      console.log('cp.isSelecting',cp.isSelecting);
       console.log("node", node);
     };
 
@@ -122,6 +121,12 @@ app.registerExtension({
       if (pos[1] > 80) pa.updateMousePos(pos);
       p.updateMousePos(pos);
       s.handleMouseMove(pos);
+      
+      cp.setColorUnderCurser(e);
+      if(cp.isVisible) {
+        bColor.color = cp.selectedColor;
+        pa.brushColor = cp.selectedColor;
+      }
     };
 
     node.onMouseUp = (e, pos, node) => {

@@ -66,6 +66,7 @@ export function hexDataToImage(hexData) {
 export const Shapes = Object.freeze({
   SQUARE: "square",
   CIRCLE: "circle",
+  ROUND: "round",
 });
 
 export const AppColors = Object.freeze({
