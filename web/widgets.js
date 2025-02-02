@@ -16,6 +16,7 @@ export class Widget {
     this.allowVisualClick = true;
     this.onClick = onClick;
     this._shape = Shapes.SQUARE;
+    this.mousePos = [0, 0];
   }
 
   draw(ctx) {
@@ -85,13 +86,19 @@ export class Widget {
     this.y = originalPosY + 0.5;
   }
 
-  handleClick(x, y) {
+  async handleClick(x, y) {
     if (this.isClicked(x, y)) {
       if (this.allowVisualClick) this.visualClick();
       if (this.onClick) this.onClick();
     } else {
       //console.log("clicked"); // Default behavior
     }
+  }
+
+  updateMousePos(pos) {}
+
+  isMouseDown() {
+    return app.canvas.pointer.isDown;
   }
 
   set shape(value) {
@@ -105,11 +112,13 @@ export class Widget {
 }
 
 export class Button extends Widget {
-  constructor(x, y, text, width = 30, height = 30, onClick = null) {
+  constructor(x, y, text, width = 40, height = 40, onClick = null) {
     super(x, y, width, height, text, onClick);
+    this.outlineColor = "#DDD";
+    this.outlineWidth = 1;
     this.text = text;
-    this.textColor = "black";
-    this.font = "12px Arial";
+    this.textColor = "white";
+    this.font = "16px Arial Bold";
   }
 
   draw(ctx) {
@@ -193,7 +202,7 @@ export class Slider {
     y,
     width = 200,
     height = 10,
-    min = 0,
+    min = 5,
     max = 100,
     value = 20,
     trackColor = LiteGraph.WIDGET_BGCOLOR,
@@ -213,7 +222,6 @@ export class Slider {
 
     this.handleWidth = 20;
     this.handleHeight = 20;
-    this.isDragging = false;
   }
 
   draw(ctx) {
@@ -237,31 +245,25 @@ export class Slider {
     ctx.beginPath();
     ctx.roundRect(handleX, this.y, this.handleWidth, this.handleHeight, 5);
     ctx.fill();
+
+    //Draw value text
+    if (this.value) {
+      ctx.fillStyle = "white";
+      ctx.font = "12px Arial Bold";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle"; //"bottom";
+      ctx.fillText(
+        "Brush Size: " + this.value.toFixed(2),
+        this.x + this.width / 2,
+        this.y + 30
+      );
+    }
   }
-  // draw(ctx) {
-  //   // Draw the track
-  //   ctx.fillStyle = this.trackColor;
-  //   ctx.fillRect(this.x, this.y + (this.handleHeight - this.height) / 2, this.width, this.height);
-
-  //   // Calculate the handle position
-  //   const handleX = this.x + ((this.value - this.min) / (this.max - this.min)) * (this.width - this.handleWidth);
-
-  //   // Draw the handle as a standard rectangle
-  //   ctx.fillStyle = this.handleColor;
-  //   ctx.fillRect(handleX, this.y, this.handleWidth, this.handleHeight);
-  // }
 
   isHandleClicked(mousePos) {
     const x = mousePos[0];
     const y = mousePos[1];
-    // if ((
-    //   x >= this.x - 20 &&
-    //   x <= this.x + this.width + 20 &&
-    //   y >= this.y &&
-    //   y <= this.y + this.handleHeight
-    // ) ){
-    //   console.log('true',);
-    // }
+    //console.log(mousePos);
     return (
       x >= this.x - 20 &&
       x <= this.x + this.width + 20 &&
@@ -270,18 +272,13 @@ export class Slider {
     );
   }
 
-  handleMouseDown(mousePos) {
-    console.log("click");
-    if (this.isHandleClicked(mousePos) && app.canvas.pointer.isDown) {
-      this.isDragging = true;
-    } else {
-      this.isDragging = false;
-    }
+  isMouseDown() {
+    return app.canvas.pointer.isDown;
   }
 
   handleMouseMove(mousePos) {
     const x = mousePos[0];
-    if (this.isDragging) {
+    if (this.isMouseDown() && this.isHandleClicked(mousePos)) {
       let newValue =
         ((x - this.x) / this.width) * (this.max - this.min) + this.min;
       newValue = Math.max(this.min, Math.min(this.max, newValue));
@@ -291,10 +288,6 @@ export class Slider {
         this.onChange(this.value);
       }
     }
-  }
-
-  handleMouseUp() {
-    this.isDragging = false;
   }
 }
 
@@ -466,10 +459,11 @@ export class PaintArea extends Widget {
     this.loadedImage = null;
     this.tempImage = null;
     this.isPainting = false;
+    this.blockPainting = false;
     this.brushSize = 20;
     this.brushColor = "#000000";
-    this.mousePos = [0, 0];
-    this.yOffset = 30
+
+    this.yOffset = 30;
 
     this.init();
     this.getDrawingFromAPI();
@@ -497,9 +491,10 @@ export class PaintArea extends Widget {
   }
 
   updateMousePos(pos) {
-    const x = pos[0]
+    const x = pos[0];
     const y = pos[1] - this.yOffset;
-    this.mousePos = [x,y];
+    this.mousePos = [x, y];
+    this.isMouseDown();
   }
 
   togglePainting() {
@@ -510,7 +505,7 @@ export class PaintArea extends Widget {
     return app.canvas.pointer.isDown;
   }
 
-  isMouseDown(){
+  isMouseDown() {
     this.isPainting = app.canvas.pointer.isDown;
   }
 
@@ -589,6 +584,7 @@ export class PaintArea extends Widget {
 
   draw(ctx) {
     if (this.ctx === null) this.ctx = ctx;
+    if (this.blockPainting) return;
 
     // use loaded image once
     if (this.loadedImage !== null) {
@@ -642,9 +638,10 @@ export class Preview {
     this.mousePos = [0, 0];
     this.brushSize = 10;
     this.color = "rgba(128, 128, 128, 0.2)"; // 50% transparent gray
-    this.dashColor = "black"
-    this.widthLimit = 400;
-    this.heightLimit = 400;
+    this.dashColor = "black";
+    this.widthLimit = 512;
+    this.heightLimit = 592;
+    this.yOffset = 80;
     this.isMouseIn = true;
     this.init();
   }
@@ -665,9 +662,10 @@ export class Preview {
     this.previewCtx = this.previewCanvas.getContext("2d");
   }
   draw(ctx) {
-    if(this.mousePos[0] > this.widthLimit) return;
-    if(this.mousePos[1] > this.heightLimit) return;
-    if(!this.isMouseIn) return;
+    if (this.mousePos[0] > this.widthLimit) return;
+    if (this.mousePos[1] > this.heightLimit) return;
+    if (this.mousePos[1] < this.yOffset) return;
+    if (!this.isMouseIn) return;
 
     ctx.beginPath();
     ctx.arc(this.mousePos[0], this.mousePos[1], this.brushSize, 0, Math.PI * 2);
