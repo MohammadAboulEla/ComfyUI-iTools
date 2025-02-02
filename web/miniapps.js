@@ -704,7 +704,7 @@ class Example1 {
 
   // This code here is for learning and testing purpose
   
-  export class CounterApp {
+  class CounterApp {
     constructor() {
       this.count = 0; // Initialize the counter
       this.labelWidget = new RgthreeLabelWidget("Counter", {

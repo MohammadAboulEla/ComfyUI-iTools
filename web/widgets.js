@@ -371,9 +371,22 @@ export class ColorPicker {
     this.height = height;
     this.selectedColor = null;
     this.ctx = null;
+    this.isVisible = false;
+  }
+
+  open() {
+    this.isVisible = true;
+  }
+  close() {
+    this.isVisible = false;
+  }
+
+  toggleShow() {
+    this.isVisible = !this.isVisible;
   }
 
   draw(ctx) {
+    if (!this.isVisible) return;
     // Ensure the context is set
     if (this.ctx === null) this.ctx = ctx;
 
@@ -419,6 +432,8 @@ export class ColorPicker {
     this.displaySelectedColor();
   }
 
+  handleOnMouseMove() {}
+
   handleOnClick(event, pos, node) {
     const rect = this.ctx.canvas.getBoundingClientRect();
     const scaleX = this.ctx.canvas.width / rect.width;
@@ -460,7 +475,7 @@ export class PaintArea extends Widget {
     this.tempImage = null;
     this.isPainting = false;
     this.blockPainting = false;
-    this.brushSize = 20;
+    this.brushSize = 10;
     this.brushColor = "#000000";
 
     this.yOffset = 30;
@@ -584,8 +599,31 @@ export class PaintArea extends Widget {
 
   draw(ctx) {
     if (this.ctx === null) this.ctx = ctx;
-    if (this.blockPainting) return;
-
+    if (this.blockPainting) {
+      if (!this.isImageSaved) {
+        this.savedImage = this.paintCtx.getImageData(
+          0,
+          0,
+          this.paintCanvas.width,
+          this.paintCanvas.height
+        );
+        this.isImageSaved = true; // Ensure it runs only once
+        this.paintCtx.fillStyle = "rgba(128, 128, 128, 0.5)";
+        this.paintCtx.fillRect(
+          0,
+          0,
+          this.paintCanvas.width,
+          this.paintCanvas.height
+        );
+        ctx.drawImage(this.paintCanvas, this.x, this.y);
+      }
+    } else {
+      if (this.isImageSaved) {
+        this.paintCtx.putImageData(this.savedImage, 0, 0);
+        this.isImageSaved = false; // Reset flag to allow saving again
+      }
+    } 
+    console.log('here',);
     // use loaded image once
     if (this.loadedImage !== null) {
       console.log("loaded image used");
@@ -608,9 +646,9 @@ export class PaintArea extends Widget {
     }
 
     // draw phase
-    if (this.isPainting && this.isDragging()) {
+    if (this.isPainting && this.isDragging() && !this.blockPainting) {
       // Set the drawing properties
-      this.paintCtx.lineWidth = this.brushSize;
+      this.paintCtx.lineWidth = this.brushSize * 2;
       this.paintCtx.lineCap = "round";
       this.paintCtx.strokeStyle = this.brushColor;
 
