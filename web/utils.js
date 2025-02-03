@@ -67,6 +67,9 @@ export const Shapes = Object.freeze({
   SQUARE: "square",
   CIRCLE: "circle",
   ROUND: "round",
+  TRIANGLE: "triangle",
+  STAR: "star",
+  ELLIPSE: "ellipse"
 });
 
 export const AppColors = Object.freeze({
@@ -167,6 +170,8 @@ LiteGraph.LINK_COLOR,
 LiteGraph.EVENT_LINK_COLOR,
 LiteGraph.CONNECTING_LINK_COLOR
 */
+
+//const window = globalThis;
 
 /*
 import { api } from "../../../scripts/api.js";

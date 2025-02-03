@@ -290,6 +290,8 @@ export class Label {
   }
 }
 
+
+
 export class Slider {
   constructor(
     x,
@@ -303,36 +305,22 @@ export class Slider {
     handleColor = "#80a1c0",
     onChange = null
   ) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.min = min;
-    this.max = max;
-    this.value = value;
-    this.trackColor = trackColor;
-    this.handleColor = handleColor;
-    this.onChange = onChange;
-
-    this.handleWidth = 20;
-    this.handleHeight = 20;
+    Object.assign(this, {
+      x, y, width, height, min, max, value, trackColor, handleColor, onChange,
+      handleWidth: 20, 
+      handleHeight: 20,
+    });
   }
 
   draw(ctx) {
+    const trackY = this.y + (this.handleHeight - this.height) / 2;
+
     // Draw the track
     ctx.fillStyle = this.trackColor;
-    ctx.fillRect(
-      this.x,
-      this.y + (this.handleHeight - this.height) / 2,
-      this.width,
-      this.height
-    );
+    ctx.fillRect(this.x, trackY, this.width, this.height);
 
-    // Calculate the handle position
-    const handleX =
-      this.x +
-      ((this.value - this.min) / (this.max - this.min)) *
-        (this.width - this.handleWidth);
+    // Calculate handle position
+    const handleX = this.x + ((this.value - this.min) / (this.max - this.min)) * (this.width - this.handleWidth);
 
     // Draw the handle
     ctx.fillStyle = this.handleColor;
@@ -340,29 +328,20 @@ export class Slider {
     ctx.roundRect(handleX, this.y, this.handleWidth, this.handleHeight, 5);
     ctx.fill();
 
-    //Draw value text
-    if (this.value) {
-      ctx.fillStyle = "white";
-      ctx.font = "12px Arial Bold";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle"; //"bottom";
-      ctx.fillText(
-        "Brush Size: " + this.value.toFixed(2),
-        this.x + this.width / 2,
-        this.y + 30
-      );
-    }
+    // Draw value text
+    ctx.fillStyle = "white";
+    ctx.font = "12px Arial Bold";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`Brush Size: ${this.value.toFixed(2)}`, this.x + this.width / 2, this.y + 30);
   }
 
-  isHandleClicked(mousePos) {
-    const x = mousePos[0];
-    const y = mousePos[1];
-    //console.log(mousePos);
+  isHandleClicked([mouseX, mouseY]) {
     return (
-      x >= this.x - 20 &&
-      x <= this.x + this.width + 20 &&
-      y >= this.y &&
-      y <= this.y + this.handleHeight
+      mouseX >= this.x - this.handleWidth &&
+      mouseX <= this.x + this.width + this.handleWidth &&
+      mouseY >= this.y &&
+      mouseY <= this.y + this.handleHeight
     );
   }
 
@@ -370,20 +349,20 @@ export class Slider {
     return app.canvas.pointer.isDown;
   }
 
-  handleMouseMove(mousePos) {
-    const x = mousePos[0];
-    if (this.isMouseDown() && this.isHandleClicked(mousePos)) {
-      let newValue =
-        ((x - this.x) / this.width) * (this.max - this.min) + this.min;
-      newValue = Math.max(this.min, Math.min(this.max, newValue));
-      this.value = newValue;
+  handleMouseMove([mouseX]) {
+    if (!this.isMouseDown() || !this.isHandleClicked([mouseX, this.y])) return;
 
-      if (this.onChange) {
-        this.onChange(this.value);
-      }
+    const scale = (this.max - this.min) / this.width;
+    let newValue = this.min + (mouseX - this.x) * scale;
+    newValue = Math.max(this.min, Math.min(this.max, newValue));
+
+    if (newValue !== this.value) {
+      this.value = newValue;
+      this.onChange?.(this.value);
     }
   }
 }
+
 
 export class DropdownMenu {
   constructor(x, y, width, height, options) {
@@ -1133,3 +1112,101 @@ export class ButtonOLd {
     return this._shape;
   }
 }
+
+// export class Slider {
+//   constructor(
+//     x,
+//     y,
+//     width = 200,
+//     height = 10,
+//     min = 5,
+//     max = 100,
+//     value = 20,
+//     trackColor = LiteGraph.WIDGET_BGCOLOR,
+//     handleColor = "#80a1c0",
+//     onChange = null
+//   ) {
+//     this.x = x;
+//     this.y = y;
+//     this.width = width;
+//     this.height = height;
+//     this.min = min;
+//     this.max = max;
+//     this.value = value;
+//     this.trackColor = trackColor;
+//     this.handleColor = handleColor;
+//     this.onChange = onChange;
+
+//     this.handleWidth = 20;
+//     this.handleHeight = 20;
+//   }
+
+//   draw(ctx) {
+//     // Draw the track
+//     ctx.fillStyle = this.trackColor;
+//     ctx.fillRect(
+//       this.x,
+//       this.y + (this.handleHeight - this.height) / 2,
+//       this.width,
+//       this.height
+//     );
+
+//     // Calculate the handle position
+//     const handleX =
+//       this.x +
+//       ((this.value - this.min) / (this.max - this.min)) *
+//         (this.width - this.handleWidth);
+
+//     // Draw the handle
+//     ctx.fillStyle = this.handleColor;
+//     ctx.beginPath();
+//     ctx.roundRect(handleX, this.y, this.handleWidth, this.handleHeight, 5);
+//     ctx.fill();
+
+//     //Draw value text
+//     if (this.value) {
+//       ctx.fillStyle = "white";
+//       ctx.font = "12px Arial Bold";
+//       ctx.textAlign = "center";
+//       ctx.textBaseline = "middle"; //"bottom";
+//       ctx.fillText(
+//         "Brush Size: " + this.value.toFixed(2),
+//         this.x + this.width / 2,
+//         this.y + 30
+//       );
+//     }
+//   }
+
+//   isHandleClicked(mousePos) {
+//     const x = mousePos[0];
+//     const y = mousePos[1];
+//     //console.log(mousePos);
+//     return (
+//       x >= this.x - 20 &&
+//       x <= this.x + this.width + 20 &&
+//       y >= this.y &&
+//       y <= this.y + this.handleHeight
+//     );
+//   }
+
+//   isMouseDown() {
+//     return app.canvas.pointer.isDown;
+//   }
+
+//   isDragging(mousePos){
+//     return this.isHandleClicked(mousePos)
+//   }
+
+//   handleMouseMove(mousePos) {
+//     if (!this.isMouseDown() || !this.isHandleClicked(mousePos)) return;
+
+//     const { x, width, min, max } = this; 
+//     let newValue = ((mousePos[0] - x) / width) * (max - min) + min;
+//     newValue = Math.max(min, Math.min(max, newValue));
+
+//     if (newValue !== this.value) {
+//         this.value = newValue;
+//         this.onChange?.(this.value);
+//     }
+// }
+// }

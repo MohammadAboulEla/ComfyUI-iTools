@@ -1,0 +1,458 @@
+import { app } from "../../../scripts/app.js";
+import { Shapes, lightenColor, hexDataToImage } from "./utils.js";
+import { api } from "../../../scripts/api.js";
+
+class BaseSmartWidget {
+  constructor(node) {
+    this.node = node;
+    this._mousePos = [0, 0];
+  }
+
+  init() {}
+
+  get mousePos() {
+    const graphMouse = app.canvas.graph_mouse;
+    return {
+      x: graphMouse[0] - this.node.pos[0],
+      y: graphMouse[1] - this.node.pos[1],
+    };
+  }
+}
+
+export class BaseSmartWidgetManager extends BaseSmartWidget {
+  constructor(node) {
+    super(node);
+    this.allowDebug = false;
+    this.init();
+    this.initEventListeners();
+  }
+
+  init() {}
+
+  initEventListeners() {
+    app.canvas.onMouseDown = (e) => this.handleMouseDown(e); //works even out of node
+    app.canvas.canvas.onclick = (e) => this.handleMouseClick(e); // works after mouse down
+    app.canvas.canvas.onmousemove = (e) => this.handleMouseMove(e); //works every where
+    this.node.onMouseUp = (e) => this.handleNodeMouseUp(e); // work only after dragging on node, trigger before click
+  }
+
+  handleMouseDown(e) {
+    Object.values(this.node.widgets).forEach((widget) => {
+      if (widget instanceof SmartWidget) {
+        widget.handleDown();
+      }
+    });
+    if (this.allowDebug) console.log("MouseDown", this.mousePos);
+  }
+
+  handleMouseMove(e) {
+    Object.values(this.node.widgets).forEach((widget) => {
+      if (widget instanceof SmartWidget) {
+        widget.handleMove();
+      }
+    });
+    if (this.allowDebug) console.log("MouseMoved");
+  }
+
+  handleMouseClick(e) {
+    Object.values(this.node.widgets).forEach((widget) => {
+      if (widget instanceof SmartWidget) {
+        widget.handleClick();
+      }
+    });
+    if (this.allowDebug) console.log("MouseClicked");
+  }
+
+  // My not be used
+  handleNodeMouseUp(e) {
+    if (this.allowDebug) console.log("MouseClicked");
+    console.log("NodeMouseUp");
+  }
+
+  get mousePos() {
+    const graphMouse = app.canvas.graph_mouse;
+    return {
+      x: graphMouse[0] - this.node.pos[0],
+      y: graphMouse[1] - this.node.pos[1],
+    };
+  }
+}
+
+// Detect Shape Missing for new shapes
+export class SmartWidget extends BaseSmartWidget {
+  constructor(x, y, width, height, node, options = {}) {
+    super(node);
+
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+
+    this.radius = width / 2;
+    this._shape = Shapes.SQUARE;
+
+    this.color = LiteGraph.WIDGET_BGCOLOR || "crimson";
+
+    this.outline = true;
+    this.outlineColor = "#434343";
+    this.outlineWidth = 0.5;
+
+    this.allowVisualPress = true;
+    this.allowVisualHover = true;
+    this.onClick = null;
+    this.onPress = null;
+    this.onHover = null;
+
+    // Apply options if provided
+    Object.assign(this, options);
+    this.originalColor = this.color; // Store original color
+
+    // add self to the node
+    node.addCustomWidget(this);
+  }
+
+  handleDown() {
+    if (this.isMouseIn()) {
+      if (this.allowVisualPress) this.visualClick();
+      if (this.onPress) this.onPress();
+    }
+  }
+
+  handleClick() {
+    if (this.isMouseIn()) {
+      if (this.onClick) this.onClick();
+    }
+  }
+
+  handleMove() {
+    if (!this.isMouseIn) return;
+    if (this.isMouseIn()) {
+      if (this.allowVisualHover) {
+        this.visualHover();
+      }
+      if (this.onHover) this.onHover();
+    } else {
+      this.visualUnHover();
+    }
+  }
+
+  draw(ctx) {
+    // Draw rectangle
+    if (this.shape === Shapes.SQUARE) {
+      ctx.fillStyle = this.color;
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+
+      // Draw outline if enabled
+      if (this.outline) {
+        ctx.strokeStyle = this.outlineColor;
+        ctx.lineWidth = this.outlineWidth;
+        ctx.strokeRect(this.x, this.y, this.width, this.height);
+      }
+    }
+
+    // Draw circle
+    if (this.shape === Shapes.CIRCLE) {
+      ctx.beginPath();
+      ctx.arc(
+        this.x + this.radius,
+        this.y + this.radius,
+        this.radius,
+        0,
+        Math.PI * 2
+      );
+      ctx.fillStyle = this.color;
+      ctx.fill();
+
+      // Draw outline if enabled
+      if (this.outline) {
+        ctx.strokeStyle = this.outlineColor;
+        ctx.lineWidth = this.outlineWidth;
+        ctx.stroke();
+      }
+    }
+
+    // Draw rounded rectangle //HAS NO DETECT YET
+    if (this.shape === Shapes.ROUND) {
+      const radius = Math.min(this.width, this.height) / 5; // Adjust rounding level
+      ctx.beginPath();
+      ctx.moveTo(this.x + radius, this.y);
+      ctx.lineTo(this.x + this.width - radius, this.y);
+      ctx.arcTo(
+        this.x + this.width,
+        this.y,
+        this.x + this.width,
+        this.y + radius,
+        radius
+      );
+      ctx.lineTo(this.x + this.width, this.y + this.height - radius);
+      ctx.arcTo(
+        this.x + this.width,
+        this.y + this.height,
+        this.x + this.width - radius,
+        this.y + this.height,
+        radius
+      );
+      ctx.lineTo(this.x + radius, this.y + this.height);
+      ctx.arcTo(
+        this.x,
+        this.y + this.height,
+        this.x,
+        this.y + this.height - radius,
+        radius
+      );
+      ctx.lineTo(this.x, this.y + radius);
+      ctx.arcTo(this.x, this.y, this.x + radius, this.y, radius);
+      ctx.closePath();
+
+      ctx.fillStyle = this.color;
+      ctx.fill();
+
+      // Draw outline if enabled
+      if (this.outline) {
+        ctx.strokeStyle = this.outlineColor;
+        ctx.lineWidth = this.outlineWidth;
+        ctx.stroke();
+      }
+    }
+
+    // Draw triangle
+    if (this.shape === Shapes.TRIANGLE) {
+      ctx.beginPath();
+      ctx.moveTo(this.x + this.width / 2, this.y);
+      ctx.lineTo(this.x, this.y + this.height);
+      ctx.lineTo(this.x + this.width, this.y + this.height);
+      ctx.closePath();
+
+      ctx.fillStyle = this.color;
+      ctx.fill();
+
+      // Draw outline if enabled
+      if (this.outline) {
+        ctx.strokeStyle = this.outlineColor;
+        ctx.lineWidth = this.outlineWidth;
+        ctx.stroke();
+      }
+    }
+
+    // Draw star
+    if (this.shape === Shapes.STAR) {
+      const centerX = this.x + this.width / 2;
+      const centerY = this.y + this.height / 2;
+      const radius = Math.min(this.width, this.height) / 2;
+      const spikes = 5;
+      const step = Math.PI / spikes;
+      ctx.beginPath();
+
+      for (let i = 0; i < spikes * 2; i++) {
+        const angle = i * step;
+        const currentRadius = i % 2 === 0 ? radius : radius / 2;
+        const x = centerX + currentRadius * Math.cos(angle);
+        const y = centerY + currentRadius * Math.sin(angle);
+        ctx.lineTo(x, y);
+      }
+
+      ctx.closePath();
+      ctx.fillStyle = this.color;
+      ctx.fill();
+
+      // Draw outline if enabled
+      if (this.outline) {
+        ctx.strokeStyle = this.outlineColor;
+        ctx.lineWidth = this.outlineWidth;
+        ctx.stroke();
+      }
+    }
+
+    // Draw ellipse
+    if (this.shape === Shapes.ELLIPSE) {
+      ctx.beginPath();
+      ctx.ellipse(
+        this.x + this.width / 2,
+        this.y + this.height / 2,
+        this.width / 2,
+        this.height / 2,
+        0,
+        0,
+        Math.PI * 2
+      );
+      ctx.fillStyle = this.color;
+      ctx.fill();
+
+      // Draw outline if enabled
+      if (this.outline) {
+        ctx.strokeStyle = this.outlineColor;
+        ctx.lineWidth = this.outlineWidth;
+        ctx.stroke();
+      }
+    }
+  }
+
+  isMouseIn() {
+    const { x, y } = this.mousePos;
+    if (
+      this.shape === Shapes.SQUARE ||
+      this.shape === Shapes.ROUND ||
+      this.shape === Shapes.ELLIPSE
+    ) {
+      return (
+        x >= this.x &&
+        x <= this.x + this.width &&
+        y >= this.y &&
+        y <= this.y + this.height
+      );
+    } else if (this.shape === Shapes.CIRCLE || this.shape === Shapes.STAR) {
+      const distance = Math.sqrt(
+        (x - (this.x + this.radius)) ** 2 + (y - (this.y + this.radius)) ** 2
+      );
+      return distance <= this.radius;
+    }
+
+    // } else if (this.shape === Shapes.ROUND) {
+    //   const radius = Math.min(this.width, this.height) / 5;
+
+    //   // Check if the point is inside the main rectangle (excluding rounded corners)
+    //   if (
+    //     x >= this.x + radius &&
+    //     x <= this.x + this.width - radius &&
+    //     y >= this.y &&
+    //     y <= this.y + this.height
+    //   ) {
+    //     return true;
+    //   }
+    //   if (
+    //     x >= this.x &&
+    //     x <= this.x + this.width &&
+    //     y >= this.y + radius &&
+    //     y <= this.y + this.height - radius
+    //   ) {
+    //     return true;
+    //   }
+
+    //   // Check if the point is inside the rounded corners
+    //   const cornerCenters = [
+    //     { cx: this.x + radius, cy: this.y + radius }, // Top-left
+    //     { cx: this.x + this.width - radius, cy: this.y + radius }, // Top-right
+    //     { cx: this.x + radius, cy: this.y + this.height - radius }, // Bottom-left
+    //     { cx: this.x + this.width - radius, cy: this.y + this.height - radius }, // Bottom-right
+    //   ];
+
+    //   return cornerCenters.some(({ cx, cy }) => {
+    //     return (x - cx) ** 2 + (y - cy) ** 2 <= radius ** 2;
+    //   });
+    // }
+
+    return false;
+  }
+
+  visualClick() {
+    const originalPosX = this.x;
+    const originalPosY = this.y;
+    setTimeout(() => {
+      if (!this.allowVisualHover) this.color = this.originalColor;
+      this.x = originalPosX;
+      this.y = originalPosY;
+    }, 100);
+    if (!this.allowVisualHover)
+      this.color = lightenColor(this.originalColor, 20);
+    this.x = originalPosX + 0.5;
+    this.y = originalPosY + 0.5;
+  }
+
+  visualHover() {
+    if (this.hovered) return; // Prevent multiple executions
+    this.hovered = true;
+    this.color = lightenColor(this.color, 20);
+  }
+
+  visualUnHover() {
+    if (!this.hovered) return;
+    this.color = this.originalColor;
+    this.hovered = false;
+  }
+
+  set shape(value) {
+    this._shape = value;
+    if (value === Shapes.CIRCLE) this.height = this.width;
+  }
+
+  get shape() {
+    return this._shape;
+  }
+}
+
+export class SmartButton extends SmartWidget {
+  constructor(x, y, width, height, node, text, options = {}) {
+    super(x, y, width, height, node, options);
+    this.text = text;
+    this.textColor = "white";
+    this.font = "16px Arial Bold";
+
+    // Apply options if provided
+    //Object.assign(this, options);
+  }
+  draw(ctx) {
+    super.draw(ctx);
+
+    // Draw text
+    if (this.text) {
+      ctx.fillStyle = this.textColor;
+      ctx.font = this.font;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle"; //"bottom";
+      ctx.fillText(
+        this.text,
+        this.x + this.width / 2,
+        this.y + this.height / 2
+      );
+    }
+  }
+}
+
+// working callback
+
+// app.canvas.onMouse = (e) => { // any mouse button
+//   console.log("onMouse",e);
+// };
+
+// app.canvas.onNodeMoved = ()=>{
+//   console.log('noe moved',);
+// }
+
+// app.canvas.canvas.onmousewheel = (e)=>{
+//   console.log('onmousewheel',);
+// }
+
+// app.canvas.canvas.onclick = (e) => {
+//   console.log("onclick");
+// };
+
+// app.canvas.canvas.onkeyup = (ke) => {  //onkeydown//onkeypress
+//   console.log("onkeyup",ke);
+// };
+
+// app.canvas.canvas.onkeydown = (ke) => {
+//   console.log("onkeyup",ke);
+// };
+
+// app.canvas.canvas.ondblclick = (e) => {
+//   console.log("ondblclick",e);
+// };
+
+// app.canvas.canvas.onmouseover = (e) => {
+//   console.log("onmouseover");
+// };
+
+// ========================
+// NOT working callback
+
+// app.canvas.onMouseMoved = () => {
+//   console.log("Mouse moved");
+// };
+
+// app.canvas.onMouseUP = (e) => {
+//   console.log("Mouse UP");
+// };
+
+// app.canvas.canvas.onmouseup = (e) => {
+//   console.log("onmouseup",e);
+// };

@@ -738,3 +738,151 @@ class Example1 {
     }
   }
    
+  class PaintToolV2 {
+    constructor(node) {
+      this.node = node;
+      this.initTools();
+      this.initEventListeners();
+    }
+  
+    initTools() {
+      // Initialize paint area
+      this.paintArea = new PaintArea(0, 80, 512, 512);
+      this.paintArea.yOffset = 80;
+      this.node.addCustomWidget(this.paintArea);
+  
+      // Initialize color picker
+      this.colorPicker = new ColorPicker(512 - 100, 80, 100, 100);
+      this.node.addCustomWidget(this.colorPicker);
+  
+      // Initialize buttons
+      this.initButtons();
+  
+      // Initialize preview
+      this.preview = new Preview(0, 0);
+      this.preview.dashColor = "red";
+      this.node.addCustomWidget(this.preview);
+  
+      // Initialize slider
+      this.slider = new Slider(60, 40);
+      this.slider.onChange = (value) => {
+        this.preview.brushSize = value;
+        this.paintArea.brushSize = value;
+      };
+      this.node.addCustomWidget(this.slider);
+    }
+  
+    initButtons() {
+      const buttons = [
+        {
+          name: "colorButton",
+          x: 462,
+          y: 35,
+          text: "🎨",
+          shape: Shapes.ROUND,
+          color: "crimson",
+          onClick: () => this.colorPicker.open(),
+        },
+        {
+          name: "saveButton",
+          x: 462 - 100,
+          y: 35,
+          text: "save",
+          shape: Shapes.ROUND,
+          color: "#5d8aa8",
+          onClick: () => this.paintArea.saveTempImage(),
+        },
+        {
+          name: "loadButton",
+          x: 462 - 50,
+          y: 35,
+          text: "load",
+          shape: Shapes.ROUND,
+          color: "#915c83",
+          onClick: () => this.paintArea.loadTempImage(),
+        },
+        {
+          name: "clearButton",
+          x: 462 - 150,
+          y: 35,
+          text: "clear",
+          shape: Shapes.CIRCLE,
+          color: "grey",
+          onClick: () => this.paintArea.clearWithColor("white"),
+        },
+      ];
+  
+      buttons.forEach((buttonConfig) => {
+        this[buttonConfig.name] = new Button(
+          buttonConfig.x,
+          buttonConfig.y,
+          buttonConfig.text,
+          buttonConfig.width,
+          buttonConfig.height,
+          buttonConfig.onClick
+        );
+        this[buttonConfig.name].shape = buttonConfig.shape;
+        this[buttonConfig.name].color = buttonConfig.color;
+        this.node.addCustomWidget(this[buttonConfig.name]);
+      });
+    }
+  
+    initEventListeners() {
+      this.node.onMouseDown = (e, pos) => this.handleMouseDown(e, pos);
+      this.node.onMouseMove = (e, pos) => this.handleMouseMove(e, pos);
+      this.node.onMouseUp = () => this.handleMouseUp();
+      this.node.onMouseLeave = () => this.handleMouseLeave();
+      this.node.onMouseEnter = (e, pos) => this.handleMouseEnter(e, pos);
+    }
+  
+    handleMouseDown(e, pos) {
+      this.node.locked = true;
+      if (pos[1] > 80 && !this.colorPicker.isSelecting) {
+        this.paintArea.isPainting = true;
+      }
+  
+      // Handle button clicks
+      // Object.values(this).forEach((widget) => {
+      //   if (widget instanceof Button) {
+      //     widget.handleClick(pos[0], pos[1]);
+      //   }
+      // });
+  
+      if (this.colorPicker.isSelecting) {
+        this.colorPicker.close();
+      }
+  
+      if (pos[1] > 80) {
+        this.node.flags.pinned = true;
+      }
+    }
+  
+    handleMouseMove(e, pos) {
+      if (this.slider.isHandleClicked(pos)) {
+        this.slider.handleMouseMove(pos);
+      }
+  
+      this.paintArea.updateMousePos(pos);
+      this.preview.updateMousePos(pos);
+  
+      if (this.colorPicker.isVisible) {
+        this.colorPicker.setColorUnderCurser(e);
+        this.colorButton.color = this.colorPicker.selectedColor;
+        this.paintArea.brushColor = this.colorPicker.selectedColor;
+      }
+    }
+  
+    handleMouseUp() {
+      this.paintArea.isPainting = false;
+    }
+  
+    handleMouseLeave() {
+      this.paintArea.sendDrawingToAPI();
+      this.preview.isMouseIn = false;
+      this.node.flags.pinned = false;
+    }
+  
+    handleMouseEnter(e, pos) {
+      this.preview.isMouseIn = true;
+    }
+  }
