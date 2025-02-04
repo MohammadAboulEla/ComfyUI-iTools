@@ -13,7 +13,7 @@ import {
   Preview,
 } from "./widgets.js";
 import { Shapes, Colors, lightenColor } from "./utils.js";
-import { BaseSmartWidgetManager, SmartButton, SmartWidget } from "./makadi.js";
+import { BaseSmartWidgetManager, SmartButton, SmartWidget,SmartSlider } from "./makadi.js";
 
 class PaintToolV1 {
   constructor(node) {
@@ -209,12 +209,34 @@ app.registerExtension({
       console.log("sw clicked");
     };
 
-    const b1 = new SmartButton(80, 20, 90, 20, node, "B1", {
+    const b1 = new SmartButton(90, 60, 90, 20, node, "Button", {
     });
     b1.onClick = () => {
       console.log("b1 clicked");
     };
 
+    const slider = new SmartSlider(90, 90, 200, 15, node, {
+      minValue: 0,
+      maxValue: 100,
+      value: 50,
+      text:"Slider: ",
+      onValueChange: (value) => {
+        //console.log("Slider value changed:", value);
+      }
+    });
+
+    const slider2 = new SmartSlider(90, 120, 200, 15, node, {
+      minValue: 0,
+      maxValue: 100,
+      value: 50,
+      isProgressBar: true,
+      //disableText: true,
+      textYoffset : 20,
+      text:"Progressbar: ",
+      onValueChange: (value) => {
+        //console.log("Slider value changed:", value);
+      }
+    });
 
 
     const manager = new BaseSmartWidgetManager(node);

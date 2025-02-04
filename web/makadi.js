@@ -10,6 +10,24 @@ class BaseSmartWidget {
 
   init() {}
 
+  isMouseDown() {
+    return app.canvas.pointer.isDown;
+  }
+
+  // isDragStarted(){
+  //   return app.canvas.pointer.dragStarted
+  // }
+
+  // enterFreezeMode(){
+  //   this.node.allow_interaction = false
+  //   this.node.allow_dragcanvas = false
+  // }
+
+  // exitFreezeMode(){
+  //   this.node.allow_interaction = true
+  //   this.node.allow_dragcanvas = true
+  // }
+
   get mousePos() {
     const graphMouse = app.canvas.graph_mouse;
     return {
@@ -32,10 +50,12 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   initEventListeners() {
     app.canvas.onMouseDown = (e) => this.handleMouseDown(e); //works even out of node
     app.canvas.canvas.onclick = (e) => this.handleMouseClick(e); // works after mouse down
-    app.canvas.canvas.onmousemove = (e) => this.handleMouseMove(e); //works every where
-    this.node.onMouseUp = (e) => this.handleNodeMouseUp(e); // work only after dragging on node, trigger before click
-  }
+    this.node.onDrawForeground = (e) => this.handleMouseMove(e); //works every where even when dragging
+    // app.canvas.canvas.onmousemove = (e) => this.handleMouseMove(e); //works every where
 
+    // this.node.onMouseUp = (e) => this.handleDragEnd(e); // work only after dragging on node, trigger before click
+    // this.node.onMouseDown = (e,pos, node) => this.handleDragStart(e,pos, node); // work only if mouse down on node,
+  }
   handleMouseDown(e) {
     Object.values(this.node.widgets).forEach((widget) => {
       if (widget instanceof SmartWidget) {
@@ -63,11 +83,24 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
     if (this.allowDebug) console.log("MouseClicked");
   }
 
-  // My not be used
-  handleNodeMouseUp(e) {
-    if (this.allowDebug) console.log("MouseClicked");
-    console.log("NodeMouseUp");
-  }
+  // handleDragStart(e,pos,node) {
+  //   Object.values(this.node.widgets).forEach((widget) => {
+  //     if (widget instanceof SmartSlider) {
+  //       widget.handleDragStart();
+  //     }
+  //   });
+  //   if (this.allowDebug) console.log("NodeMouseDown");
+  //   console.log('node',node);
+  // }
+
+  // handleDragEnd(e) {
+  //   Object.values(this.node.widgets).forEach((widget) => {
+  //     if (widget instanceof SmartSlider) {
+  //       widget.handleDragEnd();
+  //     }
+  //   });
+  //   if (this.allowDebug) console.log("NodeMouseUp");
+  // }
 
   get mousePos() {
     const graphMouse = app.canvas.graph_mouse;
@@ -78,7 +111,6 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   }
 }
 
-// Detect Shape Missing for new shapes
 export class SmartWidget extends BaseSmartWidget {
   constructor(x, y, width, height, node, options = {}) {
     super(node);
@@ -89,13 +121,13 @@ export class SmartWidget extends BaseSmartWidget {
     this.height = height;
 
     this.radius = width / 2;
-    this._shape = Shapes.SQUARE;
+    this._shape = Shapes.ROUND;
 
     this.color = LiteGraph.WIDGET_BGCOLOR || "crimson";
 
     this.outline = true;
     this.outlineColor = "#434343";
-    this.outlineWidth = 0.5;
+    this.outlineWidth = 0.8;
 
     this.allowVisualPress = true;
     this.allowVisualHover = true;
@@ -383,12 +415,16 @@ export class SmartWidget extends BaseSmartWidget {
 export class SmartButton extends SmartWidget {
   constructor(x, y, width, height, node, text, options = {}) {
     super(x, y, width, height, node, options);
+
     this.text = text;
-    this.textColor = "white";
+    this.textColor = LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
+    this.textYoffset = 0.8;
+    this.textAlign = "center";
+    this.textBaseline = "middle";
     this.font = "16px Arial Bold";
 
     // Apply options if provided
-    //Object.assign(this, options);
+    Object.assign(this, options);
   }
   draw(ctx) {
     super.draw(ctx);
@@ -397,14 +433,149 @@ export class SmartButton extends SmartWidget {
     if (this.text) {
       ctx.fillStyle = this.textColor;
       ctx.font = this.font;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle"; //"bottom";
+      ctx.textAlign = this.textAlign;
+      ctx.textBaseline = this.textBaseline;
       ctx.fillText(
         this.text,
         this.x + this.width / 2,
-        this.y + this.height / 2
+        this.y + this.height / 2 + this.textYoffset
       );
     }
+  }
+}
+
+export class SmartSlider extends SmartWidget {
+  constructor(x, y, width, height, node, options = {}) {
+    super(x, y, width, height, node, options);
+
+    // Slider specific properties
+    this.minValue = 0;
+    this.maxValue = 100;
+    this.value = this.minValue;
+    this.handleWidth = 15;
+    this.handleHeight = this.height;
+    this.handleColor = "#80a1c0";
+    this.trackColor = LiteGraph.WIDGET_BGCOLOR || "crimson";
+    this.trackHeight = this.height / 4;
+    this.onValueChange = null;
+    this.isProgressBar = false;
+
+    this.text = "Value: ";
+    this.textColor = LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
+    this.textYoffset = 0.8;
+    this.textAlign = "center";
+    this.textBaseline = "middle";
+    this.font = "14px Arial Bold";
+    this.disableText = false;
+
+    // Calculate handle position based on initial value
+    this.handleX =
+      this.x +
+      ((this.value - this.minValue) / (this.maxValue - this.minValue)) *
+        (this.width - this.handleWidth);
+    this.handleY = this.y + (this.height - this.handleHeight) / 2;
+
+    // Track dragging state
+    this.isDragging = false;
+
+    //Apply options if provided
+    Object.assign(this, options);
+  }
+
+  handleDown() {
+    if (this.isMouseIn()) this.isDragging = true;
+  }
+
+  handleMove() {
+    if (this.isDragging) {
+      const { x } = this.mousePos;
+      this.handleX = Math.max(
+        this.x,
+        Math.min(
+          x - this.handleWidth / 2,
+          this.x + this.width - this.handleWidth
+        )
+      );
+      this.value =
+        this.minValue +
+        ((this.handleX - this.x) / (this.width - this.handleWidth)) *
+          (this.maxValue - this.minValue);
+
+      if (this.onValueChange) {
+        this.onValueChange(this.value);
+      }
+    }
+  }
+
+  handleClick() {
+    this.isDragging = false;
+  }
+
+  isMouseInHandle() {
+    const { x, y } = this.mousePos;
+    return (
+      x >= this.handleX &&
+      x <= this.handleX + this.handleWidth &&
+      y >= this.handleY &&
+      y <= this.handleY + this.handleHeight
+    );
+  }
+
+  isMouseInTrack() {
+    const { x, y } = this.mousePos;
+    return (
+      x >= this.x &&
+      x <= this.x + this.width &&
+      y >= this.y + (this.height - this.trackHeight) / 2 &&
+      y <= this.y + (this.height + this.trackHeight) / 2
+    );
+  }
+
+  draw(ctx) {
+    const trackY = this.y + (this.handleHeight - this.height) / 2;
+
+    // Draw the track
+    //ctx.fillStyle = this.trackColor;
+    //ctx.fillRect(this.x, trackY, this.width, this.height);
+    ctx.fillStyle = this.trackColor;
+    ctx.beginPath();
+    ctx.roundRect(this.x, trackY, this.width, this.height, 5);
+    ctx.fill();
+
+    // Calculate handle position correctly
+    const handleX =
+      this.x +
+      ((this.value - this.minValue) / (this.maxValue - this.minValue)) *
+        (this.width - this.handleWidth);
+
+    // Draw the progress
+    if (this.isProgressBar) {
+      const progressWidth =
+        ((this.value - this.minValue) / (this.maxValue - this.minValue)) *
+        this.width;
+      ctx.fillStyle = this.handleColor; // You can change this to any color for the progress
+      ctx.beginPath();
+      ctx.roundRect(this.x, trackY, progressWidth, this.height, 5);
+      ctx.fill();
+    } else {
+      // Draw the handle
+      ctx.fillStyle = this.handleColor;
+      ctx.beginPath();
+      ctx.roundRect(handleX, this.y, this.handleWidth, this.handleHeight, 5);
+      ctx.fill();
+    }
+
+    // Draw value text
+    if(this.disableText) return;
+    ctx.fillStyle = this.textColor;
+    ctx.font = this.font;
+    ctx.textAlign = this.textAlign;
+    ctx.textBaseline = this.textBaseline;
+    ctx.fillText(
+      `${this.text}${this.value.toFixed(2)}`,
+      this.x + this.width / 2,
+      this.y + this.height / 2 + this.textYoffset
+    );
   }
 }
 

@@ -211,7 +211,7 @@ export class Button extends Widget {
     this.outlineColor = "#DDD";
     this.outlineWidth = 1;
     this.text = text;
-    this.textColor = "white";
+    this.textColor = LiteGraph.NODE_TEXT_COLOR || "white";
     this.font = "16px Arial Bold";
   }
 
