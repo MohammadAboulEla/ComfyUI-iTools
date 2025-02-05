@@ -13,7 +13,7 @@ import {
   Preview,
 } from "./widgets.js";
 import { Shapes, Colors, lightenColor } from "./utils.js";
-import { BaseSmartWidgetManager, SmartButton, SmartWidget,SmartSlider } from "./makadi.js";
+import { BaseSmartWidgetManager, SmartButton, SmartWidget,SmartSlider, SmartLabel, SmartSwitch, SmartCheckBox } from "./makadi.js";
 
 class PaintToolV1 {
   constructor(node) {
@@ -204,15 +204,37 @@ app.registerExtension({
     }
     // START POINT
 
-    const sw = new SmartWidget(20, 20, 50, 200, node);
+    const sw = new SmartButton(20, 20, 50, 200, node);
+    sw.shape = Shapes.CIRCLE
     sw.onClick = () => {
       console.log("sw clicked");
     };
 
     const b1 = new SmartButton(90, 60, 90, 20, node, "Button", {
+      withTagWidth: 10
     });
     b1.onClick = () => {
+      if (sw.color == "crimson") {sw.color = LiteGraph.WIDGET_BGCOLOR }
+      else{ sw.color = "crimson"}
+      sw.textColor = b1.textColor
+      sw.text = "B Tag"
       console.log("b1 clicked");
+    };
+
+    const b2 = new SmartButton(190, 60, 60, 20, node, "Button2", {color:"#a4c639", textColor:"black"});
+    b2.onClick = () => {
+      sw.text = "B2"
+      sw.color = b2.color
+      sw.textColor = b2.textColor
+      console.log("b2 clicked");
+    };
+    const b3 = new SmartButton(190 + 70, 60 , 20, 20 , node, "B3", 
+      {color:"#b8860b", textColor:"black", shape: Shapes.CIRCLE});
+    b3.onClick = () => {
+      sw.text = "B3"
+      sw.textColor = b3.textColor
+      sw.color = b3.color
+      console.log("b2 clicked");
     };
 
     const slider = new SmartSlider(90, 90, 200, 15, node, {
@@ -237,6 +259,11 @@ app.registerExtension({
         //console.log("Slider value changed:", value);
       }
     });
+
+    const swi = new SmartSwitch(120, 160, 80, 15, node,);
+    
+    const lbl = new SmartLabel(130, 180, 12, 12, node,"Grid Snap");
+    const cb = new SmartCheckBox(115, 180, 10, 10, node,);
 
 
     const manager = new BaseSmartWidgetManager(node);

@@ -14,18 +14,18 @@ class BaseSmartWidget {
     return app.canvas.pointer.isDown;
   }
 
-  // isDragStarted(){
-  //   return app.canvas.pointer.dragStarted
+  // isDragStarted() {
+  //   return app.canvas.pointer.dragStarted;
   // }
 
-  // enterFreezeMode(){
-  //   this.node.allow_interaction = false
-  //   this.node.allow_dragcanvas = false
+  // enterFreezeMode() {
+  //   this.node.allow_interaction = false;
+  //   this.node.allow_dragcanvas = false;
   // }
 
-  // exitFreezeMode(){
-  //   this.node.allow_interaction = true
-  //   this.node.allow_dragcanvas = true
+  // exitFreezeMode() {
+  //   this.node.allow_interaction = true;
+  //   this.node.allow_dragcanvas = true;
   // }
 
   get mousePos() {
@@ -412,6 +412,50 @@ export class SmartWidget extends BaseSmartWidget {
   }
 }
 
+export class SmartLabel extends BaseSmartWidget {
+  constructor(x, y, width, height, node, text, options = {}) {
+    super(node);
+
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+
+    this.text = text;
+    this.textColor = LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
+    this.textYoffset = -0.8;
+    this.textXoffset = 0.0;
+    this.textAlign = "left";
+    this.textBaseline = "top";
+    this.font = "14px Arial Bold";
+    this.textWidth = null;
+
+    // Apply options if provided
+    Object.assign(this, options);
+
+    // add self to the node
+    node.addCustomWidget(this);
+  }
+  draw(ctx) {
+    // Draw text
+    if (this.text) {
+      ctx.fillStyle = this.textColor;
+      ctx.font = this.font;
+      ctx.textAlign = this.textAlign;
+      ctx.textBaseline = this.textBaseline;
+      ctx.fillText(
+        this.text,
+        this.x + this.textXoffset,
+        this.y + this.textYoffset
+      );
+      if (this.textWidth === null) {
+        const textMetrics = ctx.measureText(this.text);
+        this.textWidth = textMetrics.width;
+      }
+    }
+  }
+}
+
 export class SmartButton extends SmartWidget {
   constructor(x, y, width, height, node, text, options = {}) {
     super(x, y, width, height, node, options);
@@ -419,15 +463,49 @@ export class SmartButton extends SmartWidget {
     this.text = text;
     this.textColor = LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
     this.textYoffset = 0.8;
+    this.textXoffset = 0.0;
     this.textAlign = "center";
     this.textBaseline = "middle";
-    this.font = "16px Arial Bold";
+    this.font = "14px Arial Bold";
+
+    this.withTagWidth = false; // false or number
+    this.tagColor = "crimson";
+    this.tagPosition = "left"; // "left" or "right"
 
     // Apply options if provided
     Object.assign(this, options);
   }
   draw(ctx) {
     super.draw(ctx);
+
+    // Draw tag
+    if (this.withTagWidth) {
+      ctx.fillStyle = this.tagColor;
+
+      ctx.beginPath();
+
+      if (this.tagPosition === "left") {
+        // Round only the left side
+        ctx.roundRect(
+          this.x + 0.5,
+          this.y + 0.5,
+          this.withTagWidth,
+          this.height - 1,
+          [3.5, 0, 0, 3.5]
+        );
+      } else {
+        // Round only the right side
+        ctx.roundRect(
+          this.x + this.width - this.withTagWidth - 0.5,
+          this.y + 0.5,
+          this.withTagWidth,
+          this.height - 1,
+          [0, 3.5, 3.5, 0]
+        );
+      }
+
+      ctx.fill();
+    }
 
     // Draw text
     if (this.text) {
@@ -437,7 +515,7 @@ export class SmartButton extends SmartWidget {
       ctx.textBaseline = this.textBaseline;
       ctx.fillText(
         this.text,
-        this.x + this.width / 2,
+        this.x + this.width / 2 + this.textXoffset,
         this.y + this.height / 2 + this.textYoffset
       );
     }
@@ -566,7 +644,7 @@ export class SmartSlider extends SmartWidget {
     }
 
     // Draw value text
-    if(this.disableText) return;
+    if (this.disableText) return;
     ctx.fillStyle = this.textColor;
     ctx.font = this.font;
     ctx.textAlign = this.textAlign;
@@ -576,6 +654,155 @@ export class SmartSlider extends SmartWidget {
       this.x + this.width / 2,
       this.y + this.height / 2 + this.textYoffset
     );
+  }
+}
+
+export class SmartSwitch extends SmartWidget {
+  constructor(x, y, width, height, node, options = {}) {
+    super(x, y, width, height, node, options);
+
+    this.isOn = true;
+    this.handleWidth = this.width/2;
+    this.handleHeight = this.height;
+    this.handleColor = "#80a1c0";
+    this.trackColor = LiteGraph.WIDGET_BGCOLOR || "crimson";
+    this.trackHeight = this.height / 4;
+    this.onValueChange = null;
+
+    this.textOn = "On";
+    this.textOff = "Off";
+    this.textOnColor = this.isOn ? "black" :LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
+    this.textOffColor = this.isOn ? LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white" : "black" ;
+    this.textYoffset = 0.8;
+    this.textXoffset = 0.0;
+    this.textAlign = "center";
+    this.textBaseline = "middle";
+    this.font = "14px Arial Bold";
+
+    //Apply options if provided
+    Object.assign(this, options);
+  }
+
+  handleDown() {
+    if (this.isMouseIn()) {
+      this.isOn = !this.isOn
+      this.textOnColor = this.isOn ? "black" :LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
+      this.textOffColor = this.isOn ? LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white" : "black" ;
+    }
+  }
+
+  handleMove() {
+
+  }
+
+  handleClick() {}
+
+  isMouseInHandle() {
+    const { x, y } = this.mousePos;
+    return (
+      x >= this.handleX &&
+      x <= this.handleX + this.handleWidth &&
+      y >= this.handleY &&
+      y <= this.handleY + this.handleHeight
+    );
+  }
+
+  draw(ctx) {
+    const trackY = this.y + (this.handleHeight - this.height) / 2;
+
+    // Draw the track
+    ctx.fillStyle = this.trackColor;
+    ctx.beginPath();
+    ctx.roundRect(this.x, trackY, this.width, this.height, 5);
+    ctx.fill();
+
+    // Calculate handle position correctly
+    const handleX = this.isOn ? this.x : this.x + this.width/2;
+
+    // Draw the handle
+    ctx.fillStyle = this.handleColor;
+    ctx.beginPath();
+    ctx.roundRect(handleX, this.y, this.handleWidth, this.handleHeight, 5);
+    ctx.fill();
+
+    // Draw text on
+    ctx.fillStyle = this.textOnColor;
+    ctx.font = this.font;
+    ctx.textAlign = "center";
+    ctx.textBaseline = this.textBaseline;
+    ctx.fillText(
+      this.textOn,
+      this.x + this.width / 4,
+      this.y + this.height / 2 + this.textYoffset
+    );
+
+    // Draw text off
+    ctx.fillStyle = this.textOffColor;
+    ctx.font = this.font;
+    ctx.textAlign = "center";
+    ctx.textBaseline = this.textBaseline;
+    ctx.fillText(
+      this.textOff,
+      this.x + this.width / 2 + this.width / 4,
+      this.y + this.height / 2 + this.textYoffset
+    );
+  }
+}
+
+export class SmartCheckBox extends SmartWidget {
+  constructor(x, y, width, height, node, options = {}) {
+    super(x, y, width, height, node, options);
+
+    this.isChecked = true;
+    this.gap = 4;
+    // this.handleWidth = this.width - this.gap;
+    // this.handleHeight = this.height - this.gap;
+    this.handleColor = "#80a1c0";
+    this.bgColor = LiteGraph.WIDGET_BGCOLOR || "crimson";
+    this.bgHeight = this.height;
+    this.onValueChange = null;
+
+    //Apply options if provided
+    Object.assign(this, options);
+  }
+
+  handleDown() {
+    if (this.isMouseIn()) {
+      this.isChecked = !this.isChecked
+    }
+  }
+
+  handleMove() {
+
+  }
+
+  handleClick() {}
+
+  isMouseInHandle() {
+    const { x, y } = this.mousePos;
+    return (
+      x >= this.handleX &&
+      x <= this.handleX + this.handleWidth &&
+      y >= this.handleY &&
+      y <= this.handleY + this.handleHeight
+    );
+  }
+
+  draw(ctx) {
+
+    // Draw the background
+    ctx.fillStyle = this.trackColor;
+    ctx.beginPath();
+    ctx.roundRect(this.x, this.y, this.width, this.height, 5);
+    ctx.fill();
+
+    // Draw the handle
+    if (!this.isChecked) return;
+    ctx.fillStyle = this.handleColor;
+    ctx.beginPath();
+    ctx.roundRect(this.x + this.gap/2, this.y + this.gap/2, this.width - this.gap, this.height - this.gap, 5 - this.gap/2);
+    ctx.fill();
+
   }
 }
 
