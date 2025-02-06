@@ -55,7 +55,7 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   handleMouseDown(e) {
     Object.values(this.node.widgets).forEach((widget) => {
       if (widget instanceof BaseSmartWidget) {
-        widget.handleDown?.();
+        widget.handleDown?.(e);
       }
     });
     if (this.allowDebug) console.log("MouseDown", this.mousePos);
@@ -64,7 +64,7 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   handleMouseMove(e) {
     Object.values(this.node.widgets).forEach((widget) => {
       if (widget instanceof BaseSmartWidget) {
-        widget.handleMove?.();
+        widget.handleMove?.(e);
       }
     });
     if (this.allowDebug) console.log("MouseMoved");
@@ -73,7 +73,7 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   handleMouseClick(e) {
     Object.values(this.node.widgets).forEach((widget) => {
       if (widget instanceof BaseSmartWidget) {
-        widget.handleClick?.();
+        widget.handleClick?.(e);
       }
     });
     if (this.allowDebug) console.log("MouseClicked");
@@ -810,7 +810,7 @@ export class SmartCheckBox extends SmartWidget {
   handleMove() {}
 
   handleClick() {
-    if(this.onValueChange) this.onValueChange();
+    if (this.onValueChange) this.onValueChange();
   }
 
   isMouseInHandle() {
@@ -854,8 +854,11 @@ export class SmartPaintArea extends BaseSmartWidget {
     this.width = width;
     this.height = height;
 
-    this.yOffset = 80;
+    this.yOffset = 0;
     this.xOffset = 0;
+
+    this.nodeYoffset = 80
+
     this.brushSize = 10;
     this.brushColor = "crimson";
     this.isPainting = false;
@@ -876,16 +879,76 @@ export class SmartPaintArea extends BaseSmartWidget {
     this.backgroundCtx.fillStyle = "white";
     this.backgroundCtx.fillRect(0, 0, this.width, this.height);
 
+    this.onClick = null;
+    this.onPress = null;
+
+    this.scaleFactor = 1.0
+
     node.addCustomWidget(this);
+  }
+
+  setNewSize(size) {
+    const newX = size.width;
+    const newY = size.height;
+    
+    if(newX >=1024 || newY >= 1024){
+      this.scaleFactor = 2;
+    }else {
+      this.scaleFactor = 1;
+    }
+
+    // Center the canvas on the x and y axis of the node
+    this.x = (this.node.width - newX) / 2;
+    this.y = (this.node.height + this.nodeYoffset -  newY) / 2;
+
+    // Update the width and height properties
+    this.width = newX;
+    this.height = newY;
+
+    // Resize the foreground canvas and redraw the content
+    const foregroundImageData = this.foregroundCtx.getImageData(
+      0,
+      0,
+      this.foregroundCanvas.width,
+      this.foregroundCanvas.height
+    );
+    this.foregroundCanvas.width = newX;
+    this.foregroundCanvas.height = newY;
+    this.foregroundCtx.putImageData(foregroundImageData, 0, 0);
+
+    // Resize the background canvas and redraw the content
+    const backgroundImageData = this.backgroundCtx.getImageData(
+      0,
+      0,
+      this.backgroundCanvas.width,
+      this.backgroundCanvas.height
+    );
+    this.backgroundCanvas.width = newX;
+    this.backgroundCanvas.height = newY;
+    this.backgroundCtx.putImageData(backgroundImageData, 0, 0);
+
+    // Redraw the background with the default color
+    this.backgroundCtx.fillStyle = "white";
+    this.backgroundCtx.fillRect(0, 0, newX, newY);
   }
 
   switchLayer() {
     this.isPaintingBackground = !this.isPaintingBackground;
   }
 
+  setCanvasSize() {
+  const canvasSize = this.scaleFactor === 2 ? 1024 : 512;
+  
+  this.foregroundCanvas.width = canvasSize;
+  this.foregroundCanvas.height = canvasSize;
+  this.backgroundCanvas.width = canvasSize;
+  this.backgroundCanvas.height = canvasSize;
+}
+
+
   draw(ctx) {
     const { x, y } = this.mousePos;
-
+  
     if (this.isPainting && !this.blockPainting) {
       const activeCtx = this.isPaintingBackground
         ? this.backgroundCtx
@@ -893,15 +956,15 @@ export class SmartPaintArea extends BaseSmartWidget {
       activeCtx.lineWidth = this.brushSize * 2;
       activeCtx.lineCap = "round";
       activeCtx.strokeStyle = this.brushColor;
-      activeCtx.lineTo(x - this.xOffset, y - this.yOffset);
+      activeCtx.lineTo(x - this.x - this.xOffset, y - this.y - this.yOffset); // Adjust for canvas position and offsets
       activeCtx.stroke();
       activeCtx.beginPath();
-      activeCtx.moveTo(x - this.xOffset, y - this.yOffset);
+      activeCtx.moveTo(x - this.x - this.xOffset, y - this.y - this.yOffset); // Adjust for canvas position and offsets
     } else {
       this.foregroundCtx.beginPath();
       this.backgroundCtx.beginPath();
     }
-
+  
     // Draw layers in correct order
     ctx.drawImage(this.backgroundCanvas, this.x, this.y);
     ctx.drawImage(this.foregroundCanvas, this.x, this.y);
@@ -910,12 +973,14 @@ export class SmartPaintArea extends BaseSmartWidget {
   handleDown() {
     if (this.isMouseIn()) {
       this.isPainting = true;
+      if (this.onPress) this.onPress();
     }
   }
 
   handleClick() {
     if (this.isMouseIn()) {
       this.isPainting = false;
+      if (this.onClick) this.onClick();
     }
   }
 
@@ -1103,7 +1168,7 @@ export class SmartColorPicker extends BaseSmartWidget {
     this.y = y;
     this.width = width;
     this.height = height;
-    
+
     this.ctx = null;
     this.heightDisplay = 20;
     this.selectedColor = null;
@@ -1124,15 +1189,14 @@ export class SmartColorPicker extends BaseSmartWidget {
     this.isSelecting = false;
   }
 
-  handleMove(e){
-    if(!this.isMouseDown()){
+  handleMove(e) {
+    if (!this.isMouseDown()) {
       this.isVisible = false;
       this.isSelecting = false;
-    } else{
+    } else {
       this.isSelecting = true;
     }
   }
-
 
   toggleShow() {
     this.isVisible = !this.isVisible;
@@ -1186,15 +1250,15 @@ export class SmartColorPicker extends BaseSmartWidget {
   }
 
   setColorUnderCurser(event) {
-    if(!this.isSelecting) return;
+    if (!this.isSelecting) return;
     if (!this.ctx) return;
     const rect = this.ctx.canvas.getBoundingClientRect();
     const scaleX = this.ctx.canvas.width / rect.width;
     const scaleY = this.ctx.canvas.height / rect.height;
-    
+
     const canvasX = (event.clientX - rect.left) * scaleX;
     const canvasY = (event.clientY - rect.top) * scaleY;
-    
+
     const pixel = this.ctx.getImageData(canvasX, canvasY, 1, 1).data;
     this.selectedColor = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
   }
@@ -1204,12 +1268,7 @@ export class SmartColorPicker extends BaseSmartWidget {
     // this.ctx.clearRect(0, this.canvas.height - 30, this.canvas.width, 30); // Adjusted coordinates
     //if(!this.selectedColor) return;
     ctx.fillStyle = this.selectedColor;
-    ctx.fillRect(
-      this.x,
-      this.y + this.height,
-      this.width,
-      this.heightDisplay
-    ); // Adjusted coordinates
+    ctx.fillRect(this.x, this.y + this.height, this.width, this.heightDisplay); // Adjusted coordinates
     // // Add text to show the RGB value
     // this.ctx.fillStyle = "#000";
     // this.ctx.font = "16px Arial";
@@ -1228,6 +1287,266 @@ export class SmartColorPicker extends BaseSmartWidget {
     );
   }
 }
+
+export class SmartDropdownMenu extends BaseSmartWidget {
+  constructor(x, y, width, height, node, items) {
+    super(node);
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.items = items;
+    this.isOpen = false;
+    this.selectedItemIndex = -1;
+    this.title = "Canvas";
+
+    this.handleColor = "#80a1c0";
+    this.bgColor = LiteGraph.WIDGET_BGCOLOR || "crimson";
+    this.textColor = LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
+    this.font = "14px Arial Bold";
+    this.textAlign = "center";
+    this.textBaseline = "middle";
+
+    this.textYOffset = 0.8;
+    this.dropMenuOffset = 6;
+    this.dropMenuGap = 1;
+    this.dropMenuBg = lightenColor(LiteGraph.WIDGET_BGCOLOR, 20);
+
+    this.outline = true;
+    this.outlineColor = "#434343";
+    this.outlineWidth = 0.8;
+
+    this.onSelect = null;
+    node.addCustomWidget(this);
+  }
+
+  toggle() {
+    this.isOpen = !this.isOpen;
+  }
+
+  select(index) {
+    this.selectedItemIndex = index;
+    this.isOpen = false;
+    if (this.onSelect) this.onSelect();
+  }
+
+  draw(ctx) {
+    this.drawButton(ctx);
+    if (this.isOpen) {
+      this.drawMenu(ctx);
+    }
+  }
+
+  drawButton(ctx) {
+    ctx.fillStyle = this.bgColor;
+    ctx.beginPath();
+    ctx.roundRect(this.x, this.y, this.width, this.height, 5);
+    ctx.fill();
+
+    // Draw outline if enabled
+    if (this.outline) {
+      ctx.strokeStyle = this.outlineColor;
+      ctx.lineWidth = this.outlineWidth;
+      ctx.stroke();
+    }
+
+    ctx.font = this.font;
+    ctx.fillStyle = this.textColor;
+    ctx.textAlign = this.textAlign;
+    ctx.textBaseline = this.textBaseline;
+
+    const text =
+      this.selectedItemIndex >= 0
+        ? this.items[this.selectedItemIndex]
+        : this.title;
+    ctx.fillText(
+      text,
+      this.x + this.width / 2,
+      this.y + this.height / 2 + this.textYOffset
+    );
+  }
+
+  drawMenu(ctx) {
+    const menuHeight =
+      this.items.length * this.height +
+      (this.items.length - 1) * this.dropMenuGap +
+      2;
+    const menuWidth = this.width + 2;
+
+    ctx.fillStyle = this.dropMenuBg;
+    ctx.beginPath();
+    ctx.roundRect(
+      this.x - 1,
+      this.y - 1 + this.height + this.dropMenuOffset,
+      menuWidth,
+      menuHeight,
+      5
+    );
+    ctx.fill();
+
+    for (let i = 0; i < this.items.length; i++) {
+      const itemY =
+        this.y +
+        this.height * (i + 1) +
+        this.dropMenuOffset +
+        i * this.dropMenuGap;
+      ctx.fillStyle =
+        i === this.selectedItemIndex ? this.handleColor : this.bgColor;
+      ctx.beginPath();
+      ctx.roundRect(this.x, itemY, this.width, this.height, 5);
+      ctx.fill();
+
+      ctx.fillStyle = i === this.selectedItemIndex ? "black" : this.textColor;
+      ctx.fillText(
+        this.items[i],
+        this.x + this.width / 2,
+        itemY + this.height / 2 + this.textYOffset
+      );
+    }
+  }
+
+  handleClick(event) {
+    const { x, y } = this.mousePos;
+    if (this.isMouseIn()) {
+      this.toggle();
+    } else if (this.isOpen) {
+      for (let i = 0; i < this.items.length; i++) {
+        const itemY =
+          this.y +
+          this.height * (i + 1) +
+          this.dropMenuOffset +
+          i * this.dropMenuGap;
+        if (y >= itemY && y <= itemY + this.height) {
+          this.select(i);
+          break;
+        }
+      }
+    }
+  }
+
+  isMouseIn() {
+    const { x, y } = this.mousePos;
+    return (
+      x >= this.x &&
+      x <= this.x + this.width &&
+      y >= this.y &&
+      y <= this.y + this.height
+    );
+  }
+}
+
+// export class SmartDropdownMenu extends BaseSmartWidget {
+//   constructor(x, y, width, height, node, items) {
+//     super(node);
+//     this.x = x;
+//     this.y = y;
+//     this.width = width;
+//     this.height = height;
+
+//     this.items = items;
+//     this.isOpen = false;
+//     this.title = "Canvas"
+//     this.selectedItemIndex = -1;
+
+//     this.handleColor = "#80a1c0";
+//     this.bgColor = LiteGraph.WIDGET_BGCOLOR || "crimson";
+
+//     this.textYoffset = 0.8;
+//     this.textXoffset = 0.0;
+//     this.textColor = this.isOpen
+//       ? "black"
+//       : LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
+//     this.textAlign = "center";
+//     this.textBaseline = "middle";
+//     this.font = "14px Arial Bold";
+
+//     this.dropMenuOffset = 10
+//     this.dropMenuGaps = 0
+//     // add self to the node
+//     node.addCustomWidget(this);
+//   }
+
+//   toggle() {
+//     console.log('here',);
+//     this.isOpen = !this.isOpen;
+//   }
+
+//   select(index) {
+//     this.selectedItemIndex = index;
+//     this.isOpen = false;
+//   }
+
+//   draw(ctx) {
+//     // Draw the main button
+//     ctx.fillStyle = this.bgColor;
+//     ctx.beginPath();
+//     ctx.roundRect(this.x, this.y, this.width, this.height, 5);
+//     ctx.fill();
+
+//     ctx.font = this.font;
+//     ctx.fillStyle = this.textColor;
+//     ctx.textAlign = this.textAlign;
+//     ctx.textBaseline = this.textBaseline;
+
+//     const buttonText =
+//       this.selectedItemIndex >= 0
+//         ? this.items[this.selectedItemIndex]
+//         : this.title;
+//     ctx.fillText(buttonText, this.x + this.width / 2, this.y + this.textYoffset + this.height / 2);
+
+//     if (this.isOpen) {
+//       this.drawItems(ctx);
+//     }
+//   }
+
+//   drawItems(ctx) {
+//     for (let i = 0; i < this.items.length; i++) {
+//       const itemY = this.y + this.height * (i + 1) + this.dropMenuOffset;
+
+//       // draw background for all items
+//       ctx.fillStyle = "red"
+//       ctx.beginPath();
+//       ctx.roundRect(this.x, itemY +(1*this.dropMenuGaps), this.width, this.items.length*this.height, 5);
+//       ctx.fill();
+
+//       ctx.fillStyle = i === this.selectedItemIndex ? this.handleColor : this.bgColor;
+//       ctx.beginPath();
+//       ctx.roundRect(this.x, itemY +(i*this.dropMenuGaps), this.width, this.height, 5);
+//       ctx.fill();
+
+//       ctx.fillStyle = i === this.selectedItemIndex ?  "black" : this.textColor;
+//       ctx.fillText(this.items[i], this.x + this.width/2, itemY +(i*this.dropMenuGaps) + this.textYoffset +  this.height / 2);
+//     }
+//   }
+
+//   handleClick(event) {
+
+//     const { x, y } = this.mousePos;
+
+//       if (this.isMouseIn()) {
+//         this.toggle();
+//       }
+//       else if (this.isOpen) {
+//         for (let i = 0; i < this.items.length; i++) {
+//           const itemY = this.y + this.height * (i + 1) +this.dropMenuOffset;
+//           if (y >= itemY +(i*this.dropMenuGaps) && y <= itemY +(i*this.dropMenuGaps) + this.height) {
+//             this.select(i);
+//             break;
+//           }
+//         }
+//       }
+//   }
+
+//   isMouseIn() {
+//     const { x, y } = this.mousePos;
+//     return (
+//       x >= this.x &&
+//       x <= this.x + this.width &&
+//       y >= this.y &&
+//       y <= this.y + this.height
+//     );
+//   }
+// }
 
 // export class PaintArea extends BaseSmartWidget {
 //   constructor(x, y, width, height, node) {

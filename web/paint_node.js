@@ -1,16 +1,8 @@
 import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
-import {
-  Button,
-  Label,
-  Slider,
-  DropdownMenu,
-  Widget,
-  Checkbox,
-  ColorPicker,
-} from "./widgets.js";
-import { Shapes, Colors, lightenColor } from "./utils.js";
+
+import { Shapes, Colors, lightenColor, canvasRatios } from "./utils.js";
 import {
   BaseSmartWidgetManager,
   SmartButton,
@@ -21,7 +13,8 @@ import {
   SmartCheckBox,
   SmartPaintArea,
   SmartPreview,
-  SmartColorPicker
+  SmartColorPicker,
+  SmartDropdownMenu,
 } from "./makadi.js";
 
 class PaintToolV1 {
@@ -213,9 +206,8 @@ app.registerExtension({
     // START POINT
 
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
-    const p = new SmartPreview(0, 80, 512, 512,node);
-    const cp = new SmartColorPicker(0, 80, 200, 200,node);
-    
+    const p = new SmartPreview(0, 80, 512, 512, node);
+    const cp = new SmartColorPicker(0, 80, 200, 200, node);
 
     const ui = new SmartWidget(0, 30, node.width, 50, node, {
       color: lightenColor(LiteGraph.WIDGET_BGCOLOR, 5),
@@ -231,12 +223,11 @@ app.registerExtension({
     (bColor.allowVisualHover = false),
       (bColor.allowVisualPress = false),
       (bColor.onPress = () => {
-        cp.open()
+        cp.open();
         console.log("bColor  clicked");
       });
-      
-      
-    const brushSlider = new SmartSlider(55, 40, 150, 15, node, {
+
+    const brushSlider = new SmartSlider(55, 35, 150, 20, node, {
       minValue: 5,
       maxValue: 100,
       value: 20,
@@ -246,19 +237,35 @@ app.registerExtension({
       //textYoffset: 20,
       text: "Brush Size: ",
       onValueChange: (value) => {
-        p.brushSize = value
-        pa.brushSize= value
-        //console.log("Slider value changed:", value);
+        p.brushSize = value;
+        pa.brushSize = value;
       },
     });
-    
-    let autoPin = true
-    const lbl = new SmartLabel(70, 62.5, 12, 12, node, "Auto Pin");
-    const cb = new SmartCheckBox(55, 60 + 2.5, 12, 12, node);
-    cb.onValueChange = ()=>{
-      console.log('switched',);
-      autoPin = cb.isChecked
-    }
+
+    const ratioNames = Array.from(canvasRatios.keys());
+    const dm = new SmartDropdownMenu(55, 60, 75, 15, node, ratioNames);
+    pa.onPress = () => {
+      if (dm.isOpen) {
+        pa.blockPainting = true;
+      } else {
+        pa.blockPainting = false;
+      }
+    };
+    dm.onSelect = () => {
+      const ratiosArray = Array.from(canvasRatios.entries());
+      // Get item by index (e.g., index 2)
+      const item = ratiosArray[dm.selectedItemIndex]; // ["3:2", { width: 512, height: 341 }]
+      console.log('item', item[1]);
+      pa.setNewSize(item[1])
+    };
+
+    let autoPin = true;
+    // const lbl = new SmartLabel(70, 62.5, 12, 12, node, "Auto Pin");
+    // const cb = new SmartCheckBox(55, 60 + 2.5, 12, 12, node);
+    // cb.onValueChange = ()=>{
+    //   console.log('switched',);
+    //   autoPin = cb.isChecked
+    // }
 
     const bFill = new SmartButton(215, 35, 40, 15, node, "Fill", {
       withTagWidth: 10,
@@ -271,12 +278,16 @@ app.registerExtension({
     const bHold = new SmartButton(215 + 45, 35, 40, 15, node, "Hold", {
       textXoffset: 0,
     });
-    bHold.onClick = () => {pa.saveTempImage()};
+    bHold.onClick = () => {
+      pa.saveTempImage();
+    };
 
     const bFetch = new SmartButton(215 + 45 + 45, 35, 40, 15, node, "Fetch", {
       textXoffset: 0,
     });
-    bFetch.onClick = () => {pa.loadTempImage()};
+    bFetch.onClick = () => {
+      pa.loadTempImage();
+    };
 
     const bClear = new SmartButton(
       215 + 45 + 45 + 45,
@@ -297,8 +308,7 @@ app.registerExtension({
     layerSwitch.textOn = "Foreground";
     layerSwitch.textOff = "Background";
     layerSwitch.onValueChange = () => {
-      pa.switchLayer()
-
+      pa.switchLayer();
     };
 
     const bh = []; // Declare an array
@@ -343,27 +353,24 @@ app.registerExtension({
       }
     }
 
-
     //for color picker
-    node.onMouseMove= (e,pos)=>{
-      if(cp.isVisible) {
-        cp.setColorUnderCurser(e)
+    node.onMouseMove = (e, pos) => {
+      if (cp.isVisible) {
+        cp.setColorUnderCurser(e);
         bColor.color = cp.selectedColor;
         pa.brushColor = cp.selectedColor;
       }
-      if(pos[1]>30 && autoPin) node.flags.pinned = true; else {
+      if (pos[1] > 30 && autoPin) node.flags.pinned = true;
+      else {
         node.flags.pinned = false;
       }
-    }
-    
-    node.onMouseEnter = (e,pos)=>{
-      
-    }
+    };
 
-    node.onMouseLeave = (e)=>{
-      if(autoPin) node.flags.pinned = false;
-    }
+    node.onMouseEnter = (e, pos) => {};
 
+    node.onMouseLeave = (e) => {
+      if (autoPin) node.flags.pinned = false;
+    };
 
     const manager = new BaseSmartWidgetManager(node);
   },

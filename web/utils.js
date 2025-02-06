@@ -149,6 +149,23 @@ export const Colors = [
   
   ];
 
+  export const canvasRatios = new Map([
+    ["1:1", { width: 512, height: 512 }],
+    
+    ["2:3", { width: 341, height: 512 }], // Rounded to 341x512 (divisible by 64)
+    ["3:4", { width: 384, height: 512 }], // Rounded to 384x512 (divisible by 64)
+    ["9:16", { width: 288, height: 512 }], // Rounded to 288x512 (divisible by 64)
+    ["9:21", { width: 192, height: 512 }], // Rounded to 192x512 (divisible by 64)
+    
+    ["3:2", { width: 512, height: 341 }], // Rounded to 512x341 (divisible by 64)
+    ["4:3", { width: 512, height: 384 }], // Rounded to 512x384 (divisible by 64)
+    ["16:9", { width: 512, height: 288 }], // Rounded to 512x288 (divisible by 64)
+    ["21:9", { width: 512, height: 219 }], // Rounded to 512x219 (divisible by 64)
+    
+    ["1:1 2x", { width: 1024, height: 1024 }],
+  
+  ]);
+  
 
 /*
 LiteGraph.NODE_TITLE_COLOR,
