@@ -14,19 +14,15 @@ class BaseSmartWidget {
     return app.canvas.pointer.isDown;
   }
 
-  isDragStarted() {
-    return app.canvas.pointer.dragStarted;
+  enterFreezeMode() {
+    this.node.allow_interaction = false;
+    this.node.allow_dragcanvas = false;
   }
 
-  // enterFreezeMode() {
-  //   this.node.allow_interaction = false;
-  //   this.node.allow_dragcanvas = false;
-  // }
-
-  // exitFreezeMode() {
-  //   this.node.allow_interaction = true;
-  //   this.node.allow_dragcanvas = true;
-  // }
+  exitFreezeMode() {
+    this.node.allow_interaction = true;
+    this.node.allow_dragcanvas = true;
+  }
 
   get mousePos() {
     const graphMouse = app.canvas.graph_mouse;
@@ -847,7 +843,7 @@ export class SmartCheckBox extends SmartWidget {
   }
 }
 
-export class PaintArea extends BaseSmartWidget {
+export class SmartPaintArea extends BaseSmartWidget {
   constructor(x, y, width, height, node) {
     super(node);
 
@@ -1028,6 +1024,73 @@ export class PaintArea extends BaseSmartWidget {
     } catch (error) {
       console.error("iTools No Temp Drawing Found", error);
     }
+  }
+}
+
+export class SmartPreview extends BaseSmartWidget {
+  constructor(x,y,width,height,node) {
+    super(node);
+    
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    
+    this.brushSize = 10;
+    this.color = "rgba(128, 128, 128, 0.2)"; // 50% transparent gray
+    this.dashColor = "black";
+    this.widthLimit = this.width;
+    this.heightLimit = this.height;
+    this.yOffset = 80;
+    this.xOffset = 0;
+
+    this.allowInnerCircle = false;
+    this.init();
+    
+    // add self to the node
+    node.addCustomWidget(this);
+  }
+
+  updateBrushSize(size) {
+    this.brushSize = size;
+  }
+
+  init() {
+    //init preview canvas
+    this.previewCanvas = document.createElement("canvas");
+    this.previewCanvas.width = this.brushSize; //app.canvasContainer.width;
+    this.previewCanvas.height = this.brushSize; //app.canvasContainer.height;
+    this.previewCtx = this.previewCanvas.getContext("2d");
+  }
+
+  draw(ctx) {
+    const { x, y } = this.mousePos;
+    // if (x > this.widthLimit) return;
+    // if (y > this.heightLimit) return;
+    if (y < this.yOffset) return;
+    if (!this.isMouseIn(x,y)) return;
+    ctx.beginPath();
+    ctx.arc(x, y, this.brushSize, 0, Math.PI * 2);
+    ctx.fillStyle = this.allowInnerCircle
+      ? this.color
+      : "rgba(255, 255, 255, 0)";
+    ctx.fill();
+
+    // Draw dotted outline
+    ctx.setLineDash([3, 3]); // [dash length, gap length]
+    ctx.strokeStyle = this.dashColor; // Outline color
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.setLineDash([]); // Reset line dash to solid
+  }
+  isMouseIn( x, y) {
+   
+    return (
+      x >= this.x &&
+      x <= this.x + this.width &&
+      y >= this.y &&
+      y <= this.y + this.height
+    );
   }
 }
 

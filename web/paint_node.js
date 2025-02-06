@@ -9,7 +9,6 @@ import {
   Widget,
   Checkbox,
   ColorPicker,
-  Preview,
 } from "./widgets.js";
 import { Shapes, Colors, lightenColor } from "./utils.js";
 import {
@@ -20,7 +19,8 @@ import {
   SmartLabel,
   SmartSwitch,
   SmartCheckBox,
-  PaintArea,
+  SmartPaintArea,
+  SmartPreview,
 } from "./makadi.js";
 
 class PaintToolV1 {
@@ -211,7 +211,8 @@ app.registerExtension({
     }
     // START POINT
 
-    let pa = new PaintArea(0, 80, 512, 512, node);
+    const pa = new SmartPaintArea(0, 80, 512, 512, node);
+    const p = new SmartPreview(0, 80, 512, 512,node);
 
     const ui = new SmartWidget(0, 30, node.width, 50, node, {
       color: lightenColor(LiteGraph.WIDGET_BGCOLOR, 5),
@@ -239,6 +240,8 @@ app.registerExtension({
       //textYoffset: 20,
       text: "Brush Size: ",
       onValueChange: (value) => {
+        p.brushSize = value
+        pa.brushSize= value
         //console.log("Slider value changed:", value);
       },
     });
@@ -316,7 +319,8 @@ app.registerExtension({
             color: color,
             shape: Shapes.CIRCLE,
             onClick: () => {
-              bColor.color = color; // Use captured color
+              bColor.color = color;
+              bFill.tagColor = color;
               pa.brushColor = color;
               console.log(`Widget ${index} clicked`);
             },
