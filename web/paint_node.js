@@ -13,7 +13,15 @@ import {
   Preview,
 } from "./widgets.js";
 import { Shapes, Colors, lightenColor } from "./utils.js";
-import { BaseSmartWidgetManager, SmartButton, SmartWidget,SmartSlider, SmartLabel, SmartSwitch, SmartCheckBox } from "./makadi.js";
+import {
+  BaseSmartWidgetManager,
+  SmartButton,
+  SmartWidget,
+  SmartSlider,
+  SmartLabel,
+  SmartSwitch,
+  SmartCheckBox,
+} from "./makadi.js";
 
 class PaintToolV1 {
   constructor(node) {
@@ -169,7 +177,6 @@ class PaintToolV1 {
   }
 }
 
-
 app.registerExtension({
   name: "iTools.paintNode",
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
@@ -197,74 +204,144 @@ app.registerExtension({
     //node.pos = [0, 0];
     //node.resizable = false;
     node.setDirtyCanvas(true, true);
-    node.bgcolor = LiteGraph.NODE_DEFAULT_BGCOLOR;
+    //node.bgcolor = LiteGraph.NODE_DEFAULT_BGCOLOR;
     if (allow_debug) {
       console.log("node", node);
       console.log("app.canvas", app.canvas);
     }
     // START POINT
 
-    const sw = new SmartButton(20, 20, 50, 200, node);
-    sw.shape = Shapes.CIRCLE
-    sw.onClick = () => {
-      console.log("sw clicked");
-    };
-
-    const b1 = new SmartButton(90, 60, 90, 20, node, "Button", {
-      withTagWidth: 10
-    });
-    b1.onClick = () => {
-      if (sw.color == "crimson") {sw.color = LiteGraph.WIDGET_BGCOLOR }
-      else{ sw.color = "crimson"}
-      sw.textColor = b1.textColor
-      sw.text = "B Tag"
-      console.log("b1 clicked");
-    };
-
-    const b2 = new SmartButton(190, 60, 60, 20, node, "Button2", {color:"#a4c639", textColor:"black"});
-    b2.onClick = () => {
-      sw.text = "B2"
-      sw.color = b2.color
-      sw.textColor = b2.textColor
-      console.log("b2 clicked");
-    };
-    const b3 = new SmartButton(190 + 70, 60 , 20, 20 , node, "B3", 
-      {color:"#b8860b", textColor:"black", shape: Shapes.CIRCLE});
-    b3.onClick = () => {
-      sw.text = "B3"
-      sw.textColor = b3.textColor
-      sw.color = b3.color
-      console.log("b2 clicked");
-    };
-
-    const slider = new SmartSlider(90, 90, 200, 15, node, {
-      minValue: 0,
-      maxValue: 100,
-      value: 50,
-      text:"Slider: ",
-      onValueChange: (value) => {
-        //console.log("Slider value changed:", value);
-      }
+    const ui = new SmartWidget(0, 30, node.width, 50, node, {
+      color: lightenColor(LiteGraph.WIDGET_BGCOLOR, 5),
+      shape: Shapes.SQUARE,
+      allowVisualPress: false,
+      allowVisualHover: false,
+      outline: false,
     });
 
-    const slider2 = new SmartSlider(90, 120, 200, 15, node, {
-      minValue: 0,
+    const bColor = new SmartButton(5, 35, 40, 40, node);
+    bColor.shape = Shapes.CIRCLE;
+    (bColor.allowVisualHover = false),
+      (bColor.allowVisualPress = false),
+      (bColor.onClick = () => {
+        console.log("bColor  clicked");
+      });
+
+    const brushSlider = new SmartSlider(55, 40, 150, 15, node, {
+      minValue: 5,
       maxValue: 100,
-      value: 50,
+      value: 20,
+      textColorNormalize: true,
       isProgressBar: true,
       //disableText: true,
-      textYoffset : 20,
-      text:"Progressbar: ",
+      //textYoffset: 20,
+      text: "Brush Size: ",
       onValueChange: (value) => {
         //console.log("Slider value changed:", value);
-      }
+      },
     });
 
-    const swi = new SmartSwitch(120, 160, 80, 15, node,);
-    
-    const lbl = new SmartLabel(130, 180, 12, 12, node,"Grid Snap");
-    const cb = new SmartCheckBox(115, 180, 10, 10, node,);
+    const lbl = new SmartLabel(70, 62.5, 12, 12, node, "Auto Pin");
+    const cb = new SmartCheckBox(55, 60 + 2.5, 12, 12, node);
 
+    const bFill = new SmartButton(215, 35, 40, 15, node, "Fill", {
+      withTagWidth: 10,
+      textXoffset: 5,
+    });
+    bFill.onClick = () => {};
+
+    const bHold = new SmartButton(215 + 45, 35, 40, 15, node, "Hold", {
+      textXoffset: 0,
+    });
+    bHold.onClick = () => {};
+
+    const bFetch = new SmartButton(215 + 45 + 45, 35, 40, 15, node, "Fetch", {
+      textXoffset: 0,
+    });
+    bFetch.onClick = () => {};
+
+    const bClear = new SmartButton(
+      215 + 45 + 45 + 45,
+      35,
+      40,
+      15,
+      node,
+      "Clear",
+      {
+        textXoffset: 0,
+      }
+    );
+    bClear.onClick = () => {};
+
+    const layerSwitch = new SmartSwitch(215, 55, 175, 20, node);
+    layerSwitch.textOn = "Foreground";
+    layerSwitch.textOff = "Background";
+
+    const bh = []; // Declare an array
+    const commonColors = [
+      "#000000", // Black
+      "#FFFFFF", // White
+      "#FF0000", // Red
+      "#0000FF", // Blue
+      "#008000", // Green
+      "#FFFF00", // Yellow
+      "#FFA500", // Orange
+      "#800080", // Purple
+      "#A52A2A", // Brown
+      "#808080", // Gray
+    ];
+
+    let index = 0; // Unique index for bh array
+
+    for (let i = 1; i < 6; i++) {
+      for (let j = 0; j < 2; j++) {
+        bh.push(
+          new SmartWidget(512 - 22 * i, 35 + 22 * j, 18, 18, node, {
+            color: commonColors[index % commonColors.length], // Prevent out-of-bounds
+            shape: Shapes.CIRCLE,
+          })
+        );
+
+        // Assign click event
+        bh[index].onClick = () => {
+          console.log(`Widget ${index} clicked`);
+        };
+
+        index++; // Increment unique index
+      }
+    }
+
+    // const bh = new SmartWidget(512 -20, 35 , 15, 15 , node,
+    //   {color:"#b8860b", shape: Shapes.CIRCLE});
+    // bh.onClick = () => {
+    //   console.log("this clicked");
+    // };
+
+    // const b2 = new SmartButton(190, 60, 60, 20, node, "Button2", {color:"#a4c639", textColor:"black"});
+    // b2.onClick = () => {
+    //   sw.text = "B2"
+    //   sw.color = b2.color
+    //   sw.textColor = b2.textColor
+    //   console.log("b2 clicked");
+    // };
+    // const b3 = new SmartButton(190 + 70, 60 , 20, 20 , node, "B3",
+    //   {color:"#b8860b", textColor:"black", shape: Shapes.CIRCLE});
+    // b3.onClick = () => {
+    //   sw.text = "B3"
+    //   sw.textColor = b3.textColor
+    //   sw.color = b3.color
+    //   console.log("b2 clicked");
+    // };
+
+    // const slider = new SmartSlider(90, 90, 200, 15, node, {
+    //   minValue: 0,
+    //   maxValue: 100,
+    //   value: 50,
+    //   text:"Slider: ",
+    //   onValueChange: (value) => {
+    //     //console.log("Slider value changed:", value);
+    //   }
+    // });
 
     const manager = new BaseSmartWidgetManager(node);
 

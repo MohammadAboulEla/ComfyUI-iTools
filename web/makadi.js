@@ -423,7 +423,7 @@ export class SmartLabel extends BaseSmartWidget {
 
     this.text = text;
     this.textColor = LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
-    this.textYoffset = -0.8;
+    this.textYoffset = 0.0;
     this.textXoffset = 0.0;
     this.textAlign = "left";
     this.textBaseline = "top";
@@ -462,7 +462,7 @@ export class SmartButton extends SmartWidget {
 
     this.text = text;
     this.textColor = LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
-    this.textYoffset = 0.8;
+    this.textYoffset = 1.2;
     this.textXoffset = 0.0;
     this.textAlign = "center";
     this.textBaseline = "middle";
@@ -471,6 +471,7 @@ export class SmartButton extends SmartWidget {
     this.withTagWidth = false; // false or number
     this.tagColor = "crimson";
     this.tagPosition = "left"; // "left" or "right"
+    this.tagRound = 2.5;
 
     // Apply options if provided
     Object.assign(this, options);
@@ -491,7 +492,7 @@ export class SmartButton extends SmartWidget {
           this.y + 0.5,
           this.withTagWidth,
           this.height - 1,
-          [3.5, 0, 0, 3.5]
+          [this.tagRound, 0, 0, this.tagRound]
         );
       } else {
         // Round only the right side
@@ -500,7 +501,7 @@ export class SmartButton extends SmartWidget {
           this.y + 0.5,
           this.withTagWidth,
           this.height - 1,
-          [0, 3.5, 3.5, 0]
+          [0, this.tagRound, this.tagRound, 0]
         );
       }
 
@@ -527,7 +528,7 @@ export class SmartSlider extends SmartWidget {
     super(x, y, width, height, node, options);
 
     // Slider specific properties
-    this.minValue = 0;
+    this.minValue = 5;
     this.maxValue = 100;
     this.value = this.minValue;
     this.handleWidth = 15;
@@ -545,6 +546,7 @@ export class SmartSlider extends SmartWidget {
     this.textBaseline = "middle";
     this.font = "14px Arial Bold";
     this.disableText = false;
+    this.textColorNormalize = false;
 
     // Calculate handle position based on initial value
     this.handleX =
@@ -645,7 +647,37 @@ export class SmartSlider extends SmartWidget {
 
     // Draw value text
     if (this.disableText) return;
-    ctx.fillStyle = this.textColor;
+    
+    if (!this.textColorNormalize) {
+      ctx.fillStyle = this.textColor;
+      ctx.font = this.font;
+      ctx.textAlign = this.textAlign;
+      ctx.textBaseline = this.textBaseline;
+      ctx.fillText(
+        `${this.text}${this.value.toFixed(2)}`,
+        this.x + this.width / 2,
+        this.y + this.height / 2 + this.textYoffset
+      );
+      return;
+    }
+
+    // Define shiftMin and shiftMax to control the range
+    const shiftMin = this.minValue + 0.35 * (this.maxValue - this.minValue); // Example shift
+    const shiftMax = this.maxValue - 0.0 * (this.maxValue - this.minValue);
+
+    // Clamp value within shiftMin and shiftMax
+    const clampedValue = Math.max(shiftMin, Math.min(this.value, shiftMax));
+
+    // Normalize within shifted range
+    const normalizedValue = (clampedValue - shiftMin) / (shiftMax - shiftMin);
+
+    // Compute color intensity (closer to black as value increases)
+    const colorIntensity = Math.round(160 * (1 - normalizedValue));
+
+    // Set text color
+    ctx.fillStyle = `rgb(${colorIntensity}, ${colorIntensity}, ${colorIntensity})`;
+
+    // Draw text
     ctx.font = this.font;
     ctx.textAlign = this.textAlign;
     ctx.textBaseline = this.textBaseline;
@@ -662,7 +694,7 @@ export class SmartSwitch extends SmartWidget {
     super(x, y, width, height, node, options);
 
     this.isOn = true;
-    this.handleWidth = this.width/2;
+    this.handleWidth = this.width / 2;
     this.handleHeight = this.height;
     this.handleColor = "#80a1c0";
     this.trackColor = LiteGraph.WIDGET_BGCOLOR || "crimson";
@@ -671,8 +703,12 @@ export class SmartSwitch extends SmartWidget {
 
     this.textOn = "On";
     this.textOff = "Off";
-    this.textOnColor = this.isOn ? "black" :LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
-    this.textOffColor = this.isOn ? LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white" : "black" ;
+    this.textOnColor = this.isOn
+      ? "black"
+      : LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
+    this.textOffColor = this.isOn
+      ? LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white"
+      : "black";
     this.textYoffset = 0.8;
     this.textXoffset = 0.0;
     this.textAlign = "center";
@@ -685,15 +721,17 @@ export class SmartSwitch extends SmartWidget {
 
   handleDown() {
     if (this.isMouseIn()) {
-      this.isOn = !this.isOn
-      this.textOnColor = this.isOn ? "black" :LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
-      this.textOffColor = this.isOn ? LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white" : "black" ;
+      this.isOn = !this.isOn;
+      this.textOnColor = this.isOn
+        ? "black"
+        : LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
+      this.textOffColor = this.isOn
+        ? LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white"
+        : "black";
     }
   }
 
-  handleMove() {
-
-  }
+  handleMove() {}
 
   handleClick() {}
 
@@ -717,7 +755,7 @@ export class SmartSwitch extends SmartWidget {
     ctx.fill();
 
     // Calculate handle position correctly
-    const handleX = this.isOn ? this.x : this.x + this.width/2;
+    const handleX = this.isOn ? this.x : this.x + this.width / 2;
 
     // Draw the handle
     ctx.fillStyle = this.handleColor;
@@ -768,13 +806,11 @@ export class SmartCheckBox extends SmartWidget {
 
   handleDown() {
     if (this.isMouseIn()) {
-      this.isChecked = !this.isChecked
+      this.isChecked = !this.isChecked;
     }
   }
 
-  handleMove() {
-
-  }
+  handleMove() {}
 
   handleClick() {}
 
@@ -789,7 +825,6 @@ export class SmartCheckBox extends SmartWidget {
   }
 
   draw(ctx) {
-
     // Draw the background
     ctx.fillStyle = this.trackColor;
     ctx.beginPath();
@@ -800,9 +835,14 @@ export class SmartCheckBox extends SmartWidget {
     if (!this.isChecked) return;
     ctx.fillStyle = this.handleColor;
     ctx.beginPath();
-    ctx.roundRect(this.x + this.gap/2, this.y + this.gap/2, this.width - this.gap, this.height - this.gap, 5 - this.gap/2);
+    ctx.roundRect(
+      this.x + this.gap / 2,
+      this.y + this.gap / 2,
+      this.width - this.gap,
+      this.height - this.gap,
+      5 - this.gap / 2
+    );
     ctx.fill();
-
   }
 }
 
