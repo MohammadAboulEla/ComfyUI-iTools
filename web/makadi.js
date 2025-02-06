@@ -858,7 +858,8 @@ export class SmartPaintArea extends BaseSmartWidget {
     this.xOffset = 0;
 
     this.nodeYoffset = 80
-
+    this.nodeXoffset = 0
+    
     this.brushSize = 10;
     this.brushColor = "crimson";
     this.isPainting = false;
@@ -935,15 +936,6 @@ export class SmartPaintArea extends BaseSmartWidget {
   switchLayer() {
     this.isPaintingBackground = !this.isPaintingBackground;
   }
-
-  setCanvasSize() {
-  const canvasSize = this.scaleFactor === 2 ? 1024 : 512;
-  
-  this.foregroundCanvas.width = canvasSize;
-  this.foregroundCanvas.height = canvasSize;
-  this.backgroundCanvas.width = canvasSize;
-  this.backgroundCanvas.height = canvasSize;
-}
 
 
   draw(ctx) {
