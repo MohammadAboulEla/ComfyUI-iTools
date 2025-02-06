@@ -9,7 +9,6 @@ import {
   Widget,
   Checkbox,
   ColorPicker,
-  PaintArea,
   Preview,
 } from "./widgets.js";
 import { Shapes, Colors, lightenColor } from "./utils.js";
@@ -21,6 +20,7 @@ import {
   SmartLabel,
   SmartSwitch,
   SmartCheckBox,
+  PaintArea,
 } from "./makadi.js";
 
 class PaintToolV1 {
@@ -211,6 +211,8 @@ app.registerExtension({
     }
     // START POINT
 
+    let pa = new PaintArea(0, 80, 512, 512, node);
+
     const ui = new SmartWidget(0, 30, node.width, 50, node, {
       color: lightenColor(LiteGraph.WIDGET_BGCOLOR, 5),
       shape: Shapes.SQUARE,
@@ -248,17 +250,19 @@ app.registerExtension({
       withTagWidth: 10,
       textXoffset: 5,
     });
-    bFill.onClick = () => {};
+    bFill.onClick = () => {
+      pa.clearWithColor(bColor.color);
+    };
 
     const bHold = new SmartButton(215 + 45, 35, 40, 15, node, "Hold", {
       textXoffset: 0,
     });
-    bHold.onClick = () => {};
+    bHold.onClick = () => {pa.saveTempImage()};
 
     const bFetch = new SmartButton(215 + 45 + 45, 35, 40, 15, node, "Fetch", {
       textXoffset: 0,
     });
-    bFetch.onClick = () => {};
+    bFetch.onClick = () => {pa.loadTempImage()};
 
     const bClear = new SmartButton(
       215 + 45 + 45 + 45,
@@ -271,11 +275,17 @@ app.registerExtension({
         textXoffset: 0,
       }
     );
-    bClear.onClick = () => {};
+    bClear.onClick = () => {
+      pa.clearWithColor("white");
+    };
 
     const layerSwitch = new SmartSwitch(215, 55, 175, 20, node);
     layerSwitch.textOn = "Foreground";
     layerSwitch.textOff = "Background";
+    layerSwitch.onValueChange = () => {
+      pa.switchLayer()
+
+    };
 
     const bh = []; // Declare an array
     const commonColors = [
@@ -295,169 +305,29 @@ app.registerExtension({
 
     for (let i = 1; i < 6; i++) {
       for (let j = 0; j < 2; j++) {
-        bh.push(
-          new SmartWidget(512 - 22 * i, 35 + 22 * j, 18, 18, node, {
-            color: commonColors[index % commonColors.length], // Prevent out-of-bounds
+        const color = commonColors[index % commonColors.length]; // Capture color in scope
+        const widget = new SmartWidget(
+          512 - 22 * i - 3,
+          35 + 22 * j,
+          18,
+          18,
+          node,
+          {
+            color: color,
             shape: Shapes.CIRCLE,
-          })
+            onClick: () => {
+              bColor.color = color; // Use captured color
+              pa.brushColor = color;
+              console.log(`Widget ${index} clicked`);
+            },
+          }
         );
 
-        // Assign click event
-        bh[index].onClick = () => {
-          console.log(`Widget ${index} clicked`);
-        };
-
+        bh.push(widget);
         index++; // Increment unique index
       }
     }
 
-    // const bh = new SmartWidget(512 -20, 35 , 15, 15 , node,
-    //   {color:"#b8860b", shape: Shapes.CIRCLE});
-    // bh.onClick = () => {
-    //   console.log("this clicked");
-    // };
-
-    // const b2 = new SmartButton(190, 60, 60, 20, node, "Button2", {color:"#a4c639", textColor:"black"});
-    // b2.onClick = () => {
-    //   sw.text = "B2"
-    //   sw.color = b2.color
-    //   sw.textColor = b2.textColor
-    //   console.log("b2 clicked");
-    // };
-    // const b3 = new SmartButton(190 + 70, 60 , 20, 20 , node, "B3",
-    //   {color:"#b8860b", textColor:"black", shape: Shapes.CIRCLE});
-    // b3.onClick = () => {
-    //   sw.text = "B3"
-    //   sw.textColor = b3.textColor
-    //   sw.color = b3.color
-    //   console.log("b2 clicked");
-    // };
-
-    // const slider = new SmartSlider(90, 90, 200, 15, node, {
-    //   minValue: 0,
-    //   maxValue: 100,
-    //   value: 50,
-    //   text:"Slider: ",
-    //   onValueChange: (value) => {
-    //     //console.log("Slider value changed:", value);
-    //   }
-    // });
-
     const manager = new BaseSmartWidgetManager(node);
-
-    // const canvas = window.LGraphCanvas
-    // const myCtx = app.ctx
-    // myCtx.fillStyle = "rgba(255, 0, 0, 1.0)";
-    // myCtx.fillRect(50, 50, 200, 100); // Example: Red semi-transparent rectangle
-
-    //     app.canvas.onDrawForeground = function(ctx) {
-    //         // Custom Drawing on the Main Canvas
-    //         ctx.fillStyle = "rgba(255, 0, 0, 1.0)";
-    //         ctx.fillRect(50, 50, 200, 100); // Example: Red semi-transparent rectangle
-    //     //app.draw(true, true);
-    // }
-
-    // Usage
-    //const paintTool = new PaintToolV2(node);
-
-    // //create paint area
-
-    // const pa = new PaintArea(0, 80, 512, 512);
-    // pa.yOffset = 80;
-    // node.addCustomWidget(pa);
-
-    // // const ui = new Widget(0, 30, 512, 50);
-    // // ui.color = lightenColor(LiteGraph.NODE_DEFAULT_BGCOLOR, 5);
-    // // node.addCustomWidget(ui);
-
-    // const cp = new ColorPicker(512 - 100, 80, 100, 100);
-    // node.addCustomWidget(cp);
-
-    // const bColor = new Button(462, 35, "🎨"); //462 - 150, 35
-    // bColor.shape = Shapes.ROUND;
-    // bColor.color = "crimson";
-    // bColor.onClick = () => {
-    //   cp.open();
-    // };
-    // node.addCustomWidget(bColor);
-
-    // const b2 = new Button(462 - 100, 35, "save");
-    // b2.shape = Shapes.ROUND;
-    // b2.color = "#5d8aa8";
-    // b2.onClick = () => {
-    //   pa.saveTempImage();
-    // };
-    // node.addCustomWidget(b2);
-
-    // const b3 = new Button(462 - 50, 35, "load");
-    // b3.shape = Shapes.ROUND;
-    // b3.color = "#915c83";
-    // b3.onClick = () => {
-    //   pa.loadTempImage();
-    // };
-    // node.addCustomWidget(b3);
-
-    // const bClear = new Button(462 - 150, 35, "clear"); // 462, 35
-    // bClear.shape = Shapes.CIRCLE;
-    // bClear.color = "grey";
-    // bClear.onClick = () => {
-    //   pa.clearWithColor("white");
-    // };
-    // node.addCustomWidget(bClear);
-
-    // const p = new Preview(0, 0);
-    // p.dashColor = "red";
-    // node.addCustomWidget(p);
-
-    // const s = new Slider(60, 40);
-    // s.onChange = (v) => {
-    //   p.brushSize = v;
-    //   pa.brushSize = v;
-    // };
-    // node.addCustomWidget(s);
-
-    // node.onMouseDown = (e, pos, node) => {
-    //   if (pos[1] > 80 && !cp.isSelecting) pa.isPainting = true;
-    //   bClear.handleClick(pos[0], pos[1]);
-    //   bColor.handleClick(pos[0], pos[1]);
-    //   b2.handleClick(pos[0], pos[1]);
-    //   b3.handleClick(pos[0], pos[1]);
-
-    //   if (cp.isSelecting) {
-    //     cp.close();
-    //   }
-
-    //   console.log("cp.isSelecting", cp.isSelecting);
-    //   console.log("node", node);
-    // };
-
-    // node.onMouseMove = (e, pos, node) => {
-    //   if (pos[1] > 80) pa.updateMousePos(pos);
-    //   p.updateMousePos(pos);
-    //   s.handleMouseMove(pos);
-
-    //   cp.setColorUnderCurser(e);
-    //   if (cp.isVisible) {
-    //     bColor.color = cp.selectedColor;
-    //     pa.brushColor = cp.selectedColor;
-    //   }
-
-    //   //if(pos[1]>80) node.flags.pinned = true;
-    // };
-
-    // node.onMouseUp = (e, pos, node) => {
-    //   pa.isPainting = false;
-    //   console.log("mouse up");
-    // };
-
-    // node.onMouseLeave = (e) => {
-    //   pa.sendDrawingToAPI();
-    //   p.isMouseIn = false;
-    //   //node.flags.pinned = false;
-    // };
-
-    // node.onMouseEnter = (e, pos) => {
-    //   p.isMouseIn = true;
-    // };
   },
 });

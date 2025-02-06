@@ -14,9 +14,9 @@ class BaseSmartWidget {
     return app.canvas.pointer.isDown;
   }
 
-  // isDragStarted() {
-  //   return app.canvas.pointer.dragStarted;
-  // }
+  isDragStarted() {
+    return app.canvas.pointer.dragStarted;
+  }
 
   // enterFreezeMode() {
   //   this.node.allow_interaction = false;
@@ -58,8 +58,8 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   }
   handleMouseDown(e) {
     Object.values(this.node.widgets).forEach((widget) => {
-      if (widget instanceof SmartWidget) {
-        widget.handleDown();
+      if (widget instanceof BaseSmartWidget) {
+        widget.handleDown?.();
       }
     });
     if (this.allowDebug) console.log("MouseDown", this.mousePos);
@@ -67,8 +67,8 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
 
   handleMouseMove(e) {
     Object.values(this.node.widgets).forEach((widget) => {
-      if (widget instanceof SmartWidget) {
-        widget.handleMove();
+      if (widget instanceof BaseSmartWidget) {
+        widget.handleMove?.();
       }
     });
     if (this.allowDebug) console.log("MouseMoved");
@@ -76,8 +76,8 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
 
   handleMouseClick(e) {
     Object.values(this.node.widgets).forEach((widget) => {
-      if (widget instanceof SmartWidget) {
-        widget.handleClick();
+      if (widget instanceof BaseSmartWidget) {
+        widget.handleClick?.();
       }
     });
     if (this.allowDebug) console.log("MouseClicked");
@@ -647,7 +647,7 @@ export class SmartSlider extends SmartWidget {
 
     // Draw value text
     if (this.disableText) return;
-    
+
     if (!this.textColorNormalize) {
       ctx.fillStyle = this.textColor;
       ctx.font = this.font;
@@ -728,6 +728,7 @@ export class SmartSwitch extends SmartWidget {
       this.textOffColor = this.isOn
         ? LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white"
         : "black";
+      if (this.onValueChange) this.onValueChange();
     }
   }
 
@@ -845,6 +846,481 @@ export class SmartCheckBox extends SmartWidget {
     ctx.fill();
   }
 }
+
+export class PaintArea extends BaseSmartWidget {
+  constructor(x, y, width, height, node) {
+    super(node);
+
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+
+    this.yOffset = 80;
+    this.xOffset = 0;
+    this.brushSize = 10;
+    this.brushColor = "crimson";
+    this.isPainting = false;
+    this.blockPainting = false;
+    this.isPaintingBackground = false; // Layer switch
+
+    // Foreground Layer
+    this.foregroundCanvas = document.createElement("canvas");
+    this.foregroundCanvas.width = this.width;
+    this.foregroundCanvas.height = this.height;
+    this.foregroundCtx = this.foregroundCanvas.getContext("2d");
+
+    // Background Layer
+    this.backgroundCanvas = document.createElement("canvas");
+    this.backgroundCanvas.width = this.width;
+    this.backgroundCanvas.height = this.height;
+    this.backgroundCtx = this.backgroundCanvas.getContext("2d");
+    this.backgroundCtx.fillStyle = "white";
+    this.backgroundCtx.fillRect(0, 0, this.width, this.height);
+
+    node.addCustomWidget(this);
+  }
+
+  switchLayer() {
+    this.isPaintingBackground = !this.isPaintingBackground;
+  }
+
+  draw(ctx) {
+    const { x, y } = this.mousePos;
+
+    if (this.isPainting && !this.blockPainting) {
+      const activeCtx = this.isPaintingBackground
+        ? this.backgroundCtx
+        : this.foregroundCtx;
+      activeCtx.lineWidth = this.brushSize * 2;
+      activeCtx.lineCap = "round";
+      activeCtx.strokeStyle = this.brushColor;
+      activeCtx.lineTo(x - this.xOffset, y - this.yOffset);
+      activeCtx.stroke();
+      activeCtx.beginPath();
+      activeCtx.moveTo(x - this.xOffset, y - this.yOffset);
+    } else {
+      this.foregroundCtx.beginPath();
+      this.backgroundCtx.beginPath();
+    }
+
+    // Draw layers in correct order
+    ctx.drawImage(this.backgroundCanvas, this.x, this.y);
+    ctx.drawImage(this.foregroundCanvas, this.x, this.y);
+  }
+
+  handleDown() {
+    if (this.isMouseIn()) {
+      this.isPainting = true;
+    }
+  }
+
+  handleClick() {
+    if (this.isMouseIn()) {
+      this.isPainting = false;
+    }
+  }
+
+  clearWithColor(color) {
+    if (this.isPaintingBackground) {
+      // Fill the background with the color
+      this.backgroundCtx.fillStyle = color;
+      this.backgroundCtx.fillRect(0, 0, this.width, this.height);
+    } else {
+      // Fill the background with the color
+      this.backgroundCtx.fillStyle = color;
+      this.backgroundCtx.fillRect(0, 0, this.width, this.height);
+      // Reinitialize foreground to be transparent
+      this.foregroundCtx.clearRect(0, 0, this.width, this.height);
+    }
+  }
+
+  isMouseIn() {
+    const { x, y } = this.mousePos;
+    return (
+      x >= this.x &&
+      x <= this.x + this.width &&
+      y >= this.y &&
+      y <= this.y + this.height
+    );
+  }
+
+  saveTempImage() {
+    this.tempForeground = this.foregroundCanvas.toDataURL();
+    this.tempBackground = this.backgroundCanvas.toDataURL();
+  }
+
+  loadTempImage() {
+    if (this.tempForeground) {
+      let fgImg = new Image();
+      fgImg.src = this.tempForeground;
+      fgImg.onload = () => {
+        this.foregroundCtx.clearRect(0, 0, this.width, this.height);
+        this.foregroundCtx.drawImage(fgImg, 0, 0);
+      };
+    }
+
+    if (this.tempBackground) {
+      let bgImg = new Image();
+      bgImg.src = this.tempBackground;
+      bgImg.onload = () => {
+        this.backgroundCtx.clearRect(0, 0, this.width, this.height);
+        this.backgroundCtx.drawImage(bgImg, 0, 0);
+      };
+    }
+  }
+
+  // send image to be saved by python
+  async sendDrawingToAPI() {
+    const filename = "iToolsPaintedImage";
+    if (!this.paintCanvas) {
+      console.error("Canvas is not initialized.");
+      return;
+    }
+
+    // Convert the canvas content to a data URL
+    const dataURL = this.paintCanvas.toDataURL("image/png");
+
+    // Convert the data URL to a Blob
+    const blob = await fetch(dataURL).then((res) => res.blob());
+
+    // Create a FormData object to send the file
+    const formData = new FormData();
+    formData.append("file", blob, `${filename}.png`);
+
+    // Send the file to the API endpoint
+    try {
+      const response = await api.fetchApi("/itools/request_save_paint", {
+        method: "POST",
+        body: formData,
+      });
+      //console.log(response.json());
+      console.log("Drawing sent successfully.");
+    } catch (error) {
+      console.error("Error sending the drawing:", error);
+    }
+  }
+
+  // request last image saved by python
+  async getDrawingFromAPI() {
+    const filename = "iToolsPaintedImage.png";
+
+    const formData = new FormData();
+    formData.append("filename", filename);
+    try {
+      const response = await api.fetchApi("/itools/request_the_paint_file", {
+        method: "POST",
+        body: formData,
+      });
+
+      console.log("response", response);
+
+      // Ensure the response is properly parsed as JSON
+      const result = await response.json();
+
+      // Check if the response is successful
+      if (result.status === "success") {
+        console.log("Drawing received successfully.", result);
+        this.loadedImage = hexDataToImage(result["data"]);
+      } else {
+        console.error("Error:", result.message);
+      }
+    } catch (error) {
+      console.error("iTools No Temp Drawing Found", error);
+    }
+  }
+}
+
+// export class PaintArea extends BaseSmartWidget {
+//   constructor(x, y, width, height, node) {
+//     super(node);
+
+//     this.x = x;
+//     this.y = y;
+//     this.width = width;
+//     this.height = height;
+
+//     this.yOffset = 80;
+//     this.xOffset = 0;
+//     this.brushSize = 10;
+//     this.brushColor = "crimson";
+//     this.isPainting = false;
+//     this.blockPainting = false;
+//     this.clearColor = "white";
+
+//     this.layer = "foreground"; // Default layer
+//     this.fgCanvas = this.createCanvas();
+//     this.bgCanvas = this.createCanvas();
+//     this.fgCtx = this.fgCanvas.getContext("2d");
+//     this.bgCtx = this.bgCanvas.getContext("2d");
+
+//     this.init();
+
+//     // Add self to the node
+//     node.addCustomWidget(this);
+//   }
+
+//   createCanvas() {
+//     const canvas = document.createElement("canvas");
+//     canvas.width = this.width;
+//     canvas.height = this.height;
+//     return canvas;
+//   }
+
+//   init() {
+//     this.fgCtx.fillStyle = "white";
+//     this.fgCtx.fillRect(0, 0, this.width, this.height);
+//     this.bgCtx.fillStyle = "white";
+//     this.bgCtx.fillRect(0, 0, this.width, this.height);
+//   }
+
+//   draw(ctx) {
+//     const { x, y } = this.mousePos;
+//     this.isDragStarted();
+
+//     // Handle clearing background while keeping foreground
+//     if (this.clearColor !== null) {
+//       this.bgCtx.fillStyle = this.clearColor;
+//       this.bgCtx.fillRect(0, 0, this.width, this.height);
+//       this.clearColor = null;
+//     }
+
+//     // Handle painting
+//     if (this.isPainting && !this.blockPainting) {
+//       const activeCtx = this.layer === "foreground" ? this.fgCtx : this.bgCtx;
+//       activeCtx.lineWidth = this.brushSize * 2;
+//       activeCtx.lineCap = "round";
+//       activeCtx.strokeStyle = this.brushColor;
+
+//       activeCtx.lineTo(x - this.xOffset, y - this.yOffset);
+//       activeCtx.stroke();
+//       activeCtx.beginPath();
+//       activeCtx.moveTo(x - this.xOffset, y - this.yOffset);
+//     } else {
+//       this.fgCtx.beginPath();
+//       this.bgCtx.beginPath();
+//     }
+
+//     // Draw both layers to the main canvas
+//     ctx.drawImage(this.bgCanvas, this.x, this.y);
+//     ctx.drawImage(this.fgCanvas, this.x, this.y);
+//   }
+
+//   switchLayer() {
+//     this.layer = this.layer === "foreground" ? "background" : "foreground";
+//     console.log(`Switched to ${this.layer} layer`);
+//   }
+
+//   handleDown() {
+//     if (this.isMouseIn()) {
+//       this.isPainting = true;
+//     }
+//   }
+
+//   handleClick() {
+//     if (this.isMouseIn()) {
+//       this.isPainting = false;
+//     }
+//   }
+
+//   isMouseIn() {
+//     const { x, y } = this.mousePos;
+//     return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
+//   }
+
+//   //handleMove() {}
+// }
+
+// export class PaintArea extends BaseSmartWidget {
+//   constructor(x, y, width, height, node) {
+//     super(node);
+
+//     this.x = x;
+//     this.y = y;
+//     this.width = width;
+//     this.height = height;
+
+//     this.yOffset = 80;
+//     this.xOffset = 0;
+//     this.brushSize = 10;
+//     this.brushColor = "crimson";
+//     this.isPainting = false;
+//     this.blockPainting = false;
+//     this.clearColor = "white";
+
+//     this.loadedImage = null;
+//     this.init();
+
+//     // add self to the node
+//     node.addCustomWidget(this);
+//   }
+
+//   init() {
+//     // init paint canvas
+//     this.paintCanvas = document.createElement("canvas");
+//     this.paintCanvas.width = this.width; // Match the dimensions of the original canvas
+//     this.paintCanvas.height = this.height;
+//     this.paintCtx = this.paintCanvas.getContext("2d");
+
+//     // Fill the new canvas with a white background
+//     this.paintCtx.fillStyle = "white";
+//     this.paintCtx.fillRect(
+//       this.x,
+//       this.y,
+//       this.paintCanvas.width,
+//       this.paintCanvas.height
+//     );
+//   }
+
+//   draw(ctx) {
+//     const { x, y } = this.mousePos;
+//     this.isDragStarted()
+
+//     // use clear color once
+//     if (this.clearColor !== null) {
+//       this.paintCtx.fillStyle = this.clearColor;
+//       this.paintCtx.fillRect(
+//         0,
+//         0,
+//         this.paintCanvas.width,
+//         this.paintCanvas.height
+//       );
+//       //this.sendDrawingToAPI(); // save after clear
+//       this.clearColor = null;
+//     }
+
+//     // use loaded image once
+//     if (this.loadedImage !== null) {
+//       console.log("loaded image used");
+//       this.paintCtx.drawImage(this.loadedImage, 0, 0);
+//       //ctx.drawImage(this.paintCanvas, 0, 0);
+//       this.loadedImage = null;
+//     }
+
+//     // draw phase
+//     if (this.isPainting && !this.blockPainting) {
+//       // Set the drawing properties
+//       this.paintCtx.lineWidth = this.brushSize * 2;
+//       this.paintCtx.lineCap = "round";
+//       this.paintCtx.strokeStyle = this.brushColor;
+
+//       // Draw on the new canvas
+//       this.paintCtx.lineTo(x - this.xOffset, y - this.yOffset);
+//       this.paintCtx.stroke();
+
+//       this.paintCtx.beginPath();
+//       this.paintCtx.moveTo(x - this.xOffset, y - this.yOffset);
+
+//       // Store the last drawn image
+//       this.lastImage = this.paintCanvas.toDataURL();
+//     } else {
+//       this.paintCtx.beginPath();
+//     }
+//     // keep drawing on screen
+//     ctx.drawImage(this.paintCanvas, this.x, this.y);
+//   }
+
+//   handleDown() {
+//     if (this.isMouseIn()) {
+//       this.isPainting = true;
+//     }
+//   }
+
+//   handleClick() {
+//     if (this.isMouseIn()) {
+//       this.isPainting = false;
+//     }
+//   }
+
+//   handleMove() {}
+
+//   clearWithColor(color){
+//     this.clearColor = color
+//   }
+
+//   isMouseIn() {
+//     const { x, y } = this.mousePos;
+//     return (
+//       x >= this.x &&
+//       x <= this.x + this.width &&
+//       y >= this.y &&
+//       y <= this.y + this.height
+//     );
+//   }
+
+//   saveTempImage() {
+//     console.log("image saved");
+//     this.tempImage = this.paintCanvas.toDataURL();
+//   }
+
+//   loadTempImage() {
+//     let img = new Image();
+//     img.src = this.tempImage;
+//     img.onload = () => {
+//       this.loadedImage = img;
+//     };
+//   }
+
+//   // send image to be saved by python
+//   async sendDrawingToAPI() {
+//     const filename = "iToolsPaintedImage";
+//     if (!this.paintCanvas) {
+//       console.error("Canvas is not initialized.");
+//       return;
+//     }
+
+//     // Convert the canvas content to a data URL
+//     const dataURL = this.paintCanvas.toDataURL("image/png");
+
+//     // Convert the data URL to a Blob
+//     const blob = await fetch(dataURL).then((res) => res.blob());
+
+//     // Create a FormData object to send the file
+//     const formData = new FormData();
+//     formData.append("file", blob, `${filename}.png`);
+
+//     // Send the file to the API endpoint
+//     try {
+//       const response = await api.fetchApi("/itools/request_save_paint", {
+//         method: "POST",
+//         body: formData,
+//       });
+//       //console.log(response.json());
+//       console.log("Drawing sent successfully.");
+//     } catch (error) {
+//       console.error("Error sending the drawing:", error);
+//     }
+//   }
+
+//   // request last image saved by python
+//   async getDrawingFromAPI() {
+//     const filename = "iToolsPaintedImage.png";
+
+//     const formData = new FormData();
+//     formData.append("filename", filename);
+//     try {
+//       const response = await api.fetchApi("/itools/request_the_paint_file", {
+//         method: "POST",
+//         body: formData,
+//       });
+
+//       console.log("response", response);
+
+//       // Ensure the response is properly parsed as JSON
+//       const result = await response.json();
+
+//       // Check if the response is successful
+//       if (result.status === "success") {
+//         console.log("Drawing received successfully.", result);
+//         this.loadedImage = hexDataToImage(result["data"]);
+//       } else {
+//         console.error("Error:", result.message);
+//       }
+//     } catch (error) {
+//       console.error("iTools No Temp Drawing Found", error);
+//     }
+//   }
+// }
 
 // working callback
 
