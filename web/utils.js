@@ -161,11 +161,13 @@ export const Colors = [
     ["4:3", { width: 512, height: 384 }], // Rounded to 512x384 (divisible by 64)
     ["16:9", { width: 512, height: 288 }], // Rounded to 512x288 (divisible by 64)
     ["21:9", { width: 512, height: 219 }], // Rounded to 512x219 (divisible by 64)
-    
-    ["1:1 2x", { width: 1024, height: 1024 }],
-  
+
   ]);
   
+  export const canvasScales = new Map([
+    ["1x", 1],
+    ["2x", 2],
+  ]);
 
 /*
 LiteGraph.NODE_TITLE_COLOR,

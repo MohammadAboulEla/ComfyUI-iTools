@@ -888,7 +888,7 @@ export class SmartPaintArea extends BaseSmartWidget {
     node.addCustomWidget(this);
   }
 
-  setNewSize(size) {
+  setNewSizeOld(size) {
     const newX = size.width;
     const newY = size.height;
     
@@ -932,13 +932,101 @@ export class SmartPaintArea extends BaseSmartWidget {
     this.backgroundCtx.fillStyle = "white";
     this.backgroundCtx.fillRect(0, 0, newX, newY);
   }
+  setNewSize(size, scale) {
+
+    const newX = size.width * scale;
+    const newY = size.height * scale;
+
+    // Store the original dimensions
+    this.originalWidth = newX;
+    this.originalHeight = newY;
+
+    // Determine the scale factor to fit within 512x512
+    const maxPreviewSize = 512;
+    const scaleFactorX = Math.min(1, maxPreviewSize / newX);
+    const scaleFactorY = Math.min(1, maxPreviewSize / newY);
+    this.scaleFactor = Math.min(scaleFactorX, scaleFactorY);
+
+    // Center the canvas on the x and y axis of the node
+    this.x = (this.node.width - newX * this.scaleFactor) / 2;
+    this.y = (this.node.height + this.nodeYoffset - newY * this.scaleFactor) / 2;
+
+    // Update the width and height properties
+    this.width = newX;
+    this.height = newY;
+
+    // Resize the foreground canvas and redraw the content
+    const foregroundImageData = this.foregroundCtx.getImageData(
+        0,
+        0,
+        this.foregroundCanvas.width,
+        this.foregroundCanvas.height
+    );
+    this.foregroundCanvas.width = newX;
+    this.foregroundCanvas.height = newY;
+    this.foregroundCtx.clearRect(0, 0, newX, newY); // Clear before putting image data
+    if (foregroundImageData) {
+        this.foregroundCtx.putImageData(foregroundImageData, 0, 0);
+    }
+
+    // Resize the background canvas and redraw the content
+    const backgroundImageData = this.backgroundCtx.getImageData(
+        0,
+        0,
+        this.backgroundCanvas.width,
+        this.backgroundCanvas.height
+    );
+    this.backgroundCanvas.width = newX;
+    this.backgroundCanvas.height = newY;
+    this.backgroundCtx.clearRect(0, 0, newX, newY); // Clear before putting image data
+    if (backgroundImageData) {
+        this.backgroundCtx.putImageData(backgroundImageData, 0, 0);
+    }
+
+    // Redraw the background with the default color
+    this.backgroundCtx.fillStyle = "white";
+    this.backgroundCtx.fillRect(0, 0, newX, newY);
+}
 
   switchLayer() {
     this.isPaintingBackground = !this.isPaintingBackground;
   }
-
-
   draw(ctx) {
+    const { x, y } = this.mousePos;
+
+    if (this.isPainting && !this.blockPainting) {
+        const activeCtx = this.isPaintingBackground
+            ? this.backgroundCtx
+            : this.foregroundCtx;
+
+        // Scale the brush size and adjust drawing coordinates
+        activeCtx.lineWidth = (this.brushSize * 2) / this.scaleFactor;
+        activeCtx.lineCap = "round";
+        activeCtx.strokeStyle = this.brushColor;
+        activeCtx.lineTo(
+            (x - this.x - this.xOffset) / this.scaleFactor,
+            (y - this.y - this.yOffset) / this.scaleFactor
+        );
+        activeCtx.stroke();
+        activeCtx.beginPath();
+        activeCtx.moveTo(
+            (x - this.x - this.xOffset) / this.scaleFactor,
+            (y - this.y - this.yOffset) / this.scaleFactor
+        );
+    } else {
+        this.foregroundCtx.beginPath();
+        this.backgroundCtx.beginPath();
+    }
+
+    // Draw layers in correct order, applying the scale factor
+    ctx.save();
+    ctx.scale(this.scaleFactor, this.scaleFactor);
+    ctx.drawImage(this.backgroundCanvas, this.x / this.scaleFactor, this.y / this.scaleFactor);
+    ctx.drawImage(this.foregroundCanvas, this.x / this.scaleFactor, this.y / this.scaleFactor);
+    ctx.restore();
+}
+
+  drawOld(ctx) {
     const { x, y } = this.mousePos;
   
     if (this.isPainting && !this.blockPainting) {
@@ -1281,7 +1369,7 @@ export class SmartColorPicker extends BaseSmartWidget {
 }
 
 export class SmartDropdownMenu extends BaseSmartWidget {
-  constructor(x, y, width, height, node, items) {
+  constructor(x, y, width, height, node, title, items) {
     super(node);
     this.x = x;
     this.y = y;
@@ -1289,8 +1377,8 @@ export class SmartDropdownMenu extends BaseSmartWidget {
     this.height = height;
     this.items = items;
     this.isOpen = false;
-    this.selectedItemIndex = -1;
-    this.title = "Canvas";
+    this.selectedItemIndex = 0;
+    this.title = title;
 
     this.handleColor = "#80a1c0";
     this.bgColor = LiteGraph.WIDGET_BGCOLOR || "crimson";

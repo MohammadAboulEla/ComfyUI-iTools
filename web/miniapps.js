@@ -886,3 +886,284 @@ class Example1 {
       this.preview.isMouseIn = true;
     }
   }
+
+  export class SmartScalablePaintArea extends BaseSmartWidget {
+    constructor(x, y, width, height, node) {
+      super(node);
+      
+      // Fixed node display dimensions
+      this.nodeWidth = 512;
+      this.nodeHeight = 512;
+      
+      // Internal canvas dimensions (scaleable)
+      this.canvasWidth = 512;
+      this.canvasHeight = 512;
+  
+      // Position and scaling
+      this.x = x;
+      this.y = y;
+      
+      this.width = width;
+      this.width = height;
+      
+      this.scaleFactor = 1.0;
+      this.nodeYoffset = 80;
+      this.nodeXoffset = 0;
+  
+      // Initialize painting properties
+      this.brushSize = 10;
+      this.brushColor = "crimson";
+      this.isPainting = false;
+      this.blockPainting = false;
+      this.isPaintingBackground = false;
+  
+      // Initialize canvases
+      this.initCanvases();
+  
+      // Event callbacks
+      this.onClick = null;
+      this.onPress = null;
+  
+      node.addCustomWidget(this);
+    }
+  
+    initCanvases() {
+      // Foreground Layer
+      this.foregroundCanvas = document.createElement("canvas");
+      this.foregroundCanvas.width = this.canvasWidth;
+      this.foregroundCanvas.height = this.canvasHeight;
+      this.foregroundCtx = this.foregroundCanvas.getContext("2d");
+  
+      // Background Layer
+      this.backgroundCanvas = document.createElement("canvas");
+      this.backgroundCanvas.width = this.canvasWidth;
+      this.backgroundCanvas.height = this.canvasHeight;
+      this.backgroundCtx = this.backgroundCanvas.getContext("2d");
+      this.backgroundCtx.fillStyle = "white";
+      this.backgroundCtx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+    }
+  
+    setNewSize(size) {
+      // Determine scale factor based on available space
+      this.scaleFactor = (size.width >= 1024 || size.height >= 1024) ? 2 : 1;
+    
+      // Set internal canvas resolution (2x when scaled)
+      const newCanvasWidth = 512 * this.scaleFactor;
+      const newCanvasHeight = 512 * this.scaleFactor;
+    
+      // Preserve and scale existing canvas content
+      this.resizeCanvas(this.foregroundCanvas, this.foregroundCtx, newCanvasWidth, newCanvasHeight);
+      this.resizeCanvas(this.backgroundCanvas, this.backgroundCtx, newCanvasWidth, newCanvasHeight);
+    
+      // Set fixed position within node (0 from left, 80 from top)
+      this.x = 0;
+      this.y = this.nodeYoffset; // 80
+    
+      // Update dimensions
+      this.canvasWidth = newCanvasWidth;
+      this.canvasHeight = newCanvasHeight;
+    }
+    
+    resizeCanvas(canvas, ctx, newWidth, newHeight) {
+      // Create temporary canvas to preserve content
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.drawImage(canvas, 0, 0);
+    
+      // Resize main canvas
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+    
+      // Redraw content with proper scaling
+      ctx.save();
+      ctx.scale(newWidth / tempCanvas.width, newHeight / tempCanvas.height);
+      ctx.drawImage(tempCanvas, 0, 0);
+      ctx.restore();
+    }
+  
+    draw(ctx) {
+      // Apply inverse scaling to fit high-res canvas into node dimensions
+      ctx.save();
+      ctx.scale(1 / this.scaleFactor, 1 / this.scaleFactor);
+  
+      // Draw background layer
+      ctx.drawImage(
+        this.backgroundCanvas,
+        this.x * this.scaleFactor,
+        this.y * this.scaleFactor,
+        this.nodeWidth * this.scaleFactor,
+        this.nodeHeight * this.scaleFactor
+      );
+  
+      // Draw foreground layer
+      ctx.drawImage(
+        this.foregroundCanvas,
+        this.x * this.scaleFactor,
+        this.y * this.scaleFactor,
+        this.nodeWidth * this.scaleFactor,
+        this.nodeHeight * this.scaleFactor
+      );
+  
+      ctx.restore();
+  
+      // Handle painting operations
+      if (this.isPainting && !this.blockPainting) {
+        const { x, y } = this.getScaledMousePosition(ctx);
+        const activeCtx = this.isPaintingBackground
+          ? this.backgroundCtx
+          : this.foregroundCtx;
+  
+        activeCtx.lineWidth = this.brushSize * this.scaleFactor;
+        activeCtx.lineCap = "round";
+        activeCtx.strokeStyle = this.brushColor;
+        activeCtx.lineTo(x, y);
+        activeCtx.stroke();
+        activeCtx.beginPath();
+        activeCtx.moveTo(x, y);
+      } else {
+        this.foregroundCtx.beginPath();
+        this.backgroundCtx.beginPath();
+      }
+    }
+  
+    getScaledMousePosition(ctx) {
+      // Get the mouse position relative to the node
+      const { x, y } = this.mousePos;
+  
+      // Calculate scale factors based on canvas resolution vs displayed size
+      const scaleX = this.canvasWidth / this.nodeWidth; // 1 or 2
+      const scaleY = this.canvasHeight / this.nodeHeight; // 1 or 2
+  
+      // Adjust for the canvas offset within the node (0, 80)
+      const adjustedX = x - 0;
+      const adjustedY = y - this.nodeYoffset;
+  
+      // Scale the coordinates if necessary
+      return {
+        x: adjustedX * scaleX,
+        y: adjustedY * scaleY,
+      };
+    }
+  
+    handleDown() {
+      if (this.isMouseIn()) {
+        this.isPainting = true;
+        if (this.onPress) this.onPress();
+      }
+    }
+  
+    handleClick() {
+      if (this.isMouseIn()) {
+        this.isPainting = false;
+        if (this.onClick) this.onClick();
+      }
+    }
+  
+    isMouseIn() {
+      const { x, y } = this.mousePos;
+      return (
+        x >= this.x &&
+        x <= this.x + this.nodeWidth &&
+        y >= this.y &&
+        y <= this.y + this.nodeHeight
+      );
+    }
+  
+    switchLayer() {
+      this.isPaintingBackground = !this.isPaintingBackground;
+    }
+  
+    clearWithColor(color) {
+      const clearCtx = this.isPaintingBackground
+        ? this.backgroundCtx
+        : this.foregroundCtx;
+      clearCtx.fillStyle = color;
+      clearCtx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+  
+      if (!this.isPaintingBackground) {
+        this.foregroundCtx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+      }
+    }
+  
+    saveTempImage() {
+      this.tempForeground = this.foregroundCanvas.toDataURL();
+      this.tempBackground = this.backgroundCanvas.toDataURL();
+    }
+  
+    loadTempImage() {
+      const loadImage = (src, ctx) => {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+            ctx.drawImage(img, 0, 0, this.canvasWidth, this.canvasHeight);
+            resolve();
+          };
+          img.src = src;
+        });
+      };
+  
+      if (this.tempForeground) {
+        loadImage(this.tempForeground, this.foregroundCtx);
+      }
+      if (this.tempBackground) {
+        loadImage(this.tempBackground, this.backgroundCtx);
+      }
+    }
+  
+    async sendDrawingToAPI() {
+      const filename = "iToolsPaintedImage";
+      try {
+        // Combine layers
+        const combinedCanvas = document.createElement("canvas");
+        combinedCanvas.width = this.canvasWidth;
+        combinedCanvas.height = this.canvasHeight;
+        const combinedCtx = combinedCanvas.getContext("2d");
+  
+        combinedCtx.drawImage(this.backgroundCanvas, 0, 0);
+        combinedCtx.drawImage(this.foregroundCanvas, 0, 0);
+  
+        // Convert to Blob
+        const blob = await new Promise((resolve) =>
+          combinedCanvas.toBlob(resolve, "image/png")
+        );
+  
+        // Send to API
+        const formData = new FormData();
+        formData.append("file", blob, `${filename}.png`);
+  
+        await api.fetchApi("/itools/request_save_paint", {
+          method: "POST",
+          body: formData,
+        });
+        console.log("Drawing sent successfully");
+      } catch (error) {
+        console.error("Error sending drawing:", error);
+      }
+    }
+  
+    async getDrawingFromAPI() {
+      try {
+        const response = await api.fetchApi("/itools/request_the_paint_file", {
+          method: "POST",
+          body: JSON.stringify({ filename: "iToolsPaintedImage.png" }),
+        });
+  
+        const result = await response.json();
+        if (result.status === "success") {
+          const img = hexDataToImage(result.data);
+          this.backgroundCtx.drawImage(
+            img,
+            0,
+            0,
+            this.canvasWidth,
+            this.canvasHeight
+          );
+        }
+      } catch (error) {
+        console.error("Error loading drawing:", error);
+      }
+    }
+  }

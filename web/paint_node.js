@@ -2,7 +2,7 @@ import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
 
-import { Shapes, Colors, lightenColor, canvasRatios } from "./utils.js";
+import { Shapes, Colors, lightenColor, canvasRatios, canvasScales } from "./utils.js";
 import {
   BaseSmartWidgetManager,
   SmartButton,
@@ -242,21 +242,37 @@ app.registerExtension({
       },
     });
 
+    const ratiosArray = Array.from(canvasRatios.entries());
+    const sizesArray = Array.from(canvasScales.entries());
+
     const ratioNames = Array.from(canvasRatios.keys());
-    const dm = new SmartDropdownMenu(55, 60, 75, 15, node, ratioNames);
+    const dmR = new SmartDropdownMenu(55, 60, 40, 15, node,"Ratio", ratioNames);
+
+    const sizeNames = Array.from(canvasScales.keys());
+    const dmS = new SmartDropdownMenu(100, 60, 40, 15, node,"Size", sizeNames);
+
+    dmR.onSelect = () => {
+      const itemA = ratiosArray[dmR.selectedItemIndex][1];
+      const itemB = sizesArray[dmS.selectedItemIndex][1];
+      pa.setNewSize(itemA,itemB)
+      //console.log(itemA,itemB);
+    };
+
+    dmS.onSelect = () => {
+      const itemA = ratiosArray[dmR.selectedItemIndex][1];
+      const itemB = sizesArray[dmS.selectedItemIndex][1];
+      pa.setNewSize(itemA,itemB)
+      //console.log(itemA,itemB);
+    };
+
+
+    // block paint on drop menus
     pa.onPress = () => {
-      if (dm.isOpen) {
+      if (dmR.isOpen || dmS.isOpen) {
         pa.blockPainting = true;
       } else {
         pa.blockPainting = false;
       }
-    };
-    dm.onSelect = () => {
-      const ratiosArray = Array.from(canvasRatios.entries());
-      // Get item by index (e.g., index 2)
-      const item = ratiosArray[dm.selectedItemIndex]; // ["3:2", { width: 512, height: 341 }]
-      console.log('item', item[1]);
-      pa.setNewSize(item[1])
     };
 
     let autoPin = true;
