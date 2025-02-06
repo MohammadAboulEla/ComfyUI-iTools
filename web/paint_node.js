@@ -21,6 +21,7 @@ import {
   SmartCheckBox,
   SmartPaintArea,
   SmartPreview,
+  SmartColorPicker
 } from "./makadi.js";
 
 class PaintToolV1 {
@@ -213,6 +214,8 @@ app.registerExtension({
 
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
     const p = new SmartPreview(0, 80, 512, 512,node);
+    const cp = new SmartColorPicker(0, 80, 200, 200,node);
+    
 
     const ui = new SmartWidget(0, 30, node.width, 50, node, {
       color: lightenColor(LiteGraph.WIDGET_BGCOLOR, 5),
@@ -224,12 +227,15 @@ app.registerExtension({
 
     const bColor = new SmartButton(5, 35, 40, 40, node);
     bColor.shape = Shapes.CIRCLE;
+    bColor.color = "crimson";
     (bColor.allowVisualHover = false),
       (bColor.allowVisualPress = false),
-      (bColor.onClick = () => {
+      (bColor.onPress = () => {
+        cp.open()
         console.log("bColor  clicked");
       });
-
+      
+      
     const brushSlider = new SmartSlider(55, 40, 150, 15, node, {
       minValue: 5,
       maxValue: 100,
@@ -245,9 +251,14 @@ app.registerExtension({
         //console.log("Slider value changed:", value);
       },
     });
-
+    
+    let autoPin = true
     const lbl = new SmartLabel(70, 62.5, 12, 12, node, "Auto Pin");
     const cb = new SmartCheckBox(55, 60 + 2.5, 12, 12, node);
+    cb.onValueChange = ()=>{
+      console.log('switched',);
+      autoPin = cb.isChecked
+    }
 
     const bFill = new SmartButton(215, 35, 40, 15, node, "Fill", {
       withTagWidth: 10,
@@ -331,6 +342,28 @@ app.registerExtension({
         index++; // Increment unique index
       }
     }
+
+
+    //for color picker
+    node.onMouseMove= (e,pos)=>{
+      if(cp.isVisible) {
+        cp.setColorUnderCurser(e)
+        bColor.color = cp.selectedColor;
+        pa.brushColor = cp.selectedColor;
+      }
+      if(pos[1]>30 && autoPin) node.flags.pinned = true; else {
+        node.flags.pinned = false;
+      }
+    }
+    
+    node.onMouseEnter = (e,pos)=>{
+      
+    }
+
+    node.onMouseLeave = (e)=>{
+      if(autoPin) node.flags.pinned = false;
+    }
+
 
     const manager = new BaseSmartWidgetManager(node);
   },

@@ -809,7 +809,9 @@ export class SmartCheckBox extends SmartWidget {
 
   handleMove() {}
 
-  handleClick() {}
+  handleClick() {
+    if(this.onValueChange) this.onValueChange();
+  }
 
   isMouseInHandle() {
     const { x, y } = this.mousePos;
@@ -1028,14 +1030,14 @@ export class SmartPaintArea extends BaseSmartWidget {
 }
 
 export class SmartPreview extends BaseSmartWidget {
-  constructor(x,y,width,height,node) {
+  constructor(x, y, width, height, node) {
     super(node);
-    
+
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
-    
+
     this.brushSize = 10;
     this.color = "rgba(128, 128, 128, 0.2)"; // 50% transparent gray
     this.dashColor = "black";
@@ -1046,7 +1048,7 @@ export class SmartPreview extends BaseSmartWidget {
 
     this.allowInnerCircle = false;
     this.init();
-    
+
     // add self to the node
     node.addCustomWidget(this);
   }
@@ -1068,7 +1070,7 @@ export class SmartPreview extends BaseSmartWidget {
     // if (x > this.widthLimit) return;
     // if (y > this.heightLimit) return;
     if (y < this.yOffset) return;
-    if (!this.isMouseIn(x,y)) return;
+    if (!this.isMouseIn(x, y)) return;
     ctx.beginPath();
     ctx.arc(x, y, this.brushSize, 0, Math.PI * 2);
     ctx.fillStyle = this.allowInnerCircle
@@ -1083,8 +1085,141 @@ export class SmartPreview extends BaseSmartWidget {
     ctx.stroke();
     ctx.setLineDash([]); // Reset line dash to solid
   }
-  isMouseIn( x, y) {
-   
+  isMouseIn(x, y) {
+    return (
+      x >= this.x &&
+      x <= this.x + this.width &&
+      y >= this.y &&
+      y <= this.y + this.height
+    );
+  }
+}
+
+export class SmartColorPicker extends BaseSmartWidget {
+  constructor(x, y, width, height, node) {
+    super(node);
+
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    
+    this.ctx = null;
+    this.heightDisplay = 20;
+    this.selectedColor = null;
+    this.isVisible = false;
+    this.allowDisplayColor = true;
+    this.isSelecting = false;
+
+    // Add self to the node
+    node.addCustomWidget(this);
+  }
+
+  open() {
+    this.isVisible = true;
+  }
+
+  close() {
+    this.isVisible = false;
+    this.isSelecting = false;
+  }
+
+  handleMove(e){
+    if(!this.isMouseDown()){
+      this.isVisible = false;
+      this.isSelecting = false;
+    } else{
+      this.isSelecting = true;
+    }
+  }
+
+
+  toggleShow() {
+    this.isVisible = !this.isVisible;
+  }
+
+  draw(ctx) {
+    if (!this.isVisible) return;
+    // Ensure the context is set
+    if (this.ctx === null) this.ctx = ctx;
+
+    // Create a horizontal gradient for hue
+    const hueGradient = ctx.createLinearGradient(
+      this.x,
+      this.y,
+      this.x + this.width,
+      this.y
+    );
+    hueGradient.addColorStop(0, "red");
+    hueGradient.addColorStop(0.17, "orange");
+    hueGradient.addColorStop(0.34, "yellow");
+    hueGradient.addColorStop(0.51, "green");
+    hueGradient.addColorStop(0.68, "blue");
+    hueGradient.addColorStop(0.85, "indigo");
+    hueGradient.addColorStop(1, "violet");
+
+    // Fill the canvas with the hue gradient
+    ctx.fillStyle = hueGradient;
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    // Create a vertical gradient for brightness
+    const brightnessGradient = ctx.createLinearGradient(
+      this.x,
+      this.y,
+      this.x,
+      this.y + this.height
+    );
+    brightnessGradient.addColorStop(0, "rgba(255, 255, 255, 1)"); // White
+    brightnessGradient.addColorStop(0.5, "rgba(255, 255, 255, 0)"); // Transparent
+    brightnessGradient.addColorStop(0.5, "rgba(0, 0, 0, 0)"); // Transparent
+    brightnessGradient.addColorStop(1, "rgba(0, 0, 0, 1)"); // Black
+
+    // Use global composite operation to blend the gradients
+    ctx.globalCompositeOperation = "multiply";
+    ctx.fillStyle = brightnessGradient;
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    // Reset the global composite operation to default
+    ctx.globalCompositeOperation = "source-over";
+
+    if (this.allowDisplayColor) this.displaySelectedColor(ctx);
+  }
+
+  setColorUnderCurser(event) {
+    if(!this.isSelecting) return;
+    if (!this.ctx) return;
+    const rect = this.ctx.canvas.getBoundingClientRect();
+    const scaleX = this.ctx.canvas.width / rect.width;
+    const scaleY = this.ctx.canvas.height / rect.height;
+    
+    const canvasX = (event.clientX - rect.left) * scaleX;
+    const canvasY = (event.clientY - rect.top) * scaleY;
+    
+    const pixel = this.ctx.getImageData(canvasX, canvasY, 1, 1).data;
+    this.selectedColor = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+  }
+
+  displaySelectedColor(ctx) {
+    // // Clear a small area below the canvas to display the selected color
+    // this.ctx.clearRect(0, this.canvas.height - 30, this.canvas.width, 30); // Adjusted coordinates
+    //if(!this.selectedColor) return;
+    ctx.fillStyle = this.selectedColor;
+    ctx.fillRect(
+      this.x,
+      this.y + this.height,
+      this.width,
+      this.heightDisplay
+    ); // Adjusted coordinates
+    // // Add text to show the RGB value
+    // this.ctx.fillStyle = "#000";
+    // this.ctx.font = "16px Arial";
+    // this.ctx.fillText(
+    //   `Selected Color: ${this.selectedColor}`,
+    //   10,
+    //   this.canvas.height - 10
+    // ); // Adjusted coordinates
+  }
+  isMouseIn(x, y) {
     return (
       x >= this.x &&
       x <= this.x + this.width &&
