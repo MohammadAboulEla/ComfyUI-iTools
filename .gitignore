@@ -10,5 +10,5 @@ __pycache__
 !original.yaml
 
 # ignore painted image
-backend/iToolsPaintedImage_foreground.png
-backend/iToolsPaintedImage_background.png
+iToolsPaintedImage_background.png
+iToolsPaintedImage_foreground.png
