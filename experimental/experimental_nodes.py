@@ -131,63 +131,125 @@ class IToolsPaintNode:
     DESCRIPTION = ("Will paint")
 
     def paint_func(self, **kwargs):
-        image_path = os.path.join(project_dir, "examples")
-        image_path = os.path.join(image_path, "iToolsPaintedImage.png")
-        img = Image.open(image_path)
-
-        # # Define crop box (left, upper, right, lower)
-        # width, height = img.size  # (512, 592)
-        # crop_box = (0, height - 512, 512, height)  # Crop from bottom
-
-        # # Crop the image
-        # cropped_image = img.crop(crop_box)
-        result = [img]        
+        save_directory = os.path.join(project_dir, "backend")
+        background_path = os.path.join(save_directory, "iToolsPaintedImage_background.png")
+        foreground_path = os.path.join(save_directory, "iToolsPaintedImage_foreground.png")
+        background_img = Image.open(background_path)
+        foreground_img = Image.open(foreground_path)
+        
+        # Overlay the foreground onto the background
+        final_img = Image.alpha_composite(background_img, foreground_img)
+        
+        result = [final_img]        
         return pil2tensor(result)
 
     def IS_CHANGED(cls,):
         return True
 
+# @PromptServer.instance.routes.post("/itools/request_save_paint")
+# async def respond_to_request_save_paint(request):
+#     post = await request.post()
+
+#     # Get the uploaded file
+#     file_item = post["file"]
+
+#     # Define the directory where the image will be saved
+#     # save_directory = folder_paths.temp_directory
+
+#     save_directory = os.path.join(project_dir, "backend")
+    
+#     # Define the file path
+#     file_path = os.path.join(save_directory, file_item.filename)
+
+#     # Save the file
+#     with open(file_path, "wb") as f:
+#         f.write(file_item.file.read())
+
+#     return web.json_response({"status": "success", "file": file_path,})
+
+# @PromptServer.instance.routes.post("/itools/request_the_paint_file")
+# async def respond_to_request_the_paint_file(request):
+#     post = await request.post()
+    
+#     file_item = post["filename"]
+#     # Define the directory where the image is saved
+#     # save_directory = folder_paths.temp_directory
+#     save_directory = os.path.join(project_dir, "backend")
+#     file_path = os.path.join(save_directory, file_item)
+    
+#     # Check if file exists
+#     if not os.path.exists(file_path):
+#         return web.json_response({"status": "error", "message": "File not found"}, status=404)
+
+#     print("iTools file exist")
+    
+#     # Read the file
+#     with open(file_path, "rb") as f:
+#         file_data = f.read()
+
+#     return web.json_response({"status": "success", "file": file_path, "data": file_data.hex()})
+   
 @PromptServer.instance.routes.post("/itools/request_save_paint")
 async def respond_to_request_save_paint(request):
     post = await request.post()
 
-    # Get the uploaded file
-    file_item = post["file"]
+    # Get the uploaded files
+    foreground_file = post.get("foreground")
+    background_file = post.get("background")
 
-    # Define the directory where the image will be saved
-    # save_directory = folder_paths.temp_directory
+    if not foreground_file or not background_file:
+        return web.json_response({"status": "error", "message": "Missing foreground or background file"}, status=400)
 
-    save_directory = os.path.join(project_dir, "examples")
+    # Define the directory where the images will be saved
+    save_directory = os.path.join(project_dir, "backend")
+    #os.makedirs(save_directory, exist_ok=True)
+
+    # Save the foreground file
+    foreground_path = os.path.join(save_directory, foreground_file.filename)
+    with open(foreground_path, "wb") as f:
+        f.write(foreground_file.file.read())
+
+    # Save the background file
+    background_path = os.path.join(save_directory, background_file.filename)
+    with open(background_path, "wb") as f:
+        f.write(background_file.file.read())
+
+    return web.json_response({
+        "status": "success",
+        "foreground": foreground_path,
+        "background": background_path
+    })
     
-    # Define the file path
-    file_path = os.path.join(save_directory, file_item.filename)
-
-    # Save the file
-    with open(file_path, "wb") as f:
-        f.write(file_item.file.read())
-
-    return web.json_response({"status": "success", "file": file_path,})
-
 @PromptServer.instance.routes.post("/itools/request_the_paint_file")
 async def respond_to_request_the_paint_file(request):
     post = await request.post()
-    
-    file_item = post["filename"]
-    # Define the directory where the image is saved
-    # save_directory = folder_paths.temp_directory
-    save_directory = os.path.join(project_dir, "examples")
-    file_path = os.path.join(save_directory, file_item)
-    
-    # Check if file exists
-    if not os.path.exists(file_path):
+
+    filename_prefix = post.get("filename_prefix")
+    if not filename_prefix:
+        return web.json_response({"status": "error", "message": "Filename prefix is required"}, status=400)
+
+    # Define the directory where the images are saved
+    save_directory = os.path.join(project_dir, "backend")
+
+    # Define file paths
+    foreground_path = os.path.join(save_directory, f"{filename_prefix}_foreground.png")
+    background_path = os.path.join(save_directory, f"{filename_prefix}_background.png")
+
+    # Check if both files exist
+    if not os.path.exists(foreground_path) or not os.path.exists(background_path):
         return web.json_response({"status": "error", "message": "File not found"}, status=404)
 
-    print("iTools file exist")
-    
-    # Read the file
-    with open(file_path, "rb") as f:
-        file_data = f.read()
+    # Read the files
+    with open(foreground_path, "rb") as fg_file:
+        foreground_data = fg_file.read()
 
-    return web.json_response({"status": "success", "file": file_path, "data": file_data.hex()})
-   
-    
+    with open(background_path, "rb") as bg_file:
+        background_data = bg_file.read()
+
+    return web.json_response({
+        "status": "success",
+        "data": {
+            "foreground": foreground_data.hex(),
+            "background": background_data.hex()
+        }
+    })      

@@ -2,7 +2,7 @@ import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
 
-import { Shapes, Colors, lightenColor, canvasRatios, canvasScales } from "./utils.js";
+import { Shapes, Colors, lightenColor, canvasRatios, canvasScales,commonColors } from "./utils.js";
 import {
   BaseSmartWidgetManager,
   SmartButton,
@@ -195,10 +195,8 @@ app.registerExtension({
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
     node.setSize([512, 592]);
-    //node.pos = [0, 0];
-    //node.resizable = false;
-    node.setDirtyCanvas(true, true);
-    //node.bgcolor = LiteGraph.NODE_DEFAULT_BGCOLOR;
+    node.resizable = false;
+    node.setDirtyCanvas(false, true);
     if (allow_debug) {
       console.log("node", node);
       console.log("app.canvas", app.canvas);
@@ -216,6 +214,14 @@ app.registerExtension({
       allowVisualHover: false,
       outline: false,
     });
+
+    // const ui2 = new SmartWidget(0, 0, node.width - 60, 50, node, {
+    //   color: lightenColor(LiteGraph.WIDGET_BGCOLOR, 5),
+    //   shape: Shapes.SQUARE,
+    //   allowVisualPress: false,
+    //   allowVisualHover: false,
+    //   outline: false,
+    // });
 
     const bColor = new SmartButton(5, 35, 40, 40, node);
     bColor.shape = Shapes.CIRCLE;
@@ -249,7 +255,7 @@ app.registerExtension({
     const dmR = new SmartDropdownMenu(55, 60, 40, 15, node,"Ratio", ratioNames);
 
     const sizeNames = Array.from(canvasScales.keys());
-    const dmS = new SmartDropdownMenu(100, 60, 40, 15, node,"Size", sizeNames);
+    const dmS = new SmartDropdownMenu(55 + 45, 60, 40, 15, node,"Size", sizeNames);
 
     dmR.onSelect = () => {
       const itemA = ratiosArray[dmR.selectedItemIndex][1];
@@ -273,6 +279,21 @@ app.registerExtension({
       } else {
         pa.blockPainting = false;
       }
+    };
+
+    const bUndo = new SmartButton(185 - 25, 60, 20, 15, node, "↺", {
+      textXoffset: 0,
+    });
+    bUndo.onClick = () => {
+      pa.undo();
+    };
+
+    
+    const bRedo = new SmartButton(185, 60, 20, 15, node, "↻", {
+      textXoffset: 0,
+    });
+    bRedo.onClick = () => {
+      pa.redo();
     };
 
     let autoPin = true;
@@ -304,6 +325,7 @@ app.registerExtension({
     bFetch.onClick = () => {
       pa.loadTempImage();
     };
+    
 
     const bClear = new SmartButton(
       215 + 45 + 45 + 45,
@@ -320,6 +342,8 @@ app.registerExtension({
       pa.clearWithColor("white");
     };
 
+
+
     const layerSwitch = new SmartSwitch(215, 55, 175, 20, node);
     layerSwitch.textOn = "Foreground";
     layerSwitch.textOff = "Background";
@@ -327,20 +351,7 @@ app.registerExtension({
       pa.switchLayer();
     };
 
-    const bh = []; // Declare an array
-    const commonColors = [
-      "#000000", // Black
-      "#FFFFFF", // White
-      "#FF0000", // Red
-      "#0000FF", // Blue
-      "#008000", // Green
-      "#FFFF00", // Yellow
-      "#FFA500", // Orange
-      "#800080", // Purple
-      "#A52A2A", // Brown
-      "#808080", // Gray
-    ];
-
+    const bh = []; 
     let index = 0; // Unique index for bh array
 
     for (let i = 1; i < 6; i++) {
@@ -376,17 +387,23 @@ app.registerExtension({
         bColor.color = cp.selectedColor;
         pa.brushColor = cp.selectedColor;
       }
-      if (pos[1] > 30 && autoPin) node.flags.pinned = true;
-      else {
-        node.flags.pinned = false;
-      }
     };
 
     node.onMouseEnter = (e, pos) => {};
 
     node.onMouseLeave = (e) => {
-      if (autoPin) node.flags.pinned = false;
+
+      pa.sendDrawingToAPI();
+
     };
+
+    app.canvas.canvas.onkeydown = (event) => {
+      if (event.ctrlKey && event.key === 'z') {
+        console.log("Ctrl+Z was pressed");
+        event.preventDefault();
+        
+    }
+  }
 
     const manager = new BaseSmartWidgetManager(node);
   },

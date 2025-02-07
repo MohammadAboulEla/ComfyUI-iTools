@@ -857,9 +857,9 @@ export class SmartPaintArea extends BaseSmartWidget {
     this.yOffset = 0;
     this.xOffset = 0;
 
-    this.nodeYoffset = 80
-    this.nodeXoffset = 0
-    
+    this.nodeYoffset = 80;
+    this.nodeXoffset = 0;
+
     this.brushSize = 10;
     this.brushColor = "crimson";
     this.isPainting = false;
@@ -870,70 +870,37 @@ export class SmartPaintArea extends BaseSmartWidget {
     this.foregroundCanvas = document.createElement("canvas");
     this.foregroundCanvas.width = this.width;
     this.foregroundCanvas.height = this.height;
-    this.foregroundCtx = this.foregroundCanvas.getContext("2d");
+    this.foregroundCtx = this.foregroundCanvas.getContext("2d", {
+      willReadFrequently: true,
+    });
 
     // Background Layer
     this.backgroundCanvas = document.createElement("canvas");
     this.backgroundCanvas.width = this.width;
     this.backgroundCanvas.height = this.height;
-    this.backgroundCtx = this.backgroundCanvas.getContext("2d");
+    this.backgroundCtx = this.backgroundCanvas.getContext("2d", {
+      willReadFrequently: true,
+    });
     this.backgroundCtx.fillStyle = "white";
     this.backgroundCtx.fillRect(0, 0, this.width, this.height);
 
     this.onClick = null;
     this.onPress = null;
 
-    this.scaleFactor = 1.0
+    this.scaleFactor = 1.0;
+
+    // Initialize undo and redo stacks
+    this.undoStack = [];
+    this.redoStack = [];
+    this.maxUndoSteps = 10; // Limit undo steps to 10
+
+    // Load saved drawing after initialization
+    this.getDrawingFromAPI();
 
     node.addCustomWidget(this);
   }
 
-  setNewSizeOld(size) {
-    const newX = size.width;
-    const newY = size.height;
-    
-    if(newX >=1024 || newY >= 1024){
-      this.scaleFactor = 2;
-    }else {
-      this.scaleFactor = 1;
-    }
-
-    // Center the canvas on the x and y axis of the node
-    this.x = (this.node.width - newX) / 2;
-    this.y = (this.node.height + this.nodeYoffset -  newY) / 2;
-
-    // Update the width and height properties
-    this.width = newX;
-    this.height = newY;
-
-    // Resize the foreground canvas and redraw the content
-    const foregroundImageData = this.foregroundCtx.getImageData(
-      0,
-      0,
-      this.foregroundCanvas.width,
-      this.foregroundCanvas.height
-    );
-    this.foregroundCanvas.width = newX;
-    this.foregroundCanvas.height = newY;
-    this.foregroundCtx.putImageData(foregroundImageData, 0, 0);
-
-    // Resize the background canvas and redraw the content
-    const backgroundImageData = this.backgroundCtx.getImageData(
-      0,
-      0,
-      this.backgroundCanvas.width,
-      this.backgroundCanvas.height
-    );
-    this.backgroundCanvas.width = newX;
-    this.backgroundCanvas.height = newY;
-    this.backgroundCtx.putImageData(backgroundImageData, 0, 0);
-
-    // Redraw the background with the default color
-    this.backgroundCtx.fillStyle = "white";
-    this.backgroundCtx.fillRect(0, 0, newX, newY);
-  }
   setNewSize(size, scale) {
-
     const newX = size.width * scale;
     const newY = size.height * scale;
 
@@ -949,7 +916,8 @@ export class SmartPaintArea extends BaseSmartWidget {
 
     // Center the canvas on the x and y axis of the node
     this.x = (this.node.width - newX * this.scaleFactor) / 2;
-    this.y = (this.node.height + this.nodeYoffset - newY * this.scaleFactor) / 2;
+    this.y =
+      (this.node.height + this.nodeYoffset - newY * this.scaleFactor) / 2;
 
     // Update the width and height properties
     this.width = newX;
@@ -957,101 +925,103 @@ export class SmartPaintArea extends BaseSmartWidget {
 
     // Resize the foreground canvas and redraw the content
     const foregroundImageData = this.foregroundCtx.getImageData(
-        0,
-        0,
-        this.foregroundCanvas.width,
-        this.foregroundCanvas.height
+      0,
+      0,
+      this.foregroundCanvas.width,
+      this.foregroundCanvas.height
     );
     this.foregroundCanvas.width = newX;
     this.foregroundCanvas.height = newY;
     this.foregroundCtx.clearRect(0, 0, newX, newY); // Clear before putting image data
     if (foregroundImageData) {
-        this.foregroundCtx.putImageData(foregroundImageData, 0, 0);
+      this.foregroundCtx.putImageData(foregroundImageData, 0, 0);
     }
 
     // Resize the background canvas and redraw the content
     const backgroundImageData = this.backgroundCtx.getImageData(
-        0,
-        0,
-        this.backgroundCanvas.width,
-        this.backgroundCanvas.height
+      0,
+      0,
+      this.backgroundCanvas.width,
+      this.backgroundCanvas.height
     );
     this.backgroundCanvas.width = newX;
     this.backgroundCanvas.height = newY;
     this.backgroundCtx.clearRect(0, 0, newX, newY); // Clear before putting image data
     if (backgroundImageData) {
-        this.backgroundCtx.putImageData(backgroundImageData, 0, 0);
+      this.backgroundCtx.putImageData(backgroundImageData, 0, 0);
     }
 
-    // Redraw the background with the default color
-    this.backgroundCtx.fillStyle = "white";
-    this.backgroundCtx.fillRect(0, 0, newX, newY);
-}
+    // // Redraw the background with the default color
+    // this.backgroundCtx.fillStyle = "white";
+    // this.backgroundCtx.fillRect(0, 0, newX, newY);
+    // Redraw the background with the default color only on transparent parts
+    const backgroundData = this.backgroundCtx.getImageData(0, 0, newX, newY);
+    const data = backgroundData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      // If the alpha channel (data[i + 3]) is less than fully opaque (255), set it to white
+      if (data[i + 3] < 255) {
+        data[i] = 255; // Red channel
+        data[i + 1] = 255; // Green channel
+        data[i + 2] = 255; // Blue channel
+        data[i + 3] = 255; // Alpha channel (fully opaque)
+      }
+    }
+
+    this.backgroundCtx.putImageData(backgroundData, 0, 0);
+  }
 
   switchLayer() {
     this.isPaintingBackground = !this.isPaintingBackground;
   }
   draw(ctx) {
-    const { x, y } = this.mousePos;
+    const { x, y } = this.mousePos; // remove this
 
     if (this.isPainting && !this.blockPainting) {
-        const activeCtx = this.isPaintingBackground
-            ? this.backgroundCtx
-            : this.foregroundCtx;
+      const activeCtx = this.isPaintingBackground
+        ? this.backgroundCtx
+        : this.foregroundCtx;
 
-        // Scale the brush size and adjust drawing coordinates
-        activeCtx.lineWidth = (this.brushSize * 2) / this.scaleFactor;
-        activeCtx.lineCap = "round";
-        activeCtx.strokeStyle = this.brushColor;
-        activeCtx.lineTo(
-            (x - this.x - this.xOffset) / this.scaleFactor,
-            (y - this.y - this.yOffset) / this.scaleFactor
-        );
-        activeCtx.stroke();
-        activeCtx.beginPath();
-        activeCtx.moveTo(
-            (x - this.x - this.xOffset) / this.scaleFactor,
-            (y - this.y - this.yOffset) / this.scaleFactor
-        );
+      // Scale the brush size and adjust drawing coordinates
+      activeCtx.lineWidth = (this.brushSize * 2) / this.scaleFactor;
+      activeCtx.lineCap = "round";
+      activeCtx.strokeStyle = this.brushColor;
+      activeCtx.lineTo(
+        (x - this.x - this.xOffset) / this.scaleFactor,
+        (y - this.y - this.yOffset) / this.scaleFactor
+      );
+      activeCtx.stroke();
+      activeCtx.beginPath();
+      activeCtx.moveTo(
+        (x - this.x - this.xOffset) / this.scaleFactor,
+        (y - this.y - this.yOffset) / this.scaleFactor
+      );
     } else {
-        this.foregroundCtx.beginPath();
-        this.backgroundCtx.beginPath();
+      this.foregroundCtx.beginPath();
+      this.backgroundCtx.beginPath();
     }
 
     // Draw layers in correct order, applying the scale factor
     ctx.save();
     ctx.scale(this.scaleFactor, this.scaleFactor);
-    ctx.drawImage(this.backgroundCanvas, this.x / this.scaleFactor, this.y / this.scaleFactor);
-    ctx.drawImage(this.foregroundCanvas, this.x / this.scaleFactor, this.y / this.scaleFactor);
+    ctx.drawImage(
+      this.backgroundCanvas,
+      this.x / this.scaleFactor,
+      this.y / this.scaleFactor
+    );
+    ctx.drawImage(
+      this.foregroundCanvas,
+      this.x / this.scaleFactor,
+      this.y / this.scaleFactor
+    );
     ctx.restore();
-}
-
-  drawOld(ctx) {
-    const { x, y } = this.mousePos;
-  
-    if (this.isPainting && !this.blockPainting) {
-      const activeCtx = this.isPaintingBackground
-        ? this.backgroundCtx
-        : this.foregroundCtx;
-      activeCtx.lineWidth = this.brushSize * 2;
-      activeCtx.lineCap = "round";
-      activeCtx.strokeStyle = this.brushColor;
-      activeCtx.lineTo(x - this.x - this.xOffset, y - this.y - this.yOffset); // Adjust for canvas position and offsets
-      activeCtx.stroke();
-      activeCtx.beginPath();
-      activeCtx.moveTo(x - this.x - this.xOffset, y - this.y - this.yOffset); // Adjust for canvas position and offsets
-    } else {
-      this.foregroundCtx.beginPath();
-      this.backgroundCtx.beginPath();
-    }
-  
-    // Draw layers in correct order
-    ctx.drawImage(this.backgroundCanvas, this.x, this.y);
-    ctx.drawImage(this.foregroundCanvas, this.x, this.y);
   }
 
   handleDown() {
     if (this.isMouseIn()) {
+      // Save the current state before starting to paint
+      //this.saveState();
+      this.commitChange();
       this.isPainting = true;
       if (this.onPress) this.onPress();
     }
@@ -1070,9 +1040,9 @@ export class SmartPaintArea extends BaseSmartWidget {
       this.backgroundCtx.fillStyle = color;
       this.backgroundCtx.fillRect(0, 0, this.width, this.height);
     } else {
-      // Fill the background with the color
-      this.backgroundCtx.fillStyle = color;
-      this.backgroundCtx.fillRect(0, 0, this.width, this.height);
+      // // Fill the background with the color
+      // this.backgroundCtx.fillStyle = color;
+      // this.backgroundCtx.fillRect(0, 0, this.width, this.height);
       // Reinitialize foreground to be transparent
       this.foregroundCtx.clearRect(0, 0, this.width, this.height);
     }
@@ -1113,8 +1083,118 @@ export class SmartPaintArea extends BaseSmartWidget {
     }
   }
 
-  // send image to be saved by python
+  /* post structure
+  {
+  "status": "success",
+  "data": {
+    "foreground": "base64_encoded_string_of_foreground_image",
+    "background": "base64_encoded_string_of_background_image"
+    }
+  }
+  */
+
+  // send foreground/background images to be saved by python
   async sendDrawingToAPI() {
+    const filenamePrefix = "iToolsPaintedImage";
+
+    // Convert both foreground and background canvases to data URLs
+    const foregroundDataURL = this.foregroundCanvas.toDataURL("image/png");
+    const backgroundDataURL = this.backgroundCanvas.toDataURL("image/png");
+
+    // Convert data URLs to Blobs
+    const foregroundBlob = await fetch(foregroundDataURL).then((res) =>
+      res.blob()
+    );
+    const backgroundBlob = await fetch(backgroundDataURL).then((res) =>
+      res.blob()
+    );
+
+    // Create a FormData object to send both files
+    const formData = new FormData();
+    formData.append(
+      "foreground",
+      foregroundBlob,
+      `${filenamePrefix}_foreground.png`
+    );
+    formData.append(
+      "background",
+      backgroundBlob,
+      `${filenamePrefix}_background.png`
+    );
+
+    try {
+      // Send the file to the API endpoint
+      const response = await api.fetchApi("/itools/request_save_paint", {
+        method: "POST",
+        body: formData,
+      });
+      console.log("Drawing sent successfully.");
+    } catch (error) {
+      console.error("Error sending the drawing:", error);
+    }
+  }
+  //get foreground/background images from python
+  async getDrawingFromAPI() {
+    const filenamePrefix = "iToolsPaintedImage";
+
+    const formData = new FormData();
+    formData.append("filename_prefix", filenamePrefix);
+
+    try {
+      const response = await api.fetchApi("/itools/request_the_paint_file", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        const { foreground, background } = result.data;
+
+        // Helper function to convert hex to base64
+        function hexToBase64(hexString) {
+          const bytes = [];
+          for (let c = 0; c < hexString.length; c += 2) {
+            bytes.push(parseInt(hexString.substr(c, 2), 16));
+          }
+          return btoa(String.fromCharCode(...bytes)); // Convert to base64
+        }
+
+        // Load the foreground image
+        const fgImg = new Image();
+        fgImg.src = `data:image/png;base64,${hexToBase64(foreground)}`;
+        fgImg.onload = () => {
+          this.foregroundCtx.clearRect(0, 0, this.width, this.height);
+          this.foregroundCtx.drawImage(fgImg, 0, 0);
+        };
+
+        // Load the background image
+        const bgImg = new Image();
+        bgImg.src = `data:image/png;base64,${hexToBase64(background)}`;
+        bgImg.onload = () => {
+          this.backgroundCtx.clearRect(0, 0, this.width, this.height);
+          this.backgroundCtx.drawImage(bgImg, 0, 0);
+        };
+
+        console.log("Drawing received successfully.");
+      } else {
+        console.error("Error:", result.message);
+      }
+    } catch (error) {
+      console.error("Error fetching the drawing:", error);
+    }
+  }
+
+  // Check if both images are loaded
+  checkImagesLoaded() {
+    if (this.isForegroundLoaded && this.isBackgroundLoaded) {
+      this.lastImageLoaded = true; // Mark as fully loaded
+      console.log("All images loaded successfully.");
+    }
+  }
+
+  //DEPRECATED
+  async sendDrawingToAPI_Single() {
     const filename = "iToolsPaintedImage";
     if (!this.paintCanvas) {
       console.error("Canvas is not initialized.");
@@ -1143,9 +1223,8 @@ export class SmartPaintArea extends BaseSmartWidget {
       console.error("Error sending the drawing:", error);
     }
   }
-
-  // request last image saved by python
-  async getDrawingFromAPI() {
+  // DEPRECATED
+  async getDrawingFromAPI_Single() {
     const filename = "iToolsPaintedImage.png";
 
     const formData = new FormData();
@@ -1171,6 +1250,76 @@ export class SmartPaintArea extends BaseSmartWidget {
     } catch (error) {
       console.error("iTools No Temp Drawing Found", error);
     }
+  }
+
+  // Save the current state of the canvases to the undo stack
+  saveState() {
+    if (this.undoStack.length >= this.maxUndoSteps) {
+      // Remove the oldest state if the stack exceeds the limit
+      this.undoStack.shift();
+    }
+    // Save the current state to the undo stack
+    this.undoStack.push({
+      foreground: this.foregroundCanvas.toDataURL(),
+      background: this.backgroundCanvas.toDataURL(),
+    });
+    // Clear the redo stack when a new state is saved
+    this.redoStack = [];
+  }
+
+  // Load a saved state from the undo stack
+  loadState(state) {
+    if (state.foreground) {
+      let fgImg = new Image();
+      fgImg.src = state.foreground;
+      fgImg.onload = () => {
+        this.foregroundCtx.clearRect(0, 0, this.width, this.height);
+        this.foregroundCtx.drawImage(fgImg, 0, 0);
+      };
+    }
+    if (state.background) {
+      let bgImg = new Image();
+      bgImg.src = state.background;
+      bgImg.onload = () => {
+        this.backgroundCtx.clearRect(0, 0, this.width, this.height);
+        this.backgroundCtx.drawImage(bgImg, 0, 0);
+      };
+    }
+  }
+
+  // Undo the last action
+  undo() {
+    if (this.undoStack.length > 0) {
+      // Push the current state to the redo stack
+      this.redoStack.push({
+        foreground: this.foregroundCanvas.toDataURL(),
+        background: this.backgroundCanvas.toDataURL(),
+      });
+
+      // Pop the last state from the undo stack and apply it
+      const lastState = this.undoStack.pop();
+      this.loadState(lastState);
+    }
+  }
+
+  // Redo the last undone action
+  redo() {
+    if (this.redoStack.length > 0) {
+      // Pop the last state from the redo stack and apply it
+      const lastState = this.redoStack.pop();
+      this.loadState(lastState);
+
+      // Push the current state back to the undo stack
+      this.undoStack.push({
+        foreground: this.foregroundCanvas.toDataURL(),
+        background: this.backgroundCanvas.toDataURL(),
+      });
+    }
+  }
+
+  // Call this function whenever a change is made to the canvas
+  commitChange() {
+    this.saveState();
   }
 }
 
@@ -1237,6 +1386,20 @@ export class SmartPreview extends BaseSmartWidget {
       y >= this.y &&
       y <= this.y + this.height
     );
+  }
+  handleMove() {
+    // AUTO PIN
+    const safeZone = 50;
+    const { x, y } = this.mousePos;
+    if (y > 30 && y < this.node.height + safeZone) {
+      if (x > this.node.width + safeZone || x < -safeZone) {
+        this.node.flags.pinned = false;
+      } else {
+        this.node.flags.pinned = true;
+      }
+    } else {
+      this.node.flags.pinned = false;
+    }
   }
 }
 
