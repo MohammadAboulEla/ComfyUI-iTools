@@ -2,7 +2,14 @@ import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
 
-import { Shapes, Colors, lightenColor, canvasRatios, canvasScales,commonColors } from "./utils.js";
+import {
+  Shapes,
+  Colors,
+  lightenColor,
+  canvasRatios,
+  canvasScales,
+  commonColors,
+} from "./utils.js";
 import {
   BaseSmartWidgetManager,
   SmartButton,
@@ -48,7 +55,7 @@ class PaintToolV1 {
     this.node.addCustomWidget(this.pa);
 
     // Color Picker
-    this.cp = new ColorPicker(512 - 100, 80, 100, 100);
+    this.cp = new ColorPicker(512 - 100, 80, 50, 50);
     this.node.addCustomWidget(this.cp);
 
     // Color Button
@@ -205,7 +212,7 @@ app.registerExtension({
 
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
     const p = new SmartPreview(0, 80, 512, 512, node);
-    const cp = new SmartColorPicker(0, 80, 200, 200, node);
+    const cp = new SmartColorPicker(0, 80, 170, 170, node);
 
     const ui = new SmartWidget(0, 30, node.width, 50, node, {
       color: lightenColor(LiteGraph.WIDGET_BGCOLOR, 5),
@@ -234,7 +241,7 @@ app.registerExtension({
       });
 
     const brushSlider = new SmartSlider(55, 35, 150, 20, node, {
-      minValue: 5,
+      minValue: 1,
       maxValue: 100,
       value: 20,
       textColorNormalize: true,
@@ -252,25 +259,40 @@ app.registerExtension({
     const sizesArray = Array.from(canvasScales.entries());
 
     const ratioNames = Array.from(canvasRatios.keys());
-    const dmR = new SmartDropdownMenu(55, 60, 40, 15, node,"Ratio", ratioNames);
+    const dmR = new SmartDropdownMenu(
+      55,
+      60,
+      40,
+      15,
+      node,
+      "Ratio",
+      ratioNames
+    );
 
     const sizeNames = Array.from(canvasScales.keys());
-    const dmS = new SmartDropdownMenu(55 + 45, 60, 40, 15, node,"Size", sizeNames);
+    const dmS = new SmartDropdownMenu(
+      55 + 45,
+      60,
+      40,
+      15,
+      node,
+      "Size",
+      sizeNames
+    );
 
     dmR.onSelect = () => {
       const itemA = ratiosArray[dmR.selectedItemIndex][1];
       const itemB = sizesArray[dmS.selectedItemIndex][1];
-      pa.setNewSize(itemA,itemB)
+      pa.setNewSize(itemA, itemB);
       //console.log(itemA,itemB);
     };
 
     dmS.onSelect = () => {
       const itemA = ratiosArray[dmR.selectedItemIndex][1];
       const itemB = sizesArray[dmS.selectedItemIndex][1];
-      pa.setNewSize(itemA,itemB)
+      pa.setNewSize(itemA, itemB);
       //console.log(itemA,itemB);
     };
-
 
     // block paint on drop menus
     pa.onPress = () => {
@@ -288,7 +310,6 @@ app.registerExtension({
       pa.undo();
     };
 
-    
     const bRedo = new SmartButton(185, 60, 20, 15, node, "↻", {
       textXoffset: 0,
     });
@@ -309,7 +330,7 @@ app.registerExtension({
       textXoffset: 5,
     });
     bFill.onClick = () => {
-      pa.clearWithColor(bColor.color);
+      pa.fillWithColor(bColor.color);
     };
 
     const bHold = new SmartButton(215 + 45, 35, 40, 15, node, "Hold", {
@@ -325,7 +346,6 @@ app.registerExtension({
     bFetch.onClick = () => {
       pa.loadTempImage();
     };
-    
 
     const bClear = new SmartButton(
       215 + 45 + 45 + 45,
@@ -342,8 +362,6 @@ app.registerExtension({
       pa.clearWithColor("white");
     };
 
-
-
     const layerSwitch = new SmartSwitch(215, 55, 175, 20, node);
     layerSwitch.textOn = "Foreground";
     layerSwitch.textOff = "Background";
@@ -351,7 +369,7 @@ app.registerExtension({
       pa.switchLayer();
     };
 
-    const bh = []; 
+    const bh = [];
     let index = 0; // Unique index for bh array
 
     for (let i = 1; i < 6; i++) {
@@ -385,6 +403,7 @@ app.registerExtension({
       if (cp.isVisible) {
         cp.setColorUnderCurser(e);
         bColor.color = cp.selectedColor;
+        bFill.tagColor = cp.selectedColor;
         pa.brushColor = cp.selectedColor;
       }
     };
@@ -392,18 +411,24 @@ app.registerExtension({
     node.onMouseEnter = (e, pos) => {};
 
     node.onMouseLeave = (e) => {
-
       pa.sendDrawingToAPI();
-
     };
 
+    // node.onExecuted = (m) => {
+    //   console.log('onExecuted',);
+    // }
+
     app.canvas.canvas.onkeydown = (event) => {
-      if (event.ctrlKey && event.key === 'z') {
+      if (event.ctrlKey && event.key === "z") {
         console.log("Ctrl+Z was pressed");
         event.preventDefault();
-        
-    }
-  }
+      }
+    };
+
+    // may be more optimized for save
+    app.canvas.canvas.onmouseleave = () => {
+      //pa.sendDrawingToAPI();
+    };
 
     const manager = new BaseSmartWidgetManager(node);
   },

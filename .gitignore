@@ -8,3 +8,7 @@ __pycache__
 !camera.yaml
 !mood.yaml
 !original.yaml
+
+# ignore painted image
+iToolsPaintedImage_foreground.png
+iToolsPaintedImage_background.png

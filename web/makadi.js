@@ -1048,6 +1048,18 @@ export class SmartPaintArea extends BaseSmartWidget {
     }
   }
 
+  fillWithColor(color) {
+    if (this.isPaintingBackground) {
+      // Fill the background with the color
+      this.backgroundCtx.fillStyle = color;
+      this.backgroundCtx.fillRect(0, 0, this.width, this.height);
+    } else {
+      this.foregroundCtx.fillStyle = color;
+      this.foregroundCtx.fillRect(0, 0, this.width, this.height);
+    }
+  }
+
+
   isMouseIn() {
     const { x, y } = this.mousePos;
     return (
@@ -1100,6 +1112,19 @@ export class SmartPaintArea extends BaseSmartWidget {
     // Convert both foreground and background canvases to data URLs
     const foregroundDataURL = this.foregroundCanvas.toDataURL("image/png");
     const backgroundDataURL = this.backgroundCanvas.toDataURL("image/png");
+
+    // Check if the current data is the same as the last saved data
+    if (
+      this.lastForegroundData === foregroundDataURL &&
+      this.lastBackgroundData === backgroundDataURL
+    ) {
+      console.log("No changes detected; skipping save.");
+      return; // Exit early if no changes
+    }
+
+    // Update the last saved data references
+    this.lastForegroundData = foregroundDataURL;
+    this.lastBackgroundData = backgroundDataURL;
 
     // Convert data URLs to Blobs
     const foregroundBlob = await fetch(foregroundDataURL).then((res) =>
