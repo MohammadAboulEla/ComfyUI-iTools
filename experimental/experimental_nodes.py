@@ -137,8 +137,11 @@ class IToolsPaintNode:
         background_img = Image.open(background_path)
         foreground_img = Image.open(foreground_path)
         
+        
         # Overlay the foreground onto the background
         final_img = Image.alpha_composite(background_img, foreground_img)
+        
+        final_img = final_img.convert("RGB")
         
         result = [final_img]        
         return pil2tensor(result)
