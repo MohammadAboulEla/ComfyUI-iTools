@@ -80,6 +80,386 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   }
 }
 
+export class SmartImage extends BaseSmartWidget {
+  constructor(x, y, width, height, node, options = {}) {
+    super(node);
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.placeholderColor = "grey";
+    this.img = new Image(); // Create an image object
+    this.imgLoaded = false; // Track if the image has been loaded
+    this.apiEndpoint = "/itools/request_load_img"; // API endpoint for fetching the image
+    this.filenamePrefix = "iToolsTestImg";
+    this.isPicked = false;
+    this.isResizing = false; // Track if the user is resizing
+    this.resizeAnchor = null; // Store the anchor point being resized (e.g., 'top-left', 'right', etc.)
+    this.resizeThreshold = 10; // Distance threshold for detecting resize areas
+
+    // Apply options if provided
+    Object.assign(this, options);
+
+    // Fetch the image from the API if an ID or filename prefix is provided
+    if (this.filenamePrefix) {
+      this.fetchImageFromAPI();
+    }
+
+    // Add self to the node
+    node.addCustomWidget(this);
+  }
+
+  async fetchImageFromAPI() {
+    const formData = new FormData();
+    formData.append("filename_prefix", this.filenamePrefix || "iToolsTestImg");
+    try {
+      const response = await api.fetchApi(this.apiEndpoint, {
+        method: "POST",
+        body: formData,
+      });
+      const result = await response.json();
+      if (result.status === "success") {
+        const { img } = result.data;
+
+        function hexToBase64(hexString) {
+          if (!hexString || typeof hexString !== "string") {
+            console.error("Invalid hexadecimal string provided.");
+            return "";
+          }
+          const chunkSize = 1024 * 1024; // Process in chunks of 1MB
+          let base64 = "";
+          for (let i = 0; i < hexString.length; i += chunkSize * 2) {
+            const chunk = hexString.slice(i, i + chunkSize * 2);
+            let binaryString = "";
+            for (let c = 0; c < chunk.length; c += 2) {
+              const byte = parseInt(chunk.substr(c, 2), 16);
+              binaryString += String.fromCharCode(byte);
+            }
+            base64 += btoa(binaryString);
+          }
+          return base64;
+        }
+
+        this.img.src = `data:image/png;base64,${hexToBase64(img)}`;
+        this.img.onload = () => {
+          this.imgLoaded = true;
+        };
+        this.img.onerror = () => {
+          console.error("Failed to load image from API");
+        };
+        console.log("Image received successfully.");
+      } else {
+        console.error("Error fetching image:", result.message);
+      }
+    } catch (error) {
+      console.error("Error communicating with the API:", error);
+    }
+  }
+
+  handleDown() {
+    if (this.isMouseInResizeArea()) {
+      this.isResizing = true;
+      this.resizeAnchor = this.getResizeAnchor();
+    } else if (this.isMouseIn()) {
+      this.isPicked = true;
+    }
+  }
+
+  handleMove() {
+    const canvasX = 0,
+      canvasY = 80,
+      width = 512 - this.width,
+      height = 512 - this.height;
+  
+    if (this.isResizing) {
+      this.resizeImage();
+    } else if (this.isPicked) {
+      let newX = this.mousePos.x - this.width / 2;
+      let newY = this.mousePos.y - this.height / 2;
+  
+      // Corrected clamping logic
+      this.x = Math.max(canvasX, Math.min(newX, canvasX + width));
+      this.y = Math.max(canvasY, Math.min(newY, canvasY + height));
+    }
+  }
+
+  handleClick() {
+    this.isPicked = false;
+    this.isResizing = false;
+    this.resizeAnchor = null;
+  }
+
+  draw(ctx) {
+    
+    if (!this.imgLoaded) {
+      ctx.fillStyle = this.placeholderColor;
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+    } else {
+      ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+    }
+
+
+    // Draw resize handles (small outlined squares) at the edges and corners
+    if (this.isMouseInResizeArea()) {
+      // Draw a dashed outline around the image
+      ctx.strokeStyle = "#333"; // Color of the dashed outline
+      ctx.lineWidth = 1; // Width of the dashed outline
+      ctx.setLineDash([5, 5]); // Dash pattern: 5px dash, 5px gap
+      ctx.strokeRect(this.x, this.y, this.width, this.height);
+
+      const handleSize = 10; // Size of the resize handle (width and height)
+      ctx.strokeStyle = "#333"; // Color of the resize handles
+      ctx.lineWidth = 1; // Width of the resize handle outline
+      ctx.setLineDash([]); // Reset dash pattern for solid lines
+
+      // Draw handles at the corners
+      ctx.strokeRect(
+        this.x - handleSize / 2,
+        this.y - handleSize / 2,
+        handleSize,
+        handleSize
+      ); // Top-left
+      ctx.strokeRect(
+        this.x + this.width - handleSize / 2,
+        this.y - handleSize / 2,
+        handleSize,
+        handleSize
+      ); // Top-right
+      ctx.strokeRect(
+        this.x - handleSize / 2,
+        this.y + this.height - handleSize / 2,
+        handleSize,
+        handleSize
+      ); // Bottom-left
+      ctx.strokeRect(
+        this.x + this.width - handleSize / 2,
+        this.y + this.height - handleSize / 2,
+        handleSize,
+        handleSize
+      ); // Bottom-right
+
+      // Draw handles at the midpoints of the edges
+      ctx.strokeRect(
+        this.x + this.width / 2 - handleSize / 2,
+        this.y - handleSize / 2,
+        handleSize,
+        handleSize
+      ); // Top
+      ctx.strokeRect(
+        this.x + this.width / 2 - handleSize / 2,
+        this.y + this.height - handleSize / 2,
+        handleSize,
+        handleSize
+      ); // Bottom
+      ctx.strokeRect(
+        this.x - handleSize / 2,
+        this.y + this.height / 2 - handleSize / 2,
+        handleSize,
+        handleSize
+      ); // Left
+      ctx.strokeRect(
+        this.x + this.width - handleSize / 2,
+        this.y + this.height / 2 - handleSize / 2,
+        handleSize,
+        handleSize
+      ); // Right
+    }
+  }
+
+  isMouseIn(safeZone = 0) {
+    const { x, y } = this.mousePos;
+    return (
+      x >= this.x - safeZone &&
+      x <= this.x + this.width + safeZone &&
+      y >= this.y - safeZone &&
+      y <= this.y + this.height + safeZone
+    );
+  }
+
+  isMouseInResizeArea() {
+    const { x, y } = this.mousePos;
+    const threshold = this.resizeThreshold;
+
+    const topLeft =
+      x >= this.x - threshold &&
+      x <= this.x + threshold &&
+      y >= this.y - threshold &&
+      y <= this.y + threshold;
+    const topRight =
+      x >= this.x + this.width - threshold &&
+      x <= this.x + this.width + threshold &&
+      y >= this.y - threshold &&
+      y <= this.y + threshold;
+    const bottomLeft =
+      x >= this.x - threshold &&
+      x <= this.x + threshold &&
+      y >= this.y + this.height - threshold &&
+      y <= this.y + this.height + threshold;
+    const bottomRight =
+      x >= this.x + this.width - threshold &&
+      x <= this.x + this.width + threshold &&
+      y >= this.y + this.height - threshold &&
+      y <= this.y + this.height + threshold;
+
+    const top =
+      x >= this.x &&
+      x <= this.x + this.width &&
+      y >= this.y - threshold &&
+      y <= this.y + threshold;
+    const bottom =
+      x >= this.x &&
+      x <= this.x + this.width &&
+      y >= this.y + this.height - threshold &&
+      y <= this.y + this.height + threshold;
+    const left =
+      x >= this.x - threshold &&
+      x <= this.x + threshold &&
+      y >= this.y &&
+      y <= this.y + this.height;
+    const right =
+      x >= this.x + this.width - threshold &&
+      x <= this.x + this.width + threshold &&
+      y >= this.y &&
+      y <= this.y + this.height;
+
+    return (
+      topLeft ||
+      topRight ||
+      bottomLeft ||
+      bottomRight ||
+      top ||
+      bottom ||
+      left ||
+      right
+    );
+  }
+
+  getResizeAnchor() {
+    const { x, y } = this.mousePos;
+    const threshold = this.resizeThreshold;
+
+    if (
+      x >= this.x - threshold &&
+      x <= this.x + threshold &&
+      y >= this.y - threshold &&
+      y <= this.y + threshold
+    ) {
+      return "top-left";
+    } else if (
+      x >= this.x + this.width - threshold &&
+      x <= this.x + this.width + threshold &&
+      y >= this.y - threshold &&
+      y <= this.y + threshold
+    ) {
+      return "top-right";
+    } else if (
+      x >= this.x - threshold &&
+      x <= this.x + threshold &&
+      y >= this.y + this.height - threshold &&
+      y <= this.y + this.height + threshold
+    ) {
+      return "bottom-left";
+    } else if (
+      x >= this.x + this.width - threshold &&
+      x <= this.x + this.width + threshold &&
+      y >= this.y + this.height - threshold &&
+      y <= this.y + this.height + threshold
+    ) {
+      return "bottom-right";
+    } else if (
+      x >= this.x &&
+      x <= this.x + this.width &&
+      y >= this.y - threshold &&
+      y <= this.y + threshold
+    ) {
+      return "top";
+    } else if (
+      x >= this.x &&
+      x <= this.x + this.width &&
+      y >= this.y + this.height - threshold &&
+      y <= this.y + this.height + threshold
+    ) {
+      return "bottom";
+    } else if (
+      x >= this.x - threshold &&
+      x <= this.x + threshold &&
+      y >= this.y &&
+      y <= this.y + this.height
+    ) {
+      return "left";
+    } else if (
+      x >= this.x + this.width - threshold &&
+      x <= this.x + this.width + threshold &&
+      y >= this.y &&
+      y <= this.y + this.height
+    ) {
+      return "right";
+    }
+    return null;
+  }
+
+  resizeImage() {
+    const { x, y } = this.mousePos;
+    const canvasX = 0,
+      canvasY = 80,
+      maxWidth = 512,
+      maxHeight = 592;
+  
+    switch (this.resizeAnchor) {
+      case "top-left": {
+        const newWidth = this.x + this.width - x;
+        const newHeight = this.y + this.height - y;
+        this.x = Math.max(canvasX, x); // Ensure x stays within canvas
+        this.y = Math.max(canvasY, y); // Ensure y stays within canvas
+        this.width = Math.max(10, Math.min(newWidth, maxWidth - this.x));
+        this.height = Math.max(10, Math.min(newHeight, maxHeight - this.y));
+        break;
+      }
+      case "top-right": {
+        const newHeight = this.y + this.height - y;
+        this.y = Math.max(canvasY, y); // Ensure y stays within canvas
+        this.width = Math.max(10, Math.min(x - this.x, maxWidth - this.x));
+        this.height = Math.max(10, Math.min(newHeight, maxHeight - this.y));
+        break;
+      }
+      case "bottom-left": {
+        const newWidth = this.x + this.width - x;
+        this.x = Math.max(canvasX, x); // Ensure x stays within canvas
+        this.width = Math.max(10, Math.min(newWidth, maxWidth - this.x));
+        this.height = Math.max(10, Math.min(y - this.y, maxHeight - this.y));
+        break;
+      }
+      case "bottom-right": {
+        this.width = Math.max(10, Math.min(x - this.x, maxWidth - this.x));
+        this.height = Math.max(10, Math.min(y - this.y, maxHeight - this.y));
+        break;
+      }
+      case "top": {
+        const newHeight = this.y + this.height - y;
+        this.y = Math.max(canvasY, y); // Ensure y stays within canvas
+        this.height = Math.max(10, Math.min(newHeight, maxHeight - this.y));
+        break;
+      }
+      case "bottom": {
+        this.height = Math.max(10, Math.min(y - this.y, maxHeight - this.y));
+        break;
+      }
+      case "left": {
+        const newWidth = this.x + this.width - x;
+        this.x = Math.max(canvasX, x); // Ensure x stays within canvas
+        this.width = Math.max(10, Math.min(newWidth, maxWidth - this.x));
+        break;
+      }
+      case "right": {
+        this.width = Math.max(10, Math.min(x - this.x, maxWidth - this.x));
+        break;
+      }
+      default:
+        break;
+    }
+  }
+  
+}
 export class SmartWidget extends BaseSmartWidget {
   constructor(x, y, width, height, node, options = {}) {
     super(node);
@@ -1140,8 +1520,8 @@ export class SmartPaintArea extends BaseSmartWidget {
     this.getDrawingFromAPI();
 
     node.addCustomWidget(this);
-    
-    if(this.onReInit)this.onReInit();
+
+    if (this.onReInit) this.onReInit();
   }
 
   setNewSize(size, scale) {
@@ -1263,11 +1643,10 @@ export class SmartPaintArea extends BaseSmartWidget {
 
   handleDown() {
     if (this.isMouseIn()) {
+      if (this.onPress) this.onPress();
       // Save the current state before starting to paint
-      //this.saveState();
       this.commitChange();
       this.isPainting = true;
-      if (this.onPress) this.onPress();
     }
   }
 

@@ -25,6 +25,7 @@ import {
   TextObject,
   AdvancedLabel,
   SmartInfo,
+  SmartImage,
 } from "./makadi.js";
 
 app.registerExtension({
@@ -70,6 +71,11 @@ app.registerExtension({
       allowVisualHover: false,
       outline: false,
     });
+
+    const img = new SmartImage(0, 80, 80, 80, node, {
+      //placeholderColor: LiteGraph.WIDGET_BGCOLOR,
+    });
+    
 
 
     const bColor = new SmartButton(5, 35, 40, 40, node);
@@ -166,13 +172,21 @@ app.registerExtension({
       const index = getIndexByDimensions(pa.width, pa.height);
     };
 
-    // Block painting when drop menus open
+    
     pa.onPress = () => {
+      // Block painting when drop menus open
       if (dmR.isOpen || dmS.isOpen) {
         pa.blockPainting = true;
-      } else {
-        pa.blockPainting = false;
       }
+      
+      //Block painting when img picked
+      else if(img.isMouseIn(10)){
+        pa.blockPainting = true
+      }
+      
+      else{
+        pa.blockPainting = false
+      } 
     };
 
     const bUndo = new SmartButton(185 - 15, 60, 15, 15, node, "↺", {

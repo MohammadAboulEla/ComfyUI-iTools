@@ -213,3 +213,34 @@ async def respond_to_request_the_paint_file(request):
             "background": background_data.hex()
         }
     })      
+
+@PromptServer.instance.routes.post("/itools/request_load_img")
+async def respond_to_request_load_img(request):
+    post = await request.post()
+
+    filename_prefix = post.get("filename_prefix")
+    if not filename_prefix:
+        return web.json_response({"status": "error", "message": "Filename prefix is required"}, status=400)
+
+    # Define the directory where the images are saved
+    save_directory = os.path.join(project_dir, "backend")
+
+    # Define file paths
+    img_path = os.path.join(save_directory, f"{filename_prefix}.png")
+
+    # Check if both files exist
+    if not os.path.exists(img_path):
+        return web.json_response({"status": "error", "message": "File not found"}, status=404)
+
+    # Read the files
+    with open(img_path, "rb") as fg_file:
+        img_data = fg_file.read()
+
+    return web.json_response({
+        "status": "success",
+        "data": {
+            "img": img_data.hex(),
+        }
+    })
+
+    
