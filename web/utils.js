@@ -207,3 +207,54 @@ LiteGraph.CONNECTING_LINK_COLOR
 */
 
 //const window = globalThis;
+
+/*
+Working Callbacks
+
+app.canvas.onMouse = (e) => { // any mouse button
+  console.log("onMouse",e);
+};
+
+app.canvas.onNodeMoved = ()=>{
+  console.log('noe moved',);
+}
+
+app.canvas.canvas.onmousewheel = (e)=>{
+  console.log('onmousewheel',);
+}
+
+app.canvas.canvas.onclick = (e) => {
+  console.log("onclick");
+};
+
+app.canvas.canvas.onkeyup = (ke) => {  //onkeydown//onkeypress
+  console.log("onkeyup",ke);
+};
+
+app.canvas.canvas.onkeydown = (ke) => {
+  console.log("onkeyup",ke);
+};
+
+app.canvas.canvas.ondblclick = (e) => {
+  console.log("ondblclick",e);
+};
+
+app.canvas.canvas.onmouseover = (e) => {
+  console.log("onmouseover");
+};
+
+========================
+NOT working callback
+
+app.canvas.onMouseMoved = () => {
+  console.log("Mouse moved");
+};
+
+app.canvas.onMouseUP = (e) => {
+  console.log("Mouse UP");
+};
+
+app.canvas.canvas.onmouseup = (e) => {
+  console.log("onmouseup",e);
+};
+*/

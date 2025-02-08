@@ -23,7 +23,8 @@ import {
   SmartColorPicker,
   SmartDropdownMenu,
   TextObject,
-  AdvancedLabel
+  AdvancedLabel,
+  SmartInfo
 } from "./makadi.js";
 
 
@@ -61,7 +62,8 @@ app.registerExtension({
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
     const p = new SmartPreview(0, 80, 512, 512, node);
     const cp = new SmartColorPicker(0, 80, 170, 170, node);
-
+    
+    const info = new SmartInfo(512/2 - 40,85,80,15,node,"canvas size")
     const ui = new SmartWidget(0, 30, node.width, 50, node, {
       color: lightenColor(LiteGraph.WIDGET_BGCOLOR, 5),
       shape: Shapes.SQUARE,
@@ -77,6 +79,7 @@ app.registerExtension({
       (bColor.allowVisualPress = false),
       (bColor.onPress = () => {
         cp.open();
+        info.restart("Press Alt")
         console.log("bColor  clicked");
       });
 
@@ -121,18 +124,46 @@ app.registerExtension({
     );
 
     dmR.onSelect = () => {
+      if(dmR.selectedItemIndex === -1) dmR.selectedItemIndex = 0;
+      if(dmS.selectedItemIndex === -1) dmS.selectedItemIndex = 0;
       const itemA = ratiosArray[dmR.selectedItemIndex][1];
       const itemB = sizesArray[dmS.selectedItemIndex][1];
       pa.setNewSize(itemA, itemB);
+      info.restart(`${itemA.width*itemB} x ${itemA.height*itemB}`)
       //console.log(itemA,itemB);
     };
 
     dmS.onSelect = () => {
+      if(dmR.selectedItemIndex === -1) dmR.selectedItemIndex = 0;
+      if(dmS.selectedItemIndex === -1) dmS.selectedItemIndex = 0;
       const itemA = ratiosArray[dmR.selectedItemIndex][1];
       const itemB = sizesArray[dmS.selectedItemIndex][1];
       pa.setNewSize(itemA, itemB);
+      info.restart(`${itemA.width*itemB} x ${itemA.height*itemB}`)
       //console.log(itemA,itemB);
     };
+
+    pa.onReInit = () => {
+      function getRatioByDimensions(width, height) {
+        for (let [ratio, dimensions] of canvasRatios.entries()) {
+          if (dimensions.width === width && dimensions.height === height) {
+            return ratio;
+          }
+        }
+        return null; // Return null if no matching ratio is found
+      }
+      function getIndexByDimensions(width, height) {
+        const entriesArray = [...canvasRatios.entries()]; // Convert Map to array
+        for (let i = 0; i < entriesArray.length; i++) {
+          const [ratio, dimensions] = entriesArray[i];
+          if (dimensions.width === width && dimensions.height === height) {
+            return i; // Return the index if found
+          }
+        }
+        return -1; // Return -1 if no matching dimensions are found
+      }
+      const index = getIndexByDimensions(pa.width, pa.height);
+    }
 
     // block paint when drop menus open
     pa.onPress = () => {
