@@ -5,6 +5,7 @@ import { api } from "../../../scripts/api.js";
 class BaseSmartWidget {
   constructor(node) {
     this.node = node;
+
     this._mousePos = [0, 0];
   }
 
@@ -30,6 +31,247 @@ class BaseSmartWidget {
       x: graphMouse[0] - this.node.pos[0],
       y: graphMouse[1] - this.node.pos[1],
     };
+  }
+}
+
+export class TextObject {
+  constructor(text) {
+    this.x = 0;
+    this.y = 0;
+    this.width = 50;
+    this.height = 50;
+    this.text = text;
+    this.textColor = "white";
+    this.textYoffset = 0.0;
+    this.textXoffset = 0.0;
+    this.textAlign = "left";
+    this.textBaseline = "top";
+    this.font = "12px Arial Bold";
+    this.textWidth = null;
+  }
+
+  capital() {}
+  changeFontSize(size) {}
+
+}
+
+class LayerSystem{
+
+}
+
+class SaveObject{
+  constructor(params) {
+    
+  }
+    // send foreground/background images to be saved by python
+    async sendDrawingToAPI() {
+      const filenamePrefix = "iToolsPaintedImage";
+  
+      // Convert both foreground and background canvases to data URLs
+      const foregroundDataURL = this.foregroundCanvas.toDataURL("image/png");
+      const backgroundDataURL = this.backgroundCanvas.toDataURL("image/png");
+  
+      // Check if the current data is the same as the last saved data
+      if (
+        this.lastForegroundData === foregroundDataURL &&
+        this.lastBackgroundData === backgroundDataURL
+      ) {
+        console.log("No changes detected; skipping save.");
+        return; // Exit early if no changes
+      }
+  
+      // Update the last saved data references
+      this.lastForegroundData = foregroundDataURL;
+      this.lastBackgroundData = backgroundDataURL;
+  
+      // Convert data URLs to Blobs
+      const foregroundBlob = await fetch(foregroundDataURL).then((res) =>
+        res.blob()
+      );
+      const backgroundBlob = await fetch(backgroundDataURL).then((res) =>
+        res.blob()
+      );
+  
+      // Create a FormData object to send both files
+      const formData = new FormData();
+      formData.append(
+        "foreground",
+        foregroundBlob,
+        `${filenamePrefix}_foreground.png`
+      );
+      formData.append(
+        "background",
+        backgroundBlob,
+        `${filenamePrefix}_background.png`
+      );
+  
+      try {
+        // Send the file to the API endpoint
+        const response = await api.fetchApi("/itools/request_save_paint", {
+          method: "POST",
+          body: formData,
+        });
+        console.log("Drawing sent successfully.");
+      } catch (error) {
+        console.error("Error sending the drawing:", error);
+      }
+    }
+    //get foreground/background images from python
+    async getDrawingFromAPI() {
+      const filenamePrefix = "iToolsPaintedImage";
+  
+      const formData = new FormData();
+      formData.append("filename_prefix", filenamePrefix);
+  
+      try {
+        const response = await api.fetchApi("/itools/request_the_paint_file", {
+          method: "POST",
+          body: formData,
+        });
+  
+        const result = await response.json();
+  
+        if (result.status === "success") {
+          const { foreground, background } = result.data;
+  
+          // Helper function to convert hex to base64
+          function hexToBase64(hexString) {
+            const bytes = [];
+            for (let c = 0; c < hexString.length; c += 2) {
+              bytes.push(parseInt(hexString.substr(c, 2), 16));
+            }
+            return btoa(String.fromCharCode(...bytes)); // Convert to base64
+          }
+  
+          // Load the foreground image
+          const fgImg = new Image();
+          fgImg.src = `data:image/png;base64,${hexToBase64(foreground)}`;
+          fgImg.onload = () => {
+            this.foregroundCtx.clearRect(0, 0, this.width, this.height);
+            this.foregroundCtx.drawImage(fgImg, 0, 0);
+          };
+  
+          // Load the background image
+          const bgImg = new Image();
+          bgImg.src = `data:image/png;base64,${hexToBase64(background)}`;
+          bgImg.onload = () => {
+            this.backgroundCtx.clearRect(0, 0, this.width, this.height);
+            this.backgroundCtx.drawImage(bgImg, 0, 0);
+          };
+  
+          console.log("Drawing received successfully.");
+        } else {
+          console.error("Error:", result.message);
+        }
+      } catch (error) {
+        console.error("Error fetching the drawing:", error);
+      }
+    }
+  
+}
+
+class UndoSystem{
+  constructor(maxUndo){
+    // Initialize undo and redo stacks
+    this.undoStack = [];
+    this.redoStack = [];
+    this.maxUndoSteps = maxUndo || 10; // Limit undo steps to 10
+
+  }
+
+    // Save the current state of the canvases to the undo stack
+    saveState() {
+      if (this.undoStack.length >= this.maxUndoSteps) {
+        // Remove the oldest state if the stack exceeds the limit
+        this.undoStack.shift();
+      }
+      // Save the current state to the undo stack
+      this.undoStack.push({
+        foreground: this.foregroundCanvas.toDataURL(),
+        background: this.backgroundCanvas.toDataURL(),
+      });
+      // Clear the redo stack when a new state is saved
+      this.redoStack = [];
+    }
+  
+    // Load a saved state from the undo stack
+    loadState(state) {
+      if (state.foreground) {
+        let fgImg = new Image();
+        fgImg.src = state.foreground;
+        fgImg.onload = () => {
+          this.foregroundCtx.clearRect(0, 0, this.width, this.height);
+          this.foregroundCtx.drawImage(fgImg, 0, 0);
+        };
+      }
+      if (state.background) {
+        let bgImg = new Image();
+        bgImg.src = state.background;
+        bgImg.onload = () => {
+          this.backgroundCtx.clearRect(0, 0, this.width, this.height);
+          this.backgroundCtx.drawImage(bgImg, 0, 0);
+        };
+      }
+    }
+  
+    // Undo the last action
+    undo() {
+      if (this.undoStack.length > 0) {
+        // Push the current state to the redo stack
+        this.redoStack.push({
+          foreground: this.foregroundCanvas.toDataURL(),
+          background: this.backgroundCanvas.toDataURL(),
+        });
+  
+        // Pop the last state from the undo stack and apply it
+        const lastState = this.undoStack.pop();
+        this.loadState(lastState);
+      }
+    }
+  
+    // Redo the last undone action
+    redo() {
+      if (this.redoStack.length > 0) {
+        // Pop the last state from the redo stack and apply it
+        const lastState = this.redoStack.pop();
+        this.loadState(lastState);
+  
+        // Push the current state back to the undo stack
+        this.undoStack.push({
+          foreground: this.foregroundCanvas.toDataURL(),
+          background: this.backgroundCanvas.toDataURL(),
+        });
+      }
+    }
+  
+}
+
+export class AdvancedLabel extends BaseSmartWidget {
+  constructor(node, textObject) {
+    super(node);
+    this.textObject = textObject;
+
+    // add self to the node
+    node.addCustomWidget(this);
+  }
+
+  draw(ctx) {
+    // Draw text
+    if (this.textObject.text) {
+      ctx.fillStyle = this.textObject.textColor;
+      ctx.font = this.textObject.font;
+      ctx.textAlign = this.textObject.textAlign;
+      ctx.textBaseline = this.textObject.textBaseline;
+      ctx.fillText(
+        this.textObject.text,
+        this.textObject.x + this.textObject.textXoffset,
+        this.textObject.y + this.textObject.textYoffset
+      );
+      if (this.textObject.textWidth === null) {
+        const textMetrics = ctx.measureText(this.textObject.text);
+        this.textObject.textWidth = textMetrics.width;
+      }
+    }
   }
 }
 
@@ -1058,7 +1300,6 @@ export class SmartPaintArea extends BaseSmartWidget {
       this.foregroundCtx.fillRect(0, 0, this.width, this.height);
     }
   }
-
 
   isMouseIn() {
     const { x, y } = this.mousePos;

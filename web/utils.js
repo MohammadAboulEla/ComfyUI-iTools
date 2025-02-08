@@ -167,8 +167,9 @@ export const canvasRatios = new Map([
 ]);
 
 export const canvasScales = new Map([
-  ["1x", 1],
-  ["2x", 2],
+  ["0.5x", 1],
+  ["1x", 2],
+  ["2x", 4],
 ]);
 
 export const commonColors = [
@@ -183,6 +184,7 @@ export const commonColors = [
   "#A52A2A", // Brown
   "#808080", // Gray
 ];
+
 /*
 LiteGraph.NODE_TITLE_COLOR,
 LiteGraph.NODE_SELECTED_TITLE_COLOR,
@@ -205,40 +207,3 @@ LiteGraph.CONNECTING_LINK_COLOR
 */
 
 //const window = globalThis;
-
-/*
-import { api } from "../../../scripts/api.js";
-import { app } from "../../../scripts/app.js";
-import { allow_debug } from "./js_shared.js";
-import {
-  Button,
-  Label,
-  Slider,
-  DropdownMenu,
-  Widget,
-  Checkbox,
-  ColorPicker
-} from "./widgets.js";
-import { Shapes, Colors,} from "./utils.js";
-
-*/
-
-// //console.log('pointer',app.pointer);
-// console.log('app',app);
-// console.log('node',node);
-// if (w.isClicked(pos[0],pos[1]))
-//   w.isChecked = !w.isChecked
-// w.handleClick(pos[0],pos[1])
-// //c.handleOnClick(pos)
-// l.textColor = c.selectedColor;
-
-// const drawing_app = new DrawingApp(node);
-// node.addCustomWidget(drawing_app);
-// const w = new Checkbox(75,5);
-// node.addCustomWidget(w);
-
-// const l = new Label(5,5,"Selected Color:");
-// node.addCustomWidget(l);
-
-// const c = new ColorPicker(5,20,100,100,);
-// node.addCustomWidget(c);

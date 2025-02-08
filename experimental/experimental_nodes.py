@@ -149,49 +149,6 @@ class IToolsPaintNode:
     def IS_CHANGED(cls,):
         return True
 
-# @PromptServer.instance.routes.post("/itools/request_save_paint")
-# async def respond_to_request_save_paint(request):
-#     post = await request.post()
-
-#     # Get the uploaded file
-#     file_item = post["file"]
-
-#     # Define the directory where the image will be saved
-#     # save_directory = folder_paths.temp_directory
-
-#     save_directory = os.path.join(project_dir, "backend")
-    
-#     # Define the file path
-#     file_path = os.path.join(save_directory, file_item.filename)
-
-#     # Save the file
-#     with open(file_path, "wb") as f:
-#         f.write(file_item.file.read())
-
-#     return web.json_response({"status": "success", "file": file_path,})
-
-# @PromptServer.instance.routes.post("/itools/request_the_paint_file")
-# async def respond_to_request_the_paint_file(request):
-#     post = await request.post()
-    
-#     file_item = post["filename"]
-#     # Define the directory where the image is saved
-#     # save_directory = folder_paths.temp_directory
-#     save_directory = os.path.join(project_dir, "backend")
-#     file_path = os.path.join(save_directory, file_item)
-    
-#     # Check if file exists
-#     if not os.path.exists(file_path):
-#         return web.json_response({"status": "error", "message": "File not found"}, status=404)
-
-#     print("iTools file exist")
-    
-#     # Read the file
-#     with open(file_path, "rb") as f:
-#         file_data = f.read()
-
-#     return web.json_response({"status": "success", "file": file_path, "data": file_data.hex()})
-   
 @PromptServer.instance.routes.post("/itools/request_save_paint")
 async def respond_to_request_save_paint(request):
     post = await request.post()
