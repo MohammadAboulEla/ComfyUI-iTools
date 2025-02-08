@@ -401,7 +401,7 @@ export class SmartInfo extends BaseSmartWidget {
 
     this.text = text;
     this.textColor = LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
-    this.textYoffset = 1.2;
+    this.textYoffset = 0.7;
     this.textXoffset = 0.0;
     this.textAlign = "center";
     this.textBaseline = "middle";
@@ -699,7 +699,7 @@ export class SmartButton extends SmartWidget {
 
     this.text = text;
     this.textColor = LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
-    this.textYoffset = 1.2;
+    this.textYoffset = 0.9;
     this.textXoffset = 0.0;
     this.textAlign = "center";
     this.textBaseline = "middle";

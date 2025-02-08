@@ -24,9 +24,8 @@ import {
   SmartDropdownMenu,
   TextObject,
   AdvancedLabel,
-  SmartInfo
+  SmartInfo,
 } from "./makadi.js";
-
 
 app.registerExtension({
   name: "iTools.paintNode",
@@ -62,8 +61,8 @@ app.registerExtension({
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
     const p = new SmartPreview(0, 80, 512, 512, node);
     const cp = new SmartColorPicker(0, 80, 170, 170, node);
-    
-    const info = new SmartInfo(512/2 - 40,85,80,15,node,"canvas size")
+
+    const info = new SmartInfo(512 / 2 - 40, 85, 80, 15, node, "canvas size");
     const ui = new SmartWidget(0, 30, node.width, 50, node, {
       color: lightenColor(LiteGraph.WIDGET_BGCOLOR, 5),
       shape: Shapes.SQUARE,
@@ -72,6 +71,7 @@ app.registerExtension({
       outline: false,
     });
 
+
     const bColor = new SmartButton(5, 35, 40, 40, node);
     bColor.shape = Shapes.CIRCLE;
     bColor.color = "crimson";
@@ -79,8 +79,8 @@ app.registerExtension({
       (bColor.allowVisualPress = false),
       (bColor.onPress = () => {
         cp.open();
-        info.restart("Press Alt")
-        console.log("bColor  clicked");
+        const info2 = new SmartInfo(512 / 2 - 80, 85, 160, 15, node, "Hold to pick | Alt to switch");
+        info2.start()
       });
 
     const brushSlider = new SmartSlider(55, 35, 150, 20, node, {
@@ -102,7 +102,7 @@ app.registerExtension({
     const sizesArray = Array.from(canvasScales.entries());
     const ratioNames = Array.from(canvasRatios.keys());
     const sizeNames = Array.from(canvasScales.keys());
-    
+
     const dmR = new SmartDropdownMenu(
       55,
       60,
@@ -124,26 +124,27 @@ app.registerExtension({
     );
 
     dmR.onSelect = () => {
-      if(dmR.selectedItemIndex === -1) dmR.selectedItemIndex = 0;
-      if(dmS.selectedItemIndex === -1) dmS.selectedItemIndex = 0;
+      if (dmR.selectedItemIndex === -1) dmR.selectedItemIndex = 0;
+      if (dmS.selectedItemIndex === -1) dmS.selectedItemIndex = 0;
       const itemA = ratiosArray[dmR.selectedItemIndex][1];
       const itemB = sizesArray[dmS.selectedItemIndex][1];
       pa.setNewSize(itemA, itemB);
-      info.restart(`${itemA.width*itemB} x ${itemA.height*itemB}`)
+      info.restart(`${itemA.width * itemB} x ${itemA.height * itemB}`);
       //console.log(itemA,itemB);
     };
 
     dmS.onSelect = () => {
-      if(dmR.selectedItemIndex === -1) dmR.selectedItemIndex = 0;
-      if(dmS.selectedItemIndex === -1) dmS.selectedItemIndex = 0;
+      if (dmR.selectedItemIndex === -1) dmR.selectedItemIndex = 0;
+      if (dmS.selectedItemIndex === -1) dmS.selectedItemIndex = 0;
       const itemA = ratiosArray[dmR.selectedItemIndex][1];
       const itemB = sizesArray[dmS.selectedItemIndex][1];
       pa.setNewSize(itemA, itemB);
-      info.restart(`${itemA.width*itemB} x ${itemA.height*itemB}`)
+      info.restart(`${itemA.width * itemB} x ${itemA.height * itemB}`);
       //console.log(itemA,itemB);
     };
 
     pa.onReInit = () => {
+      // TODO Fix re-init doesn't center the canvas
       function getRatioByDimensions(width, height) {
         for (let [ratio, dimensions] of canvasRatios.entries()) {
           if (dimensions.width === width && dimensions.height === height) {
@@ -163,9 +164,9 @@ app.registerExtension({
         return -1; // Return -1 if no matching dimensions are found
       }
       const index = getIndexByDimensions(pa.width, pa.height);
-    }
+    };
 
-    // block paint when drop menus open
+    // Block painting when drop menus open
     pa.onPress = () => {
       if (dmR.isOpen || dmS.isOpen) {
         pa.blockPainting = true;
@@ -174,14 +175,14 @@ app.registerExtension({
       }
     };
 
-    const bUndo = new SmartButton(185 - 25, 60, 20, 15, node, "↺", {
+    const bUndo = new SmartButton(185 - 15, 60, 15, 15, node, "↺", {
       textXoffset: 0,
     });
     bUndo.onClick = () => {
       pa.undo();
     };
 
-    const bRedo = new SmartButton(185, 60, 20, 15, node, "↻", {
+    const bRedo = new SmartButton(190, 60, 15, 15, node, "↻", {
       textXoffset: 0,
     });
     bRedo.onClick = () => {
@@ -284,23 +285,23 @@ app.registerExtension({
     };
 
     app.canvas.canvas.onkeydown = (event) => {
-      if  (event.key === "Alt") {
+      if (event.key === "Alt") {
         event.preventDefault();
-        if (cp.isVisible && cp.x === 0){
-          cp.x = 512-cp.width
-        }else{cp.x = 0}
+        if (cp.isVisible && cp.x === 0) {
+          cp.x = 512 - cp.width;
+        } else {
+          cp.x = 0;
+        }
       }
     };
 
     app.canvas.canvas.onkeyup = (event) => {
       if (event.key === "Alt") {
         event.preventDefault();
-
       }
     };
 
-    app.canvas.canvas.onmouseleave = () => {
-    };
+    app.canvas.canvas.onmouseleave = () => {};
 
     const manager = new BaseSmartWidgetManager(node);
   },
