@@ -1,6 +1,25 @@
 import { app } from "../../../scripts/app.js";
-import { Shapes, lightenColor, hexDataToImage } from "./utils.js";
+import {
+  Shapes,
+  lightenColor,
+  hexDataToImage,
+  trackMouseColor,
+} from "./utils.js";
 import { api } from "../../../scripts/api.js";
+
+// const processMouseDown = LGraphCanvas.prototype.processMouseDown;
+// LGraphCanvas.prototype.processMouseDown = function (e) {
+//   console.log("MouseDown", e);
+//   return processMouseDown.apply(this, arguments);
+// };
+
+// function smartMouseUp(e) {
+//   const processMouseUp = LGraphCanvas.prototype.processMouseUp;
+//   LGraphCanvas.prototype.processMouseUp = function (e) {
+//     console.log("MouseUp", e);
+//     return processMouseUp.apply(this, arguments);
+//   };
+// }
 
 class BaseSmartWidget {
   constructor(node) {
@@ -18,11 +37,13 @@ class BaseSmartWidget {
   enterFreezeMode() {
     this.node.allow_interaction = false;
     this.node.allow_dragcanvas = false;
+    this.node.allow_dragnodes = false;
   }
 
   exitFreezeMode() {
     this.node.allow_interaction = true;
     this.node.allow_dragcanvas = true;
+    this.node.allow_dragnodes = true;
   }
 
   get mousePos() {
@@ -47,11 +68,12 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   initEventListeners() {
     app.canvas.onMouseDown = (e) => this.handleMouseDown(e); //works even out of node
     app.canvas.canvas.onclick = (e) => this.handleMouseClick(e); // works after mouse down
-    this.node.onDrawForeground = (e) => this.handleMouseMove(e); //works every where even when dragging
-    // app.canvas.canvas.onmousemove = (e) => this.handleMouseMove(e); //works every where
+    this.node.onDrawForeground = (ctx) => this.handleMouseMove(ctx); //works every where even when dragging
+    app.canvas.canvas.onmousemove = (e) => this.handleMouseDrag(e); //works every where
     // this.node.onMouseUp = (e) => this.handleDragEnd(e); // work only after dragging on node, trigger before click
     // this.node.onMouseDown = (e,pos, node) => this.handleDragStart(e,pos, node); // work only if mouse down on node,
   }
+
   handleMouseDown(e) {
     Object.values(this.node.widgets).forEach((widget) => {
       if (widget instanceof BaseSmartWidget) {
@@ -78,6 +100,15 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
     });
     if (this.allowDebug) console.log("MouseClicked");
   }
+
+  handleMouseDrag(e) {
+    Object.values(this.node.widgets).forEach((widget) => {
+      if (widget instanceof BaseSmartWidget) {
+        widget.handleDrag?.(e);
+      }
+    });
+    if (this.allowDebug) console.log("MouseDrag");
+  }
 }
 
 export class SmartImage extends BaseSmartWidget {
@@ -96,19 +127,70 @@ export class SmartImage extends BaseSmartWidget {
     this.isResizing = false; // Track if the user is resizing
     this.resizeAnchor = null; // Store the anchor point being resized (e.g., 'top-left', 'right', etc.)
     this.resizeThreshold = 10; // Distance threshold for detecting resize areas
+    this.onImgLoaded = null;
 
     // Apply options if provided
     Object.assign(this, options);
 
-    // Fetch the image from the API if an ID or filename prefix is provided
-    if (this.filenamePrefix) {
-      this.fetchImageFromAPI();
-    }
+    // // Fetch the image from the API if an ID or filename prefix is provided
+    // if (this.filenamePrefix) {
+    //   this.fetchImageFromAPI();
+    // }
 
     // Add self to the node
     node.addCustomWidget(this);
-  }
 
+    // Object.defineProperty(SmartImage.prototype, "img", {
+    //   get() {
+    //     return this._img;
+    //   },
+    //   set(newImg) {
+    //     if (!(newImg instanceof HTMLImageElement)) {
+    //       console.error("Invalid image object provided.");
+    //       return;
+    //     }
+
+    //     // Reset the imgLoaded flag
+    //     this.imgLoaded = false;
+
+    //     // Assign the new image object
+    //     this._img = newImg;
+
+    //     // Handle image loading events
+    //     this._img.onload = () => {
+    //       this.imgLoaded = true;
+    //       if (this.onImgLoaded) this.onImgLoaded();
+    //     };
+
+    //     this._img.onerror = () => {
+    //       console.error("Failed to load the new image.");
+    //     };
+    //   },
+    // });
+  }
+  updateImage(newSrc) {
+    if (!newSrc) {
+      console.error("Invalid image source provided.");
+      return;
+    }
+
+    // Reset the imgLoaded flag
+    this.imgLoaded = false;
+
+    // Set the new image source
+    this.img.src = ""; // Clear the previous source to ensure proper reloading
+    this.img.src = newSrc;
+
+    // Handle image loading events
+    this.img.onload = () => {
+      this.imgLoaded = true;
+      if (this.onImgLoaded) this.onImgLoaded();
+    };
+
+    this.img.onerror = () => {
+      console.error("Failed to load the new image.");
+    };
+  }
   async fetchImageFromAPI() {
     const formData = new FormData();
     formData.append("filename_prefix", this.filenamePrefix || "iToolsTestImg");
@@ -143,6 +225,7 @@ export class SmartImage extends BaseSmartWidget {
         this.img.src = `data:image/png;base64,${hexToBase64(img)}`;
         this.img.onload = () => {
           this.imgLoaded = true;
+          if (this.onImgLoaded) this.onImgLoaded();
         };
         this.img.onerror = () => {
           console.error("Failed to load image from API");
@@ -170,13 +253,13 @@ export class SmartImage extends BaseSmartWidget {
       canvasY = 80,
       width = 512 - this.width,
       height = 512 - this.height;
-  
+
     if (this.isResizing) {
       this.resizeImage();
     } else if (this.isPicked) {
       let newX = this.mousePos.x - this.width / 2;
       let newY = this.mousePos.y - this.height / 2;
-  
+
       // Corrected clamping logic
       this.x = Math.max(canvasX, Math.min(newX, canvasX + width));
       this.y = Math.max(canvasY, Math.min(newY, canvasY + height));
@@ -190,7 +273,9 @@ export class SmartImage extends BaseSmartWidget {
   }
 
   draw(ctx) {
-    
+    // Clear the region occupied by the SmartImage
+    ctx.clearRect(this.x, this.y, this.width, this.height);
+
     if (!this.imgLoaded) {
       ctx.fillStyle = this.placeholderColor;
       ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -198,18 +283,17 @@ export class SmartImage extends BaseSmartWidget {
       ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
     }
 
-
     // Draw resize handles (small outlined squares) at the edges and corners
     if (this.isMouseInResizeArea()) {
       // Draw a dashed outline around the image
       ctx.strokeStyle = "#333"; // Color of the dashed outline
-      ctx.lineWidth = 1; // Width of the dashed outline
+      ctx.lineWidth = 1.5; // Width of the dashed outline
       ctx.setLineDash([5, 5]); // Dash pattern: 5px dash, 5px gap
       ctx.strokeRect(this.x, this.y, this.width, this.height);
 
       const handleSize = 10; // Size of the resize handle (width and height)
       ctx.strokeStyle = "#333"; // Color of the resize handles
-      ctx.lineWidth = 1; // Width of the resize handle outline
+      ctx.lineWidth = 1.5; // Width of the resize handle outline
       ctx.setLineDash([]); // Reset dash pattern for solid lines
 
       // Draw handles at the corners
@@ -263,6 +347,15 @@ export class SmartImage extends BaseSmartWidget {
         handleSize,
         handleSize
       ); // Right
+    }
+  }
+
+  handleDrag() {
+    if (this.isMouseIn()) {
+      app.canvas.canvas.style.cursor = "pointer";
+    }
+    if (this.isMouseInResizeArea()) {
+      app.canvas.canvas.style.cursor = "se-resize";
     }
   }
 
@@ -404,7 +497,7 @@ export class SmartImage extends BaseSmartWidget {
       canvasY = 80,
       maxWidth = 512,
       maxHeight = 592;
-  
+
     switch (this.resizeAnchor) {
       case "top-left": {
         const newWidth = this.x + this.width - x;
@@ -458,7 +551,30 @@ export class SmartImage extends BaseSmartWidget {
         break;
     }
   }
-  
+
+  plotImageOnCanvas(ctx, yOffset) {
+    if (!ctx || !(ctx instanceof CanvasRenderingContext2D)) {
+      console.error("Invalid canvas context provided.");
+      return;
+    }
+
+    // Clear the region where the SmartImage is being drawn
+    ctx.clearRect(this.x, this.y - yOffset, this.width, this.height);
+
+    // Draw the image if it's loaded; otherwise, draw a placeholder
+    if (this.imgLoaded) {
+      ctx.drawImage(
+        this.img,
+        this.x,
+        this.y - yOffset,
+        this.width,
+        this.height
+      );
+    } else {
+      ctx.fillStyle = this.placeholderColor;
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+  }
 }
 export class SmartWidget extends BaseSmartWidget {
   constructor(x, y, width, height, node, options = {}) {
@@ -483,6 +599,9 @@ export class SmartWidget extends BaseSmartWidget {
     this.onClick = null;
     this.onPress = null;
     this.onHover = null;
+
+    // New properties for half-circle shapes
+    this.sliceOffset = 0; // Offset for the sliced edge (default: no offset)
 
     // Apply options if provided
     Object.assign(this, options);
@@ -518,6 +637,92 @@ export class SmartWidget extends BaseSmartWidget {
   }
 
   draw(ctx) {
+    // Draw half-horizontal circle
+    const centerX = this.x + this.radius;
+    const centerY = this.y + this.radius;
+
+    // Draw half-horizontal left circle
+    if (this.shape === Shapes.HHL_CIRCLE) {
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, this.radius, Math.PI, 0, false);
+      ctx.lineTo(centerX - this.sliceOffset, centerY);
+      ctx.closePath();
+      ctx.fillStyle = this.color;
+      ctx.fill();
+
+      // Outline if enabled
+      if (this.outline) {
+        ctx.strokeStyle = this.outlineColor;
+        ctx.lineWidth = this.outlineWidth;
+        ctx.stroke();
+      }
+    }
+
+    // Draw half-horizontal right circle
+    else if (this.shape === Shapes.HHR_CIRCLE) {
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, this.radius, 0, Math.PI, false);
+      ctx.lineTo(centerX + this.sliceOffset, centerY);
+      ctx.closePath();
+      ctx.fillStyle = this.color;
+      ctx.fill();
+
+      // Outline if enabled
+      if (this.outline) {
+        ctx.strokeStyle = this.outlineColor;
+        ctx.lineWidth = this.outlineWidth;
+        ctx.stroke();
+      }
+    }
+
+    // Draw half-vertical left circle
+    else if (this.shape === Shapes.HVL_CIRCLE) {
+      ctx.beginPath();
+      ctx.arc(
+        centerX,
+        centerY,
+        this.radius,
+        Math.PI * 0.5,
+        Math.PI * 1.5,
+        false
+      );
+      ctx.lineTo(centerX, centerY - this.sliceOffset);
+      ctx.closePath();
+      ctx.fillStyle = this.color;
+      ctx.fill();
+
+      // Outline if enabled
+      if (this.outline) {
+        ctx.strokeStyle = this.outlineColor;
+        ctx.lineWidth = this.outlineWidth;
+        ctx.stroke();
+      }
+    }
+
+    // Draw half-vertical right circle
+    else if (this.shape === Shapes.HVR_CIRCLE) {
+      ctx.beginPath();
+      ctx.arc(
+        centerX,
+        centerY,
+        this.radius,
+        Math.PI * 1.5,
+        Math.PI * 0.5,
+        false
+      );
+      ctx.lineTo(centerX, centerY + this.sliceOffset);
+      ctx.closePath();
+      ctx.fillStyle = this.color;
+      ctx.fill();
+
+      // Outline if enabled
+      if (this.outline) {
+        ctx.strokeStyle = this.outlineColor;
+        ctx.lineWidth = this.outlineWidth;
+        ctx.stroke();
+      }
+    }
+
     // Draw rectangle
     if (this.shape === Shapes.SQUARE) {
       ctx.fillStyle = this.color;
@@ -670,6 +875,10 @@ export class SmartWidget extends BaseSmartWidget {
 
   isMouseIn() {
     const { x, y } = this.mousePos;
+
+    const centerX = this.x + this.radius;
+    const centerY = this.y + this.radius;
+
     if (
       this.shape === Shapes.SQUARE ||
       this.shape === Shapes.ROUND ||
@@ -681,46 +890,24 @@ export class SmartWidget extends BaseSmartWidget {
         y >= this.y &&
         y <= this.y + this.height
       );
-    } else if (this.shape === Shapes.CIRCLE || this.shape === Shapes.STAR) {
+    } else if (this.shape === Shapes.CIRCLE) {
       const distance = Math.sqrt(
         (x - (this.x + this.radius)) ** 2 + (y - (this.y + this.radius)) ** 2
       );
       return distance <= this.radius;
+    } else if (this.shape === Shapes.HVL_CIRCLE) {
+      const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+      return distance <= this.radius && x <= centerX;
+    } else if (this.shape === Shapes.HVR_CIRCLE) {
+      const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+      return distance <= this.radius && x >= centerX;
+    } else if (this.shape === Shapes.HHL_CIRCLE) {
+      const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+      return distance <= this.radius && y <= centerY;
+    } else if (this.shape === Shapes.HHR_CIRCLE) {
+      const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+      return distance <= this.radius && y >= centerY;
     }
-
-    // } else if (this.shape === Shapes.ROUND) {
-    //   const radius = Math.min(this.width, this.height) / 5;
-
-    //   // Check if the point is inside the main rectangle (excluding rounded corners)
-    //   if (
-    //     x >= this.x + radius &&
-    //     x <= this.x + this.width - radius &&
-    //     y >= this.y &&
-    //     y <= this.y + this.height
-    //   ) {
-    //     return true;
-    //   }
-    //   if (
-    //     x >= this.x &&
-    //     x <= this.x + this.width &&
-    //     y >= this.y + radius &&
-    //     y <= this.y + this.height - radius
-    //   ) {
-    //     return true;
-    //   }
-
-    //   // Check if the point is inside the rounded corners
-    //   const cornerCenters = [
-    //     { cx: this.x + radius, cy: this.y + radius }, // Top-left
-    //     { cx: this.x + this.width - radius, cy: this.y + radius }, // Top-right
-    //     { cx: this.x + radius, cy: this.y + this.height - radius }, // Bottom-left
-    //     { cx: this.x + this.width - radius, cy: this.y + this.height - radius }, // Bottom-right
-    //   ];
-
-    //   return cornerCenters.some(({ cx, cy }) => {
-    //     return (x - cx) ** 2 + (y - cy) ** 2 <= radius ** 2;
-    //   });
-    // }
 
     return false;
   }
@@ -1487,6 +1674,7 @@ export class SmartPaintArea extends BaseSmartWidget {
     this.blockPainting = false;
     this.isPaintingBackground = false; // Layer switch
 
+    this.ctx = null;
     // Foreground Layer
     this.foregroundCanvas = document.createElement("canvas");
     this.foregroundCanvas.width = this.width;
@@ -1507,6 +1695,7 @@ export class SmartPaintArea extends BaseSmartWidget {
 
     this.onClick = null;
     this.onPress = null;
+    this.onUpdate = null;
     this.onReInit = null;
 
     this.scaleFactor = 1.0;
@@ -1599,6 +1788,7 @@ export class SmartPaintArea extends BaseSmartWidget {
     this.isPaintingBackground = !this.isPaintingBackground;
   }
   draw(ctx) {
+    if (this.ctx === null) this.ctx = ctx;
     const { x, y } = this.mousePos; // remove this
 
     if (this.isPainting && !this.blockPainting) {
@@ -1646,15 +1836,22 @@ export class SmartPaintArea extends BaseSmartWidget {
       if (this.onPress) this.onPress();
       // Save the current state before starting to paint
       this.commitChange();
+      this.enterFreezeMode();
       this.isPainting = true;
     }
   }
 
   handleClick() {
     if (this.isMouseIn()) {
-      this.isPainting = false;
       if (this.onClick) this.onClick();
+      //this.exitFreezeMode();
+      this.isPainting = false;
     }
+  }
+
+  handleMove() {
+    this.enterFreezeMode();
+    if (this.onUpdate) this.onUpdate();
   }
 
   clearWithColor(color) {
@@ -1800,11 +1997,22 @@ export class SmartPaintArea extends BaseSmartWidget {
 
         // Helper function to convert hex to base64
         function hexToBase64(hexString) {
-          const bytes = [];
-          for (let c = 0; c < hexString.length; c += 2) {
-            bytes.push(parseInt(hexString.substr(c, 2), 16));
+          if (!hexString || typeof hexString !== "string") {
+            console.error("Invalid hexadecimal string provided.");
+            return "";
           }
-          return btoa(String.fromCharCode(...bytes)); // Convert to base64
+          const chunkSize = 1024 * 1024; // Process in chunks of 1MB
+          let base64 = "";
+          for (let i = 0; i < hexString.length; i += chunkSize * 2) {
+            const chunk = hexString.slice(i, i + chunkSize * 2);
+            let binaryString = "";
+            for (let c = 0; c < chunk.length; c += 2) {
+              const byte = parseInt(chunk.substr(c, 2), 16);
+              binaryString += String.fromCharCode(byte);
+            }
+            base64 += btoa(binaryString);
+          }
+          return base64;
         }
 
         // Load the foreground image
@@ -1986,7 +2194,7 @@ export class SmartPreview extends BaseSmartWidget {
     this.heightLimit = this.height;
     this.yOffset = 80;
     this.xOffset = 0;
-
+    this.isVisible = true;
     this.allowInnerCircle = false;
     this.init();
 
@@ -2008,6 +2216,7 @@ export class SmartPreview extends BaseSmartWidget {
 
   draw(ctx) {
     const { x, y } = this.mousePos;
+    if (!this.isVisible) return;
     // if (x > this.widthLimit) return;
     // if (y > this.heightLimit) return;
     if (y < this.yOffset) return;
@@ -2070,6 +2279,11 @@ export class SmartColorPicker extends BaseSmartWidget {
     node.addCustomWidget(this);
   }
 
+  openHidden() {
+    this.isVisible = true;
+    this.isGhost = true;
+  }
+
   open() {
     this.isVisible = true;
   }
@@ -2077,25 +2291,30 @@ export class SmartColorPicker extends BaseSmartWidget {
   close() {
     this.isVisible = false;
     this.isSelecting = false;
+    this.isGhost = false;
   }
 
   handleMove(e) {
     if (!this.isMouseDown()) {
       this.isVisible = false;
+      this.isGhost = false;
       this.isSelecting = false;
     } else {
       this.isSelecting = true;
     }
   }
+  handleDrag(e) {}
 
   toggleShow() {
     this.isVisible = !this.isVisible;
   }
 
   draw(ctx) {
-    if (!this.isVisible) return;
+    const transparentColor = "rgba(0, 0, 0, 0.0)"; // 100% transparency (semi-transparent red)
+
     // Ensure the context is set
     if (this.ctx === null) this.ctx = ctx;
+    if (!this.isVisible) return;
 
     // Create a horizontal gradient for hue
     const hueGradient = ctx.createLinearGradient(
@@ -2113,7 +2332,7 @@ export class SmartColorPicker extends BaseSmartWidget {
     hueGradient.addColorStop(1, "violet");
 
     // Fill the canvas with the hue gradient
-    ctx.fillStyle = hueGradient;
+    ctx.fillStyle = this.isGhost? transparentColor :hueGradient;
     ctx.fillRect(this.x, this.y, this.width, this.height);
 
     // Create a vertical gradient for brightness
@@ -2130,7 +2349,7 @@ export class SmartColorPicker extends BaseSmartWidget {
 
     // Use global composite operation to blend the gradients
     ctx.globalCompositeOperation = "multiply";
-    ctx.fillStyle = brightnessGradient;
+    ctx.fillStyle = this.isGhost? transparentColor : brightnessGradient;
     ctx.fillRect(this.x, this.y, this.width, this.height);
 
     // Reset the global composite operation to default
@@ -2143,6 +2362,7 @@ export class SmartColorPicker extends BaseSmartWidget {
     if (!this.isSelecting) return;
     if (!this.ctx) return;
     const rect = this.ctx.canvas.getBoundingClientRect();
+
     const scaleX = this.ctx.canvas.width / rect.width;
     const scaleY = this.ctx.canvas.height / rect.height;
 
@@ -2322,6 +2542,29 @@ export class SmartDropdownMenu extends BaseSmartWidget {
       y >= this.y &&
       y <= this.y + this.height
     );
+  }
+
+  isMouseInMenu() {
+    const { x, y } = this.mousePos;
+    if (!this.isOpen) return false; // Only check if the menu is open
+
+    // Check if mouse is within the bounds of the menu
+    const menuHeight =
+      this.items.length * this.height +
+      (this.items.length - 1) * this.dropMenuGap +
+      2;
+    const menuWidth = this.width + 2;
+
+    // Check if the mouse is inside the dropdown menu area
+    if (
+      x >= this.x - 1 &&
+      x <= this.x - 1 + menuWidth &&
+      y >= this.y - 1 + this.height + this.dropMenuOffset &&
+      y <= this.y - 1 + this.height + this.dropMenuOffset + menuHeight
+    ) {
+      return true;
+    }
+    return false;
   }
 }
 

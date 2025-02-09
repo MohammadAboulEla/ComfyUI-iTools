@@ -48,6 +48,19 @@ export function hexToImageData(hex) {
   return imageData;
 }
 
+export function trackMouseColor(event, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+
+  const mouseX = (event.clientX - rect.left) * scaleX;
+  const mouseY = (event.clientY - rect.top) * scaleY;
+
+  const ctx = canvas.getContext("2d");
+  const pixel = ctx.getImageData(mouseX, mouseY, 1, 1).data;
+      return(`rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`);
+}
+
 // Function to convert hex data to a Blob
 export function hexToBlob(hex) {
   const byteArray = new Uint8Array(
@@ -74,6 +87,10 @@ export const Shapes = Object.freeze({
   TRIANGLE: "triangle",
   STAR: "star",
   ELLIPSE: "ellipse",
+  HHL_CIRCLE: "half horizontal left circle",
+  HVL_CIRCLE: "half vertical left circle",
+  HHR_CIRCLE: "half horizontal right circle",
+  HVR_CIRCLE: "half vertical right circle",
 });
 
 export const AppColors = Object.freeze({

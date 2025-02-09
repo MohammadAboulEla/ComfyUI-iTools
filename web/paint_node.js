@@ -9,6 +9,7 @@ import {
   canvasRatios,
   canvasScales,
   commonColors,
+  trackMouseColor
 } from "./utils.js";
 import {
   BaseSmartWidgetManager,
@@ -27,6 +28,18 @@ import {
   SmartInfo,
   SmartImage,
 } from "./makadi.js";
+
+// const processMouseDown = LGraphCanvas.prototype.processMouseDown;
+// LGraphCanvas.prototype.processMouseDown = function(e) {
+//   console.log('MouseDown',e);
+//   return processMouseDown.apply(this, arguments);
+// };
+
+// const processMouseMove = LGraphCanvas.prototype.processMouseMove;
+// LGraphCanvas.prototype.processMouseMove= function(e) {
+//   console.log('MouseMove',e);
+//   return processMouseDown.apply(this, arguments);
+// };
 
 app.registerExtension({
   name: "iTools.paintNode",
@@ -58,6 +71,9 @@ app.registerExtension({
       console.log("node", node);
       console.log("app.canvas", app.canvas);
     }
+
+
+
     // START POINT
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
     const p = new SmartPreview(0, 80, 512, 512, node);
@@ -72,22 +88,75 @@ app.registerExtension({
       outline: false,
     });
 
-    const img = new SmartImage(0, 80, 80, 80, node, {
-      //placeholderColor: LiteGraph.WIDGET_BGCOLOR,
+    const canvasImgs = [];
+    const bLoad = new SmartButton(5, 5, 80, 20, node, "Load Image", {
+      textXoffset: 0,
     });
-    
+    bLoad.onClick = () => {
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = ".png";
 
+      fileInput.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+
+          reader.onload = (e) => {
+            const imageUrl = e.target.result;
+
+            // Create a new SmartImage instance
+            const img = new SmartImage(0, 80, 80, 80, node, {});
+
+            // Update the image source dynamically
+            img.updateImage(imageUrl);
+
+            // Add the SmartImage instance to the canvasImgs array
+            canvasImgs.push(img);
+
+            // Optional: Define the onImgLoaded callback
+            img.onImgLoaded = () => {
+              console.log("Image loaded successfully!");
+            };
+          };
+
+          reader.readAsDataURL(file);
+          console.log(`File name: ${file.name}`);
+
+          // Clear the file input value to allow reselection of the same file
+          fileInput.value = "";
+        }
+      });
+
+      fileInput.click();
+    };
 
     const bColor = new SmartButton(5, 35, 40, 40, node);
-    bColor.shape = Shapes.CIRCLE;
+    bColor.shape = Shapes.HVL_CIRCLE;
     bColor.color = "crimson";
     (bColor.allowVisualHover = false),
       (bColor.allowVisualPress = false),
       (bColor.onPress = () => {
         cp.open();
-        const info2 = new SmartInfo(512 / 2 - 80, 85, 160, 15, node, "Hold to pick | Alt to switch");
-        info2.start()
+        const info2 = new SmartInfo(
+          512 / 2 - 80,
+          85,
+          160,
+          15,
+          node,
+          "Hold to pick | Alt to switch"
+        );
+        info2.start();
       });
+
+      const bColor2 = new SmartButton(5, 35, 40, 40, node);
+      bColor2.shape = Shapes.HVR_CIRCLE;
+      bColor2.color = "orange";
+      (bColor2.allowVisualHover = false),
+        (bColor2.allowVisualPress = false),
+        (bColor2.onPress = () => {
+          cp.openHidden();
+        });
 
     const brushSlider = new SmartSlider(55, 35, 150, 20, node, {
       minValue: 1,
@@ -149,45 +218,7 @@ app.registerExtension({
       //console.log(itemA,itemB);
     };
 
-    pa.onReInit = () => {
-      // TODO Fix re-init doesn't center the canvas
-      function getRatioByDimensions(width, height) {
-        for (let [ratio, dimensions] of canvasRatios.entries()) {
-          if (dimensions.width === width && dimensions.height === height) {
-            return ratio;
-          }
-        }
-        return null; // Return null if no matching ratio is found
-      }
-      function getIndexByDimensions(width, height) {
-        const entriesArray = [...canvasRatios.entries()]; // Convert Map to array
-        for (let i = 0; i < entriesArray.length; i++) {
-          const [ratio, dimensions] = entriesArray[i];
-          if (dimensions.width === width && dimensions.height === height) {
-            return i; // Return the index if found
-          }
-        }
-        return -1; // Return -1 if no matching dimensions are found
-      }
-      const index = getIndexByDimensions(pa.width, pa.height);
-    };
 
-    
-    pa.onPress = () => {
-      // Block painting when drop menus open
-      if (dmR.isOpen || dmS.isOpen) {
-        pa.blockPainting = true;
-      }
-      
-      //Block painting when img picked
-      else if(img.isMouseIn(10)){
-        pa.blockPainting = true
-      }
-      
-      else{
-        pa.blockPainting = false
-      } 
-    };
 
     const bUndo = new SmartButton(185 - 15, 60, 15, 15, node, "↺", {
       textXoffset: 0,
@@ -275,22 +306,112 @@ app.registerExtension({
       }
     }
 
-    // Common Node Events
-    node.onMouseMove = (e, pos) => {
-      if (cp.isVisible) {
-        cp.setColorUnderCurser(e);
-        bColor.color = cp.selectedColor;
-        bFill.tagColor = cp.selectedColor;
-        pa.brushColor = cp.selectedColor;
+
+    // Common actions
+
+    pa.onReInit = () => {
+      // TODO Fix re-init doesn't center the canvas
+      function getRatioByDimensions(width, height) {
+        for (let [ratio, dimensions] of canvasRatios.entries()) {
+          if (dimensions.width === width && dimensions.height === height) {
+            return ratio;
+          }
+        }
+        return null; // Return null if no matching ratio is found
       }
+      function getIndexByDimensions(width, height) {
+        const entriesArray = [...canvasRatios.entries()]; // Convert Map to array
+        for (let i = 0; i < entriesArray.length; i++) {
+          const [ratio, dimensions] = entriesArray[i];
+          if (dimensions.width === width && dimensions.height === height) {
+            return i; // Return the index if found
+          }
+        }
+        return -1; // Return -1 if no matching dimensions are found
+      }
+      const index = getIndexByDimensions(pa.width, pa.height);
     };
 
-    node.onMouseEnter = (e, pos) => {};
+    pa.onPress = () => {
+      pa.blockPainting = false;
+
+      // Block painting when drop menus open
+      console.log("called");
+      if (dmR.isMouseInMenu() || dmS.isMouseInMenu()) {
+        pa.blockPainting = true;
+      }
+      // Block painting on images
+      canvasImgs.forEach((img) => {
+        if (img.isMouseIn(10)) {
+          pa.blockPainting = true;
+        }
+      });
+    };
+
+    pa.onUpdate = ()=> {
+      // disable preview circle on canvas images
+      canvasImgs.forEach((img) => {
+        if (!img.isMouseIn(10)) {
+          p.isVisible = true;
+        }else{
+          p.isVisible = false;
+        }
+      });
+    }
+
+    // Common Node Events
+    let keyPick = false;
+    
+    node.onMouseDown = (e, pos, node) => {
+      // if(pos[1] > 80){
+      //   node.allow_interaction = false;
+      //   node.allow_dragcanvas = false;
+      //   node.allow_dragnodes = false;
+      // }
+
+    };
+
+    node.onMouseUp = (e,pos,node)=>{
+      // node.allow_interaction = true;
+      // node.allow_dragcanvas = true;
+      // node.allow_dragnodes = true;
+    }
+
+
+  
+    node.onMouseMove = (e, pos) => {
+      if (cp.isVisible ) {
+        // cp.setColorUnderCurser(e);
+        // bColor.color = cp.selectedColor;
+        // bFill.tagColor = cp.selectedColor;
+        // pa.brushColor = cp.selectedColor;
+        if(cp.isGhost){
+          bColor2.color = trackMouseColor(e, app.canvas.canvas)
+          bFill.tagColor = trackMouseColor(e, app.canvas.canvas)
+          pa.brushColor = trackMouseColor(e, app.canvas.canvas)
+        }else{
+          bColor.color = trackMouseColor(e, app.canvas.canvas)
+          bFill.tagColor = trackMouseColor(e, app.canvas.canvas)
+          pa.brushColor = trackMouseColor(e, app.canvas.canvas)
+        }
+
+      }
+      
+    };
+
+
+    node.onMouseEnter = (e, pos,node ) => {
+
+
+    };
 
     node.onMouseLeave = (e) => {
+
+
       pa.sendDrawingToAPI();
     };
 
+    
     app.canvas.canvas.onkeydown = (event) => {
       if (event.ctrlKey && event.key === "z") {
         console.log("Ctrl+Z was pressed");
@@ -301,12 +422,24 @@ app.registerExtension({
     app.canvas.canvas.onkeydown = (event) => {
       if (event.key === "Alt") {
         event.preventDefault();
+        
+        // plot image on back ground
+        canvasImgs.forEach((img) => {
+          if (img.isMouseIn(10)) {
+            img.plotImageOnCanvas(pa.backgroundCtx, 80)
+          }
+        });
+
+        // change color picker position
         if (cp.isVisible && cp.x === 0) {
           cp.x = 512 - cp.width;
         } else {
           cp.x = 0;
         }
+        
+     
       }
+      
     };
 
     app.canvas.canvas.onkeyup = (event) => {
@@ -315,7 +448,7 @@ app.registerExtension({
       }
     };
 
-    app.canvas.canvas.onmouseleave = () => {};
+    //app.canvas.canvas.onmouseleave = () => {};
 
     const manager = new BaseSmartWidgetManager(node);
   },
