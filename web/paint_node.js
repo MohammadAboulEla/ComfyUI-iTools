@@ -9,7 +9,8 @@ import {
   canvasRatios,
   canvasScales,
   commonColors,
-  trackMouseColor
+  trackMouseColor,
+  fakeMouseDown,
 } from "./utils.js";
 import {
   BaseSmartWidgetManager,
@@ -29,26 +30,16 @@ import {
   SmartImage,
 } from "./makadi.js";
 
-// const processMouseDown = LGraphCanvas.prototype.processMouseDown;
-// LGraphCanvas.prototype.processMouseDown = function(e) {
-//   console.log('MouseDown',e);
-//   return processMouseDown.apply(this, arguments);
-// };
-
-// const processMouseMove = LGraphCanvas.prototype.processMouseMove;
-// LGraphCanvas.prototype.processMouseMove= function(e) {
-//   console.log('MouseMove',e);
-//   return processMouseDown.apply(this, arguments);
-// };
-
 app.registerExtension({
   name: "iTools.paintNode",
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
     if (nodeData.name !== "iToolsPaintNode") {
       return;
     }
+    const window = globalThis;
 
     if (allow_debug) {
+      console.log("window", window);
       console.log("nodeType", nodeType);
       console.log("nodeData", nodeData);
       console.log("app", app);
@@ -64,21 +55,26 @@ app.registerExtension({
       console.log("loading ...");
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
+
+    // Node Settings
     node.setSize([512, 592]);
     node.resizable = false;
-    node.setDirtyCanvas(false, true);
+    node.setDirtyCanvas(true, true);
+
     if (allow_debug) {
       console.log("node", node);
+      console.log("app", app);
       console.log("app.canvas", app.canvas);
     }
 
-
-
     // START POINT
+    let canvasImgs = [];
+    let keyPick = false;
+    let isHoldingShift = false;
+
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
     const p = new SmartPreview(0, 80, 512, 512, node);
     const cp = new SmartColorPicker(0, 80, 170, 170, node);
-
     const info = new SmartInfo(512 / 2 - 40, 85, 80, 15, node, "canvas size");
     const ui = new SmartWidget(0, 30, node.width, 50, node, {
       color: lightenColor(LiteGraph.WIDGET_BGCOLOR, 5),
@@ -88,7 +84,6 @@ app.registerExtension({
       outline: false,
     });
 
-    const canvasImgs = [];
     const bLoad = new SmartButton(5, 5, 80, 20, node, "Load Image", {
       textXoffset: 0,
     });
@@ -116,12 +111,12 @@ app.registerExtension({
 
             // Optional: Define the onImgLoaded callback
             img.onImgLoaded = () => {
-              console.log("Image loaded successfully!");
+              if (this.allowDebug) console.log("Image loaded successfully!");
             };
           };
 
           reader.readAsDataURL(file);
-          console.log(`File name: ${file.name}`);
+          if (this.allowDebug) console.log(`File name: ${file.name}`);
 
           // Clear the file input value to allow reselection of the same file
           fileInput.value = "";
@@ -138,25 +133,17 @@ app.registerExtension({
       (bColor.allowVisualPress = false),
       (bColor.onPress = () => {
         cp.open();
-        const info2 = new SmartInfo(
-          512 / 2 - 80,
-          85,
-          160,
-          15,
-          node,
-          "Hold to pick | Alt to switch"
-        );
-        info2.start();
+        info.restart("Alt Key");
       });
 
-      const bColor2 = new SmartButton(5, 35, 40, 40, node);
-      bColor2.shape = Shapes.HVR_CIRCLE;
-      bColor2.color = "orange";
-      (bColor2.allowVisualHover = false),
-        (bColor2.allowVisualPress = false),
-        (bColor2.onPress = () => {
-          cp.openHidden();
-        });
+    const bColor2 = new SmartButton(5, 35, 40, 40, node);
+    bColor2.shape = Shapes.HVR_CIRCLE;
+    bColor2.color = "orange";
+    (bColor2.allowVisualHover = false),
+      (bColor2.allowVisualPress = false),
+      (bColor2.onPress = () => {
+        cp.openHidden();
+      });
 
     const brushSlider = new SmartSlider(55, 35, 150, 20, node, {
       minValue: 1,
@@ -205,7 +192,7 @@ app.registerExtension({
       const itemB = sizesArray[dmS.selectedItemIndex][1];
       pa.setNewSize(itemA, itemB);
       info.restart(`${itemA.width * itemB} x ${itemA.height * itemB}`);
-      //console.log(itemA,itemB);
+      //if (this.allowDebug) console.log(itemA,itemB);
     };
 
     dmS.onSelect = () => {
@@ -215,10 +202,8 @@ app.registerExtension({
       const itemB = sizesArray[dmS.selectedItemIndex][1];
       pa.setNewSize(itemA, itemB);
       info.restart(`${itemA.width * itemB} x ${itemA.height * itemB}`);
-      //console.log(itemA,itemB);
+      //if (this.allowDebug) console.log(itemA,itemB);
     };
-
-
 
     const bUndo = new SmartButton(185 - 15, 60, 15, 15, node, "↺", {
       textXoffset: 0,
@@ -296,7 +281,7 @@ app.registerExtension({
               bColor.color = color;
               bFill.tagColor = color;
               pa.brushColor = color;
-              console.log(`Widget ${index} clicked`);
+              if (this.allowDebug) console.log(`Widget ${index} clicked`);
             },
           }
         );
@@ -305,7 +290,6 @@ app.registerExtension({
         index++; // Increment unique index
       }
     }
-
 
     // Common actions
 
@@ -336,7 +320,6 @@ app.registerExtension({
       pa.blockPainting = false;
 
       // Block painting when drop menus open
-      console.log("called");
       if (dmR.isMouseInMenu() || dmS.isMouseInMenu()) {
         pa.blockPainting = true;
       }
@@ -348,107 +331,89 @@ app.registerExtension({
       });
     };
 
-    pa.onUpdate = ()=> {
+    pa.onUpdate = () => {
       // disable preview circle on canvas images
       canvasImgs.forEach((img) => {
         if (!img.isMouseIn(10)) {
           p.isVisible = true;
-        }else{
+        } else {
           p.isVisible = false;
         }
       });
-    }
-
-    // Common Node Events
-    let keyPick = false;
-    
-    node.onMouseDown = (e, pos, node) => {
-      // if(pos[1] > 80){
-      //   node.allow_interaction = false;
-      //   node.allow_dragcanvas = false;
-      //   node.allow_dragnodes = false;
-      // }
-
     };
 
-    node.onMouseUp = (e,pos,node)=>{
-      // node.allow_interaction = true;
-      // node.allow_dragcanvas = true;
-      // node.allow_dragnodes = true;
+    // Common Node Events
+    function pickColor(e) {
+      if (cp.isVisible || isHoldingShift) {
+        bFill.tagColor = trackMouseColor(e, app.canvas.canvas);
+        pa.brushColor = trackMouseColor(e, app.canvas.canvas);
+        cp.selectedColor = trackMouseColor(e, app.canvas.canvas);
+
+        if (cp.isGhost) {
+          bColor2.color = trackMouseColor(e, app.canvas.canvas);
+        } else {
+          bColor.color = trackMouseColor(e, app.canvas.canvas);
+        }
+      }
     }
 
 
-  
-    node.onMouseMove = (e, pos) => {
-      if (cp.isVisible ) {
-        // cp.setColorUnderCurser(e);
-        // bColor.color = cp.selectedColor;
-        // bFill.tagColor = cp.selectedColor;
-        // pa.brushColor = cp.selectedColor;
-        if(cp.isGhost){
-          bColor2.color = trackMouseColor(e, app.canvas.canvas)
-          bFill.tagColor = trackMouseColor(e, app.canvas.canvas)
-          pa.brushColor = trackMouseColor(e, app.canvas.canvas)
-        }else{
-          bColor.color = trackMouseColor(e, app.canvas.canvas)
-          bFill.tagColor = trackMouseColor(e, app.canvas.canvas)
-          pa.brushColor = trackMouseColor(e, app.canvas.canvas)
-        }
 
-      }
+    node.onMouseDown = (e, pos, node) => {
+      pickColor(e)      
+      
+      canvasImgs = canvasImgs.filter(img => !img.markDelete);
+    };
+
+    node.onMouseUp = (e, pos, node) => {
+      setTimeout(() => {
+        if(!pa.isPainting) pa.sendDrawingToAPI();
+      }, 1000);
       
     };
 
-
-    node.onMouseEnter = (e, pos,node ) => {
-
-
+    node.onMouseMove = (e, pos) => {
+      pickColor(e);
     };
 
-    node.onMouseLeave = (e) => {
+    node.onMouseEnter = (e, pos, node) => {};
 
+    node.onMouseLeave = (e) => {};
 
-      pa.sendDrawingToAPI();
-    };
-
-    
     app.canvas.canvas.onkeydown = (event) => {
       if (event.ctrlKey && event.key === "z") {
-        console.log("Ctrl+Z was pressed");
         event.preventDefault();
+        if (this.allowDebug) console.log("Ctrl+Z was pressed");
       }
-    };
 
-    app.canvas.canvas.onkeydown = (event) => {
       if (event.key === "Alt") {
-        event.preventDefault();
         
         // plot image on back ground
         canvasImgs.forEach((img) => {
           if (img.isMouseIn(10)) {
-            img.plotImageOnCanvas(pa.backgroundCtx, 80)
+            const ctx = pa.isPaintingBackground? pa.backgroundCtx : pa.foregroundCtx
+            img.plotImageOnCanvas(ctx, pa.x, pa.y, dmS.selectedItemIndex);
           }
         });
-
+        
         // change color picker position
         if (cp.isVisible && cp.x === 0) {
           cp.x = 512 - cp.width;
-        } else {
-          cp.x = 0;
-        }
+        } else {cp.x = 0;}
         
-     
       }
-      
+
+      if (event.key === "Shift") {
+        info.restart("Shift",0)
+        isHoldingShift = true;
+      }
     };
 
     app.canvas.canvas.onkeyup = (event) => {
-      if (event.key === "Alt") {
-        event.preventDefault();
+      if (event.key === "Shift") {
+        isHoldingShift = false;
       }
     };
-
-    //app.canvas.canvas.onmouseleave = () => {};
 
     const manager = new BaseSmartWidgetManager(node);
   },

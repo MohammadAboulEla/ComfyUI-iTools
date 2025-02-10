@@ -6,25 +6,12 @@ import {
   trackMouseColor,
 } from "./utils.js";
 import { api } from "../../../scripts/api.js";
-
-// const processMouseDown = LGraphCanvas.prototype.processMouseDown;
-// LGraphCanvas.prototype.processMouseDown = function (e) {
-//   console.log("MouseDown", e);
-//   return processMouseDown.apply(this, arguments);
-// };
-
-// function smartMouseUp(e) {
-//   const processMouseUp = LGraphCanvas.prototype.processMouseUp;
-//   LGraphCanvas.prototype.processMouseUp = function (e) {
-//     console.log("MouseUp", e);
-//     return processMouseUp.apply(this, arguments);
-//   };
-// }
+import { allow_debug } from "./js_shared.js";
 
 class BaseSmartWidget {
   constructor(node) {
     this.node = node;
-
+    this.markDelete = false;
     this._mousePos = [0, 0];
   }
 
@@ -34,16 +21,10 @@ class BaseSmartWidget {
     return app.canvas.pointer.isDown;
   }
 
-  enterFreezeMode() {
-    this.node.allow_interaction = false;
-    this.node.allow_dragcanvas = false;
-    this.node.allow_dragnodes = false;
-  }
-
-  exitFreezeMode() {
-    this.node.allow_interaction = true;
-    this.node.allow_dragcanvas = true;
-    this.node.allow_dragnodes = true;
+  isLowQuality() {
+    const canvas = app.canvas;
+    const scale = canvas?.ds?.scale ?? 1; // Get scale, default to 1 if undefined
+    return scale <= 0.5;
   }
 
   get mousePos() {
@@ -68,10 +49,8 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   initEventListeners() {
     app.canvas.onMouseDown = (e) => this.handleMouseDown(e); //works even out of node
     app.canvas.canvas.onclick = (e) => this.handleMouseClick(e); // works after mouse down
-    this.node.onDrawForeground = (ctx) => this.handleMouseMove(ctx); //works every where even when dragging
-    app.canvas.canvas.onmousemove = (e) => this.handleMouseDrag(e); //works every where
-    // this.node.onMouseUp = (e) => this.handleDragEnd(e); // work only after dragging on node, trigger before click
-    // this.node.onMouseDown = (e,pos, node) => this.handleDragStart(e,pos, node); // work only if mouse down on node,
+    app.canvas.onDrawForeground = (ctx) => this.handleMouseMove(ctx); //works every where even when dragging
+    app.canvas.canvas.onmousemove = (e) => this.handleMouseDrag(e); //works every where but not when dragging
   }
 
   handleMouseDown(e) {
@@ -98,6 +77,7 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
         widget.handleClick?.(e);
       }
     });
+    this.filterDeletedWIdgets();
     if (this.allowDebug) console.log("MouseClicked");
   }
 
@@ -108,6 +88,13 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
       }
     });
     if (this.allowDebug) console.log("MouseDrag");
+  }
+
+  filterDeletedWIdgets() {
+    // Filter out widgets marked for deletion
+    this.node.widgets = this.node.widgets.filter(
+      (widget) => !widget.markDelete
+    );
   }
 }
 
@@ -129,6 +116,10 @@ export class SmartImage extends BaseSmartWidget {
     this.resizeThreshold = 10; // Distance threshold for detecting resize areas
     this.onImgLoaded = null;
 
+    this.buttonXoffset = 5;
+    this.buttonYoffset = 5;
+    this.closeButton = null;
+
     // Apply options if provided
     Object.assign(this, options);
 
@@ -139,35 +130,28 @@ export class SmartImage extends BaseSmartWidget {
 
     // Add self to the node
     node.addCustomWidget(this);
-
-    // Object.defineProperty(SmartImage.prototype, "img", {
-    //   get() {
-    //     return this._img;
-    //   },
-    //   set(newImg) {
-    //     if (!(newImg instanceof HTMLImageElement)) {
-    //       console.error("Invalid image object provided.");
-    //       return;
-    //     }
-
-    //     // Reset the imgLoaded flag
-    //     this.imgLoaded = false;
-
-    //     // Assign the new image object
-    //     this._img = newImg;
-
-    //     // Handle image loading events
-    //     this._img.onload = () => {
-    //       this.imgLoaded = true;
-    //       if (this.onImgLoaded) this.onImgLoaded();
-    //     };
-
-    //     this._img.onerror = () => {
-    //       console.error("Failed to load the new image.");
-    //     };
-    //   },
-    // });
   }
+
+  createCloseButton() {
+    if (this.closeButton === null) {
+      this.closeButton = new SmartButton(
+        this.x + this.buttonXoffset,
+        this.y + this.buttonYoffset,
+        15,
+        15,
+        this.node,
+        "X",
+        { color: "rgba(255, 255, 255, 0.5)", textColor: "#434343" }
+      );
+
+      this.closeButton.onClick = () => {
+        //this.img = null;
+        this.closeButton.markDelete = true;
+        this.markDelete = true;
+      };
+    }
+  }
+
   updateImage(newSrc) {
     if (!newSrc) {
       console.error("Invalid image source provided.");
@@ -191,6 +175,7 @@ export class SmartImage extends BaseSmartWidget {
       console.error("Failed to load the new image.");
     };
   }
+
   async fetchImageFromAPI() {
     const formData = new FormData();
     formData.append("filename_prefix", this.filenamePrefix || "iToolsTestImg");
@@ -230,7 +215,7 @@ export class SmartImage extends BaseSmartWidget {
         this.img.onerror = () => {
           console.error("Failed to load image from API");
         };
-        console.log("Image received successfully.");
+        if (allow_debug) console.log("Image received successfully.");
       } else {
         console.error("Error fetching image:", result.message);
       }
@@ -245,6 +230,10 @@ export class SmartImage extends BaseSmartWidget {
       this.resizeAnchor = this.getResizeAnchor();
     } else if (this.isMouseIn()) {
       this.isPicked = true;
+      this.pickOffset = {
+        x: this.mousePos.x - this.x,
+        y: this.mousePos.y - this.y,
+      };
     }
   }
 
@@ -257,12 +246,15 @@ export class SmartImage extends BaseSmartWidget {
     if (this.isResizing) {
       this.resizeImage();
     } else if (this.isPicked) {
-      let newX = this.mousePos.x - this.width / 2;
-      let newY = this.mousePos.y - this.height / 2;
+      let newX = this.mousePos.x - this.pickOffset.x;
+      let newY = this.mousePos.y - this.pickOffset.y;
 
       // Corrected clamping logic
       this.x = Math.max(canvasX, Math.min(newX, canvasX + width));
       this.y = Math.max(canvasY, Math.min(newY, canvasY + height));
+
+      this.closeButton.x = this.x + this.buttonXoffset;
+      this.closeButton.y = this.y + this.buttonYoffset;
     }
   }
 
@@ -273,6 +265,8 @@ export class SmartImage extends BaseSmartWidget {
   }
 
   draw(ctx) {
+    if (this.markDelete) return;
+
     // Clear the region occupied by the SmartImage
     ctx.clearRect(this.x, this.y, this.width, this.height);
 
@@ -348,14 +342,45 @@ export class SmartImage extends BaseSmartWidget {
         handleSize
       ); // Right
     }
+
+    this.createCloseButton();
   }
 
   handleDrag() {
     if (this.isMouseIn()) {
-      app.canvas.canvas.style.cursor = "pointer";
+      app.canvas.canvas.style.cursor = "grabbing";
     }
     if (this.isMouseInResizeArea()) {
-      app.canvas.canvas.style.cursor = "se-resize";
+      const dir = this.getResizeAnchor();
+      switch (dir) {
+        case "bottom-right":
+          app.canvas.canvas.style.cursor = "se-resize";
+          break;
+        case "bottom":
+          app.canvas.canvas.style.cursor = "s-resize";
+          break;
+        case "bottom-left":
+          app.canvas.canvas.style.cursor = "sw-resize";
+          break;
+        case "top-right":
+          app.canvas.canvas.style.cursor = "ne-resize";
+          break;
+        case "top":
+          app.canvas.canvas.style.cursor = "n-resize";
+          break;
+        case "top-left":
+          app.canvas.canvas.style.cursor = "nw-resize";
+          break;
+        case "right":
+          app.canvas.canvas.style.cursor = "e-resize";
+          break;
+        case "left":
+          app.canvas.canvas.style.cursor = "w-resize";
+          break;
+
+        default:
+          break;
+      }
     }
   }
 
@@ -552,23 +577,26 @@ export class SmartImage extends BaseSmartWidget {
     }
   }
 
-  plotImageOnCanvas(ctx, yOffset) {
+  plotImageOnCanvas(ctx, xOffset, yOffset, scale) {
     if (!ctx || !(ctx instanceof CanvasRenderingContext2D)) {
       console.error("Invalid canvas context provided.");
       return;
     }
 
+    if (scale === -1 || scale === 0) scale = 1;
+    else if (scale === 1) scale = 2;
+    else if (scale === 2) scale = 4;
     // Clear the region where the SmartImage is being drawn
-    ctx.clearRect(this.x, this.y - yOffset, this.width, this.height);
+    //ctx.clearRect(this.x-xOffset, this.y - yOffset, this.width*scale, this.height*scale);
 
     // Draw the image if it's loaded; otherwise, draw a placeholder
     if (this.imgLoaded) {
       ctx.drawImage(
         this.img,
-        this.x,
-        this.y - yOffset,
-        this.width,
-        this.height
+        (this.x - xOffset) * scale,
+        (this.y - yOffset) * scale,
+        this.width * scale,
+        this.height * scale
       );
     } else {
       ctx.fillStyle = this.placeholderColor;
@@ -576,6 +604,7 @@ export class SmartImage extends BaseSmartWidget {
     }
   }
 }
+
 export class SmartWidget extends BaseSmartWidget {
   constructor(x, y, width, height, node, options = {}) {
     super(node);
@@ -1012,6 +1041,7 @@ export class SmartInfo extends BaseSmartWidget {
   }
 
   restart(newText, newDuration = null) {
+    if (!this.done) return;
     if (newDuration === null) newDuration = this.previewDuration;
     this.text = newText;
     this.start();
@@ -1551,6 +1581,7 @@ export class SmartSwitch extends SmartWidget {
   }
 
   draw(ctx) {
+    super.draw(ctx);
     const trackY = this.y + (this.handleHeight - this.height) / 2;
 
     // Draw the track
@@ -1709,8 +1740,6 @@ export class SmartPaintArea extends BaseSmartWidget {
     this.getDrawingFromAPI();
 
     node.addCustomWidget(this);
-
-    if (this.onReInit) this.onReInit();
   }
 
   setNewSize(size, scale) {
@@ -1787,56 +1816,79 @@ export class SmartPaintArea extends BaseSmartWidget {
   switchLayer() {
     this.isPaintingBackground = !this.isPaintingBackground;
   }
+
   draw(ctx) {
     if (this.ctx === null) this.ctx = ctx;
-    const { x, y } = this.mousePos; // remove this
+    const { x, y } = this.mousePos;
 
     if (this.isPainting && !this.blockPainting) {
-      const activeCtx = this.isPaintingBackground
-        ? this.backgroundCtx
-        : this.foregroundCtx;
+        const activeCtx = this.isPaintingBackground
+            ? this.backgroundCtx
+            : this.foregroundCtx;
 
-      // Scale the brush size and adjust drawing coordinates
-      activeCtx.lineWidth = (this.brushSize * 2) / this.scaleFactor;
-      activeCtx.lineCap = "round";
-      activeCtx.strokeStyle = this.brushColor;
-      activeCtx.lineTo(
-        (x - this.x - this.xOffset) / this.scaleFactor,
-        (y - this.y - this.yOffset) / this.scaleFactor
-      );
-      activeCtx.stroke();
-      activeCtx.beginPath();
-      activeCtx.moveTo(
-        (x - this.x - this.xOffset) / this.scaleFactor,
-        (y - this.y - this.yOffset) / this.scaleFactor
-      );
+        // Scale the brush size and adjust drawing coordinates
+        activeCtx.lineWidth = (this.brushSize * 2) / this.scaleFactor;
+        activeCtx.lineCap = "round";
+
+        // Check if the brush color is transparent
+        if (this.brushColor === "rgba(255, 255, 255, 0.0)") {
+            // Clear the area in a circular shape
+            activeCtx.save();
+            activeCtx.beginPath();
+            activeCtx.arc(
+                (x - this.x - this.xOffset) / this.scaleFactor,
+                (y - this.y - this.yOffset) / this.scaleFactor,
+                this.brushSize / (this.scaleFactor), // radius in scale
+                0,
+                Math.PI * 2
+            );
+            activeCtx.closePath();
+
+            // Set composite operation to clear pixels
+            activeCtx.globalCompositeOperation = "destination-out";
+            activeCtx.fillStyle = "black"; // Any solid color will work here
+            activeCtx.fill(); // Fill the circle to erase the area
+            activeCtx.restore();
+        } else {
+            activeCtx.strokeStyle = this.brushColor;
+            activeCtx.lineTo(
+                (x - this.x - this.xOffset) / this.scaleFactor,
+                (y - this.y - this.yOffset) / this.scaleFactor
+            );
+            activeCtx.stroke();
+            activeCtx.beginPath();
+            activeCtx.moveTo(
+                (x - this.x - this.xOffset) / this.scaleFactor,
+                (y - this.y - this.yOffset) / this.scaleFactor
+            );
+        }
     } else {
-      this.foregroundCtx.beginPath();
-      this.backgroundCtx.beginPath();
+        this.foregroundCtx.beginPath();
+        this.backgroundCtx.beginPath();
     }
 
     // Draw layers in correct order, applying the scale factor
     ctx.save();
     ctx.scale(this.scaleFactor, this.scaleFactor);
     ctx.drawImage(
-      this.backgroundCanvas,
-      this.x / this.scaleFactor,
-      this.y / this.scaleFactor
+        this.backgroundCanvas,
+        this.x / this.scaleFactor,
+        this.y / this.scaleFactor
     );
     ctx.drawImage(
-      this.foregroundCanvas,
-      this.x / this.scaleFactor,
-      this.y / this.scaleFactor
+        this.foregroundCanvas,
+        this.x / this.scaleFactor,
+        this.y / this.scaleFactor
     );
     ctx.restore();
-  }
+}
 
   handleDown() {
     if (this.isMouseIn()) {
       if (this.onPress) this.onPress();
       // Save the current state before starting to paint
       this.commitChange();
-      this.enterFreezeMode();
+      //this.enterFreezeMode();
       this.isPainting = true;
     }
   }
@@ -1850,7 +1902,7 @@ export class SmartPaintArea extends BaseSmartWidget {
   }
 
   handleMove() {
-    this.enterFreezeMode();
+    //this.enterFreezeMode();
     if (this.onUpdate) this.onUpdate();
   }
 
@@ -1937,7 +1989,7 @@ export class SmartPaintArea extends BaseSmartWidget {
       this.lastForegroundData === foregroundDataURL &&
       this.lastBackgroundData === backgroundDataURL
     ) {
-      console.log("No changes detected; skipping save.");
+      if (allow_debug) console.log("No changes detected; skipping save.");
       return; // Exit early if no changes
     }
 
@@ -1972,7 +2024,7 @@ export class SmartPaintArea extends BaseSmartWidget {
         method: "POST",
         body: formData,
       });
-      console.log("Drawing sent successfully.");
+      if (allow_debug) console.log("Drawing sent successfully.");
     } catch (error) {
       console.error("Error sending the drawing:", error);
     }
@@ -2020,7 +2072,10 @@ export class SmartPaintArea extends BaseSmartWidget {
         fgImg.src = `data:image/png;base64,${hexToBase64(foreground)}`;
         fgImg.onload = () => {
           this.foregroundCtx.clearRect(0, 0, this.width, this.height);
-          this.foregroundCtx.drawImage(fgImg, 0, 0);
+          // Center the foreground image
+          const fgX = (this.width - fgImg.width) / 2;
+          const fgY = (this.height - fgImg.height) / 2;
+          this.foregroundCtx.drawImage(fgImg, fgX, fgY);
         };
 
         // Load the background image
@@ -2028,10 +2083,12 @@ export class SmartPaintArea extends BaseSmartWidget {
         bgImg.src = `data:image/png;base64,${hexToBase64(background)}`;
         bgImg.onload = () => {
           this.backgroundCtx.clearRect(0, 0, this.width, this.height);
-          this.backgroundCtx.drawImage(bgImg, 0, 0);
+          // Center the background image
+          const bgX = (this.width - bgImg.width) / 2;
+          const bgY = (this.height - bgImg.height) / 2;
+          this.backgroundCtx.drawImage(bgImg, bgX, bgY);
         };
-
-        console.log("Drawing received successfully.");
+        if (allow_debug) console.log("Drawing received successfully.");
       } else {
         console.error("Error:", result.message);
       }
@@ -2044,7 +2101,7 @@ export class SmartPaintArea extends BaseSmartWidget {
   checkImagesLoaded() {
     if (this.isForegroundLoaded && this.isBackgroundLoaded) {
       this.lastImageLoaded = true; // Mark as fully loaded
-      console.log("All images loaded successfully.");
+      if (allow_debug) console.log("All images loaded successfully.");
     }
   }
 
@@ -2072,8 +2129,8 @@ export class SmartPaintArea extends BaseSmartWidget {
         method: "POST",
         body: formData,
       });
-      //console.log(response.json());
-      console.log("Drawing sent successfully.");
+      //if (allow_debug) console.log(response.json());
+      if (allow_debug) console.log("Drawing sent successfully.");
     } catch (error) {
       console.error("Error sending the drawing:", error);
     }
@@ -2090,14 +2147,13 @@ export class SmartPaintArea extends BaseSmartWidget {
         body: formData,
       });
 
-      console.log("response", response);
+      if (allow_debug) console.log("response", response);
 
       // Ensure the response is properly parsed as JSON
       const result = await response.json();
 
       // Check if the response is successful
       if (result.status === "success") {
-        console.log("Drawing received successfully.", result);
         this.loadedImage = hexDataToImage(result["data"]);
       } else {
         console.error("Error:", result.message);
@@ -2303,6 +2359,7 @@ export class SmartColorPicker extends BaseSmartWidget {
       this.isSelecting = true;
     }
   }
+
   handleDrag(e) {}
 
   toggleShow() {
@@ -2332,7 +2389,7 @@ export class SmartColorPicker extends BaseSmartWidget {
     hueGradient.addColorStop(1, "violet");
 
     // Fill the canvas with the hue gradient
-    ctx.fillStyle = this.isGhost? transparentColor :hueGradient;
+    ctx.fillStyle = this.isGhost ? transparentColor : hueGradient;
     ctx.fillRect(this.x, this.y, this.width, this.height);
 
     // Create a vertical gradient for brightness
@@ -2349,16 +2406,16 @@ export class SmartColorPicker extends BaseSmartWidget {
 
     // Use global composite operation to blend the gradients
     ctx.globalCompositeOperation = "multiply";
-    ctx.fillStyle = this.isGhost? transparentColor : brightnessGradient;
+    ctx.fillStyle = this.isGhost ? transparentColor : brightnessGradient;
     ctx.fillRect(this.x, this.y, this.width, this.height);
 
     // Reset the global composite operation to default
     ctx.globalCompositeOperation = "source-over";
 
-    if (this.allowDisplayColor) this.displaySelectedColor(ctx);
+    if (this.allowDisplayColor && !this.isGhost) this.displaySelectedColor(ctx);
   }
 
-  setColorUnderCurser(event) {
+  setColorUnderCursor(event) {
     if (!this.isSelecting) return;
     if (!this.ctx) return;
     const rect = this.ctx.canvas.getBoundingClientRect();
@@ -2585,7 +2642,6 @@ export class TextObject {
     this.textWidth = null;
   }
 
-  capital() {}
   changeFontSize(size) {}
 }
 
@@ -2593,110 +2649,6 @@ class LayerSystem {}
 
 class SaveObject {
   constructor(params) {}
-  // send foreground/background images to be saved by python
-  async sendDrawingToAPI() {
-    const filenamePrefix = "iToolsPaintedImage";
-
-    // Convert both foreground and background canvases to data URLs
-    const foregroundDataURL = this.foregroundCanvas.toDataURL("image/png");
-    const backgroundDataURL = this.backgroundCanvas.toDataURL("image/png");
-
-    // Check if the current data is the same as the last saved data
-    if (
-      this.lastForegroundData === foregroundDataURL &&
-      this.lastBackgroundData === backgroundDataURL
-    ) {
-      console.log("No changes detected; skipping save.");
-      return; // Exit early if no changes
-    }
-
-    // Update the last saved data references
-    this.lastForegroundData = foregroundDataURL;
-    this.lastBackgroundData = backgroundDataURL;
-
-    // Convert data URLs to Blobs
-    const foregroundBlob = await fetch(foregroundDataURL).then((res) =>
-      res.blob()
-    );
-    const backgroundBlob = await fetch(backgroundDataURL).then((res) =>
-      res.blob()
-    );
-
-    // Create a FormData object to send both files
-    const formData = new FormData();
-    formData.append(
-      "foreground",
-      foregroundBlob,
-      `${filenamePrefix}_foreground.png`
-    );
-    formData.append(
-      "background",
-      backgroundBlob,
-      `${filenamePrefix}_background.png`
-    );
-
-    try {
-      // Send the file to the API endpoint
-      const response = await api.fetchApi("/itools/request_save_paint", {
-        method: "POST",
-        body: formData,
-      });
-      console.log("Drawing sent successfully.");
-    } catch (error) {
-      console.error("Error sending the drawing:", error);
-    }
-  }
-  //get foreground/background images from python
-  async getDrawingFromAPI() {
-    const filenamePrefix = "iToolsPaintedImage";
-
-    const formData = new FormData();
-    formData.append("filename_prefix", filenamePrefix);
-
-    try {
-      const response = await api.fetchApi("/itools/request_the_paint_file", {
-        method: "POST",
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (result.status === "success") {
-        const { foreground, background } = result.data;
-
-        // Helper function to convert hex to base64
-        function hexToBase64(hexString) {
-          const bytes = [];
-          for (let c = 0; c < hexString.length; c += 2) {
-            bytes.push(parseInt(hexString.substr(c, 2), 16));
-          }
-          return btoa(String.fromCharCode(...bytes)); // Convert to base64
-        }
-
-        // Load the foreground image
-        const fgImg = new Image();
-        fgImg.src = `data:image/png;base64,${hexToBase64(foreground)}`;
-        fgImg.onload = () => {
-          this.foregroundCtx.clearRect(0, 0, this.width, this.height);
-          this.foregroundCtx.drawImage(fgImg, 0, 0);
-        };
-
-        // Load the background image
-        const bgImg = new Image();
-        bgImg.src = `data:image/png;base64,${hexToBase64(background)}`;
-        bgImg.onload = () => {
-          this.backgroundCtx.clearRect(0, 0, this.width, this.height);
-          this.backgroundCtx.drawImage(bgImg, 0, 0);
-        };
-
-        console.log("Drawing received successfully.");
-      } else {
-        console.error("Error:", result.message);
-      }
-    } catch (error) {
-      console.error("Error fetching the drawing:", error);
-    }
-  }
 }
 
 class UndoSystem {

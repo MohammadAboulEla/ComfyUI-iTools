@@ -48,7 +48,7 @@ app.registerExtension({
     btn.onMouseUp = function (event, pos, node) {
       myCounter += 1;
       txt.value = myCounter;
-      console.log("Mouse Click ", myCounter);
+      if (this.allowDebug) console.log("Mouse Click ", myCounter);
       node.setDirtyCanvas(true, true);
     };
 
@@ -73,7 +73,7 @@ app.registerExtension({
 
     await waitForInitialization(node);
     const Click = node.widgets.find((w) => w.name == "Click");
-    console.log(Click);
+    if (this.allowDebug) console.log(Click);
     myCounter = parseInt(Click.value) || 0;
   },
 });

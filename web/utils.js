@@ -1,3 +1,9 @@
+function print(...args) {
+  if (allow_debug) {
+    console.log(...args); // Spread args to log them properly
+  }
+}
+
 export function lightenColor(color, percent) {
   const ctx = document.createElement("canvas").getContext("2d");
   ctx.fillStyle = color;
@@ -58,7 +64,7 @@ export function trackMouseColor(event, canvas) {
 
   const ctx = canvas.getContext("2d");
   const pixel = ctx.getImageData(mouseX, mouseY, 1, 1).data;
-      return(`rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`);
+  return `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
 }
 
 // Function to convert hex data to a Blob
@@ -199,8 +205,86 @@ export const commonColors = [
   "#FFA500", // Orange
   "#800080", // Purple
   "#A52A2A", // Brown
-  "#808080", // Gray
+  "rgba(255, 255, 255, 0.0)", // Transparent
+  //"#808080", // Gray
 ];
+
+export async function getColorUnderMouseScreen(event) {
+  // Create a hidden canvas
+  const canvas = globalThis.LGraphCanvas.active_canvas.canvas;
+  console.log("globalThis", globalThis);
+  const context = canvas.getContext("2d");
+
+  // Get mouse position relative to the canvas
+  const x = event.offsetX;
+  const y = event.offsetY;
+
+  // Get the color at the mouse position (RGB)
+  const pixel = context.getImageData(x, y, 1, 1).data;
+
+  // Convert to RGB string
+  const color = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+
+  return color;
+}
+
+export function fakeMouseDown(canvas, node,) {
+  
+  const graphMouse = app.canvas.graph_mouse;
+  const x = graphMouse[0] - node.pos[0];
+  const y = graphMouse[1] - node.pos[1];
+  
+  const mouseDownEvent = new MouseEvent("mousedown", {
+    bubbles: true, // Allow the event to bubble up the DOM
+    cancelable: true, // Allow the event to be canceled
+    view: window, // Window that the event is dispatched to
+    clientX: x, // X coordinate of the mouse
+    clientY: y, // Y coordinate of the mouse
+  });
+
+  console.log('x,y',x,y);
+  // Dispatch the event on the specified element
+  canvas.dispatchEvent(mouseDownEvent);
+}
+
+function enterFreezeMode() {
+  this.node.allow_interaction = false;
+  this.node.allow_dragcanvas = false;
+  this.node.allow_dragnodes = false;
+}
+
+function exitFreezeMode() {
+  this.node.allow_interaction = true;
+  this.node.allow_dragcanvas = true;
+  this.node.allow_dragnodes = true;
+}
+
+  // Helper function to check if the color is transparent
+  function isTransparent(color) {
+    // Convert hex to RGBA (if needed)
+    function hexToRgba(hex) {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      const a = hex.length === 9 ? parseInt(hex.slice(7, 9), 16) / 255 : 1;
+      return [r, g, b, a];
+    }
+
+    const rgba = hexToRgba(color); // Assumes the color is in hex format, convert if necessary
+    return rgba[3] === 0.0; // Check if the alpha is 0
+  }
+
+// const processMouseDown = LGraphCanvas.prototype.processMouseDown;
+// LGraphCanvas.prototype.processMouseDown = function(e) {
+//   if (this.allowDebug) console.log('MouseDown',e);
+//   return processMouseDown.apply(this, arguments);
+// };
+
+// const processMouseMove = LGraphCanvas.prototype.processMouseMove;
+// LGraphCanvas.prototype.processMouseMove= function(e) {
+//   if (this.allowDebug) console.log('MouseMove',e);
+//   return processMouseDown.apply(this, arguments);
+// };
 
 /*
 LiteGraph.NODE_TITLE_COLOR,
@@ -229,49 +313,49 @@ LiteGraph.CONNECTING_LINK_COLOR
 Working Callbacks
 
 app.canvas.onMouse = (e) => { // any mouse button
-  console.log("onMouse",e);
+  if (this.allowDebug) console.log("onMouse",e);
 };
 
 app.canvas.onNodeMoved = ()=>{
-  console.log('noe moved',);
+  if (this.allowDebug) console.log('noe moved',);
 }
 
 app.canvas.canvas.onmousewheel = (e)=>{
-  console.log('onmousewheel',);
+  if (this.allowDebug) console.log('onmousewheel',);
 }
 
 app.canvas.canvas.onclick = (e) => {
-  console.log("onclick");
+  if (this.allowDebug) console.log("onclick");
 };
 
 app.canvas.canvas.onkeyup = (ke) => {  //onkeydown//onkeypress
-  console.log("onkeyup",ke);
+  if (this.allowDebug) console.log("onkeyup",ke);
 };
 
 app.canvas.canvas.onkeydown = (ke) => {
-  console.log("onkeyup",ke);
+  if (this.allowDebug) console.log("onkeyup",ke);
 };
 
 app.canvas.canvas.ondblclick = (e) => {
-  console.log("ondblclick",e);
+  if (this.allowDebug) console.log("ondblclick",e);
 };
 
 app.canvas.canvas.onmouseover = (e) => {
-  console.log("onmouseover");
+  if (this.allowDebug) console.log("onmouseover");
 };
 
 ========================
 NOT working callback
 
 app.canvas.onMouseMoved = () => {
-  console.log("Mouse moved");
+  if (this.allowDebug) console.log("Mouse moved");
 };
 
 app.canvas.onMouseUP = (e) => {
-  console.log("Mouse UP");
+  if (this.allowDebug) console.log("Mouse UP");
 };
 
 app.canvas.canvas.onmouseup = (e) => {
-  console.log("onmouseup",e);
+  if (this.allowDebug) console.log("onmouseup",e);
 };
 */
