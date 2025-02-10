@@ -12,9 +12,7 @@ export function lightenColor(color, percent) {
   if (!color.startsWith("#")) {
     const rgbMatch = color.match(/\d+/g);
     if (rgbMatch) {
-      color = `#${rgbMatch
-        .map((x) => parseInt(x).toString(16).padStart(2, "0"))
-        .join("")}`;
+      color = `#${rgbMatch.map((x) => parseInt(x).toString(16).padStart(2, "0")).join("")}`;
     }
   }
 
@@ -27,24 +25,17 @@ export function lightenColor(color, percent) {
   g = Math.min(255, Math.floor(g + (255 - g) * (percent / 100)));
   b = Math.min(255, Math.floor(b + (255 - b) * (percent / 100)));
 
-  return `#${r.toString(16).padStart(2, "0")}${g
-    .toString(16)
-    .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 }
 
 export function isLowQuality() {
   var _a;
   const canvas = app.canvas;
-  return (
-    (((_a = canvas.ds) === null || _a === void 0 ? void 0 : _a.scale) || 1) <=
-    0.5
-  );
+  return (((_a = canvas.ds) === null || _a === void 0 ? void 0 : _a.scale) || 1) <= 0.5;
 }
 
 export function hexToImageData(hex) {
-  const byteArray = new Uint8Array(
-    hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))
-  );
+  const byteArray = new Uint8Array(hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const imageData = ctx.createImageData(canvas.width, canvas.height);
@@ -62,16 +53,16 @@ export function trackMouseColor(event, canvas) {
   const mouseX = (event.clientX - rect.left) * scaleX;
   const mouseY = (event.clientY - rect.top) * scaleY;
 
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", {
+    willReadFrequently: true,
+  });
   const pixel = ctx.getImageData(mouseX, mouseY, 1, 1).data;
   return `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
 }
 
 // Function to convert hex data to a Blob
 export function hexToBlob(hex) {
-  const byteArray = new Uint8Array(
-    hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))
-  );
+  const byteArray = new Uint8Array(hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
   return new Blob([byteArray], { type: "image/png" }); // Use 'image/png' for PNG images
 }
 
@@ -228,12 +219,11 @@ export async function getColorUnderMouseScreen(event) {
   return color;
 }
 
-export function fakeMouseDown(canvas, node,) {
-  
+export function fakeMouseDown(canvas, node) {
   const graphMouse = app.canvas.graph_mouse;
   const x = graphMouse[0] - node.pos[0];
   const y = graphMouse[1] - node.pos[1];
-  
+
   const mouseDownEvent = new MouseEvent("mousedown", {
     bubbles: true, // Allow the event to bubble up the DOM
     cancelable: true, // Allow the event to be canceled
@@ -242,7 +232,7 @@ export function fakeMouseDown(canvas, node,) {
     clientY: y, // Y coordinate of the mouse
   });
 
-  console.log('x,y',x,y);
+  console.log("x,y", x, y);
   // Dispatch the event on the specified element
   canvas.dispatchEvent(mouseDownEvent);
 }
@@ -259,21 +249,40 @@ function exitFreezeMode() {
   this.node.allow_dragnodes = true;
 }
 
-  // Helper function to check if the color is transparent
-  function isTransparent(color) {
-    // Convert hex to RGBA (if needed)
-    function hexToRgba(hex) {
-      const r = parseInt(hex.slice(1, 3), 16);
-      const g = parseInt(hex.slice(3, 5), 16);
-      const b = parseInt(hex.slice(5, 7), 16);
-      const a = hex.length === 9 ? parseInt(hex.slice(7, 9), 16) / 255 : 1;
-      return [r, g, b, a];
-    }
-
-    const rgba = hexToRgba(color); // Assumes the color is in hex format, convert if necessary
-    return rgba[3] === 0.0; // Check if the alpha is 0
+// Helper function to check if the color is transparent
+function isTransparent(color) {
+  // Convert hex to RGBA (if needed)
+  function hexToRgba(hex) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const a = hex.length === 9 ? parseInt(hex.slice(7, 9), 16) / 255 : 1;
+    return [r, g, b, a];
   }
 
+  const rgba = hexToRgba(color); // Assumes the color is in hex format, convert if necessary
+  return rgba[3] === 0.0; // Check if the alpha is 0
+}
+
+function getRatioByDimensions(width, height) {
+  for (let [ratio, dimensions] of canvasRatios.entries()) {
+    if (dimensions.width === width && dimensions.height === height) {
+      return ratio;
+    }
+  }
+  return null; // Return null if no matching ratio is found
+}
+
+function getIndexByDimensions(width, height) {
+  const entriesArray = [...canvasRatios.entries()]; // Convert Map to array
+  for (let i = 0; i < entriesArray.length; i++) {
+    const [ratio, dimensions] = entriesArray[i];
+    if (dimensions.width === width && dimensions.height === height) {
+      return i; // Return the index if found
+    }
+  }
+  return -1; // Return -1 if no matching dimensions are found
+}
 // const processMouseDown = LGraphCanvas.prototype.processMouseDown;
 // LGraphCanvas.prototype.processMouseDown = function(e) {
 //   if (this.allowDebug) console.log('MouseDown',e);

@@ -629,13 +629,15 @@ export class SmartWidget extends BaseSmartWidget {
     this.onPress = null;
     this.onHover = null;
 
+    this.isActive = false
     // New properties for half-circle shapes
     this.sliceOffset = 0; // Offset for the sliced edge (default: no offset)
 
     // Apply options if provided
     Object.assign(this, options);
+    
     this.originalColor = this.color; // Store original color
-
+    
     // add self to the node
     node.addCustomWidget(this);
   }
@@ -941,6 +943,12 @@ export class SmartWidget extends BaseSmartWidget {
     return false;
   }
 
+  toggleActive(){
+    this.isActive = !this.isActive
+    this.color === "#80a1c0"? this.color = this.originalColor:  this.color = "#80a1c0";
+    this.textColor === "black"? this.textColor = this.originalTextColor: this.textColor = "black";
+  }
+
   visualClick() {
     const originalPosX = this.x;
     const originalPosY = this.y;
@@ -963,7 +971,7 @@ export class SmartWidget extends BaseSmartWidget {
 
   visualUnHover() {
     if (!this.hovered) return;
-    this.color = this.originalColor;
+    if(!this.isActive) this.color = this.originalColor;
     this.hovered = false;
   }
 
@@ -1293,6 +1301,8 @@ export class SmartLabel extends BaseSmartWidget {
 export class SmartButton extends SmartWidget {
   constructor(x, y, width, height, node, text, options = {}) {
     super(x, y, width, height, node, options);
+    
+    this.isVisible = true;
 
     this.text = text;
     this.textColor = LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
@@ -1306,11 +1316,15 @@ export class SmartButton extends SmartWidget {
     this.tagColor = "crimson";
     this.tagPosition = "left"; // "left" or "right"
     this.tagRound = 2.5;
-
+    
+    this.originalTextColor = this.textColor; // Store text original color
+    
     // Apply options if provided
     Object.assign(this, options);
   }
   draw(ctx) {
+    if(!this.isVisible) return;
+
     super.draw(ctx);
 
     // Draw tag
@@ -1758,61 +1772,80 @@ export class SmartPaintArea extends BaseSmartWidget {
 
     // Center the canvas on the x and y axis of the node
     this.x = (this.node.width - newX * this.scaleFactor) / 2;
-    this.y =
-      (this.node.height + this.nodeYoffset - newY * this.scaleFactor) / 2;
+    this.y = (this.node.height + this.nodeYoffset - newY * this.scaleFactor) / 2;
 
     // Update the width and height properties
     this.width = newX;
     this.height = newY;
 
     // Resize the foreground canvas and redraw the content
-    const foregroundImageData = this.foregroundCtx.getImageData(
-      0,
-      0,
-      this.foregroundCanvas.width,
-      this.foregroundCanvas.height
-    );
+    const oldForegroundWidth = this.foregroundCanvas.width;
+    const oldForegroundHeight = this.foregroundCanvas.height;
+
+    // Create a temporary canvas to store the old content
+    const tempForegroundCanvas = document.createElement('canvas');
+    tempForegroundCanvas.width = oldForegroundWidth;
+    tempForegroundCanvas.height = oldForegroundHeight;
+    const tempForegroundCtx = tempForegroundCanvas.getContext('2d');
+    tempForegroundCtx.drawImage(this.foregroundCanvas, 0, 0);
+
+    // Resize the foreground canvas
     this.foregroundCanvas.width = newX;
     this.foregroundCanvas.height = newY;
-    this.foregroundCtx.clearRect(0, 0, newX, newY); // Clear before putting image data
-    if (foregroundImageData) {
-      this.foregroundCtx.putImageData(foregroundImageData, 0, 0);
+
+    // Draw the old content centered on the new canvas
+    if (oldForegroundWidth > 0 && oldForegroundHeight > 0) {
+        const offsetX = (newX - oldForegroundWidth) / 2;
+        const offsetY = (newY - oldForegroundHeight) / 2;
+        this.foregroundCtx.drawImage(
+            tempForegroundCanvas,
+            0, 0, oldForegroundWidth, oldForegroundHeight,
+            offsetX, offsetY, oldForegroundWidth, oldForegroundHeight
+        );
     }
 
     // Resize the background canvas and redraw the content
-    const backgroundImageData = this.backgroundCtx.getImageData(
-      0,
-      0,
-      this.backgroundCanvas.width,
-      this.backgroundCanvas.height
-    );
+    const oldBackgroundWidth = this.backgroundCanvas.width;
+    const oldBackgroundHeight = this.backgroundCanvas.height;
+
+    // Create a temporary canvas to store the old content
+    const tempBackgroundCanvas = document.createElement('canvas');
+    tempBackgroundCanvas.width = oldBackgroundWidth;
+    tempBackgroundCanvas.height = oldBackgroundHeight;
+    const tempBackgroundCtx = tempBackgroundCanvas.getContext('2d');
+    tempBackgroundCtx.drawImage(this.backgroundCanvas, 0, 0);
+
+    // Resize the background canvas
     this.backgroundCanvas.width = newX;
     this.backgroundCanvas.height = newY;
-    this.backgroundCtx.clearRect(0, 0, newX, newY); // Clear before putting image data
-    if (backgroundImageData) {
-      this.backgroundCtx.putImageData(backgroundImageData, 0, 0);
+
+    // Draw the old content centered on the new canvas
+    if (oldBackgroundWidth > 0 && oldBackgroundHeight > 0) {
+        const offsetX = (newX - oldBackgroundWidth) / 2;
+        const offsetY = (newY - oldBackgroundHeight) / 2;
+        this.backgroundCtx.drawImage(
+            tempBackgroundCanvas,
+            0, 0, oldBackgroundWidth, oldBackgroundHeight,
+            offsetX, offsetY, oldBackgroundWidth, oldBackgroundHeight
+        );
     }
 
-    // // Redraw the background with the default color
-    // this.backgroundCtx.fillStyle = "white";
-    // this.backgroundCtx.fillRect(0, 0, newX, newY);
     // Redraw the background with the default color only on transparent parts
     const backgroundData = this.backgroundCtx.getImageData(0, 0, newX, newY);
     const data = backgroundData.data;
 
     for (let i = 0; i < data.length; i += 4) {
-      // If the alpha channel (data[i + 3]) is less than fully opaque (255), set it to white
-      if (data[i + 3] < 255) {
-        data[i] = 255; // Red channel
-        data[i + 1] = 255; // Green channel
-        data[i + 2] = 255; // Blue channel
-        data[i + 3] = 255; // Alpha channel (fully opaque)
-      }
+        // If the alpha channel (data[i + 3]) is less than fully opaque (255), set it to white
+        if (data[i + 3] < 255) {
+            data[i] = 255; // Red channel
+            data[i + 1] = 255; // Green channel
+            data[i + 2] = 255; // Blue channel
+            data[i + 3] = 255; // Alpha channel (fully opaque)
+        }
     }
 
     this.backgroundCtx.putImageData(backgroundData, 0, 0);
-  }
-
+}
   switchLayer() {
     this.isPaintingBackground = !this.isPaintingBackground;
   }
@@ -2466,6 +2499,7 @@ export class SmartDropdownMenu extends BaseSmartWidget {
     this.isOpen = false;
     this.selectedItemIndex = -1;
     this.title = title;
+    this.isVisible = true;
 
     this.handleColor = "#80a1c0";
     this.bgColor = LiteGraph.WIDGET_BGCOLOR || "crimson";
@@ -2498,6 +2532,7 @@ export class SmartDropdownMenu extends BaseSmartWidget {
   }
 
   draw(ctx) {
+    if (!this.isVisible) return;
     this.drawButton(ctx);
     if (this.isOpen) {
       this.drawMenu(ctx);

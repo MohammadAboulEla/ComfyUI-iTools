@@ -2,16 +2,7 @@ import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
 
-import {
-  Shapes,
-  Colors,
-  lightenColor,
-  canvasRatios,
-  canvasScales,
-  commonColors,
-  trackMouseColor,
-  fakeMouseDown,
-} from "./utils.js";
+import { Shapes, Colors, lightenColor, canvasRatios, canvasScales, commonColors, trackMouseColor, fakeMouseDown } from "./utils.js";
 import {
   BaseSmartWidgetManager,
   SmartButton,
@@ -56,7 +47,7 @@ app.registerExtension({
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
-    // Node Settings
+    // NODE SETTINGS
     node.setSize([512, 592]);
     node.resizable = false;
     node.setDirtyCanvas(true, true);
@@ -151,8 +142,6 @@ app.registerExtension({
       value: 20,
       textColorNormalize: true,
       isProgressBar: true,
-      //disableText: true,
-      //textYoffset: 20,
       text: "Brush Size: ",
       onValueChange: (value) => {
         p.brushSize = value;
@@ -165,47 +154,34 @@ app.registerExtension({
     const ratioNames = Array.from(canvasRatios.keys());
     const sizeNames = Array.from(canvasScales.keys());
 
-    const dmR = new SmartDropdownMenu(
-      55,
-      60,
-      40,
-      15,
-      node,
-      "Ratio",
-      ratioNames
-    );
-
-    const dmS = new SmartDropdownMenu(
-      55 + 45,
-      60,
-      40,
-      15,
-      node,
-      "Size",
-      sizeNames
-    );
+    const dmR = new SmartDropdownMenu(5, 85, 40, 15, node, "Ratio", ratioNames);
+    const dmS = new SmartDropdownMenu(5 + 45, 85, 40, 15, node, "Size", sizeNames);
+    dmR.isVisible = false;
+    dmS.isVisible = false;
 
     dmR.onSelect = () => {
-      if (dmR.selectedItemIndex === -1) dmR.selectedItemIndex = 0;
-      if (dmS.selectedItemIndex === -1) dmS.selectedItemIndex = 0;
-      const itemA = ratiosArray[dmR.selectedItemIndex][1];
-      const itemB = sizesArray[dmS.selectedItemIndex][1];
-      pa.setNewSize(itemA, itemB);
-      info.restart(`${itemA.width * itemB} x ${itemA.height * itemB}`);
-      //if (this.allowDebug) console.log(itemA,itemB);
+      resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
     };
-
     dmS.onSelect = () => {
-      if (dmR.selectedItemIndex === -1) dmR.selectedItemIndex = 0;
-      if (dmS.selectedItemIndex === -1) dmS.selectedItemIndex = 0;
-      const itemA = ratiosArray[dmR.selectedItemIndex][1];
-      const itemB = sizesArray[dmS.selectedItemIndex][1];
-      pa.setNewSize(itemA, itemB);
-      info.restart(`${itemA.width * itemB} x ${itemA.height * itemB}`);
-      //if (this.allowDebug) console.log(itemA,itemB);
+      resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
     };
 
-    const bUndo = new SmartButton(185 - 15, 60, 15, 15, node, "↺", {
+    const bCanvas = new SmartButton(55, 60, 15, 15, node, "C", {
+      textXoffset: 0,
+    });
+    bCanvas.onClick = () => {
+      if (dmR.isVisible || dmS.isVisible) {
+        dmR.isVisible = false;
+        dmS.isVisible = false;
+        bCanvas.toggleActive()
+      } else {
+        dmR.isVisible = true;
+        dmS.isVisible = true;
+        bCanvas.toggleActive()
+      }
+    };
+
+    const bUndo = new SmartButton(190 - 20, 60, 15, 15, node, "↺", {
       textXoffset: 0,
     });
     bUndo.onClick = () => {
@@ -241,21 +217,14 @@ app.registerExtension({
       pa.loadTempImage();
     };
 
-    const bClear = new SmartButton(
-      215 + 45 + 45 + 45,
-      35,
-      40,
-      15,
-      node,
-      "Clear",
-      {
-        textXoffset: 0,
-      }
-    );
+    const bClear = new SmartButton(215 + 45 + 45 + 45, 35, 40, 15, node, "Clear", {
+      textXoffset: 0,
+    });
     bClear.onClick = () => {
       pa.clearWithColor("white");
     };
 
+    // Create layer switch
     const layerSwitch = new SmartSwitch(215, 55, 175, 20, node);
     layerSwitch.textOn = "Foreground";
     layerSwitch.textOff = "Background";
@@ -263,64 +232,58 @@ app.registerExtension({
       pa.switchLayer();
     };
 
+    // Create colors buttons
     const bh = [];
-    let index = 0; // Unique index for bh array
+    let bhIndex = 0;
     for (let i = 1; i < 6; i++) {
       for (let j = 0; j < 2; j++) {
-        const color = commonColors[index % commonColors.length]; // Capture color in scope
-        const widget = new SmartWidget(
-          512 - 22 * i - 3,
-          35 + 22 * j,
-          18,
-          18,
-          node,
-          {
-            color: color,
-            shape: Shapes.CIRCLE,
-            onClick: () => {
-              bColor.color = color;
-              bFill.tagColor = color;
-              pa.brushColor = color;
-              if (this.allowDebug) console.log(`Widget ${index} clicked`);
-            },
-          }
-        );
+        const color = commonColors[bhIndex % commonColors.length]; // Capture color in scope
+        const widget = new SmartWidget(512 - 22 * i - 3, 35 + 22 * j, 18, 18, node, {
+          color: color,
+          shape: Shapes.CIRCLE,
+          onClick: () => {
+            bColor.color = color;
+            bFill.tagColor = color;
+            pa.brushColor = color;
+            if (this.allowDebug) console.log(`Widget ${bhIndex} clicked`);
+          },
+        });
 
         bh.push(widget);
-        index++; // Increment unique index
+        bhIndex++; // Increment unique index
       }
     }
 
-    // Common actions
+    // COMMON FUNCTIONS
+    function pickColor(e) {
+      if (cp.isVisible || isHoldingShift) {
+        bFill.tagColor = trackMouseColor(e, app.canvas.canvas);
+        pa.brushColor = trackMouseColor(e, app.canvas.canvas);
+        cp.selectedColor = trackMouseColor(e, app.canvas.canvas);
 
-    pa.onReInit = () => {
-      // TODO Fix re-init doesn't center the canvas
-      function getRatioByDimensions(width, height) {
-        for (let [ratio, dimensions] of canvasRatios.entries()) {
-          if (dimensions.width === width && dimensions.height === height) {
-            return ratio;
-          }
+        if (cp.isGhost) {
+          bColor2.color = trackMouseColor(e, app.canvas.canvas);
+        } else {
+          bColor.color = trackMouseColor(e, app.canvas.canvas);
         }
-        return null; // Return null if no matching ratio is found
       }
-      function getIndexByDimensions(width, height) {
-        const entriesArray = [...canvasRatios.entries()]; // Convert Map to array
-        for (let i = 0; i < entriesArray.length; i++) {
-          const [ratio, dimensions] = entriesArray[i];
-          if (dimensions.width === width && dimensions.height === height) {
-            return i; // Return the index if found
-          }
-        }
-        return -1; // Return -1 if no matching dimensions are found
-      }
-      const index = getIndexByDimensions(pa.width, pa.height);
-    };
+    }
+    function resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info) {
+      if (dmR.selectedItemIndex === -1) dmR.selectedItemIndex = 0;
+      if (dmS.selectedItemIndex === -1) dmS.selectedItemIndex = 0;
+      const itemA = ratiosArray[dmR.selectedItemIndex][1];
+      const itemB = sizesArray[dmS.selectedItemIndex][1];
+      pa.setNewSize(itemA, itemB);
+      info.restart(`${itemA.width * itemB} x ${itemA.height * itemB}`);
+      //if (this.allowDebug) console.log(itemA,itemB);
+    }
 
+    // COMMON ACTIONS
     pa.onPress = () => {
       pa.blockPainting = false;
 
       // Block painting when drop menus open
-      if (dmR.isMouseInMenu() || dmS.isMouseInMenu()) {
+      if (dmR.isMouseInMenu() || dmR.isMouseIn() || dmS.isMouseInMenu() || dmS.isMouseIn()) {
         pa.blockPainting = true;
       }
       // Block painting on images
@@ -342,34 +305,17 @@ app.registerExtension({
       });
     };
 
-    // Common Node Events
-    function pickColor(e) {
-      if (cp.isVisible || isHoldingShift) {
-        bFill.tagColor = trackMouseColor(e, app.canvas.canvas);
-        pa.brushColor = trackMouseColor(e, app.canvas.canvas);
-        cp.selectedColor = trackMouseColor(e, app.canvas.canvas);
-
-        if (cp.isGhost) {
-          bColor2.color = trackMouseColor(e, app.canvas.canvas);
-        } else {
-          bColor.color = trackMouseColor(e, app.canvas.canvas);
-        }
-      }
-    }
-
-
-
+    // COMMON NODE EVENTS
     node.onMouseDown = (e, pos, node) => {
-      pickColor(e)      
-      
-      canvasImgs = canvasImgs.filter(img => !img.markDelete);
+      pickColor(e);
+
+      canvasImgs = canvasImgs.filter((img) => !img.markDelete);
     };
 
     node.onMouseUp = (e, pos, node) => {
       setTimeout(() => {
-        if(!pa.isPainting) pa.sendDrawingToAPI();
+        if (!pa.isPainting) pa.sendDrawingToAPI();
       }, 1000);
-      
     };
 
     node.onMouseMove = (e, pos) => {
@@ -380,31 +326,26 @@ app.registerExtension({
 
     node.onMouseLeave = (e) => {};
 
+    // COMMON CLICKS EVENTS
     app.canvas.canvas.onkeydown = (event) => {
-      if (event.ctrlKey && event.key === "z") {
-        event.preventDefault();
-        if (this.allowDebug) console.log("Ctrl+Z was pressed");
-      }
-
+      event.preventDefault(); //important
       if (event.key === "Alt") {
-        
         // plot image on back ground
         canvasImgs.forEach((img) => {
           if (img.isMouseIn(10)) {
-            const ctx = pa.isPaintingBackground? pa.backgroundCtx : pa.foregroundCtx
+            const ctx = pa.isPaintingBackground ? pa.backgroundCtx : pa.foregroundCtx;
             img.plotImageOnCanvas(ctx, pa.x, pa.y, dmS.selectedItemIndex);
           }
         });
-        
+
         // change color picker position
-        if (cp.isVisible && cp.x === 0) {
-          cp.x = 512 - cp.width;
-        } else {cp.x = 0;}
-        
+        if (cp.isVisible) {
+          cp.x === 0 ? (cp.x = 512 - cp.width) : (cp.x = 0);
+        }
       }
 
       if (event.key === "Shift") {
-        info.restart("Shift",0)
+        info.restart("Shift", 0);
         isHoldingShift = true;
       }
     };
