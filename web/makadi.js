@@ -1,10 +1,5 @@
 import { app } from "../../../scripts/app.js";
-import {
-  Shapes,
-  lightenColor,
-  hexDataToImage,
-  trackMouseColor,
-} from "./utils.js";
+import { Shapes, lightenColor, hexDataToImage, trackMouseColor } from "./utils.js";
 import { api } from "../../../scripts/api.js";
 import { allow_debug } from "./js_shared.js";
 
@@ -92,9 +87,7 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
 
   filterDeletedWIdgets() {
     // Filter out widgets marked for deletion
-    this.node.widgets = this.node.widgets.filter(
-      (widget) => !widget.markDelete
-    );
+    this.node.widgets = this.node.widgets.filter((widget) => !widget.markDelete);
   }
 }
 
@@ -134,15 +127,10 @@ export class SmartImage extends BaseSmartWidget {
 
   createCloseButton() {
     if (this.closeButton === null) {
-      this.closeButton = new SmartButton(
-        this.x + this.buttonXoffset,
-        this.y + this.buttonYoffset,
-        15,
-        15,
-        this.node,
-        "X",
-        { color: "rgba(255, 255, 255, 0.5)", textColor: "#434343" }
-      );
+      this.closeButton = new SmartButton(this.x + this.buttonXoffset, this.y + this.buttonYoffset, 15, 15, this.node, "X", {
+        color: "rgba(255, 255, 255, 0.5)",
+        textColor: "#434343",
+      });
 
       this.closeButton.onClick = () => {
         //this.img = null;
@@ -291,57 +279,22 @@ export class SmartImage extends BaseSmartWidget {
       ctx.setLineDash([]); // Reset dash pattern for solid lines
 
       // Draw handles at the corners
-      ctx.strokeRect(
-        this.x - handleSize / 2,
-        this.y - handleSize / 2,
-        handleSize,
-        handleSize
-      ); // Top-left
-      ctx.strokeRect(
-        this.x + this.width - handleSize / 2,
-        this.y - handleSize / 2,
-        handleSize,
-        handleSize
-      ); // Top-right
-      ctx.strokeRect(
-        this.x - handleSize / 2,
-        this.y + this.height - handleSize / 2,
-        handleSize,
-        handleSize
-      ); // Bottom-left
-      ctx.strokeRect(
-        this.x + this.width - handleSize / 2,
-        this.y + this.height - handleSize / 2,
-        handleSize,
-        handleSize
-      ); // Bottom-right
+      ctx.strokeRect(this.x - handleSize / 2, this.y - handleSize / 2, handleSize, handleSize); // Top-left
+      ctx.strokeRect(this.x + this.width - handleSize / 2, this.y - handleSize / 2, handleSize, handleSize); // Top-right
+      ctx.strokeRect(this.x - handleSize / 2, this.y + this.height - handleSize / 2, handleSize, handleSize); // Bottom-left
+      ctx.strokeRect(this.x + this.width - handleSize / 2, this.y + this.height - handleSize / 2, handleSize, handleSize); // Bottom-right
 
       // Draw handles at the midpoints of the edges
-      ctx.strokeRect(
-        this.x + this.width / 2 - handleSize / 2,
-        this.y - handleSize / 2,
-        handleSize,
-        handleSize
-      ); // Top
-      ctx.strokeRect(
-        this.x + this.width / 2 - handleSize / 2,
-        this.y + this.height - handleSize / 2,
-        handleSize,
-        handleSize
-      ); // Bottom
-      ctx.strokeRect(
-        this.x - handleSize / 2,
-        this.y + this.height / 2 - handleSize / 2,
-        handleSize,
-        handleSize
-      ); // Left
-      ctx.strokeRect(
-        this.x + this.width - handleSize / 2,
-        this.y + this.height / 2 - handleSize / 2,
-        handleSize,
-        handleSize
-      ); // Right
+      ctx.strokeRect(this.x + this.width / 2 - handleSize / 2, this.y - handleSize / 2, handleSize, handleSize); // Top
+      ctx.strokeRect(this.x + this.width / 2 - handleSize / 2, this.y + this.height - handleSize / 2, handleSize, handleSize); // Bottom
+      ctx.strokeRect(this.x - handleSize / 2, this.y + this.height / 2 - handleSize / 2, handleSize, handleSize); // Left
+      ctx.strokeRect(this.x + this.width - handleSize / 2, this.y + this.height / 2 - handleSize / 2, handleSize, handleSize); // Right
     }
+
+    // Draw visual plot
+    if(this.isPlotted){
+    ctx.fillStyle = "rgba(255,0, 0, 0.1)";
+    ctx.fillRect(this.x, this.y, this.width, this.height);}
 
     this.createCloseButton();
   }
@@ -386,96 +339,41 @@ export class SmartImage extends BaseSmartWidget {
 
   isMouseIn(safeZone = 0) {
     const { x, y } = this.mousePos;
-    return (
-      x >= this.x - safeZone &&
-      x <= this.x + this.width + safeZone &&
-      y >= this.y - safeZone &&
-      y <= this.y + this.height + safeZone
-    );
+    return x >= this.x - safeZone && x <= this.x + this.width + safeZone && y >= this.y - safeZone && y <= this.y + this.height + safeZone;
   }
 
   isMouseInResizeArea() {
     const { x, y } = this.mousePos;
     const threshold = this.resizeThreshold;
 
-    const topLeft =
-      x >= this.x - threshold &&
-      x <= this.x + threshold &&
-      y >= this.y - threshold &&
-      y <= this.y + threshold;
+    const topLeft = x >= this.x - threshold && x <= this.x + threshold && y >= this.y - threshold && y <= this.y + threshold;
     const topRight =
-      x >= this.x + this.width - threshold &&
-      x <= this.x + this.width + threshold &&
-      y >= this.y - threshold &&
-      y <= this.y + threshold;
+      x >= this.x + this.width - threshold && x <= this.x + this.width + threshold && y >= this.y - threshold && y <= this.y + threshold;
     const bottomLeft =
-      x >= this.x - threshold &&
-      x <= this.x + threshold &&
-      y >= this.y + this.height - threshold &&
-      y <= this.y + this.height + threshold;
+      x >= this.x - threshold && x <= this.x + threshold && y >= this.y + this.height - threshold && y <= this.y + this.height + threshold;
     const bottomRight =
       x >= this.x + this.width - threshold &&
       x <= this.x + this.width + threshold &&
       y >= this.y + this.height - threshold &&
       y <= this.y + this.height + threshold;
 
-    const top =
-      x >= this.x &&
-      x <= this.x + this.width &&
-      y >= this.y - threshold &&
-      y <= this.y + threshold;
-    const bottom =
-      x >= this.x &&
-      x <= this.x + this.width &&
-      y >= this.y + this.height - threshold &&
-      y <= this.y + this.height + threshold;
-    const left =
-      x >= this.x - threshold &&
-      x <= this.x + threshold &&
-      y >= this.y &&
-      y <= this.y + this.height;
-    const right =
-      x >= this.x + this.width - threshold &&
-      x <= this.x + this.width + threshold &&
-      y >= this.y &&
-      y <= this.y + this.height;
+    const top = x >= this.x && x <= this.x + this.width && y >= this.y - threshold && y <= this.y + threshold;
+    const bottom = x >= this.x && x <= this.x + this.width && y >= this.y + this.height - threshold && y <= this.y + this.height + threshold;
+    const left = x >= this.x - threshold && x <= this.x + threshold && y >= this.y && y <= this.y + this.height;
+    const right = x >= this.x + this.width - threshold && x <= this.x + this.width + threshold && y >= this.y && y <= this.y + this.height;
 
-    return (
-      topLeft ||
-      topRight ||
-      bottomLeft ||
-      bottomRight ||
-      top ||
-      bottom ||
-      left ||
-      right
-    );
+    return topLeft || topRight || bottomLeft || bottomRight || top || bottom || left || right;
   }
 
   getResizeAnchor() {
     const { x, y } = this.mousePos;
     const threshold = this.resizeThreshold;
 
-    if (
-      x >= this.x - threshold &&
-      x <= this.x + threshold &&
-      y >= this.y - threshold &&
-      y <= this.y + threshold
-    ) {
+    if (x >= this.x - threshold && x <= this.x + threshold && y >= this.y - threshold && y <= this.y + threshold) {
       return "top-left";
-    } else if (
-      x >= this.x + this.width - threshold &&
-      x <= this.x + this.width + threshold &&
-      y >= this.y - threshold &&
-      y <= this.y + threshold
-    ) {
+    } else if (x >= this.x + this.width - threshold && x <= this.x + this.width + threshold && y >= this.y - threshold && y <= this.y + threshold) {
       return "top-right";
-    } else if (
-      x >= this.x - threshold &&
-      x <= this.x + threshold &&
-      y >= this.y + this.height - threshold &&
-      y <= this.y + this.height + threshold
-    ) {
+    } else if (x >= this.x - threshold && x <= this.x + threshold && y >= this.y + this.height - threshold && y <= this.y + this.height + threshold) {
       return "bottom-left";
     } else if (
       x >= this.x + this.width - threshold &&
@@ -484,33 +382,13 @@ export class SmartImage extends BaseSmartWidget {
       y <= this.y + this.height + threshold
     ) {
       return "bottom-right";
-    } else if (
-      x >= this.x &&
-      x <= this.x + this.width &&
-      y >= this.y - threshold &&
-      y <= this.y + threshold
-    ) {
+    } else if (x >= this.x && x <= this.x + this.width && y >= this.y - threshold && y <= this.y + threshold) {
       return "top";
-    } else if (
-      x >= this.x &&
-      x <= this.x + this.width &&
-      y >= this.y + this.height - threshold &&
-      y <= this.y + this.height + threshold
-    ) {
+    } else if (x >= this.x && x <= this.x + this.width && y >= this.y + this.height - threshold && y <= this.y + this.height + threshold) {
       return "bottom";
-    } else if (
-      x >= this.x - threshold &&
-      x <= this.x + threshold &&
-      y >= this.y &&
-      y <= this.y + this.height
-    ) {
+    } else if (x >= this.x - threshold && x <= this.x + threshold && y >= this.y && y <= this.y + this.height) {
       return "left";
-    } else if (
-      x >= this.x + this.width - threshold &&
-      x <= this.x + this.width + threshold &&
-      y >= this.y &&
-      y <= this.y + this.height
-    ) {
+    } else if (x >= this.x + this.width - threshold && x <= this.x + this.width + threshold && y >= this.y && y <= this.y + this.height) {
       return "right";
     }
     return null;
@@ -591,17 +469,17 @@ export class SmartImage extends BaseSmartWidget {
 
     // Draw the image if it's loaded; otherwise, draw a placeholder
     if (this.imgLoaded) {
-      ctx.drawImage(
-        this.img,
-        (this.x - xOffset) * scale,
-        (this.y - yOffset) * scale,
-        this.width * scale,
-        this.height * scale
-      );
+      ctx.drawImage(this.img, (this.x - xOffset) * scale, (this.y - yOffset) * scale, this.width * scale, this.height * scale);
     } else {
       ctx.fillStyle = this.placeholderColor;
       ctx.fillRect(this.x, this.y, this.width, this.height);
     }
+
+    this.isPlotted = true;
+    setTimeout(() => {
+      this.isPlotted = false;
+    }, 200);
+
   }
 }
 
@@ -629,15 +507,16 @@ export class SmartWidget extends BaseSmartWidget {
     this.onPress = null;
     this.onHover = null;
 
-    this.isActive = false
+    this.isActive = false;
+    this.isVisible = true;
     // New properties for half-circle shapes
     this.sliceOffset = 0; // Offset for the sliced edge (default: no offset)
 
     // Apply options if provided
     Object.assign(this, options);
-    
+
     this.originalColor = this.color; // Store original color
-    
+
     // add self to the node
     node.addCustomWidget(this);
   }
@@ -656,7 +535,6 @@ export class SmartWidget extends BaseSmartWidget {
   }
 
   handleMove() {
-    if (!this.isMouseIn) return;
     if (this.isMouseIn()) {
       if (this.allowVisualHover) {
         this.visualHover();
@@ -709,14 +587,7 @@ export class SmartWidget extends BaseSmartWidget {
     // Draw half-vertical left circle
     else if (this.shape === Shapes.HVL_CIRCLE) {
       ctx.beginPath();
-      ctx.arc(
-        centerX,
-        centerY,
-        this.radius,
-        Math.PI * 0.5,
-        Math.PI * 1.5,
-        false
-      );
+      ctx.arc(centerX, centerY, this.radius, Math.PI * 0.5, Math.PI * 1.5, false);
       ctx.lineTo(centerX, centerY - this.sliceOffset);
       ctx.closePath();
       ctx.fillStyle = this.color;
@@ -733,14 +604,7 @@ export class SmartWidget extends BaseSmartWidget {
     // Draw half-vertical right circle
     else if (this.shape === Shapes.HVR_CIRCLE) {
       ctx.beginPath();
-      ctx.arc(
-        centerX,
-        centerY,
-        this.radius,
-        Math.PI * 1.5,
-        Math.PI * 0.5,
-        false
-      );
+      ctx.arc(centerX, centerY, this.radius, Math.PI * 1.5, Math.PI * 0.5, false);
       ctx.lineTo(centerX, centerY + this.sliceOffset);
       ctx.closePath();
       ctx.fillStyle = this.color;
@@ -770,13 +634,7 @@ export class SmartWidget extends BaseSmartWidget {
     // Draw circle
     if (this.shape === Shapes.CIRCLE) {
       ctx.beginPath();
-      ctx.arc(
-        this.x + this.radius,
-        this.y + this.radius,
-        this.radius,
-        0,
-        Math.PI * 2
-      );
+      ctx.arc(this.x + this.radius, this.y + this.radius, this.radius, 0, Math.PI * 2);
       ctx.fillStyle = this.color;
       ctx.fill();
 
@@ -794,29 +652,11 @@ export class SmartWidget extends BaseSmartWidget {
       ctx.beginPath();
       ctx.moveTo(this.x + radius, this.y);
       ctx.lineTo(this.x + this.width - radius, this.y);
-      ctx.arcTo(
-        this.x + this.width,
-        this.y,
-        this.x + this.width,
-        this.y + radius,
-        radius
-      );
+      ctx.arcTo(this.x + this.width, this.y, this.x + this.width, this.y + radius, radius);
       ctx.lineTo(this.x + this.width, this.y + this.height - radius);
-      ctx.arcTo(
-        this.x + this.width,
-        this.y + this.height,
-        this.x + this.width - radius,
-        this.y + this.height,
-        radius
-      );
+      ctx.arcTo(this.x + this.width, this.y + this.height, this.x + this.width - radius, this.y + this.height, radius);
       ctx.lineTo(this.x + radius, this.y + this.height);
-      ctx.arcTo(
-        this.x,
-        this.y + this.height,
-        this.x,
-        this.y + this.height - radius,
-        radius
-      );
+      ctx.arcTo(this.x, this.y + this.height, this.x, this.y + this.height - radius, radius);
       ctx.lineTo(this.x, this.y + radius);
       ctx.arcTo(this.x, this.y, this.x + radius, this.y, radius);
       ctx.closePath();
@@ -883,15 +723,7 @@ export class SmartWidget extends BaseSmartWidget {
     // Draw ellipse
     if (this.shape === Shapes.ELLIPSE) {
       ctx.beginPath();
-      ctx.ellipse(
-        this.x + this.width / 2,
-        this.y + this.height / 2,
-        this.width / 2,
-        this.height / 2,
-        0,
-        0,
-        Math.PI * 2
-      );
+      ctx.ellipse(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
       ctx.fillStyle = this.color;
       ctx.fill();
 
@@ -905,26 +737,16 @@ export class SmartWidget extends BaseSmartWidget {
   }
 
   isMouseIn() {
+    if (!this.isVisible) return false;
     const { x, y } = this.mousePos;
 
     const centerX = this.x + this.radius;
     const centerY = this.y + this.radius;
 
-    if (
-      this.shape === Shapes.SQUARE ||
-      this.shape === Shapes.ROUND ||
-      this.shape === Shapes.ELLIPSE
-    ) {
-      return (
-        x >= this.x &&
-        x <= this.x + this.width &&
-        y >= this.y &&
-        y <= this.y + this.height
-      );
+    if (this.shape === Shapes.SQUARE || this.shape === Shapes.ROUND || this.shape === Shapes.ELLIPSE) {
+      return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
     } else if (this.shape === Shapes.CIRCLE) {
-      const distance = Math.sqrt(
-        (x - (this.x + this.radius)) ** 2 + (y - (this.y + this.radius)) ** 2
-      );
+      const distance = Math.sqrt((x - (this.x + this.radius)) ** 2 + (y - (this.y + this.radius)) ** 2);
       return distance <= this.radius;
     } else if (this.shape === Shapes.HVL_CIRCLE) {
       const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
@@ -943,10 +765,10 @@ export class SmartWidget extends BaseSmartWidget {
     return false;
   }
 
-  toggleActive(){
-    this.isActive = !this.isActive
-    this.color === "#80a1c0"? this.color = this.originalColor:  this.color = "#80a1c0";
-    this.textColor === "black"? this.textColor = this.originalTextColor: this.textColor = "black";
+  toggleActive() {
+    this.isActive = !this.isActive;
+    this.color === "#80a1c0" ? (this.color = this.originalColor) : (this.color = "#80a1c0");
+    this.textColor === "black" ? (this.textColor = this.originalTextColor) : (this.textColor = "black");
   }
 
   visualClick() {
@@ -957,8 +779,7 @@ export class SmartWidget extends BaseSmartWidget {
       this.x = originalPosX;
       this.y = originalPosY;
     }, 100);
-    if (!this.allowVisualHover)
-      this.color = lightenColor(this.originalColor, 20);
+    if (!this.allowVisualHover) this.color = lightenColor(this.originalColor, 20);
     this.x = originalPosX + 0.5;
     this.y = originalPosY + 0.5;
   }
@@ -971,7 +792,7 @@ export class SmartWidget extends BaseSmartWidget {
 
   visualUnHover() {
     if (!this.hovered) return;
-    if(!this.isActive) this.color = this.originalColor;
+    if (!this.isActive) this.color = this.originalColor;
     this.hovered = false;
   }
 
@@ -1074,13 +895,7 @@ export class SmartInfo extends BaseSmartWidget {
     // Draw circle
     if (this.shape === Shapes.CIRCLE) {
       ctx.beginPath();
-      ctx.arc(
-        this.x + this.radius,
-        this.y + this.radius,
-        this.radius,
-        0,
-        Math.PI * 2
-      );
+      ctx.arc(this.x + this.radius, this.y + this.radius, this.radius, 0, Math.PI * 2);
       ctx.fillStyle = this.color;
       ctx.fill();
 
@@ -1098,29 +913,11 @@ export class SmartInfo extends BaseSmartWidget {
       ctx.beginPath();
       ctx.moveTo(this.x + radius, this.y);
       ctx.lineTo(this.x + this.width - radius, this.y);
-      ctx.arcTo(
-        this.x + this.width,
-        this.y,
-        this.x + this.width,
-        this.y + radius,
-        radius
-      );
+      ctx.arcTo(this.x + this.width, this.y, this.x + this.width, this.y + radius, radius);
       ctx.lineTo(this.x + this.width, this.y + this.height - radius);
-      ctx.arcTo(
-        this.x + this.width,
-        this.y + this.height,
-        this.x + this.width - radius,
-        this.y + this.height,
-        radius
-      );
+      ctx.arcTo(this.x + this.width, this.y + this.height, this.x + this.width - radius, this.y + this.height, radius);
       ctx.lineTo(this.x + radius, this.y + this.height);
-      ctx.arcTo(
-        this.x,
-        this.y + this.height,
-        this.x,
-        this.y + this.height - radius,
-        radius
-      );
+      ctx.arcTo(this.x, this.y + this.height, this.x, this.y + this.height - radius, radius);
       ctx.lineTo(this.x, this.y + radius);
       ctx.arcTo(this.x, this.y, this.x + radius, this.y, radius);
       ctx.closePath();
@@ -1187,15 +984,7 @@ export class SmartInfo extends BaseSmartWidget {
     // Draw ellipse
     if (this.shape === Shapes.ELLIPSE) {
       ctx.beginPath();
-      ctx.ellipse(
-        this.x + this.width / 2,
-        this.y + this.height / 2,
-        this.width / 2,
-        this.height / 2,
-        0,
-        0,
-        Math.PI * 2
-      );
+      ctx.ellipse(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
       ctx.fillStyle = this.color;
       ctx.fill();
 
@@ -1213,31 +1002,16 @@ export class SmartInfo extends BaseSmartWidget {
       ctx.font = this.font;
       ctx.textAlign = this.textAlign;
       ctx.textBaseline = this.textBaseline;
-      ctx.fillText(
-        this.text,
-        this.x + this.width / 2 + this.textXoffset,
-        this.y + this.height / 2 + this.textYoffset
-      );
+      ctx.fillText(this.text, this.x + this.width / 2 + this.textXoffset, this.y + this.height / 2 + this.textYoffset);
     }
   }
 
   isMouseIn() {
     const { x, y } = this.mousePos;
-    if (
-      this.shape === Shapes.SQUARE ||
-      this.shape === Shapes.ROUND ||
-      this.shape === Shapes.ELLIPSE
-    ) {
-      return (
-        x >= this.x &&
-        x <= this.x + this.width &&
-        y >= this.y &&
-        y <= this.y + this.height
-      );
+    if (this.shape === Shapes.SQUARE || this.shape === Shapes.ROUND || this.shape === Shapes.ELLIPSE) {
+      return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
     } else if (this.shape === Shapes.CIRCLE || this.shape === Shapes.STAR) {
-      const distance = Math.sqrt(
-        (x - (this.x + this.radius)) ** 2 + (y - (this.y + this.radius)) ** 2
-      );
+      const distance = Math.sqrt((x - (this.x + this.radius)) ** 2 + (y - (this.y + this.radius)) ** 2);
       return distance <= this.radius;
     }
 
@@ -1285,11 +1059,7 @@ export class SmartLabel extends BaseSmartWidget {
       ctx.font = this.font;
       ctx.textAlign = this.textAlign;
       ctx.textBaseline = this.textBaseline;
-      ctx.fillText(
-        this.text,
-        this.x + this.textXoffset,
-        this.y + this.textYoffset
-      );
+      ctx.fillText(this.text, this.x + this.textXoffset, this.y + this.textYoffset);
       if (this.textWidth === null) {
         const textMetrics = ctx.measureText(this.text);
         this.textWidth = textMetrics.width;
@@ -1301,7 +1071,7 @@ export class SmartLabel extends BaseSmartWidget {
 export class SmartButton extends SmartWidget {
   constructor(x, y, width, height, node, text, options = {}) {
     super(x, y, width, height, node, options);
-    
+
     this.isVisible = true;
 
     this.text = text;
@@ -1316,14 +1086,14 @@ export class SmartButton extends SmartWidget {
     this.tagColor = "crimson";
     this.tagPosition = "left"; // "left" or "right"
     this.tagRound = 2.5;
-    
+
     this.originalTextColor = this.textColor; // Store text original color
-    
+
     // Apply options if provided
     Object.assign(this, options);
   }
   draw(ctx) {
-    if(!this.isVisible) return;
+    if (!this.isVisible) return;
 
     super.draw(ctx);
 
@@ -1335,22 +1105,15 @@ export class SmartButton extends SmartWidget {
 
       if (this.tagPosition === "left") {
         // Round only the left side
-        ctx.roundRect(
-          this.x + 0.5,
-          this.y + 0.5,
-          this.withTagWidth,
-          this.height - 1,
-          [this.tagRound, 0, 0, this.tagRound]
-        );
+        ctx.roundRect(this.x + 0.5, this.y + 0.5, this.withTagWidth, this.height - 1, [this.tagRound, 0, 0, this.tagRound]);
       } else {
         // Round only the right side
-        ctx.roundRect(
-          this.x + this.width - this.withTagWidth - 0.5,
-          this.y + 0.5,
-          this.withTagWidth,
-          this.height - 1,
-          [0, this.tagRound, this.tagRound, 0]
-        );
+        ctx.roundRect(this.x + this.width - this.withTagWidth - 0.5, this.y + 0.5, this.withTagWidth, this.height - 1, [
+          0,
+          this.tagRound,
+          this.tagRound,
+          0,
+        ]);
       }
 
       ctx.fill();
@@ -1362,11 +1125,7 @@ export class SmartButton extends SmartWidget {
       ctx.font = this.font;
       ctx.textAlign = this.textAlign;
       ctx.textBaseline = this.textBaseline;
-      ctx.fillText(
-        this.text,
-        this.x + this.width / 2 + this.textXoffset,
-        this.y + this.height / 2 + this.textYoffset
-      );
+      ctx.fillText(this.text, this.x + this.width / 2 + this.textXoffset, this.y + this.height / 2 + this.textYoffset);
     }
   }
 }
@@ -1397,10 +1156,7 @@ export class SmartSlider extends SmartWidget {
     this.textColorNormalize = false;
 
     // Calculate handle position based on initial value
-    this.handleX =
-      this.x +
-      ((this.value - this.minValue) / (this.maxValue - this.minValue)) *
-        (this.width - this.handleWidth);
+    this.handleX = this.x + ((this.value - this.minValue) / (this.maxValue - this.minValue)) * (this.width - this.handleWidth);
     this.handleY = this.y + (this.height - this.handleHeight) / 2;
 
     // Track dragging state
@@ -1417,17 +1173,8 @@ export class SmartSlider extends SmartWidget {
   handleMove() {
     if (this.isDragging) {
       const { x } = this.mousePos;
-      this.handleX = Math.max(
-        this.x,
-        Math.min(
-          x - this.handleWidth / 2,
-          this.x + this.width - this.handleWidth
-        )
-      );
-      this.value =
-        this.minValue +
-        ((this.handleX - this.x) / (this.width - this.handleWidth)) *
-          (this.maxValue - this.minValue);
+      this.handleX = Math.max(this.x, Math.min(x - this.handleWidth / 2, this.x + this.width - this.handleWidth));
+      this.value = this.minValue + ((this.handleX - this.x) / (this.width - this.handleWidth)) * (this.maxValue - this.minValue);
 
       if (this.onValueChange) {
         this.onValueChange(this.value);
@@ -1441,12 +1188,7 @@ export class SmartSlider extends SmartWidget {
 
   isMouseInHandle() {
     const { x, y } = this.mousePos;
-    return (
-      x >= this.handleX &&
-      x <= this.handleX + this.handleWidth &&
-      y >= this.handleY &&
-      y <= this.handleY + this.handleHeight
-    );
+    return x >= this.handleX && x <= this.handleX + this.handleWidth && y >= this.handleY && y <= this.handleY + this.handleHeight;
   }
 
   isMouseInTrack() {
@@ -1471,16 +1213,11 @@ export class SmartSlider extends SmartWidget {
     ctx.fill();
 
     // Calculate handle position correctly
-    const handleX =
-      this.x +
-      ((this.value - this.minValue) / (this.maxValue - this.minValue)) *
-        (this.width - this.handleWidth);
+    const handleX = this.x + ((this.value - this.minValue) / (this.maxValue - this.minValue)) * (this.width - this.handleWidth);
 
     // Draw the progress
     if (this.isProgressBar) {
-      const progressWidth =
-        ((this.value - this.minValue) / (this.maxValue - this.minValue)) *
-        this.width;
+      const progressWidth = ((this.value - this.minValue) / (this.maxValue - this.minValue)) * this.width;
       ctx.fillStyle = this.handleColor; // You can change this to any color for the progress
       ctx.beginPath();
       ctx.roundRect(this.x, trackY, progressWidth, this.height, 5);
@@ -1501,11 +1238,7 @@ export class SmartSlider extends SmartWidget {
       ctx.font = this.font;
       ctx.textAlign = this.textAlign;
       ctx.textBaseline = this.textBaseline;
-      ctx.fillText(
-        `${this.text}${this.value.toFixed(2)}`,
-        this.x + this.width / 2,
-        this.y + this.height / 2 + this.textYoffset
-      );
+      ctx.fillText(`${this.text}${this.value.toFixed(2)}`, this.x + this.width / 2, this.y + this.height / 2 + this.textYoffset);
       return;
     }
 
@@ -1529,11 +1262,7 @@ export class SmartSlider extends SmartWidget {
     ctx.font = this.font;
     ctx.textAlign = this.textAlign;
     ctx.textBaseline = this.textBaseline;
-    ctx.fillText(
-      `${this.text}${this.value.toFixed(2)}`,
-      this.x + this.width / 2,
-      this.y + this.height / 2 + this.textYoffset
-    );
+    ctx.fillText(`${this.text}${this.value.toFixed(2)}`, this.x + this.width / 2, this.y + this.height / 2 + this.textYoffset);
   }
 }
 
@@ -1551,12 +1280,8 @@ export class SmartSwitch extends SmartWidget {
 
     this.textOn = "On";
     this.textOff = "Off";
-    this.textOnColor = this.isOn
-      ? "black"
-      : LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
-    this.textOffColor = this.isOn
-      ? LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white"
-      : "black";
+    this.textOnColor = this.isOn ? "black" : LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
+    this.textOffColor = this.isOn ? LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white" : "black";
     this.textYoffset = 0.8;
     this.textXoffset = 0.0;
     this.textAlign = "center";
@@ -1570,12 +1295,8 @@ export class SmartSwitch extends SmartWidget {
   handleDown() {
     if (this.isMouseIn()) {
       this.isOn = !this.isOn;
-      this.textOnColor = this.isOn
-        ? "black"
-        : LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
-      this.textOffColor = this.isOn
-        ? LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white"
-        : "black";
+      this.textOnColor = this.isOn ? "black" : LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
+      this.textOffColor = this.isOn ? LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white" : "black";
       if (this.onValueChange) this.onValueChange();
     }
   }
@@ -1586,12 +1307,7 @@ export class SmartSwitch extends SmartWidget {
 
   isMouseInHandle() {
     const { x, y } = this.mousePos;
-    return (
-      x >= this.handleX &&
-      x <= this.handleX + this.handleWidth &&
-      y >= this.handleY &&
-      y <= this.handleY + this.handleHeight
-    );
+    return x >= this.handleX && x <= this.handleX + this.handleWidth && y >= this.handleY && y <= this.handleY + this.handleHeight;
   }
 
   draw(ctx) {
@@ -1618,22 +1334,14 @@ export class SmartSwitch extends SmartWidget {
     ctx.font = this.font;
     ctx.textAlign = "center";
     ctx.textBaseline = this.textBaseline;
-    ctx.fillText(
-      this.textOn,
-      this.x + this.width / 4,
-      this.y + this.height / 2 + this.textYoffset
-    );
+    ctx.fillText(this.textOn, this.x + this.width / 4, this.y + this.height / 2 + this.textYoffset);
 
     // Draw text off
     ctx.fillStyle = this.textOffColor;
     ctx.font = this.font;
     ctx.textAlign = "center";
     ctx.textBaseline = this.textBaseline;
-    ctx.fillText(
-      this.textOff,
-      this.x + this.width / 2 + this.width / 4,
-      this.y + this.height / 2 + this.textYoffset
-    );
+    ctx.fillText(this.textOff, this.x + this.width / 2 + this.width / 4, this.y + this.height / 2 + this.textYoffset);
   }
 }
 
@@ -1668,12 +1376,7 @@ export class SmartCheckBox extends SmartWidget {
 
   isMouseInHandle() {
     const { x, y } = this.mousePos;
-    return (
-      x >= this.handleX &&
-      x <= this.handleX + this.handleWidth &&
-      y >= this.handleY &&
-      y <= this.handleY + this.handleHeight
-    );
+    return x >= this.handleX && x <= this.handleX + this.handleWidth && y >= this.handleY && y <= this.handleY + this.handleHeight;
   }
 
   draw(ctx) {
@@ -1687,13 +1390,7 @@ export class SmartCheckBox extends SmartWidget {
     if (!this.isChecked) return;
     ctx.fillStyle = this.handleColor;
     ctx.beginPath();
-    ctx.roundRect(
-      this.x + this.gap / 2,
-      this.y + this.gap / 2,
-      this.width - this.gap,
-      this.height - this.gap,
-      5 - this.gap / 2
-    );
+    ctx.roundRect(this.x + this.gap / 2, this.y + this.gap / 2, this.width - this.gap, this.height - this.gap, 5 - this.gap / 2);
     ctx.fill();
   }
 }
@@ -1783,10 +1480,10 @@ export class SmartPaintArea extends BaseSmartWidget {
     const oldForegroundHeight = this.foregroundCanvas.height;
 
     // Create a temporary canvas to store the old content
-    const tempForegroundCanvas = document.createElement('canvas');
+    const tempForegroundCanvas = document.createElement("canvas");
     tempForegroundCanvas.width = oldForegroundWidth;
     tempForegroundCanvas.height = oldForegroundHeight;
-    const tempForegroundCtx = tempForegroundCanvas.getContext('2d');
+    const tempForegroundCtx = tempForegroundCanvas.getContext("2d");
     tempForegroundCtx.drawImage(this.foregroundCanvas, 0, 0);
 
     // Resize the foreground canvas
@@ -1795,13 +1492,19 @@ export class SmartPaintArea extends BaseSmartWidget {
 
     // Draw the old content centered on the new canvas
     if (oldForegroundWidth > 0 && oldForegroundHeight > 0) {
-        const offsetX = (newX - oldForegroundWidth) / 2;
-        const offsetY = (newY - oldForegroundHeight) / 2;
-        this.foregroundCtx.drawImage(
-            tempForegroundCanvas,
-            0, 0, oldForegroundWidth, oldForegroundHeight,
-            offsetX, offsetY, oldForegroundWidth, oldForegroundHeight
-        );
+      const offsetX = (newX - oldForegroundWidth) / 2;
+      const offsetY = (newY - oldForegroundHeight) / 2;
+      this.foregroundCtx.drawImage(
+        tempForegroundCanvas,
+        0,
+        0,
+        oldForegroundWidth,
+        oldForegroundHeight,
+        offsetX,
+        offsetY,
+        oldForegroundWidth,
+        oldForegroundHeight
+      );
     }
 
     // Resize the background canvas and redraw the content
@@ -1809,10 +1512,10 @@ export class SmartPaintArea extends BaseSmartWidget {
     const oldBackgroundHeight = this.backgroundCanvas.height;
 
     // Create a temporary canvas to store the old content
-    const tempBackgroundCanvas = document.createElement('canvas');
+    const tempBackgroundCanvas = document.createElement("canvas");
     tempBackgroundCanvas.width = oldBackgroundWidth;
     tempBackgroundCanvas.height = oldBackgroundHeight;
-    const tempBackgroundCtx = tempBackgroundCanvas.getContext('2d');
+    const tempBackgroundCtx = tempBackgroundCanvas.getContext("2d");
     tempBackgroundCtx.drawImage(this.backgroundCanvas, 0, 0);
 
     // Resize the background canvas
@@ -1821,13 +1524,19 @@ export class SmartPaintArea extends BaseSmartWidget {
 
     // Draw the old content centered on the new canvas
     if (oldBackgroundWidth > 0 && oldBackgroundHeight > 0) {
-        const offsetX = (newX - oldBackgroundWidth) / 2;
-        const offsetY = (newY - oldBackgroundHeight) / 2;
-        this.backgroundCtx.drawImage(
-            tempBackgroundCanvas,
-            0, 0, oldBackgroundWidth, oldBackgroundHeight,
-            offsetX, offsetY, oldBackgroundWidth, oldBackgroundHeight
-        );
+      const offsetX = (newX - oldBackgroundWidth) / 2;
+      const offsetY = (newY - oldBackgroundHeight) / 2;
+      this.backgroundCtx.drawImage(
+        tempBackgroundCanvas,
+        0,
+        0,
+        oldBackgroundWidth,
+        oldBackgroundHeight,
+        offsetX,
+        offsetY,
+        oldBackgroundWidth,
+        oldBackgroundHeight
+      );
     }
 
     // Redraw the background with the default color only on transparent parts
@@ -1835,17 +1544,18 @@ export class SmartPaintArea extends BaseSmartWidget {
     const data = backgroundData.data;
 
     for (let i = 0; i < data.length; i += 4) {
-        // If the alpha channel (data[i + 3]) is less than fully opaque (255), set it to white
-        if (data[i + 3] < 255) {
-            data[i] = 255; // Red channel
-            data[i + 1] = 255; // Green channel
-            data[i + 2] = 255; // Blue channel
-            data[i + 3] = 255; // Alpha channel (fully opaque)
-        }
+      // If the alpha channel (data[i + 3]) is less than fully opaque (255), set it to white
+      if (data[i + 3] < 255) {
+        data[i] = 255; // Red channel
+        data[i + 1] = 255; // Green channel
+        data[i + 2] = 255; // Blue channel
+        data[i + 3] = 255; // Alpha channel (fully opaque)
+      }
     }
 
     this.backgroundCtx.putImageData(backgroundData, 0, 0);
-}
+  }
+
   switchLayer() {
     this.isPaintingBackground = !this.isPaintingBackground;
   }
@@ -1855,66 +1565,68 @@ export class SmartPaintArea extends BaseSmartWidget {
     const { x, y } = this.mousePos;
 
     if (this.isPainting && !this.blockPainting) {
-        const activeCtx = this.isPaintingBackground
-            ? this.backgroundCtx
-            : this.foregroundCtx;
+      const activeCtx = this.isPaintingBackground ? this.backgroundCtx : this.foregroundCtx;
 
-        // Scale the brush size and adjust drawing coordinates
-        activeCtx.lineWidth = (this.brushSize * 2) / this.scaleFactor;
-        activeCtx.lineCap = "round";
+      // Scale the brush size and adjust drawing coordinates
+      activeCtx.lineWidth = (this.brushSize * 2) / this.scaleFactor;
+      activeCtx.lineCap = "round";
 
-        // Check if the brush color is transparent
-        if (this.brushColor === "rgba(255, 255, 255, 0.0)") {
-            // Clear the area in a circular shape
-            activeCtx.save();
-            activeCtx.beginPath();
-            activeCtx.arc(
-                (x - this.x - this.xOffset) / this.scaleFactor,
-                (y - this.y - this.yOffset) / this.scaleFactor,
-                this.brushSize / (this.scaleFactor), // radius in scale
-                0,
-                Math.PI * 2
-            );
-            activeCtx.closePath();
+      // Determine the stroke style dynamically
+      let strokeStyle = this.brushColor;
 
-            // Set composite operation to clear pixels
-            activeCtx.globalCompositeOperation = "destination-out";
-            activeCtx.fillStyle = "black"; // Any solid color will work here
-            activeCtx.fill(); // Fill the circle to erase the area
-            activeCtx.restore();
+      if (this.brushColor === "rgba(255, 255, 255, 0.0)") {
+        if (activeCtx === this.backgroundCtx) {
+          strokeStyle = "white"; // Use white for backgroundCtx
+          activeCtx.strokeStyle = strokeStyle;
+
+          // Draw a line with white color
+          activeCtx.lineTo((x - this.x - this.xOffset) / this.scaleFactor, (y - this.y - this.yOffset) / this.scaleFactor);
+          activeCtx.stroke();
+          activeCtx.beginPath();
+          activeCtx.moveTo((x - this.x - this.xOffset) / this.scaleFactor, (y - this.y - this.yOffset) / this.scaleFactor);
         } else {
-            activeCtx.strokeStyle = this.brushColor;
-            activeCtx.lineTo(
-                (x - this.x - this.xOffset) / this.scaleFactor,
-                (y - this.y - this.yOffset) / this.scaleFactor
-            );
-            activeCtx.stroke();
-            activeCtx.beginPath();
-            activeCtx.moveTo(
-                (x - this.x - this.xOffset) / this.scaleFactor,
-                (y - this.y - this.yOffset) / this.scaleFactor
-            );
+          // Clear the area in a circular shape for foregroundCtx
+          activeCtx.save();
+          activeCtx.beginPath();
+          activeCtx.arc(
+            (x - this.x - this.xOffset) / this.scaleFactor,
+            (y - this.y - this.yOffset) / this.scaleFactor,
+            this.brushSize / this.scaleFactor, // radius in scale
+            0,
+            Math.PI * 2
+          );
+          activeCtx.closePath();
+          activeCtx.globalCompositeOperation = "destination-out";
+          activeCtx.fillStyle = "black"; // Any solid color will work here
+          activeCtx.fill(); // Fill the circle to erase the area
+          activeCtx.restore();
         }
+      } else {
+        // Normal drawing logic
+        activeCtx.strokeStyle = strokeStyle;
+        activeCtx.lineTo((x - this.x - this.xOffset) / this.scaleFactor, (y - this.y - this.yOffset) / this.scaleFactor);
+        activeCtx.stroke();
+        activeCtx.beginPath();
+        activeCtx.moveTo((x - this.x - this.xOffset) / this.scaleFactor, (y - this.y - this.yOffset) / this.scaleFactor);
+      }
     } else {
-        this.foregroundCtx.beginPath();
-        this.backgroundCtx.beginPath();
+      // Reset paths for both contexts
+      this.foregroundCtx.beginPath();
+      this.backgroundCtx.beginPath();
     }
 
     // Draw layers in correct order, applying the scale factor
     ctx.save();
     ctx.scale(this.scaleFactor, this.scaleFactor);
-    ctx.drawImage(
-        this.backgroundCanvas,
-        this.x / this.scaleFactor,
-        this.y / this.scaleFactor
-    );
-    ctx.drawImage(
-        this.foregroundCanvas,
-        this.x / this.scaleFactor,
-        this.y / this.scaleFactor
-    );
+
+    // Ensure the background canvas is drawn first
+    ctx.drawImage(this.backgroundCanvas, this.x / this.scaleFactor, this.y / this.scaleFactor);
+
+    // Then draw the foreground canvas on top
+    ctx.drawImage(this.foregroundCanvas, this.x / this.scaleFactor, this.y / this.scaleFactor);
+
     ctx.restore();
-}
+  }
 
   handleDown() {
     if (this.isMouseIn()) {
@@ -1966,12 +1678,7 @@ export class SmartPaintArea extends BaseSmartWidget {
 
   isMouseIn() {
     const { x, y } = this.mousePos;
-    return (
-      x >= this.x &&
-      x <= this.x + this.width &&
-      y >= this.y &&
-      y <= this.y + this.height
-    );
+    return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
   }
 
   saveTempImage() {
@@ -2018,10 +1725,7 @@ export class SmartPaintArea extends BaseSmartWidget {
     const backgroundDataURL = this.backgroundCanvas.toDataURL("image/png");
 
     // Check if the current data is the same as the last saved data
-    if (
-      this.lastForegroundData === foregroundDataURL &&
-      this.lastBackgroundData === backgroundDataURL
-    ) {
+    if (this.lastForegroundData === foregroundDataURL && this.lastBackgroundData === backgroundDataURL) {
       if (allow_debug) console.log("No changes detected; skipping save.");
       return; // Exit early if no changes
     }
@@ -2031,25 +1735,13 @@ export class SmartPaintArea extends BaseSmartWidget {
     this.lastBackgroundData = backgroundDataURL;
 
     // Convert data URLs to Blobs
-    const foregroundBlob = await fetch(foregroundDataURL).then((res) =>
-      res.blob()
-    );
-    const backgroundBlob = await fetch(backgroundDataURL).then((res) =>
-      res.blob()
-    );
+    const foregroundBlob = await fetch(foregroundDataURL).then((res) => res.blob());
+    const backgroundBlob = await fetch(backgroundDataURL).then((res) => res.blob());
 
     // Create a FormData object to send both files
     const formData = new FormData();
-    formData.append(
-      "foreground",
-      foregroundBlob,
-      `${filenamePrefix}_foreground.png`
-    );
-    formData.append(
-      "background",
-      backgroundBlob,
-      `${filenamePrefix}_background.png`
-    );
+    formData.append("foreground", foregroundBlob, `${filenamePrefix}_foreground.png`);
+    formData.append("background", backgroundBlob, `${filenamePrefix}_background.png`);
 
     try {
       // Send the file to the API endpoint
@@ -2117,9 +1809,13 @@ export class SmartPaintArea extends BaseSmartWidget {
         bgImg.onload = () => {
           this.backgroundCtx.clearRect(0, 0, this.width, this.height);
           // Center the background image
+          if (allow_debug) {
+            console.log("Old Image Loaded");
+          }
           const bgX = (this.width - bgImg.width) / 2;
           const bgY = (this.height - bgImg.height) / 2;
           this.backgroundCtx.drawImage(bgImg, bgX, bgY);
+          if (this.onReInit) this.onReInit(bgImg.width, bgImg.height);
         };
         if (allow_debug) console.log("Drawing received successfully.");
       } else {
@@ -2312,9 +2008,7 @@ export class SmartPreview extends BaseSmartWidget {
     if (!this.isMouseIn(x, y)) return;
     ctx.beginPath();
     ctx.arc(x, y, this.brushSize, 0, Math.PI * 2);
-    ctx.fillStyle = this.allowInnerCircle
-      ? this.color
-      : "rgba(255, 255, 255, 0)";
+    ctx.fillStyle = this.allowInnerCircle ? this.color : "rgba(255, 255, 255, 0)";
     ctx.fill();
 
     // Draw dotted outline
@@ -2325,12 +2019,7 @@ export class SmartPreview extends BaseSmartWidget {
     ctx.setLineDash([]); // Reset line dash to solid
   }
   isMouseIn(x, y) {
-    return (
-      x >= this.x &&
-      x <= this.x + this.width &&
-      y >= this.y &&
-      y <= this.y + this.height
-    );
+    return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
   }
   handleMove() {
     // AUTO PIN
@@ -2407,12 +2096,7 @@ export class SmartColorPicker extends BaseSmartWidget {
     if (!this.isVisible) return;
 
     // Create a horizontal gradient for hue
-    const hueGradient = ctx.createLinearGradient(
-      this.x,
-      this.y,
-      this.x + this.width,
-      this.y
-    );
+    const hueGradient = ctx.createLinearGradient(this.x, this.y, this.x + this.width, this.y);
     hueGradient.addColorStop(0, "red");
     hueGradient.addColorStop(0.17, "orange");
     hueGradient.addColorStop(0.34, "yellow");
@@ -2426,12 +2110,7 @@ export class SmartColorPicker extends BaseSmartWidget {
     ctx.fillRect(this.x, this.y, this.width, this.height);
 
     // Create a vertical gradient for brightness
-    const brightnessGradient = ctx.createLinearGradient(
-      this.x,
-      this.y,
-      this.x,
-      this.y + this.height
-    );
+    const brightnessGradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
     brightnessGradient.addColorStop(0, "rgba(255, 255, 255, 1)"); // White
     brightnessGradient.addColorStop(0.5, "rgba(255, 255, 255, 0)"); // Transparent
     brightnessGradient.addColorStop(0.5, "rgba(0, 0, 0, 0)"); // Transparent
@@ -2479,12 +2158,7 @@ export class SmartColorPicker extends BaseSmartWidget {
     // ); // Adjusted coordinates
   }
   isMouseIn(x, y) {
-    return (
-      x >= this.x &&
-      x <= this.x + this.width &&
-      y >= this.y &&
-      y <= this.y + this.height
-    );
+    return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
   }
 }
 
@@ -2557,53 +2231,28 @@ export class SmartDropdownMenu extends BaseSmartWidget {
     ctx.textAlign = this.textAlign;
     ctx.textBaseline = this.textBaseline;
 
-    const text =
-      this.selectedItemIndex >= 0
-        ? this.items[this.selectedItemIndex]
-        : this.title;
-    ctx.fillText(
-      text,
-      this.x + this.width / 2,
-      this.y + this.height / 2 + this.textYOffset
-    );
+    const text = this.selectedItemIndex >= 0 ? this.items[this.selectedItemIndex] : this.title;
+    ctx.fillText(text, this.x + this.width / 2, this.y + this.height / 2 + this.textYOffset);
   }
 
   drawMenu(ctx) {
-    const menuHeight =
-      this.items.length * this.height +
-      (this.items.length - 1) * this.dropMenuGap +
-      2;
+    const menuHeight = this.items.length * this.height + (this.items.length - 1) * this.dropMenuGap + 2;
     const menuWidth = this.width + 2;
 
     ctx.fillStyle = this.dropMenuBg;
     ctx.beginPath();
-    ctx.roundRect(
-      this.x - 1,
-      this.y - 1 + this.height + this.dropMenuOffset,
-      menuWidth,
-      menuHeight,
-      5
-    );
+    ctx.roundRect(this.x - 1, this.y - 1 + this.height + this.dropMenuOffset, menuWidth, menuHeight, 5);
     ctx.fill();
 
     for (let i = 0; i < this.items.length; i++) {
-      const itemY =
-        this.y +
-        this.height * (i + 1) +
-        this.dropMenuOffset +
-        i * this.dropMenuGap;
-      ctx.fillStyle =
-        i === this.selectedItemIndex ? this.handleColor : this.bgColor;
+      const itemY = this.y + this.height * (i + 1) + this.dropMenuOffset + i * this.dropMenuGap;
+      ctx.fillStyle = i === this.selectedItemIndex ? this.handleColor : this.bgColor;
       ctx.beginPath();
       ctx.roundRect(this.x, itemY, this.width, this.height, 5);
       ctx.fill();
 
       ctx.fillStyle = i === this.selectedItemIndex ? "black" : this.textColor;
-      ctx.fillText(
-        this.items[i],
-        this.x + this.width / 2,
-        itemY + this.height / 2 + this.textYOffset
-      );
+      ctx.fillText(this.items[i], this.x + this.width / 2, itemY + this.height / 2 + this.textYOffset);
     }
   }
 
@@ -2613,11 +2262,7 @@ export class SmartDropdownMenu extends BaseSmartWidget {
       this.toggle();
     } else if (this.isOpen) {
       for (let i = 0; i < this.items.length; i++) {
-        const itemY =
-          this.y +
-          this.height * (i + 1) +
-          this.dropMenuOffset +
-          i * this.dropMenuGap;
+        const itemY = this.y + this.height * (i + 1) + this.dropMenuOffset + i * this.dropMenuGap;
         if (y >= itemY && y <= itemY + this.height) {
           this.select(i);
           break;
@@ -2628,12 +2273,7 @@ export class SmartDropdownMenu extends BaseSmartWidget {
 
   isMouseIn() {
     const { x, y } = this.mousePos;
-    return (
-      x >= this.x &&
-      x <= this.x + this.width &&
-      y >= this.y &&
-      y <= this.y + this.height
-    );
+    return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
   }
 
   isMouseInMenu() {
@@ -2641,10 +2281,7 @@ export class SmartDropdownMenu extends BaseSmartWidget {
     if (!this.isOpen) return false; // Only check if the menu is open
 
     // Check if mouse is within the bounds of the menu
-    const menuHeight =
-      this.items.length * this.height +
-      (this.items.length - 1) * this.dropMenuGap +
-      2;
+    const menuHeight = this.items.length * this.height + (this.items.length - 1) * this.dropMenuGap + 2;
     const menuWidth = this.width + 2;
 
     // Check if the mouse is inside the dropdown menu area
@@ -2776,11 +2413,7 @@ export class AdvancedLabel extends BaseSmartWidget {
       ctx.font = this.textObject.font;
       ctx.textAlign = this.textObject.textAlign;
       ctx.textBaseline = this.textObject.textBaseline;
-      ctx.fillText(
-        this.textObject.text,
-        this.textObject.x + this.textObject.textXoffset,
-        this.textObject.y + this.textObject.textYoffset
-      );
+      ctx.fillText(this.textObject.text, this.textObject.x + this.textObject.textXoffset, this.textObject.y + this.textObject.textYoffset);
       if (this.textObject.textWidth === null) {
         const textMetrics = ctx.measureText(this.textObject.text);
         this.textObject.textWidth = textMetrics.width;

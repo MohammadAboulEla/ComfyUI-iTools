@@ -264,7 +264,7 @@ function isTransparent(color) {
   return rgba[3] === 0.0; // Check if the alpha is 0
 }
 
-function getRatioByDimensions(width, height) {
+export function getRatioByDimensions(width, height) {
   for (let [ratio, dimensions] of canvasRatios.entries()) {
     if (dimensions.width === width && dimensions.height === height) {
       return ratio;
@@ -273,7 +273,7 @@ function getRatioByDimensions(width, height) {
   return null; // Return null if no matching ratio is found
 }
 
-function getIndexByDimensions(width, height) {
+export function getIndexByDimensions(width, height) {
   const entriesArray = [...canvasRatios.entries()]; // Convert Map to array
   for (let i = 0; i < entriesArray.length; i++) {
     const [ratio, dimensions] = entriesArray[i];

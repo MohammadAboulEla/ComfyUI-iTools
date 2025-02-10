@@ -2,7 +2,17 @@ import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
 
-import { Shapes, Colors, lightenColor, canvasRatios, canvasScales, commonColors, trackMouseColor, fakeMouseDown } from "./utils.js";
+import {
+  Shapes,
+  Colors,
+  lightenColor,
+  canvasRatios,
+  canvasScales,
+  commonColors,
+  trackMouseColor,
+  fakeMouseDown,
+  getIndexByDimensions,
+} from "./utils.js";
 import {
   BaseSmartWidgetManager,
   SmartButton,
@@ -62,6 +72,9 @@ app.registerExtension({
     let canvasImgs = [];
     let keyPick = false;
     let isHoldingShift = false;
+    let loadedWidth = 0;
+    let loadedHeight = 0;
+    let loadedScale = 0;
 
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
     const p = new SmartPreview(0, 80, 512, 512, node);
@@ -160,10 +173,10 @@ app.registerExtension({
     dmS.isVisible = false;
 
     dmR.onSelect = () => {
-      resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
+      if(dmR.isVisible) resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
     };
     dmS.onSelect = () => {
-      resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
+      if(dmS.isVisible) resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
     };
 
     const bCanvas = new SmartButton(55, 60, 15, 15, node, "C", {
@@ -171,13 +184,15 @@ app.registerExtension({
     });
     bCanvas.onClick = () => {
       if (dmR.isVisible || dmS.isVisible) {
+        info.done = true;
         dmR.isVisible = false;
         dmS.isVisible = false;
-        bCanvas.toggleActive()
+        bCanvas.toggleActive();
       } else {
+        info.restart(`${loadedWidth * loadedScale} x ${loadedHeight * loadedScale}`);
         dmR.isVisible = true;
         dmS.isVisible = true;
-        bCanvas.toggleActive()
+        bCanvas.toggleActive();
       }
     };
 
@@ -238,8 +253,10 @@ app.registerExtension({
     for (let i = 1; i < 6; i++) {
       for (let j = 0; j < 2; j++) {
         const color = commonColors[bhIndex % commonColors.length]; // Capture color in scope
-        const widget = new SmartWidget(512 - 22 * i - 3, 35 + 22 * j, 18, 18, node, {
+        const t = color === "rgba(255, 255, 255, 0.0)" ? "E" : "";
+        const widget = new SmartButton(512 - 22 * i - 3, 35 + 22 * j, 18, 18, node, "", {
           color: color,
+          text: t,
           shape: Shapes.CIRCLE,
           onClick: () => {
             bColor.color = color;
@@ -275,7 +292,12 @@ app.registerExtension({
       const itemB = sizesArray[dmS.selectedItemIndex][1];
       pa.setNewSize(itemA, itemB);
       info.restart(`${itemA.width * itemB} x ${itemA.height * itemB}`);
-      //if (this.allowDebug) console.log(itemA,itemB);
+      if (allow_debug) console.log(itemA, itemB);
+    }
+    function saveImgToDesk() {
+      setTimeout(() => {
+        if (!pa.isPainting) pa.sendDrawingToAPI();
+      }, 1000);
     }
 
     // COMMON ACTIONS
@@ -305,17 +327,44 @@ app.registerExtension({
       });
     };
 
+    pa.onReInit = (w, h) => {
+      // update dmR and dmS values after init
+      let scale = 1;
+      let scaleIndex = 0;
+
+      if (w <= 512 || h <= 512) {
+        scale = 1;
+        scaleIndex = 0;
+      } else if (w <= 1024 || h <= 1024) {
+        scale = 2;
+        scaleIndex = 1;
+      } else if (w <= 2048 || h <= 2048) {
+        scale = 4;
+        scaleIndex = 2;
+      }
+
+      pa.setNewSize({ width: w / scale, height: h / scale }, scale);
+
+      dmR.selectedItemIndex = getIndexByDimensions(w / scale, h / scale);
+      dmS.selectedItemIndex = scaleIndex;
+
+      loadedWidth = w / scale;
+      loadedHeight = h / scale;
+      loadedScale = scale;
+
+      // if (allow_debug) {
+      //   console.log("w,h,s", w, h, scaleIndex);
+      // }
+    };
+
     // COMMON NODE EVENTS
     node.onMouseDown = (e, pos, node) => {
       pickColor(e);
-
       canvasImgs = canvasImgs.filter((img) => !img.markDelete);
     };
 
     node.onMouseUp = (e, pos, node) => {
-      setTimeout(() => {
-        if (!pa.isPainting) pa.sendDrawingToAPI();
-      }, 1000);
+      saveImgToDesk();
     };
 
     node.onMouseMove = (e, pos) => {
@@ -324,7 +373,9 @@ app.registerExtension({
 
     node.onMouseEnter = (e, pos, node) => {};
 
-    node.onMouseLeave = (e) => {};
+    node.onMouseLeave = (e) => {
+      saveImgToDesk();
+    };
 
     // COMMON CLICKS EVENTS
     app.canvas.canvas.onkeydown = (event) => {
