@@ -161,7 +161,7 @@ export class SmartImage extends BaseSmartWidget {
 
       // Update rotation angle correctly
       this.rotationAngle = (this.initialRotationAngle + (currentAngle - startAngle)) % 360;
-      
+
       // Ensure the rotation angle is within [0, 360)
       if (this.rotationAngle < 0) {
         this.rotationAngle += 360;
@@ -172,7 +172,7 @@ export class SmartImage extends BaseSmartWidget {
   // Method to handle rotation end
   handleRotateEnd() {
     this.isRotating = false;
-    this.initialRotationAngle = this.rotationAngle
+    this.initialRotationAngle = this.rotationAngle;
   }
 
   createCloseButton() {
@@ -266,7 +266,9 @@ export class SmartImage extends BaseSmartWidget {
     if (this.isMouseInResizeArea()) {
       this.isResizing = true;
       this.resizeAnchor = this.getResizeAnchor();
-    } else if (this.isMouseIn()) {
+    } else if (this.isMouseInRotatedArea()) {
+      this.handleRotateStart();
+    } else if (this.isMouseIn(-20)) {
       this.isPicked = true;
       this.pickOffset = {
         x: this.mousePos.x - this.x,
@@ -283,6 +285,8 @@ export class SmartImage extends BaseSmartWidget {
 
     if (this.isResizing) {
       this.resizeImage();
+    } else if (this.isRotating) {
+      this.handleRotateMove();
     } else if (this.isPicked) {
       let newX = this.mousePos.x - this.pickOffset.x;
       let newY = this.mousePos.y - this.pickOffset.y;
@@ -291,7 +295,6 @@ export class SmartImage extends BaseSmartWidget {
       this.x = Math.max(canvasX, Math.min(newX, canvasX + width));
       this.y = Math.max(canvasY, Math.min(newY, canvasY + height));
 
-      console.log("x,y", this.rotationCenter.x, this.rotationCenter.y);
       this.closeButton.x = this.x + this.buttonXoffset;
       this.closeButton.y = this.y + this.buttonYoffset;
     }
@@ -301,76 +304,13 @@ export class SmartImage extends BaseSmartWidget {
     this.isPicked = false;
     this.isResizing = false;
     this.resizeAnchor = null;
-  }
-
-  draw(ctx) {
-    if (this.markDelete) return;
-
-    // rotation
-
-    // Save the context state before transformations
-    ctx.save();
-
-    this.rotationCenter = {x:this.x + this.width / 2, y:this.y + this.height / 2}
-    // Translate to the center of the image
-    ctx.translate(this.rotationCenter.x, this.rotationCenter.y);
-    //ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
-
-    // Rotate the context
-    ctx.rotate((this.rotationAngle * Math.PI) / 180);
-
-    // Translate back to the top-left corner of the image
-    ctx.translate(-this.x - this.width / 2, -this.y - this.height / 2);
-    // rotation
-
-    // Draw the image or placeholder
-    if (!this.imgLoaded) {
-      ctx.fillStyle = this.placeholderColor;
-      ctx.fillRect(this.x, this.y, this.width, this.height);
-    } else {
-      ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
-    }
-
-    // Draw resize handles (small outlined squares) at the edges and corners
-    if (this.isMouseInResizeArea()) {
-      // Draw a dashed outline around the image
-      ctx.strokeStyle = "#333"; // Color of the dashed outline
-      ctx.lineWidth = 1.5; // Width of the dashed outline
-      ctx.setLineDash([5, 5]); // Dash pattern: 5px dash, 5px gap
-      ctx.strokeRect(this.x, this.y, this.width, this.height);
-
-      const handleSize = 10; // Size of the resize handle (width and height)
-      ctx.strokeStyle = "#333"; // Color of the resize handles
-      ctx.lineWidth = 1.5; // Width of the resize handle outline
-      ctx.setLineDash([]); // Reset dash pattern for solid lines
-
-      // Draw handles at the corners
-      ctx.strokeRect(this.x - handleSize / 2, this.y - handleSize / 2, handleSize, handleSize); // Top-left
-      ctx.strokeRect(this.x + this.width - handleSize / 2, this.y - handleSize / 2, handleSize, handleSize); // Top-right
-      ctx.strokeRect(this.x - handleSize / 2, this.y + this.height - handleSize / 2, handleSize, handleSize); // Bottom-left
-      ctx.strokeRect(this.x + this.width - handleSize / 2, this.y + this.height - handleSize / 2, handleSize, handleSize); // Bottom-right
-
-      // Draw handles at the midpoints of the edges
-      ctx.strokeRect(this.x + this.width / 2 - handleSize / 2, this.y - handleSize / 2, handleSize, handleSize); // Top
-      ctx.strokeRect(this.x + this.width / 2 - handleSize / 2, this.y + this.height - handleSize / 2, handleSize, handleSize); // Bottom
-      ctx.strokeRect(this.x - handleSize / 2, this.y + this.height / 2 - handleSize / 2, handleSize, handleSize); // Left
-      ctx.strokeRect(this.x + this.width - handleSize / 2, this.y + this.height / 2 - handleSize / 2, handleSize, handleSize); // Right
-    }
-
-    // Draw visual plot
-    if (this.isPlotted) {
-      ctx.fillStyle = "rgba(255,0, 0, 0.1)";
-      ctx.fillRect(this.x, this.y, this.width, this.height);
-    }
-
-    // Restore the context state // rotation
-    ctx.restore();
-    this.createCloseButton();
+    this.handleRotateEnd();
   }
 
   handleDrag() {
     if (this.isMouseIn()) {
-      app.canvas.canvas.style.cursor = "grabbing";
+      //app.canvas.canvas.style.cursor = "url('/cursor/colorSelect.png') 15 25, auto";
+      //app.canvas.canvas.style.cursor = "grabbing";
     }
     if (this.isMouseInResizeArea()) {
       const dir = this.getResizeAnchor();
@@ -404,6 +344,9 @@ export class SmartImage extends BaseSmartWidget {
           break;
       }
     }
+    if(this.isMouseInRotatedArea()){
+      app.canvas.canvas.style.cursor = "grabbing";
+    }
   }
 
   isMouseIn(safeZone = 0) {
@@ -412,55 +355,114 @@ export class SmartImage extends BaseSmartWidget {
   }
 
   isMouseInResizeArea() {
-    const { x, y } = this.mousePos;
+    const { x: mouseX, y: mouseY } = this.mousePos;
     const threshold = this.resizeThreshold;
 
-    const topLeft = x >= this.x - threshold && x <= this.x + threshold && y >= this.y - threshold && y <= this.y + threshold;
-    const topRight =
-      x >= this.x + this.width - threshold && x <= this.x + this.width + threshold && y >= this.y - threshold && y <= this.y + threshold;
-    const bottomLeft =
-      x >= this.x - threshold && x <= this.x + threshold && y >= this.y + this.height - threshold && y <= this.y + this.height + threshold;
-    const bottomRight =
-      x >= this.x + this.width - threshold &&
-      x <= this.x + this.width + threshold &&
-      y >= this.y + this.height - threshold &&
-      y <= this.y + this.height + threshold;
+    // Translate mouse position relative to the center of the image
+    const dx = mouseX - (this.x + this.width / 2);
+    const dy = mouseY - (this.y + this.height / 2);
 
-    const top = x >= this.x && x <= this.x + this.width && y >= this.y - threshold && y <= this.y + threshold;
-    const bottom = x >= this.x && x <= this.x + this.width && y >= this.y + this.height - threshold && y <= this.y + this.height + threshold;
-    const left = x >= this.x - threshold && x <= this.x + threshold && y >= this.y && y <= this.y + this.height;
-    const right = x >= this.x + this.width - threshold && x <= this.x + this.width + threshold && y >= this.y && y <= this.y + this.height;
+    // Rotate the coordinates back by the negative of the rotation angle
+    const radianAngle = -(this.rotationAngle * Math.PI) / 180;
+    const cosA = Math.cos(radianAngle);
+    const sinA = Math.sin(radianAngle);
+
+    // Apply inverse rotation
+    const rotatedX = dx * cosA - dy * sinA;
+    const rotatedY = dx * sinA + dy * cosA;
+
+    // Transform the rotated coordinates back to the image's top-left corner
+    const rx = rotatedX + this.width / 2;
+    const ry = rotatedY + this.height / 2;
+
+    // Now check if the mouse is in a resize area using the corrected coordinates
+    const topLeft = rx >= -threshold && rx <= threshold && ry >= -threshold && ry <= threshold;
+    const topRight = rx >= this.width - threshold && rx <= this.width + threshold && ry >= -threshold && ry <= threshold;
+    const bottomLeft = rx >= -threshold && rx <= threshold && ry >= this.height - threshold && ry <= this.height + threshold;
+    const bottomRight =
+      rx >= this.width - threshold && rx <= this.width + threshold && ry >= this.height - threshold && ry <= this.height + threshold;
+
+    const top = rx >= 0 && rx <= this.width && ry >= -threshold && ry <= threshold;
+    const bottom = rx >= 0 && rx <= this.width && ry >= this.height - threshold && ry <= this.height + threshold;
+    const left = rx >= -threshold && rx <= threshold && ry >= 0 && ry <= this.height;
+    const right = rx >= this.width - threshold && rx <= this.width + threshold && ry >= 0 && ry <= this.height;
 
     return topLeft || topRight || bottomLeft || bottomRight || top || bottom || left || right;
   }
 
+  isMouseInRotatedArea() {
+    const { x: mouseX, y: mouseY } = this.mousePos;
+    const threshold = this.resizeThreshold;
+    const margin = 15; // Move the detection area slightly inside the image
+
+    // Translate mouse position relative to the center of the image
+    const dx = mouseX - (this.x + this.width / 2);
+    const dy = mouseY - (this.y + this.height / 2);
+
+    // Rotate the coordinates back by the negative of the rotation angle
+    const radianAngle = -(this.rotationAngle * Math.PI) / 180;
+    const cosA = Math.cos(radianAngle);
+    const sinA = Math.sin(radianAngle);
+
+    // Apply inverse rotation
+    const rotatedX = dx * cosA - dy * sinA;
+    const rotatedY = dx * sinA + dy * cosA;
+
+    // Transform the rotated coordinates back to the image's top-left corner
+    const rx = rotatedX + this.width / 2;
+    const ry = rotatedY + this.height / 2;
+
+    // Define slightly inset corner areas
+    const topLeft = rx >= margin && rx <= margin + threshold && ry >= margin && ry <= margin + threshold;
+    const topRight = rx >= this.width - margin - threshold && rx <= this.width - margin && ry >= margin && ry <= margin + threshold;
+    const bottomLeft = rx >= margin && rx <= margin + threshold && ry >= this.height - margin - threshold && ry <= this.height - margin;
+    const bottomRight =
+      rx >= this.width - margin - threshold && rx <= this.width - margin && ry >= this.height - margin - threshold && ry <= this.height - margin;
+
+    return topLeft || topRight || bottomLeft || bottomRight;
+  }
+
   getResizeAnchor() {
-    const { x, y } = this.mousePos;
+    const { x: mouseX, y: mouseY } = this.mousePos;
     const threshold = this.resizeThreshold;
 
-    if (x >= this.x - threshold && x <= this.x + threshold && y >= this.y - threshold && y <= this.y + threshold) {
+    // Translate mouse position relative to the center of the image
+    const dx = mouseX - (this.x + this.width / 2);
+    const dy = mouseY - (this.y + this.height / 2);
+
+    // Rotate the coordinates back by the negative of the rotation angle
+    const radianAngle = -(this.rotationAngle * Math.PI) / 180;
+    const cosA = Math.cos(radianAngle);
+    const sinA = Math.sin(radianAngle);
+
+    // Corrected rotation formula
+    const rotatedX = dx * cosA - dy * sinA;
+    const rotatedY = dx * sinA + dy * cosA;
+
+    // Transform the rotated coordinates back to the image's top-left corner
+    const rx = rotatedX + this.width / 2;
+    const ry = rotatedY + this.height / 2;
+
+    // Check which resize anchor the transformed coordinates fall into
+    if (rx >= -threshold && rx <= threshold && ry >= -threshold && ry <= threshold) {
       return "top-left";
-    } else if (x >= this.x + this.width - threshold && x <= this.x + this.width + threshold && y >= this.y - threshold && y <= this.y + threshold) {
+    } else if (rx >= this.width - threshold && rx <= this.width + threshold && ry >= -threshold && ry <= threshold) {
       return "top-right";
-    } else if (x >= this.x - threshold && x <= this.x + threshold && y >= this.y + this.height - threshold && y <= this.y + this.height + threshold) {
+    } else if (rx >= -threshold && rx <= threshold && ry >= this.height - threshold && ry <= this.height + threshold) {
       return "bottom-left";
-    } else if (
-      x >= this.x + this.width - threshold &&
-      x <= this.x + this.width + threshold &&
-      y >= this.y + this.height - threshold &&
-      y <= this.y + this.height + threshold
-    ) {
+    } else if (rx >= this.width - threshold && rx <= this.width + threshold && ry >= this.height - threshold && ry <= this.height + threshold) {
       return "bottom-right";
-    } else if (x >= this.x && x <= this.x + this.width && y >= this.y - threshold && y <= this.y + threshold) {
+    } else if (rx >= 0 && rx <= this.width && ry >= -threshold && ry <= threshold) {
       return "top";
-    } else if (x >= this.x && x <= this.x + this.width && y >= this.y + this.height - threshold && y <= this.y + this.height + threshold) {
+    } else if (rx >= 0 && rx <= this.width && ry >= this.height - threshold && ry <= this.height + threshold) {
       return "bottom";
-    } else if (x >= this.x - threshold && x <= this.x + threshold && y >= this.y && y <= this.y + this.height) {
+    } else if (rx >= -threshold && rx <= threshold && ry >= 0 && ry <= this.height) {
       return "left";
-    } else if (x >= this.x + this.width - threshold && x <= this.x + this.width + threshold && y >= this.y && y <= this.y + this.height) {
+    } else if (rx >= this.width - threshold && rx <= this.width + threshold && ry >= 0 && ry <= this.height) {
       return "right";
     }
-    return null;
+
+    return null; // No valid resize anchor detected
   }
 
   resizeImage() {
@@ -533,21 +535,127 @@ export class SmartImage extends BaseSmartWidget {
     if (scale === -1 || scale === 0) scale = 1;
     else if (scale === 1) scale = 2;
     else if (scale === 2) scale = 4;
-    // Clear the region where the SmartImage is being drawn
-    //ctx.clearRect(this.x-xOffset, this.y - yOffset, this.width*scale, this.height*scale);
 
-    // Draw the image if it's loaded; otherwise, draw a placeholder
+    const { x, y, width, height, rotationAngle } = this;
+
+    // Save the context state before transformations
+    ctx.save();
+
+    // Calculate the scaled dimensions and offsets
+    const scaledWidth = width * scale;
+    const scaledHeight = height * scale;
+    const scaledX = (x - xOffset) * scale;
+    const scaledY = (y - yOffset) * scale;
+
+    // Translate to the center of the scaled image
+    ctx.translate(scaledX + scaledWidth / 2, scaledY + scaledHeight / 2);
+
+    // Rotate the context
+    ctx.rotate((rotationAngle * Math.PI) / 180);
+
+    // Translate back to the top-left corner of the scaled image
+    ctx.translate(-scaledWidth / 2, -scaledHeight / 2);
+
+    // Draw the image or placeholder
     if (this.imgLoaded) {
-      ctx.drawImage(this.img, (this.x - xOffset) * scale, (this.y - yOffset) * scale, this.width * scale, this.height * scale);
+      ctx.drawImage(this.img, 0, 0, scaledWidth, scaledHeight);
     } else {
       ctx.fillStyle = this.placeholderColor;
-      ctx.fillRect(this.x, this.y, this.width, this.height);
+      ctx.fillRect(0, 0, scaledWidth, scaledHeight);
     }
+
+    // Restore the context state
+    ctx.restore();
 
     this.isPlotted = true;
     setTimeout(() => {
       this.isPlotted = false;
     }, 200);
+  }
+
+  draw(ctx) {
+    if (this.markDelete) return;
+
+    // Save the context state before transformations
+    ctx.save();
+
+    this.rotationCenter = { x: this.x + this.width / 2, y: this.y + this.height / 2 };
+    // Translate to the center of the image
+    ctx.translate(this.rotationCenter.x, this.rotationCenter.y);
+    //ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+
+    // Rotate the context
+    ctx.rotate((this.rotationAngle * Math.PI) / 180);
+
+    // Translate back to the top-left corner of the image
+    ctx.translate(-this.x - this.width / 2, -this.y - this.height / 2);
+    // rotation
+
+    // Draw the image or placeholder
+    if (!this.imgLoaded) {
+      ctx.fillStyle = this.placeholderColor;
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+    } else {
+      ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+    }
+
+    // Draw resize handles (small outlined squares) at the edges and corners
+    if (this.isMouseInResizeArea()) {
+      // Draw a dashed outline around the image
+      ctx.strokeStyle = "#333"; // Color of the dashed outline
+      ctx.lineWidth = 1.5; // Width of the dashed outline
+      ctx.setLineDash([5, 5]); // Dash pattern: 5px dash, 5px gap
+      ctx.strokeRect(this.x, this.y, this.width, this.height);
+
+      const handleSize = 10; // Size of the resize handle (width and height)
+      ctx.strokeStyle = "#333"; // Color of the resize handles
+      ctx.lineWidth = 1.5; // Width of the resize handle outline
+      ctx.setLineDash([]); // Reset dash pattern for solid lines
+
+      // Draw handles at the corners
+      ctx.strokeRect(this.x - handleSize / 2, this.y - handleSize / 2, handleSize, handleSize); // Top-left
+      ctx.strokeRect(this.x + this.width - handleSize / 2, this.y - handleSize / 2, handleSize, handleSize); // Top-right
+      ctx.strokeRect(this.x - handleSize / 2, this.y + this.height - handleSize / 2, handleSize, handleSize); // Bottom-left
+      ctx.strokeRect(this.x + this.width - handleSize / 2, this.y + this.height - handleSize / 2, handleSize, handleSize); // Bottom-right
+
+      // Draw handles at the midpoints of the edges
+      ctx.strokeRect(this.x + this.width / 2 - handleSize / 2, this.y - handleSize / 2, handleSize, handleSize); // Top
+      ctx.strokeRect(this.x + this.width / 2 - handleSize / 2, this.y + this.height - handleSize / 2, handleSize, handleSize); // Bottom
+      ctx.strokeRect(this.x - handleSize / 2, this.y + this.height / 2 - handleSize / 2, handleSize, handleSize); // Left
+      ctx.strokeRect(this.x + this.width - handleSize / 2, this.y + this.height / 2 - handleSize / 2, handleSize, handleSize); // Right
+    }
+
+    if (this.isMouseInRotatedArea()) {
+      const handleSize = 10; // Diameter of the handle
+      const radius = handleSize / 2;
+      const margin = 20; // Move handles slightly inside the image
+
+      ctx.strokeStyle = "red"; // Red color for handles
+      ctx.lineWidth = 1.5;
+
+      // Function to draw a circle at a given position
+      const drawHandle = (x, y) => {
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.stroke();
+      };
+
+      // Draw circles at the slightly inset corners
+      drawHandle(this.x + margin, this.y + margin); // Top-left
+      drawHandle(this.x + this.width - margin, this.y + margin); // Top-right
+      drawHandle(this.x + margin, this.y + this.height - margin); // Bottom-left
+      drawHandle(this.x + this.width - margin, this.y + this.height - margin); // Bottom-right
+    }
+
+    // Draw visual plot
+    if (this.isPlotted) {
+      ctx.fillStyle = "rgba(255,0, 0, 0.1)";
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+
+    // Restore the context state // rotation
+    ctx.restore();
+    this.createCloseButton();
   }
 }
 

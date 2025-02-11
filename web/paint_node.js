@@ -309,11 +309,15 @@ app.registerExtension({
         pa.blockPainting = true;
       }
       // Block painting on images
-      canvasImgs.forEach((img) => {
-        if (img.isMouseIn(10)) {
-          pa.blockPainting = true;
-        }
-      });
+      // canvasImgs.forEach((img) => {
+      //   if (img.isMouseIn(10) || img.isResizing || img.isRotating) {
+      //     pa.blockPainting = true;
+      //   }
+      // });
+      if(canvasImgs.length > 0){
+        if(allow_debug){console.log('length.canvasImgs',length.canvasImgs);}
+        pa.blockPainting = true;
+      }
     };
 
     pa.onUpdate = () => {
@@ -368,12 +372,11 @@ app.registerExtension({
 
     node.onMouseMove = (e, pos) => {
       pickColor(e);
-      canvasImgs.forEach((img) => {
-        if (img.isMouseIn(10)) {
-          if(allow_debug){console.log('rotate',);}
-          img.handleRotateMove()
-        }
-      });
+      // canvasImgs.forEach((img) => {
+      //   if (img.isMouseIn(10)) {
+      //     //img.handleRotateMove()
+      //   }
+      // });
     };
 
     node.onMouseEnter = (e, pos, node) => {};
