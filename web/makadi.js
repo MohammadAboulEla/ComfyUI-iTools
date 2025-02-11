@@ -113,6 +113,15 @@ export class SmartImage extends BaseSmartWidget {
     this.buttonYoffset = 5;
     this.closeButton = null;
 
+    // properties for rotation
+    this.rotationAngle = 0;
+    this.initialRotationAngle = 0;
+    this.isRotating = false;
+    this.rotationCenter = {
+      x: this.width / 2,
+      y: this.height / 2,
+    };
+
     // Apply options if provided
     Object.assign(this, options);
 
@@ -123,6 +132,47 @@ export class SmartImage extends BaseSmartWidget {
 
     // Add self to the node
     node.addCustomWidget(this);
+  }
+
+  // Method to handle rotation start
+  handleRotateStart() {
+    if (this.isMouseIn()) {
+      this.isRotating = true;
+      this.rotationStartPos = { x: this.mousePos.x, y: this.mousePos.y };
+    }
+  }
+
+  // Method to handle rotation during drag
+  handleRotateMove() {
+    if (this.isRotating) {
+      // Calculate mouse position relative to the center of rotation
+      const centerX = this.x + this.width / 2;
+      const centerY = this.y + this.height / 2;
+      const dx = this.mousePos.x - centerX;
+      const dy = this.mousePos.y - centerY;
+
+      // Calculate the angle from the center to the current mouse position
+      const currentAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+      // Calculate the angle from the center to the initial rotation start position
+      const startDx = this.rotationStartPos.x - this.rotationCenter.x;
+      const startDy = this.rotationStartPos.y - this.rotationCenter.y;
+      const startAngle = Math.atan2(startDy, startDx) * (180 / Math.PI);
+
+      // Update rotation angle correctly
+      this.rotationAngle = (this.initialRotationAngle + (currentAngle - startAngle)) % 360;
+      
+      // Ensure the rotation angle is within [0, 360)
+      if (this.rotationAngle < 0) {
+        this.rotationAngle += 360;
+      }
+    }
+  }
+
+  // Method to handle rotation end
+  handleRotateEnd() {
+    this.isRotating = false;
+    this.initialRotationAngle = this.rotationAngle
   }
 
   createCloseButton() {
@@ -241,6 +291,7 @@ export class SmartImage extends BaseSmartWidget {
       this.x = Math.max(canvasX, Math.min(newX, canvasX + width));
       this.y = Math.max(canvasY, Math.min(newY, canvasY + height));
 
+      console.log("x,y", this.rotationCenter.x, this.rotationCenter.y);
       this.closeButton.x = this.x + this.buttonXoffset;
       this.closeButton.y = this.y + this.buttonYoffset;
     }
@@ -255,9 +306,24 @@ export class SmartImage extends BaseSmartWidget {
   draw(ctx) {
     if (this.markDelete) return;
 
-    // Clear the region occupied by the SmartImage
-    ctx.clearRect(this.x, this.y, this.width, this.height);
+    // rotation
 
+    // Save the context state before transformations
+    ctx.save();
+
+    this.rotationCenter = {x:this.x + this.width / 2, y:this.y + this.height / 2}
+    // Translate to the center of the image
+    ctx.translate(this.rotationCenter.x, this.rotationCenter.y);
+    //ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+
+    // Rotate the context
+    ctx.rotate((this.rotationAngle * Math.PI) / 180);
+
+    // Translate back to the top-left corner of the image
+    ctx.translate(-this.x - this.width / 2, -this.y - this.height / 2);
+    // rotation
+
+    // Draw the image or placeholder
     if (!this.imgLoaded) {
       ctx.fillStyle = this.placeholderColor;
       ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -292,10 +358,13 @@ export class SmartImage extends BaseSmartWidget {
     }
 
     // Draw visual plot
-    if(this.isPlotted){
-    ctx.fillStyle = "rgba(255,0, 0, 0.1)";
-    ctx.fillRect(this.x, this.y, this.width, this.height);}
+    if (this.isPlotted) {
+      ctx.fillStyle = "rgba(255,0, 0, 0.1)";
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
 
+    // Restore the context state // rotation
+    ctx.restore();
     this.createCloseButton();
   }
 
@@ -479,7 +548,6 @@ export class SmartImage extends BaseSmartWidget {
     setTimeout(() => {
       this.isPlotted = false;
     }, 200);
-
   }
 }
 

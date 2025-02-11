@@ -351,16 +351,15 @@ app.registerExtension({
       loadedWidth = w / scale;
       loadedHeight = h / scale;
       loadedScale = scale;
-
-      // if (allow_debug) {
-      //   console.log("w,h,s", w, h, scaleIndex);
-      // }
     };
 
     // COMMON NODE EVENTS
     node.onMouseDown = (e, pos, node) => {
       pickColor(e);
       canvasImgs = canvasImgs.filter((img) => !img.markDelete);
+
+
+
     };
 
     node.onMouseUp = (e, pos, node) => {
@@ -369,6 +368,12 @@ app.registerExtension({
 
     node.onMouseMove = (e, pos) => {
       pickColor(e);
+      canvasImgs.forEach((img) => {
+        if (img.isMouseIn(10)) {
+          if(allow_debug){console.log('rotate',);}
+          img.handleRotateMove()
+        }
+      });
     };
 
     node.onMouseEnter = (e, pos, node) => {};
@@ -398,6 +403,19 @@ app.registerExtension({
       if (event.key === "Shift") {
         info.restart("Shift", 0);
         isHoldingShift = true;
+
+        canvasImgs.forEach((img) => {
+          if (img.isMouseIn(10)) {
+            if (!img.isRotating){
+              img.handleRotateStart()
+            }else{
+              img.handleRotateEnd()
+            }
+            
+          }
+        });
+
+
       }
     };
 
