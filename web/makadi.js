@@ -532,6 +532,54 @@ export class SmartImage extends BaseSmartWidget {
     }
   }
 
+  fitImageOnCanvas(dimension, value, canvasWidth = 512, canvasHeight = 512, offsetY = 80) {
+    if (!this.imgLoaded) {
+      console.warn("Image is not loaded yet.");
+      return;
+    }
+
+    const aspectRatio = this.width / this.height;
+
+    if (dimension === "w") {
+      this.width = Math.min(value, canvasWidth);
+    } else if (dimension === "h") {
+      this.height = Math.min(value, canvasHeight); // Clamp height within min and max limits
+    } else {
+      console.error("Invalid dimension specified. Use 'w' or 'h'.");
+      return;
+    }
+
+    // Center the image on the canvas
+    this.x = Math.max(0, Math.min((canvasWidth - this.width) / 2, canvasWidth - this.width));
+    this.y = Math.max(offsetY, Math.min((canvasHeight - this.height) / 2 + offsetY, canvasHeight - this.height));
+
+  }
+
+  fitImageOn(dimension, value, canvasWidth = 512, canvasHeight = 592, offsetY = 80) {
+    if (!this.imgLoaded) {
+      console.warn("Image is not loaded yet.");
+      return;
+    }
+
+    const aspectRatio = this.width / this.height;
+
+    if (dimension === "w") {
+      this.width = Math.min(value, canvasWidth); // Clamp width within min and max limits
+      this.height = Math.min(this.width,canvasHeight) / aspectRatio; // Adjust height based on aspect ratio
+    } else if (dimension === "h") {
+      this.height = Math.min(value, canvasHeight - offsetY); // Clamp height within min and max limits
+      this.width =  Math.min(this.height* aspectRatio,canvasWidth) / aspectRatio; // Adjust width based on aspect ratio
+    } else {
+      console.error("Invalid dimension specified. Use 'w' or 'h'.");
+      return;
+    }
+
+    // Center the image on the canvas
+    this.x = Math.max(0, Math.min((canvasWidth - this.width) / 2, canvasWidth - this.width));
+    this.y = Math.max(offsetY, Math.min((canvasHeight - this.height) / 2 + offsetY, canvasHeight - this.height));
+
+  }
+
   plotImageOnCanvas(ctx, xOffset, yOffset, scale) {
     if (!ctx || !(ctx instanceof CanvasRenderingContext2D)) {
       console.error("Invalid canvas context provided.");
@@ -670,7 +718,7 @@ export class SmartImage extends BaseSmartWidget {
     }
 
     // draw rotate dots
-    if (this.isMouseInRotatedArea() && this.isSelected || this.isRotating) {
+    if ((this.isMouseInRotatedArea() && this.isSelected) || this.isRotating) {
       const handleSize = 10; // Diameter of the handle
       const radius = handleSize / 2;
       const margin = 20; // Move handles slightly inside the image

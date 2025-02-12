@@ -154,7 +154,7 @@ app.registerExtension({
 
                 if (allow_debug) console.log("Image loaded successfully!");
                 // open canvas buttons
-                openCanvas()
+                openCanvas();
               };
             };
 
@@ -314,69 +314,56 @@ app.registerExtension({
     }
 
     // create canvas buttons
-    const bcw = 40;
-    const bch = 20;
-    const bcx = 512 / 2 - bcw / 2;
-    const bcy = 592 - 40;
-
-    const bCloseCanvas = new SmartButton(bcx - bcw * 2, bcy, bcw, bch, node, "Exit", {
-      textXoffset: 0,
-      shape: Shapes.ROUND_L,
-    });
-    bc.push(bCloseCanvas);
-    bCloseCanvas.onClick = () => {
-      closeCanvas();
-    };
-    const bMaskCanvas = new SmartButton(bcx - bcw * 1, bcy, bcw, bch, node, "Mask", {
-      textXoffset: 0,
-      shape: Shapes.SQUARE,
-    });
-    bc.push(bMaskCanvas);
-    const bStampCanvas = new SmartButton(bcx, bcy, bcw, bch, node, "Stamp", {
-      textXoffset: 0,
-      shape: Shapes.SQUARE,
-    });
-    bStampCanvas.onClick = () => {
-      const ctx = pa.isPaintingBackground ? pa.backgroundCtx : pa.foregroundCtx;
-      let img = canvasImgs.find((img) => img.isSelected);
-      if (allow_debug) {
-        console.log("img", img);
-      }
-      img.plotImageOnCanvas(ctx, pa.x, pa.y, dmS.selectedItemIndex);
-    };
-    bc.push(bStampCanvas);
-    const bFitWCanvas = new SmartButton(bcx + bcw * 1, bcy, bcw, bch, node, "FitW", {
-      textXoffset: 0,
-      shape: Shapes.SQUARE,
-    });
-    bc.push(bFitWCanvas);
-    const bFitHCanvas = new SmartButton(bcx + bcw * 2, bcy, bcw, bch, node, "FitH", {
-      textXoffset: 0,
-      shape: Shapes.ROUND_R,
-    });
-    bc.push(bFitHCanvas);
-    bc.forEach((b) => (b.isVisible = false));
-
+    let bCloseCanvas = null;
+    let bMaskCanvas = null;
+    let bStampCanvas = null;
+    let bFitWCanvas = null;
+    let bFitHCanvas = null;
+    
     // COMMON FUNCTIONS
+
+    
+    function deleteCanvasButtons() {
+      let bCloseCanvas = null;
+      let bMaskCanvas = null;
+      let bStampCanvas = null;
+      let bFitWCanvas = null;
+      let bFitHCanvas = null;
+    }
+
     function closeCanvas() {
+      //deleteCanvasButtons();
       pa.isCheckerboardOn = false;
       // delete all canvas images
-      canvasImgs.forEach((img)=>{
-        img.markDelete = true
-      })
-      canvasImgs = []
+      canvasImgs.forEach((img) => {
+        img.markDelete = true;
+      });
+      canvasImgs = [];
       // close all buttons
       bc.forEach((b) => (b.isVisible = false));
     }
 
     function openCanvas() {
+      createCanvasButtons();
       pa.isCheckerboardOn = true;
       // open all buttons
       bc.forEach((b) => (b.isVisible = true));
     }
 
-    function selectCanvasImg(btn) {
-      if(btn.isMouseIn()) return;
+    function fitCanvasImg(dim) {
+      const img = canvasImgs.filter((img) => img.isSelected)[0];
+      const value = dim === "w"? pa.width : pa.height
+      if (allow_debug) {
+        console.log("canvasImgs", canvasImgs);
+      }
+      if (allow_debug) {
+        console.log("img ", img);
+      }
+      img.fitImageOnCanvas(dim,value);
+    }
+
+    function selectCanvasImg() {
+      if (bc.some((button) => button.isMouseIn())) return;
       let found = false; // Flag to stop after selecting the topmost image
       for (let i = canvasImgs.length - 1; i >= 0; i--) {
         let img = canvasImgs[i];
@@ -390,7 +377,7 @@ app.registerExtension({
     }
 
     function pickColor(e) {
-      if (bCloseCanvas.isVisible) return; // prevent picking in canvas mode
+      if (bCloseCanvas?.isVisible) return; // prevent picking in canvas mode
       cp.allowPickVis = true;
       if (cp.isVisible || isHoldingShift) {
         bFill.tagColor = trackMouseColor(e, app.canvas.canvas);
@@ -421,6 +408,58 @@ app.registerExtension({
       }, 1000);
     }
 
+    function createCanvasButtons() {
+      const bcw = 40;
+      const bch = 20;
+      const bcx = 512 / 2 - bcw / 2;
+      const bcy = 592 - 40;
+
+      bCloseCanvas = new SmartButton(bcx - bcw * 2, bcy, bcw, bch, node, "Exit", {
+        textXoffset: 0,
+        shape: Shapes.ROUND_L,
+      });
+      bc.push(bCloseCanvas);
+      bCloseCanvas.onClick = () => {
+        closeCanvas();
+      };
+      bMaskCanvas = new SmartButton(bcx - bcw * 1, bcy, bcw, bch, node, "Mask", {
+        textXoffset: 0,
+        shape: Shapes.SQUARE,
+      });
+      bc.push(bMaskCanvas);
+      bStampCanvas = new SmartButton(bcx, bcy, bcw, bch, node, "Stamp", {
+        textXoffset: 0,
+        shape: Shapes.SQUARE,
+      });
+      bStampCanvas.onClick = () => {
+        const ctx = pa.isPaintingBackground ? pa.backgroundCtx : pa.foregroundCtx;
+        let img = canvasImgs.find((img) => img.isSelected);
+        if (allow_debug) {
+          console.log("img", img);
+        }
+        img.plotImageOnCanvas(ctx, pa.x, pa.y, dmS.selectedItemIndex);
+      };
+      bc.push(bStampCanvas);
+      bFitWCanvas = new SmartButton(bcx + bcw * 1, bcy, bcw, bch, node, "FitW", {
+        textXoffset: 0,
+        shape: Shapes.SQUARE,
+      });
+      bFitWCanvas.onClick = () => {
+        fitCanvasImg("w");
+      };
+      bc.push(bFitWCanvas);
+      bFitHCanvas = new SmartButton(bcx + bcw * 2, bcy, bcw, bch, node, "FitH", {
+        textXoffset: 0,
+        shape: Shapes.ROUND_R,
+      });
+      bFitHCanvas.onClick = () => {
+        fitCanvasImg("h");
+      };
+      bc.push(bFitHCanvas);
+      bc.forEach((b) => (b.isVisible = false));
+    }
+    
+
     // COMMON ACTIONS
     pa.onPress = () => {
       pa.blockPainting = false;
@@ -447,9 +486,8 @@ app.registerExtension({
       // OR -- Block painting on images permanently
       if (canvasImgs.length > 0) {
         pa.blockPainting = true;
-        selectCanvasImg(bStampCanvas);
+        selectCanvasImg();
       }
-
     };
 
     pa.onUpdate = () => {
@@ -552,10 +590,14 @@ app.registerExtension({
     };
 
     globalThis.onkeyup = (event) => {
-      if(allow_debug){console.log('canvasImgs.length',canvasImgs.length);}
+      if (allow_debug) {
+        console.log("canvasImgs.length", canvasImgs.length);
+      }
 
-      if(allow_debug){console.log('keyUp',);}
-      info.done =true;
+      if (allow_debug) {
+        console.log("keyUp");
+      }
+      info.done = true;
       if (event.key === "Shift") {
         isHoldingShift = false;
       }
