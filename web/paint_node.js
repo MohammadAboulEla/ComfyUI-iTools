@@ -29,6 +29,7 @@ import {
   AdvancedLabel,
   SmartInfo,
   SmartImage,
+  CanvasButtonManager,
 } from "./makadi.js";
 
 app.registerExtension({
@@ -61,6 +62,7 @@ app.registerExtension({
     node.setSize([512, 592]);
     node.resizable = false;
     node.setDirtyCanvas(true, true);
+    //node.selected = true;
 
     if (allow_debug) {
       console.log("node", node);
@@ -70,6 +72,7 @@ app.registerExtension({
 
     // START POINT
     let canvasImgs = [];
+    let bc = [];
     let keyPick = false;
     let isHoldingShift = false;
     let loadedWidth = 0;
@@ -90,6 +93,7 @@ app.registerExtension({
 
     const bLoad = new SmartButton(5, 5, 80, 20, node, "Load Image", {
       textXoffset: 0,
+      shape: Shapes.ROUND,
     });
     bLoad.onClick = () => {
       const fileInput = document.createElement("input");
@@ -100,30 +104,68 @@ app.registerExtension({
         const file = event.target.files[0];
         if (file) {
           const reader = new FileReader();
-
           reader.onload = (e) => {
             const imageUrl = e.target.result;
 
-            // Create a new SmartImage instance
-            const img = new SmartImage(0, 80, 80, 80, node, {});
+            // Create a temporary image element to get its dimensions
+            const tempImg = new Image();
+            tempImg.src = imageUrl;
 
-            // Update the image source dynamically
-            img.updateImage(imageUrl);
+            // Wait for the image to load
+            tempImg.onload = () => {
+              const naturalWidth = tempImg.naturalWidth;
+              const naturalHeight = tempImg.naturalHeight;
 
-            // Add the SmartImage instance to the canvasImgs array
-            canvasImgs.push(img);
+              // Calculate the aspect ratio
+              const aspectRatio = naturalWidth / naturalHeight;
 
-            // Optional: Define the onImgLoaded callback
-            img.onImgLoaded = () => {
-              if (this.allowDebug) console.log("Image loaded successfully!");
+              // Set a base height (or width) and calculate the other dimension based on the ratio
+              const baseHeight = 256; // You can adjust this value as needed
+              const calculatedWidth = baseHeight * aspectRatio;
+
+              // Calculate the center position for the image
+              const centerX = (node.width - calculatedWidth) / 2;
+              const centerY = (80 + node.height - baseHeight) / 2;
+
+              // Create a new SmartImage instance with dynamic dimensions
+              const img = new SmartImage(centerX, centerY, calculatedWidth, baseHeight, node, {});
+
+              // Update the image source dynamically
+              img.updateImage(imageUrl);
+
+              // Add the SmartImage instance to the canvasImgs array
+              canvasImgs.push(img);
+              if (allow_debug) {
+                console.log("canvasImgs", canvasImgs);
+              }
+
+              // Optional: Define the onImgLoaded callback
+              img.onImgLoaded = () => {
+                // // If no image is selected select last one
+                // if (canvasImgs.length > 0 && !canvasImgs.some((img) => img.isSelected)) {
+                //   canvasImgs[canvasImgs.length - 1].isSelected = true;
+                // }
+                // Remove old selected
+                canvasImgs.forEach((i) => {
+                  i.isSelected = false;
+                });
+                // select last loaded image
+                canvasImgs[canvasImgs.length - 1].isSelected = true;
+
+                if (allow_debug) console.log("Image loaded successfully!");
+                // open canvas buttons
+                openCanvas()
+              };
+            };
+
+            // Handle errors if the image fails to load
+            tempImg.onerror = () => {
+              console.error("Failed to load the image.");
             };
           };
 
+          // Read the file as a data URL
           reader.readAsDataURL(file);
-          if (this.allowDebug) console.log(`File name: ${file.name}`);
-
-          // Clear the file input value to allow reselection of the same file
-          fileInput.value = "";
         }
       });
 
@@ -173,10 +215,10 @@ app.registerExtension({
     dmS.isVisible = false;
 
     dmR.onSelect = () => {
-      if(dmR.isVisible) resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
+      if (dmR.isVisible) resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
     };
     dmS.onSelect = () => {
-      if(dmS.isVisible) resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
+      if (dmS.isVisible) resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
     };
 
     const bCanvas = new SmartButton(55, 60, 15, 15, node, "C", {
@@ -271,8 +313,85 @@ app.registerExtension({
       }
     }
 
+    // create canvas buttons
+    const bcw = 40;
+    const bch = 20;
+    const bcx = 512 / 2 - bcw / 2;
+    const bcy = 592 - 40;
+
+    const bCloseCanvas = new SmartButton(bcx - bcw * 2, bcy, bcw, bch, node, "Exit", {
+      textXoffset: 0,
+      shape: Shapes.ROUND_L,
+    });
+    bc.push(bCloseCanvas);
+    bCloseCanvas.onClick = () => {
+      closeCanvas();
+    };
+    const bMaskCanvas = new SmartButton(bcx - bcw * 1, bcy, bcw, bch, node, "Mask", {
+      textXoffset: 0,
+      shape: Shapes.SQUARE,
+    });
+    bc.push(bMaskCanvas);
+    const bStampCanvas = new SmartButton(bcx, bcy, bcw, bch, node, "Stamp", {
+      textXoffset: 0,
+      shape: Shapes.SQUARE,
+    });
+    bStampCanvas.onClick = () => {
+      const ctx = pa.isPaintingBackground ? pa.backgroundCtx : pa.foregroundCtx;
+      let img = canvasImgs.find((img) => img.isSelected);
+      if (allow_debug) {
+        console.log("img", img);
+      }
+      img.plotImageOnCanvas(ctx, pa.x, pa.y, dmS.selectedItemIndex);
+    };
+    bc.push(bStampCanvas);
+    const bFitWCanvas = new SmartButton(bcx + bcw * 1, bcy, bcw, bch, node, "FitW", {
+      textXoffset: 0,
+      shape: Shapes.SQUARE,
+    });
+    bc.push(bFitWCanvas);
+    const bFitHCanvas = new SmartButton(bcx + bcw * 2, bcy, bcw, bch, node, "FitH", {
+      textXoffset: 0,
+      shape: Shapes.ROUND_R,
+    });
+    bc.push(bFitHCanvas);
+    bc.forEach((b) => (b.isVisible = false));
+
     // COMMON FUNCTIONS
+    function closeCanvas() {
+      pa.isCheckerboardOn = false;
+      // delete all canvas images
+      canvasImgs.forEach((img)=>{
+        img.markDelete = true
+      })
+      canvasImgs = []
+      // close all buttons
+      bc.forEach((b) => (b.isVisible = false));
+    }
+
+    function openCanvas() {
+      pa.isCheckerboardOn = true;
+      // open all buttons
+      bc.forEach((b) => (b.isVisible = true));
+    }
+
+    function selectCanvasImg(btn) {
+      if(btn.isMouseIn()) return;
+      let found = false; // Flag to stop after selecting the topmost image
+      for (let i = canvasImgs.length - 1; i >= 0; i--) {
+        let img = canvasImgs[i];
+        if (!found && img.isMouseIn(10)) {
+          img.isSelected = true;
+          found = true; // Stop selecting after the first match (topmost image)
+        } else {
+          img.isSelected = false;
+        }
+      }
+    }
+
     function pickColor(e) {
+      if (bCloseCanvas.isVisible) return; // prevent picking in canvas mode
+      cp.allowPickVis = true;
       if (cp.isVisible || isHoldingShift) {
         bFill.tagColor = trackMouseColor(e, app.canvas.canvas);
         pa.brushColor = trackMouseColor(e, app.canvas.canvas);
@@ -283,6 +402,8 @@ app.registerExtension({
         } else {
           bColor.color = trackMouseColor(e, app.canvas.canvas);
         }
+      } else {
+        cp.allowPickVis = false;
       }
     }
     function resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info) {
@@ -308,16 +429,27 @@ app.registerExtension({
       if (dmR.isMouseInMenu() || dmR.isMouseIn() || dmS.isMouseInMenu() || dmS.isMouseIn()) {
         pa.blockPainting = true;
       }
-      // Block painting on images
+
+      // Block painting on canvas buttons
+      bc.forEach((b) => {
+        if (b.isMouseIn()) {
+          pa.blockPainting = true;
+        }
+      });
+
+      // EITHER -- Block painting on images when mouse in
       // canvasImgs.forEach((img) => {
       //   if (img.isMouseIn(10) || img.isResizing || img.isRotating) {
       //     pa.blockPainting = true;
       //   }
       // });
-      if(canvasImgs.length > 0){
-        if(allow_debug){console.log('length.canvasImgs',length.canvasImgs);}
+
+      // OR -- Block painting on images permanently
+      if (canvasImgs.length > 0) {
         pa.blockPainting = true;
+        selectCanvasImg(bStampCanvas);
       }
+
     };
 
     pa.onUpdate = () => {
@@ -359,11 +491,9 @@ app.registerExtension({
 
     // COMMON NODE EVENTS
     node.onMouseDown = (e, pos, node) => {
-      pickColor(e);
-      canvasImgs = canvasImgs.filter((img) => !img.markDelete);
-
-
-
+      if (allow_debug) {
+        console.log("node", node);
+      }
     };
 
     node.onMouseUp = (e, pos, node) => {
@@ -389,9 +519,10 @@ app.registerExtension({
     app.canvas.canvas.onkeydown = (event) => {
       event.preventDefault(); //important
       if (event.key === "Alt") {
-        // plot image on back ground
+        // plot selected image on back ground
         canvasImgs.forEach((img) => {
-          if (img.isMouseIn(10)) {
+          if (img.isSelected) {
+            info.restart("Alt");
             const ctx = pa.isPaintingBackground ? pa.backgroundCtx : pa.foregroundCtx;
             img.plotImageOnCanvas(ctx, pa.x, pa.y, dmS.selectedItemIndex);
           }
@@ -407,22 +538,24 @@ app.registerExtension({
         info.restart("Shift", 0);
         isHoldingShift = true;
 
+        // rotate with shift
         canvasImgs.forEach((img) => {
           if (img.isMouseIn(10)) {
-            if (!img.isRotating){
-              img.handleRotateStart()
-            }else{
-              img.handleRotateEnd()
+            if (!img.isRotating) {
+              img.handleRotateStart();
+            } else {
+              img.handleRotateEnd();
             }
-            
           }
         });
-
-
       }
     };
 
-    app.canvas.canvas.onkeyup = (event) => {
+    globalThis.onkeyup = (event) => {
+      if(allow_debug){console.log('canvasImgs.length',canvasImgs.length);}
+
+      if(allow_debug){console.log('keyUp',);}
+      info.done =true;
       if (event.key === "Shift") {
         isHoldingShift = false;
       }

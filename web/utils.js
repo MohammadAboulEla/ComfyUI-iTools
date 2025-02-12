@@ -81,6 +81,8 @@ export const Shapes = Object.freeze({
   SQUARE: "square",
   CIRCLE: "circle",
   ROUND: "round",
+  ROUND_L: "round_left",
+  ROUND_R: "round_right",
   TRIANGLE: "triangle",
   STAR: "star",
   ELLIPSE: "ellipse",
@@ -248,6 +250,74 @@ function exitFreezeMode() {
   this.node.allow_dragcanvas = true;
   this.node.allow_dragnodes = true;
 }
+
+export function drawCheckerboard(ctx, width, height, cellSize = 10, yOffset=80,) {
+  // Create an off-screen canvas for the pattern
+  const patternCanvas = document.createElement("canvas");
+  patternCanvas.width = cellSize * 2;
+  patternCanvas.height = cellSize * 2;
+  const pCtx = patternCanvas.getContext("2d");
+
+  // Define colors
+  const lightGray = "#CCCCCC";
+  const darkGray = "#999999";
+
+  // Draw checkerboard squares
+  pCtx.fillStyle = lightGray;
+  pCtx.fillRect(0, yOffset, cellSize * 2, cellSize * 2);
+  pCtx.fillStyle = darkGray;
+  pCtx.fillRect(0, yOffset, cellSize, cellSize);
+  pCtx.fillRect(cellSize, cellSize, cellSize, cellSize);
+
+  // Create pattern
+  const pattern = ctx.createPattern(patternCanvas, "repeat");
+
+  // Apply pattern to the main canvas
+  ctx.fillStyle = pattern;
+  ctx.fillRect(0, yOffset, width, height);
+}
+
+export function drawAngledStrips(ctx, width, height, stripeWidth = 5, angle = 45) {
+  // Save the current state of the canvas
+  ctx.save();
+
+  const canvasWidth = 512
+  const canvasHeight = 592 + 80
+  // Calculate offsets to center the rectangle within the canvas
+  const xOffset = (canvasWidth - width) / 2;
+  const yOffset = (canvasHeight - height) / 2;
+
+  // Define the clipping area with offset
+  ctx.beginPath();
+  ctx.rect(xOffset, yOffset, width, height); // Define a rectangle for clipping with offset
+  ctx.clip(); // Apply the clipping area
+
+  // Define transparent red colors
+  const red1 = "rgba(128, 128, 128, 0.3)"; // Faded red
+  const red2 = "rgba(128, 128, 128, 0.5)"; // Darker red
+
+  // Move canvas origin to the center of the rectangle
+  ctx.translate(xOffset + width / 2, yOffset + height / 2);
+
+  // Rotate the canvas
+  const radianAngle = (angle * Math.PI) / 180;
+  ctx.rotate(radianAngle);
+
+  // Calculate the diagonal length to cover the full area
+  const diagonal = Math.sqrt(width * width + height * height);
+
+  // Draw diagonal stripes within the clipped area
+  for (let x = -diagonal; x < diagonal; x += stripeWidth * 2) {
+    ctx.fillStyle = red1;
+    ctx.fillRect(x, -diagonal / 2, stripeWidth, diagonal);
+    ctx.fillStyle = red2;
+    ctx.fillRect(x + stripeWidth, -diagonal / 2, stripeWidth, diagonal);
+  }
+
+  // Restore the original state of the canvas
+  ctx.restore();
+}
+
 
 // Helper function to check if the color is transparent
 function isTransparent(color) {
