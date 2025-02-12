@@ -2210,6 +2210,20 @@ export class SmartPaintArea extends BaseSmartWidget {
         const fgImg = new Image();
         fgImg.src = `data:image/png;base64,${hexToBase64(foreground)}`;
         fgImg.onload = () => {
+
+          let scale = 1;
+  
+          if (fgImg.width <= 512 || fgImg.height <= 512) {
+            scale = 1;
+          } else if (fgImg.width <= 1024 || fgImg.height <= 1024) {
+            scale = 2;
+          } else if (fgImg.width <= 2048 || fgImg.height <= 2048) {
+            scale = 4;
+          }
+
+          this.setNewSize({ width: fgImg.width / scale, height: fgImg.width / scale }, scale);
+          
+
           this.foregroundCtx.clearRect(0, 0, this.width, this.height);
           // Center the foreground image
           const fgX = (this.width - fgImg.width) / 2;
@@ -2222,16 +2236,18 @@ export class SmartPaintArea extends BaseSmartWidget {
         bgImg.src = `data:image/png;base64,${hexToBase64(background)}`;
         bgImg.onload = () => {
           this.backgroundCtx.clearRect(0, 0, this.width, this.height);
-          // Center the background image
           if (allow_debug) {
             console.log("Old Image Loaded");
           }
+          // Center the background image
           const bgX = (this.width - bgImg.width) / 2;
           const bgY = (this.height - bgImg.height) / 2;
           this.backgroundCtx.drawImage(bgImg, bgX, bgY);
-          if (this.onReInit) this.onReInit(bgImg.width, bgImg.height);
+
         };
         if (allow_debug) console.log("Drawing received successfully.");
+        if(this.onReInit) this.onReInit() 
+
       } else {
         console.error("Error:", result.message);
       }

@@ -231,13 +231,13 @@ app.registerExtension({
       textXoffset: 0,
     });
     bCanvas.onClick = () => {
-      if (dmR.isVisible || dmS.isVisible) {
+      if (dmR?.isVisible || dmS?.isVisible) {
         info.done = true;
         dmR.isVisible = false;
         dmS.isVisible = false;
         bCanvas.toggleActive();
       } else {
-        createSetupButtons();
+        //createSetupButtons();
         info.restart(`${loadedWidth * loadedScale} x ${loadedHeight * loadedScale}`);
         dmR.isVisible = true;
         dmS.isVisible = true;
@@ -495,7 +495,7 @@ app.registerExtension({
       pa.blockPainting = false;
 
       // Block painting when drop menus open
-      if (dmR.isMouseInMenu() || dmR.isMouseIn() || dmS.isMouseInMenu() || dmS.isMouseIn()) {
+      if (dmR?.isMouseInMenu() || dmR?.isMouseIn() || dmS?.isMouseInMenu() || dmS?.isMouseIn()) {
         pa.blockPainting = true;
       }
 
@@ -531,8 +531,15 @@ app.registerExtension({
       });
     };
 
-    pa.onReInit = (w, h) => {
-      // update dmR and dmS values after init
+    pa.onReInit = () => {
+       // Update dmR and dmS values after init
+      setTimeout(() => {
+        const w = pa.width
+      const h = pa.height
+      
+      if(allow_debug){console.log('w,h',w, h);}
+      
+     
       let scale = 1;
       let scaleIndex = 0;
 
@@ -546,15 +553,14 @@ app.registerExtension({
         scale = 4;
         scaleIndex = 2;
       }
-
-      pa.setNewSize({ width: w / scale, height: h / scale }, scale);
-
+      
       dmR.selectedItemIndex = getIndexByDimensions(w / scale, h / scale);
       dmS.selectedItemIndex = scaleIndex;
 
       loadedWidth = w / scale;
       loadedHeight = h / scale;
       loadedScale = scale;
+      }, 500);
     };
 
     // COMMON NODE EVENTS
