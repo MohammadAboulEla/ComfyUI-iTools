@@ -277,7 +277,7 @@ export function drawCheckerboard(ctx, width, height, cellSize = 10, yOffset=80,)
   ctx.fillRect(0, yOffset, width, height);
 }
 
-export function drawAngledStrips(ctx, width, height, stripeWidth = 5, angle = 45) {
+export function drawAngledStripsOld(ctx, width, height, stripeWidth = 5, angle = 45) {
   // Save the current state of the canvas
   ctx.save();
 
@@ -317,6 +317,60 @@ export function drawAngledStrips(ctx, width, height, stripeWidth = 5, angle = 45
   // Restore the original state of the canvas
   ctx.restore();
 }
+
+export function drawAngledStrips(ctx, width, height, scaleFactor = 1.0, stripeWidth = 5, angle = 45) {
+  // Save the current state of the canvas
+  ctx.save();
+
+  // Define the fixed canvas dimensions
+  const canvasWidth = 512;
+  const canvasHeight = 592 + 80;
+
+  // Apply inverse scaling transformation
+  ctx.scale(1 / scaleFactor, 1 / scaleFactor);
+
+  // Calculate offsets to center the rectangle within the scaled canvas
+  const xOffset = (canvasWidth - width * scaleFactor) / 2;
+  const yOffset = (canvasHeight - height * scaleFactor) / 2;
+
+  // Define the clipping area with offset
+  ctx.beginPath();
+  ctx.rect(xOffset, yOffset, width * scaleFactor, height * scaleFactor);
+  ctx.clip();
+
+  // Define transparent colors
+  const red1 = "rgba(128, 128, 128, 0.3)";
+  const red2 = "rgba(128, 128, 128, 0.5)";
+
+  // Move canvas origin to the center of the scaled canvas
+  ctx.translate(canvasWidth / 2, canvasHeight / 2);
+
+  // Rotate the canvas
+  const radianAngle = (angle * Math.PI) / 180;
+  ctx.rotate(radianAngle);
+
+  // Calculate the diagonal length to ensure full coverage
+  const diagonal = Math.sqrt(width ** 2 + height ** 2) * scaleFactor;
+
+  // Keep stripe width constant (independent of scaleFactor)
+  const scaledStripeWidth = stripeWidth;
+
+  // Draw diagonal stripes across the clipped area
+  for (let x = -diagonal; x < diagonal; x += scaledStripeWidth * 2) {
+    ctx.fillStyle = red1;
+    ctx.fillRect(x, -diagonal / 2, scaledStripeWidth, diagonal);
+    ctx.fillStyle = red2;
+    ctx.fillRect(x + scaledStripeWidth, -diagonal / 2, scaledStripeWidth, diagonal);
+  }
+
+  // Restore the original canvas state
+  ctx.restore();
+}
+
+
+
+
+
 
 
 // Helper function to check if the color is transparent

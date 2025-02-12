@@ -472,6 +472,7 @@ export class SmartImage extends BaseSmartWidget {
   }
 
   resizeImage() {
+    if (!this.isSelected) return;
     const { x, y } = this.mousePos;
     const canvasX = 0,
       canvasY = 80,
@@ -532,52 +533,49 @@ export class SmartImage extends BaseSmartWidget {
     }
   }
 
-  fitImageOnCanvas(dimension, value, canvasWidth = 512, canvasHeight = 512, offsetY = 80) {
-    if (!this.imgLoaded) {
-      console.warn("Image is not loaded yet.");
-      return;
-    }
-
-    const aspectRatio = this.width / this.height;
-
-    if (dimension === "w") {
-      this.width = Math.min(value, canvasWidth);
-    } else if (dimension === "h") {
-      this.height = Math.min(value, canvasHeight); // Clamp height within min and max limits
-    } else {
-      console.error("Invalid dimension specified. Use 'w' or 'h'.");
-      return;
-    }
-
-    // Center the image on the canvas
-    this.x = Math.max(0, Math.min((canvasWidth - this.width) / 2, canvasWidth - this.width));
-    this.y = Math.max(offsetY, Math.min((canvasHeight - this.height) / 2 + offsetY, canvasHeight - this.height));
-
+  fillImage(pa,scale, offsetY = 80) {
+    this.width = Math.min(pa[0] / scale, 512);
+    this.height = Math.min(pa[1] / scale, 512);
+    // Center the image in the available space
+    this.x = (512 - this.width) / 2;
+    this.y = (512 - this.height) / 2 + offsetY;
   }
 
-  fitImageOn(dimension, value, canvasWidth = 512, canvasHeight = 592, offsetY = 80) {
+  fitImage(pa, dim = "w", scale = 1, offsetY = 80) {
     if (!this.imgLoaded) {
       console.warn("Image is not loaded yet.");
       return;
     }
+    const aspectRatio = this.img.width / this.img.height;
+    if (allow_debug) {
+      console.log("scale", scale);
+    }
+    let maxWidth = Math.min(pa[0] / scale, 512);
+    let maxHeight = Math.min(pa[1] / scale, 512);
 
-    const aspectRatio = this.width / this.height;
-
-    if (dimension === "w") {
-      this.width = Math.min(value, canvasWidth); // Clamp width within min and max limits
-      this.height = Math.min(this.width,canvasHeight) / aspectRatio; // Adjust height based on aspect ratio
-    } else if (dimension === "h") {
-      this.height = Math.min(value, canvasHeight - offsetY); // Clamp height within min and max limits
-      this.width =  Math.min(this.height* aspectRatio,canvasWidth) / aspectRatio; // Adjust width based on aspect ratio
+    if (dim === "w") {
+      // Start by setting width to max and calculate height
+      this.width = maxWidth;
+      this.height = this.width / aspectRatio;
+      // If height exceeds maxHeight, adjust height and recalculate width
+      if (this.height > maxHeight) {
+        this.height = maxHeight;
+        this.width = this.height * aspectRatio;
+      }
     } else {
-      console.error("Invalid dimension specified. Use 'w' or 'h'.");
-      return;
+      // Start by setting height to max and calculate width
+      this.height = maxHeight;
+      this.width = this.height * aspectRatio;
+      // If width exceeds maxwidth, adjust width and recalculate height
+      if (this.width > maxWidth) {
+        this.width = maxWidth;
+        this.height = this.width / aspectRatio;
+      }
     }
 
-    // Center the image on the canvas
-    this.x = Math.max(0, Math.min((canvasWidth - this.width) / 2, canvasWidth - this.width));
-    this.y = Math.max(offsetY, Math.min((canvasHeight - this.height) / 2 + offsetY, canvasHeight - this.height));
-
+    // Center the image in the available space
+    this.x = (512 - this.width) / 2;
+    this.y = (512 - this.height) / 2 + offsetY;
   }
 
   plotImageOnCanvas(ctx, xOffset, yOffset, scale) {
@@ -1163,6 +1161,7 @@ export class SmartInfo extends BaseSmartWidget {
     this.outlineWidth = 0.8;
 
     this.text = text;
+    this.textWidth = null;
     this.textColor = LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
     this.textYoffset = 0.7;
     this.textXoffset = 0.0;
@@ -1199,9 +1198,13 @@ export class SmartInfo extends BaseSmartWidget {
     this.done = false;
   }
 
-  restart(newText, newDuration = null) {
+  restart(newText, newWidth = null, newDuration = null) {
     this.done = true;
     if (newDuration === null) newDuration = this.previewDuration;
+    if (newWidth) { // recenter info
+      this.width = newWidth;
+      this.x = (512 / 2) - (newWidth / 2);
+    }
     this.text = newText;
     this.start();
   }
@@ -1356,6 +1359,15 @@ export class SmartInfo extends BaseSmartWidget {
     return false;
   }
 
+  getTextWidth(ctx) {
+    ctx.font = this.font;
+    return ctx.measureText(this.text).width;
+  }
+
+  updateText(newText){
+    this.text = newText
+  }
+
   set shape(value) {
     this._shape = value;
     if (value === Shapes.CIRCLE) this.height = this.width;
@@ -1383,7 +1395,7 @@ export class SmartLabel extends BaseSmartWidget {
     this.textBaseline = "top";
     this.font = "14px Arial Bold";
     this.textWidth = null;
-
+    this.isVisible = true
     // Apply options if provided
     Object.assign(this, options);
 
@@ -1391,6 +1403,7 @@ export class SmartLabel extends BaseSmartWidget {
     node.addCustomWidget(this);
   }
   draw(ctx) {
+    if(!this.isVisible) return;
     // Draw text
     if (this.text) {
       ctx.fillStyle = this.textColor;
@@ -1404,6 +1417,10 @@ export class SmartLabel extends BaseSmartWidget {
       }
     }
   }
+  updateText(newText){
+    this.text = newText
+  }
+
 }
 
 export class SmartButton extends SmartWidget {
@@ -1653,11 +1670,15 @@ export class SmartSwitch extends SmartWidget {
 
   handleDown() {
     if (this.isMouseIn()) {
-      this.isOn = !this.isOn;
-      this.textOnColor = this.isOn ? "black" : LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
-      this.textOffColor = this.isOn ? LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white" : "black";
-      if (this.onValueChange) this.onValueChange();
+      this.callClick()
+      if (this.onValueChange) this.onValueChange(this.isOn);
     }
+  }
+
+  callClick(){
+    this.isOn = !this.isOn;
+    this.textOnColor = this.isOn ? "black" : LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
+    this.textOffColor = this.isOn ? LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white" : "black";
   }
 
   handleMove() {}
@@ -1829,6 +1850,116 @@ export class SmartPaintArea extends BaseSmartWidget {
     node.addCustomWidget(this);
   }
 
+  draw(ctx) {
+    if (this.ctx === null) this.ctx = ctx;
+    const { x, y } = this.mousePos;
+
+    if (this.isPainting && !this.blockPainting) {
+      const activeCtx = this.isPaintingBackground ? this.backgroundCtx : this.foregroundCtx;
+
+      // Scale the brush size and adjust drawing coordinates
+      activeCtx.lineWidth = (this.brushSize * 2) / this.scaleFactor;
+      activeCtx.lineCap = "round";
+
+      // Determine the stroke style dynamically
+      let strokeStyle = this.brushColor;
+
+      if (this.brushColor === "rgba(255, 255, 255, 0.0)") {
+        if (activeCtx === this.backgroundCtx) {
+          strokeStyle = "white"; // Use white for backgroundCtx
+          activeCtx.strokeStyle = strokeStyle;
+
+          // Draw a line with white color
+          activeCtx.lineTo(
+            (x - this.x - this.xOffset) / this.scaleFactor,
+            (y - this.y - this.yOffset) / this.scaleFactor
+          );
+          activeCtx.stroke();
+          activeCtx.beginPath();
+          activeCtx.moveTo(
+            (x - this.x - this.xOffset) / this.scaleFactor,
+            (y - this.y - this.yOffset) / this.scaleFactor
+          );
+        } else {
+          // Clear the area in a circular shape for foregroundCtx
+          activeCtx.save();
+          activeCtx.beginPath();
+          activeCtx.arc(
+            (x - this.x - this.xOffset) / this.scaleFactor,
+            (y - this.y - this.yOffset) / this.scaleFactor,
+            this.brushSize / this.scaleFactor, // radius in scale
+            0,
+            Math.PI * 2
+          );
+          activeCtx.closePath();
+          activeCtx.globalCompositeOperation = "destination-out";
+          activeCtx.fillStyle = "black"; // Any solid color will work here
+          activeCtx.fill(); // Fill the circle to erase the area
+          activeCtx.restore();
+        }
+      } else {
+        // Normal drawing logic
+        activeCtx.strokeStyle = strokeStyle;
+        activeCtx.lineTo(
+          (x - this.x - this.xOffset) / this.scaleFactor,
+          (y - this.y - this.yOffset) / this.scaleFactor
+        );
+        activeCtx.stroke();
+        activeCtx.beginPath();
+        activeCtx.moveTo(
+          (x - this.x - this.xOffset) / this.scaleFactor,
+          (y - this.y - this.yOffset) / this.scaleFactor
+        );
+      }
+    } else {
+      // Reset paths for both contexts
+      this.foregroundCtx.beginPath();
+      this.backgroundCtx.beginPath();
+    }
+
+    // Draw layers in correct order, applying the scale factor
+    ctx.save();
+    ctx.scale(this.scaleFactor, this.scaleFactor);
+
+    // Ensure the background canvas is drawn first
+    ctx.drawImage(this.backgroundCanvas, this.x / this.scaleFactor, this.y / this.scaleFactor);
+
+    // Then draw the foreground canvas on top
+    ctx.drawImage(this.foregroundCanvas, this.x / this.scaleFactor, this.y / this.scaleFactor);
+
+    if (this.isCheckerboardOn) drawAngledStrips(ctx, this.width, this.height, this.scaleFactor);
+
+    ctx.restore();
+  }
+
+  handleDown() {
+    if (this.isMouseIn()) {
+      if (this.onPress) this.onPress();
+      // Save the current state before starting to paint
+      this.commitChange();
+      //this.enterFreezeMode();
+      this.isPainting = true;
+    }
+  }
+
+  handleClick() {
+    if (this.isMouseIn()) {
+      if (this.onClick) this.onClick();
+      //this.exitFreezeMode();
+      this.isPainting = false;
+    }
+  }
+
+  handleMove() {
+    //this.enterFreezeMode();
+    if (this.onUpdate) this.onUpdate();
+  }
+
+  isMouseIn() {
+    const { x, y } = this.mousePos;
+    return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
+  }
+
   setNewSize(size, scale) {
     const newX = size.width * scale;
     const newY = size.height * scale;
@@ -1930,115 +2061,13 @@ export class SmartPaintArea extends BaseSmartWidget {
     }
 
     this.backgroundCtx.putImageData(backgroundData, 0, 0);
+    if (allow_debug) {
+      console.log("scaleFactor", this.scaleFactor);
+    }
   }
 
   switchLayer() {
     this.isPaintingBackground = !this.isPaintingBackground;
-  }
-
-  draw(ctx) {
-    if (this.ctx === null) this.ctx = ctx;
-    const { x, y } = this.mousePos;
-
-    if (this.isPainting && !this.blockPainting) {
-      const activeCtx = this.isPaintingBackground ? this.backgroundCtx : this.foregroundCtx;
-
-      // Scale the brush size and adjust drawing coordinates
-      activeCtx.lineWidth = (this.brushSize * 2) / this.scaleFactor;
-      activeCtx.lineCap = "round";
-
-      // Determine the stroke style dynamically
-      let strokeStyle = this.brushColor;
-
-      if (this.brushColor === "rgba(255, 255, 255, 0.0)") {
-        if (activeCtx === this.backgroundCtx) {
-          strokeStyle = "white"; // Use white for backgroundCtx
-          activeCtx.strokeStyle = strokeStyle;
-
-          // Draw a line with white color
-          activeCtx.lineTo(
-            (x - this.x - this.xOffset) / this.scaleFactor,
-            (y - this.y - this.yOffset) / this.scaleFactor
-          );
-          activeCtx.stroke();
-          activeCtx.beginPath();
-          activeCtx.moveTo(
-            (x - this.x - this.xOffset) / this.scaleFactor,
-            (y - this.y - this.yOffset) / this.scaleFactor
-          );
-        } else {
-          // Clear the area in a circular shape for foregroundCtx
-          activeCtx.save();
-          activeCtx.beginPath();
-          activeCtx.arc(
-            (x - this.x - this.xOffset) / this.scaleFactor,
-            (y - this.y - this.yOffset) / this.scaleFactor,
-            this.brushSize / this.scaleFactor, // radius in scale
-            0,
-            Math.PI * 2
-          );
-          activeCtx.closePath();
-          activeCtx.globalCompositeOperation = "destination-out";
-          activeCtx.fillStyle = "black"; // Any solid color will work here
-          activeCtx.fill(); // Fill the circle to erase the area
-          activeCtx.restore();
-        }
-      } else {
-        // Normal drawing logic
-        activeCtx.strokeStyle = strokeStyle;
-        activeCtx.lineTo(
-          (x - this.x - this.xOffset) / this.scaleFactor,
-          (y - this.y - this.yOffset) / this.scaleFactor
-        );
-        activeCtx.stroke();
-        activeCtx.beginPath();
-        activeCtx.moveTo(
-          (x - this.x - this.xOffset) / this.scaleFactor,
-          (y - this.y - this.yOffset) / this.scaleFactor
-        );
-      }
-    } else {
-      // Reset paths for both contexts
-      this.foregroundCtx.beginPath();
-      this.backgroundCtx.beginPath();
-    }
-
-    // Draw layers in correct order, applying the scale factor
-    ctx.save();
-    ctx.scale(this.scaleFactor, this.scaleFactor);
-
-    // Ensure the background canvas is drawn first
-    ctx.drawImage(this.backgroundCanvas, this.x / this.scaleFactor, this.y / this.scaleFactor);
-
-    // Then draw the foreground canvas on top
-    ctx.drawImage(this.foregroundCanvas, this.x / this.scaleFactor, this.y / this.scaleFactor);
-
-    if (this.isCheckerboardOn) drawAngledStrips(ctx, this.width, this.height);
-
-    ctx.restore();
-  }
-
-  handleDown() {
-    if (this.isMouseIn()) {
-      if (this.onPress) this.onPress();
-      // Save the current state before starting to paint
-      this.commitChange();
-      //this.enterFreezeMode();
-      this.isPainting = true;
-    }
-  }
-
-  handleClick() {
-    if (this.isMouseIn()) {
-      if (this.onClick) this.onClick();
-      //this.exitFreezeMode();
-      this.isPainting = false;
-    }
-  }
-
-  handleMove() {
-    //this.enterFreezeMode();
-    if (this.onUpdate) this.onUpdate();
   }
 
   clearWithColor(color) {
@@ -2064,11 +2093,6 @@ export class SmartPaintArea extends BaseSmartWidget {
       this.foregroundCtx.fillStyle = color;
       this.foregroundCtx.fillRect(0, 0, this.width, this.height);
     }
-  }
-
-  isMouseIn() {
-    const { x, y } = this.mousePos;
-    return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
   }
 
   saveTempImage() {
@@ -2695,82 +2719,73 @@ export class SmartDropdownMenu extends BaseSmartWidget {
 
 // MANAGERS
 export class CanvasButtonManager {
-  constructor(node) {
-    //super(node)
-    this.isVisible = false;
-    this.buttons = [];
-    // create canvas buttons
-    this.bcw = 40;
-    this.bch = 20;
-    this.bcx = 512 / 2 - this.bcw / 2;
-    this.bcy = 592 - 40;
-
-    this.bCloseCanvas = new SmartButton(this.bcx - this.bcw * 2, this.bcy, this.bcw, this.bch, node, "Close", {
-      textXoffset: 0,
-      shape: Shapes.ROUND_L,
-    });
-    buttons.push(this.bCloseCanvas);
-    this.bCloseCanvas.onClick = () => {
-      if (allow_debug) {
-        console.log("bCloseCanvas");
-      }
-    };
-
-    // // add self to the node
-    // node.addCustomWidget(this);
-  }
-
-  draw(ctx) {
-    this.buttons.forEach((button) => {
-      button.draw(ctx); // Assuming SmartButton has a draw method
-    });
-  }
-
-  openCanvasManager() {}
-
-  closeCanvasManager() {}
-
-  showButtons() {
-    this.buttons.forEach((b) => (b.isVisible = true));
-  }
-
-  hideButtons() {
-    this.buttons.forEach((b) => (b.isVisible = false));
-  }
-
-  createCanvasButtons() {
-    this.bCloseCanvas = new SmartButton(this.bcx - this.bcw * 2, this.bcy, this.bcw, this.bch, node, "Close", {
-      textXoffset: 0,
-      shape: Shapes.ROUND_L,
-    });
-    buttons.push(this.bCloseCanvas);
-    this.bCloseCanvas.onClick = () => {
-      if (allow_debug) {
-        console.log("bCloseCanvas");
-      }
-    };
-
-    this.bMaskCanvas = new SmartButton(this.bcx - this.bcw * 1, this.bcy, this.bcw, this.bch, node, "Mask", {
-      textXoffset: 0,
-      shape: Shapes.SQUARE,
-    });
-    buttons.push(this.bMaskCanvas);
-    this.bStampCanvas = new SmartButton(this.bcx, this.bcy, this.bcw, this.bch, node, "Stamp", {
-      textXoffset: 0,
-      shape: Shapes.SQUARE,
-    });
-    buttons.push(bStampCanvas);
-    this.bFitWCanvas = new SmartButton(this.bcx + this.bcw * 1, this.bcy, this.bcw, this.bch, node, "FitW", {
-      textXoffset: 0,
-      shape: Shapes.SQUARE,
-    });
-    buttons.push(this.bFitWCanvas);
-    this.bFitHCanvas = new SmartButton(this.bcx + this.bcw * 2, this.bcy, this.bcw, this.bch, node, "FitH", {
-      textXoffset: 0,
-      shape: Shapes.ROUND_R,
-    });
-    buttons.push(this.bFitHCanvas);
-  }
+  // constructor(node) {
+  //   //super(node)
+  //   this.isVisible = false;
+  //   this.buttons = [];
+  //   // create canvas buttons
+  //   this.bcw = 40;
+  //   this.bch = 20;
+  //   this.bcx = 512 / 2 - this.bcw / 2;
+  //   this.bcy = 592 - 40;
+  //   this.bCloseCanvas = new SmartButton(this.bcx - this.bcw * 2, this.bcy, this.bcw, this.bch, node, "Close", {
+  //     textXoffset: 0,
+  //     shape: Shapes.ROUND_L,
+  //   });
+  //   buttons.push(this.bCloseCanvas);
+  //   this.bCloseCanvas.onClick = () => {
+  //     if (allow_debug) {
+  //       console.log("bCloseCanvas");
+  //     }
+  //   };
+  //   // // add self to the node
+  //   // node.addCustomWidget(this);
+  // }
+  // draw(ctx) {
+  //   this.buttons.forEach((button) => {
+  //     button.draw(ctx); // Assuming SmartButton has a draw method
+  //   });
+  // }
+  // openCanvasManager() {}
+  // closeCanvasManager() {}
+  // showButtons() {
+  //   this.buttons.forEach((b) => (b.isVisible = true));
+  // }
+  // hideButtons() {
+  //   this.buttons.forEach((b) => (b.isVisible = false));
+  // }
+  // createCanvasButtons() {
+  //   this.bCloseCanvas = new SmartButton(this.bcx - this.bcw * 2, this.bcy, this.bcw, this.bch, node, "Close", {
+  //     textXoffset: 0,
+  //     shape: Shapes.ROUND_L,
+  //   });
+  //   buttons.push(this.bCloseCanvas);
+  //   this.bCloseCanvas.onClick = () => {
+  //     if (allow_debug) {
+  //       console.log("bCloseCanvas");
+  //     }
+  //   };
+  //   this.bMaskCanvas = new SmartButton(this.bcx - this.bcw * 1, this.bcy, this.bcw, this.bch, node, "Mask", {
+  //     textXoffset: 0,
+  //     shape: Shapes.SQUARE,
+  //   });
+  //   buttons.push(this.bMaskCanvas);
+  //   this.bStampCanvas = new SmartButton(this.bcx, this.bcy, this.bcw, this.bch, node, "Stamp", {
+  //     textXoffset: 0,
+  //     shape: Shapes.SQUARE,
+  //   });
+  //   buttons.push(bStampCanvas);
+  //   this.bFitWCanvas = new SmartButton(this.bcx + this.bcw * 1, this.bcy, this.bcw, this.bch, node, "FitW", {
+  //     textXoffset: 0,
+  //     shape: Shapes.SQUARE,
+  //   });
+  //   buttons.push(this.bFitWCanvas);
+  //   this.bFitHCanvas = new SmartButton(this.bcx + this.bcw * 2, this.bcy, this.bcw, this.bch, node, "FitH", {
+  //     textXoffset: 0,
+  //     shape: Shapes.ROUND_R,
+  //   });
+  //   buttons.push(this.bFitHCanvas);
+  // }
 }
 
 // TODO CLASSES

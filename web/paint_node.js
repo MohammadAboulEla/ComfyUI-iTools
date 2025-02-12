@@ -179,7 +179,6 @@ app.registerExtension({
       (bColor.allowVisualPress = false),
       (bColor.onPress = () => {
         cp.open();
-        info.restart("Alt Key");
       });
 
     const bColor2 = new SmartButton(5, 35, 40, 40, node);
@@ -209,19 +208,26 @@ app.registerExtension({
     const ratioNames = Array.from(canvasRatios.keys());
     const sizeNames = Array.from(canvasScales.keys());
 
-    const dmR = new SmartDropdownMenu(5, 85, 40, 15, node, "Ratio", ratioNames);
-    const dmS = new SmartDropdownMenu(5 + 45, 85, 40, 15, node, "Size", sizeNames);
-    dmR.isVisible = false;
-    dmS.isVisible = false;
+    let dmR = null; //new SmartDropdownMenu(5, 85, 40, 15, node, "Ratio", ratioNames);
+    let dmS = null; //new SmartDropdownMenu(5 + 45, 85, 40, 15, node, "Size", sizeNames);
 
-    dmR.onSelect = () => {
-      if (dmR.isVisible) resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
-    };
-    dmS.onSelect = () => {
-      if (dmS.isVisible) resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
-    };
+    // TO DO
+    function createSetupButtons() {
+      dmR = new SmartDropdownMenu(5, 85, 40, 15, node, "Ratio", ratioNames);
+      dmS = new SmartDropdownMenu(5 + 45, 85, 40, 15, node, "Size", sizeNames);
+      dmR.isVisible = false;
+      dmS.isVisible = false;
 
-    const bCanvas = new SmartButton(55, 60, 15, 15, node, "C", {
+      dmR.onSelect = () => {
+        if (dmR.isVisible) resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
+      };
+      dmS.onSelect = () => {
+        if (dmS.isVisible) resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
+      };
+    }
+    createSetupButtons();
+
+    const bCanvas = new SmartButton(55, 60, 50, 15, node, "Canvas", {
       textXoffset: 0,
     });
     bCanvas.onClick = () => {
@@ -231,6 +237,7 @@ app.registerExtension({
         dmS.isVisible = false;
         bCanvas.toggleActive();
       } else {
+        createSetupButtons();
         info.restart(`${loadedWidth * loadedScale} x ${loadedHeight * loadedScale}`);
         dmR.isVisible = true;
         dmS.isVisible = true;
@@ -287,6 +294,8 @@ app.registerExtension({
     layerSwitch.textOff = "Background";
     layerSwitch.onValueChange = () => {
       pa.switchLayer();
+      lCanvasInfo.text = getActiveCtxText().text;
+      lCanvasInfo.color = getActiveCtxText().color;
     };
 
     // Create colors buttons
@@ -317,30 +326,27 @@ app.registerExtension({
     let bCloseCanvas = null;
     let bMaskCanvas = null;
     let bStampCanvas = null;
-    let bFitWCanvas = null;
-    let bFitHCanvas = null;
-    
-    // COMMON FUNCTIONS
+    let bFitCanvas = null;
+    let bFillCanvas = null;
+    let lCanvasInfo = null;
 
-    
-    function deleteCanvasButtons() {
-      let bCloseCanvas = null;
-      let bMaskCanvas = null;
-      let bStampCanvas = null;
-      let bFitWCanvas = null;
-      let bFitHCanvas = null;
+    // COMMON FUNCTIONS
+    function getActiveCtxText() {
+      let text = pa.isPaintingBackground ? "Background" : "Foreground";
+      let color = pa.isPaintingBackground ? "#cd7f32" : "#5f9ea0" //"#deb887";
+      return {text: text, color:color}
     }
 
     function closeCanvas() {
-      //deleteCanvasButtons();
       pa.isCheckerboardOn = false;
-      // delete all canvas images
+      // mark delete all canvas images
       canvasImgs.forEach((img) => {
         img.markDelete = true;
       });
+      //clear canvas images list
       canvasImgs = [];
-      // close all buttons
-      bc.forEach((b) => (b.isVisible = false));
+      // mark delete all buttons
+      bc.forEach((b) => (b.markDelete = true));
     }
 
     function openCanvas() {
@@ -352,18 +358,18 @@ app.registerExtension({
 
     function fitCanvasImg(dim) {
       const img = canvasImgs.filter((img) => img.isSelected)[0];
-      const value = dim === "w"? pa.width : pa.height
-      if (allow_debug) {
-        console.log("canvasImgs", canvasImgs);
-      }
-      if (allow_debug) {
-        console.log("img ", img);
-      }
-      img.fitImageOnCanvas(dim,value);
+      img?.fitImage([pa.width, pa.height], dim, 1 / pa.scaleFactor);
+      if (!img) info.restart("No Image Selected!", 120);
+    }
+
+    function fillCanvasImg() {
+      const img = canvasImgs.filter((img) => img.isSelected)[0];
+      img?.fillImage([pa.width, pa.height], 1 / pa.scaleFactor);
+      if (!img) info.restart("No Image Selected!", 120);
     }
 
     function selectCanvasImg() {
-      if (bc.some((button) => button.isMouseIn())) return;
+      if (bc.some((button) => button.isMouseIn?.())) return;
       let found = false; // Flag to stop after selecting the topmost image
       for (let i = canvasImgs.length - 1; i >= 0; i--) {
         let img = canvasImgs[i];
@@ -375,6 +381,7 @@ app.registerExtension({
         }
       }
     }
+
 
     function pickColor(e) {
       if (bCloseCanvas?.isVisible) return; // prevent picking in canvas mode
@@ -409,10 +416,24 @@ app.registerExtension({
     }
 
     function createCanvasButtons() {
-      const bcw = 40;
+      const bcw = 50;
       const bch = 20;
       const bcx = 512 / 2 - bcw / 2;
       const bcy = 592 - 40;
+      
+      lCanvasInfo = new SmartButton(512 / 2 - 40, bcy + 15, 80, bch, node, getActiveCtxText().text || "", {
+        textAlign: "center",
+        textColor: "black",
+        color: getActiveCtxText().color || "brown", // amber,
+        textYoffset: 2.2,
+        font : "13px Arial Bold",
+        allowVisualPress : false,
+        allowVisualHover : false,
+      });
+      lCanvasInfo.onClick = () => {
+
+      };
+      bc.push(lCanvasInfo);
 
       bCloseCanvas = new SmartButton(bcx - bcw * 2, bcy, bcw, bch, node, "Exit", {
         textXoffset: 0,
@@ -440,26 +461,35 @@ app.registerExtension({
         img.plotImageOnCanvas(ctx, pa.x, pa.y, dmS.selectedItemIndex);
       };
       bc.push(bStampCanvas);
-      bFitWCanvas = new SmartButton(bcx + bcw * 1, bcy, bcw, bch, node, "FitW", {
+      bFitCanvas = new SmartButton(bcx + bcw * 1, bcy, bcw, bch, node, "Fit", {
         textXoffset: 0,
         shape: Shapes.SQUARE,
       });
-      bFitWCanvas.onClick = () => {
+      bFitCanvas.onClick = () => {
         fitCanvasImg("w");
       };
-      bc.push(bFitWCanvas);
-      bFitHCanvas = new SmartButton(bcx + bcw * 2, bcy, bcw, bch, node, "FitH", {
+      bc.push(bFitCanvas);
+      bFillCanvas = new SmartButton(bcx + bcw * 2, bcy, bcw, bch, node, "Fill", {
         textXoffset: 0,
         shape: Shapes.ROUND_R,
       });
-      bFitHCanvas.onClick = () => {
-        fitCanvasImg("h");
+      bFillCanvas.onClick = () => {
+        fillCanvasImg();
       };
-      bc.push(bFitHCanvas);
+      bc.push(bFillCanvas);
       bc.forEach((b) => (b.isVisible = false));
     }
-    
 
+    
+    function switchCanvasLayers(caller) {
+      //if(!lCanvasInfo) return;
+      try {
+        // lCanvasInfo?.text = getActiveCtxText().text || "";
+        // lCanvasInfo?.color = getActiveCtxText().color || "";
+        //if(caller === "canvas") layerSwitch.callClick();
+      } catch (error) {
+      }
+    }
     // COMMON ACTIONS
     pa.onPress = () => {
       pa.blockPainting = false;
@@ -471,7 +501,7 @@ app.registerExtension({
 
       // Block painting on canvas buttons
       bc.forEach((b) => {
-        if (b.isMouseIn()) {
+        if (b.isMouseIn?.()) {
           pa.blockPainting = true;
         }
       });
@@ -555,12 +585,12 @@ app.registerExtension({
 
     // COMMON CLICKS EVENTS
     app.canvas.canvas.onkeydown = (event) => {
-      event.preventDefault(); //important
       if (event.key === "Alt") {
+        info.restart("Alt", 40);
+        event.preventDefault();
         // plot selected image on back ground
         canvasImgs.forEach((img) => {
           if (img.isSelected) {
-            info.restart("Alt");
             const ctx = pa.isPaintingBackground ? pa.backgroundCtx : pa.foregroundCtx;
             img.plotImageOnCanvas(ctx, pa.x, pa.y, dmS.selectedItemIndex);
           }
@@ -573,9 +603,11 @@ app.registerExtension({
       }
 
       if (event.key === "Shift") {
-        info.restart("Shift", 0);
+        info.restart("Shift", 40);
         isHoldingShift = true;
-
+        if (allow_debug) {
+          console.log("isHoldingShift", isHoldingShift);
+        }
         // rotate with shift
         canvasImgs.forEach((img) => {
           if (img.isMouseIn(10)) {
