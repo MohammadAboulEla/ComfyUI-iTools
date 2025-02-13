@@ -238,7 +238,7 @@ app.registerExtension({
         bCanvas.toggleActive();
       } else {
         //createSetupButtons();
-        info.restart(`${loadedWidth * loadedScale} x ${loadedHeight * loadedScale}`);
+        info.restart(`${loadedWidth} x ${loadedHeight}`);
         dmR.isVisible = true;
         dmS.isVisible = true;
         bCanvas.toggleActive();
@@ -531,36 +531,34 @@ app.registerExtension({
       });
     };
 
-    pa.onReInit = () => {
-      //  // Update dmR and dmS values after init
-      // setTimeout(() => {
-      //   const w = pa.width
-      // const h = pa.height
+    pa.onReInit = (j,x) => {
+      if(allow_debug){console.log('j,x',j,x);}
+      // Update dmR and dmS values after init
+      const w = pa.width
+      const h = pa.height
+      if(allow_debug){console.log('w,h',w,h);}
       
-      // if(allow_debug){console.log('w,h',w, h);}
+      const longSide = Math.max(w,h)
+      let scale = 1;
+      let scaleIndex = 0;
       
-      // const longSide = Math.max(w,h)
-      // let scale = 1;
-      // let scaleIndex = 0;
+      if (longSide<= 512) {
+        scale = 1;
+        scaleIndex = 0;
+      } else if (longSide <= 1024) {
+        scale = 2;
+        scaleIndex = 1;
+      } else if (longSide <= 2048) {
+        scale = 4;
+        scaleIndex = 2;
+      }
       
-      // if (longSide<= 512) {
-      //   scale = 1;
-      //   scaleIndex = 0;
-      // } else if (longSide <= 1024) {
-      //   scale = 2;
-      //   scaleIndex = 1;
-      // } else if (longSide <= 2048) {
-      //   scale = 4;
-      //   scaleIndex = 2;
-      // }
-      
-      // dmR.selectedItemIndex = getIndexByDimensions(w / scale, h / scale);
-      // dmS.selectedItemIndex = scaleIndex;
+      dmS.selectedItemIndex = scaleIndex;
+      dmR.selectedItemIndex = getIndexByDimensions(w/scale,h/scale);
 
-      // loadedWidth = w / scale;
-      // loadedHeight = h / scale;
-      // loadedScale = scale;
-      // }, 500);
+      loadedWidth = w;
+      loadedHeight = h;
+      loadedScale = scale;
     };
 
     // COMMON NODE EVENTS

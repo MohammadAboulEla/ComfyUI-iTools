@@ -2224,6 +2224,8 @@ export class SmartPaintArea extends BaseSmartWidget {
 
           this.setNewSize({ width: fgImg.width/scale, height: fgImg.height/scale }, scale);
 
+          if(this.onReInit) this.onReInit() 
+
           this.foregroundCtx.clearRect(0, 0, this.width, this.height);
           // Center the foreground image
           const fgX = (this.width - fgImg.width) / 2;
@@ -2247,8 +2249,6 @@ export class SmartPaintArea extends BaseSmartWidget {
         };
         if (allow_debug) console.log("Drawing received successfully.");
         
-        if(this.onReInit) this.onReInit() 
-
       } else {
         console.error("Error:", result.message);
       }
