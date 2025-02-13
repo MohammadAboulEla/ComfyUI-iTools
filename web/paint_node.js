@@ -219,7 +219,10 @@ app.registerExtension({
     function createDropMenus() {
       dmR = new SmartDropdownMenu(5, 85, 40, 15, node, "Ratio", ratioNames);
       dmS = new SmartDropdownMenu(5 + 45, 85, 40, 15, node, "Size", sizeNames);
-      dmInfo = new SmartButton(512/2-40, 85, 80, 15, node, `${loadedWidth} x ${loadedHeight}`);
+      const infoXpos = 512/2-40 || 5 + 45 + 45 
+      dmInfo = new SmartButton(infoXpos, 85, 80, 15, node, `${pa.width} x ${pa.height}`);
+      
+      // start invisible any way
       dmInfo.isVisible = false;
       dmR.isVisible = false;
       dmS.isVisible = false;
@@ -237,20 +240,19 @@ app.registerExtension({
       textXoffset: 0,
     });
     bCanvas.onClick = () => {
-      if (dmR?.isVisible || dmS?.isVisible) {
+      bCanvas.toggleActive();
+      if (dmR.isVisible) {
         dmR.isVisible = false;
         dmS.isVisible = false;
         dmInfo.isVisible = false; 
-        bCanvas.toggleActive();
       } else {
         createDropMenus(); // recreate menus to draw last
-        //createInfo() // recreate info to draw last
-        //info.restart(`${loadedWidth} x ${loadedHeight}`);
+        updateDMindexes(); // reupdate indexes
+        dmInfo.isVisible = true;
         dmR.isVisible = true;
         dmS.isVisible = true;
-        dmInfo.isVisible = true;
-        bCanvas.toggleActive();
       }
+      
     };
 
     const bUndo = new SmartButton(190 - 20, 60, 15, 15, node, "↺", {
@@ -302,8 +304,9 @@ app.registerExtension({
     layerSwitch.textOff = "Background";
     layerSwitch.onValueChange = () => {
       pa.switchLayer();
-      lCanvasInfo.text = getActiveCtxText().text;
-      lCanvasInfo.color = getActiveCtxText().color;
+      if(lCanvasInfo){
+      lCanvasInfo.text = getActiveCtxText().text
+      lCanvasInfo.color = getActiveCtxText().color}
     };
 
     // Create colors buttons
@@ -339,6 +342,10 @@ app.registerExtension({
     let lCanvasInfo = null;
 
     // COMMON FUNCTIONS
+    function showWarning(msg) {
+      info.restart(msg,120 ,85 + 20,20)
+    }
+
     function getActiveCtxText() {
       let text = pa.isPaintingBackground ? "Background" : "Foreground";
       let color = pa.isPaintingBackground ? "#cd7f32" : "#5f9ea0" //"#deb887";
@@ -367,13 +374,13 @@ app.registerExtension({
     function fitCanvasImg(dim) {
       const img = canvasImgs.filter((img) => img.isSelected)[0];
       img?.fitImage([pa.width, pa.height], dim, 1 / pa.scaleFactor);
-      if (!img) info.restart("No Image Selected!", 120);
+      if (!img || img.markDelete) showWarning("No Image Selected!")
     }
 
     function fillCanvasImg() {
       const img = canvasImgs.filter((img) => img.isSelected)[0];
       img?.fillImage([pa.width, pa.height], 1 / pa.scaleFactor);
-      if (!img) info.restart("No Image Selected!", 120);
+      if (!img || img.markDelete) showWarning("No Image Selected!")
     }
 
     function selectCanvasImg() {
@@ -464,10 +471,9 @@ app.registerExtension({
       bStampCanvas.onClick = () => {
         const ctx = pa.isPaintingBackground ? pa.backgroundCtx : pa.foregroundCtx;
         let img = canvasImgs.find((img) => img.isSelected);
-        if (allow_debug) {
-          console.log("img", img);
+        if(img && !img.markDelete){img.plotImageOnCanvas(ctx, pa.x, pa.y, dmS.selectedItemIndex);}else{
+          showWarning("No Image Selected!")
         }
-        img.plotImageOnCanvas(ctx, pa.x, pa.y, dmS.selectedItemIndex);
       };
       bc.push(bStampCanvas);
       bFitCanvas = new SmartButton(bcx + bcw * 1, bcy, bcw, bch, node, "Fit", {
@@ -491,15 +497,16 @@ app.registerExtension({
 
     
     function switchCanvasLayers(caller) {
-      //if(!lCanvasInfo) return;
       try {
-        // lCanvasInfo?.text = getActiveCtxText().text || "";
-        // lCanvasInfo?.color = getActiveCtxText().color || "";
-        //if(caller === "canvas") layerSwitch.callClick();
       } catch (error) {
       }
     }
+    
     // COMMON ACTIONS
+    pa.onReInit = () => {
+      updateDMindexes();
+    };
+    
     pa.onPress = () => {
       pa.blockPainting = false;
 
@@ -539,37 +546,7 @@ app.registerExtension({
         }
       });
     };
-
-    pa.onReInit = (j,x) => {
-      if(allow_debug){console.log('j,x',j,x);}
-      // Update dmR and dmS values after init
-      const w = pa.width
-      const h = pa.height
-      if(allow_debug){console.log('w,h',w,h);}
-      
-      const longSide = Math.max(w,h)
-      let scale = 1;
-      let scaleIndex = 0;
-      
-      if (longSide<= 512) {
-        scale = 1;
-        scaleIndex = 0;
-      } else if (longSide <= 1024) {
-        scale = 2;
-        scaleIndex = 1;
-      } else if (longSide <= 2048) {
-        scale = 4;
-        scaleIndex = 2;
-      }
-      
-      dmS.selectedItemIndex = scaleIndex;
-      dmR.selectedItemIndex = getIndexByDimensions(w/scale,h/scale);
-
-      loadedWidth = w;
-      loadedHeight = h;
-      loadedScale = scale;
-    };
-
+  
     // COMMON NODE EVENTS
     node.onMouseDown = (e, pos, node) => {
       if (allow_debug) {
@@ -649,5 +626,31 @@ app.registerExtension({
     };
 
     const manager = new BaseSmartWidgetManager(node);
+
+    function updateDMindexes() {
+        // Update dmR and dmS values after init
+        const w = pa.width;
+        const h = pa.height;
+        
+        const longSide = Math.max(w, h);
+        let scale = 1;
+        let scaleIndex = 0;
+
+        if (longSide <= 512) {
+          scale = 1;
+          scaleIndex = 0;
+        } else if (longSide <= 1024) {
+          scale = 2;
+          scaleIndex = 1;
+        } else if (longSide <= 2048) {
+          scale = 4;
+          scaleIndex = 2;
+        }
+
+        dmS.selectedItemIndex = scaleIndex;
+        dmR.selectedItemIndex = getIndexByDimensions(w / scale, h / scale);
+        
+
+    }
   },
 });

@@ -112,9 +112,15 @@ export class SmartImage extends BaseSmartWidget {
     this.isSelected = false;
     this.buttonXoffset = 5;
     this.buttonYoffset = 5;
-    this.closeButton = null;
-
+    
+    this.closeButton = false;
+    this.closeButtonWidth = 10;
+    this.closeButtonHeight = 10;
+    this.closeButtonOffsetX = 10
+    this.closeButtonOffsetY = 10
+    
     // properties for rotation
+    this.rotateDrawMargin = 25
     this.rotationAngle = 0;
     this.initialRotationAngle = 0;
     this.isRotating = false;
@@ -249,6 +255,10 @@ export class SmartImage extends BaseSmartWidget {
   }
 
   handleDown() {
+    if(this.isInCloseButtonArea()){
+      if(allow_debug){console.log('close',);}
+      this.markDelete = true;
+    }
     if (this.isMouseInResizeArea()) {
       this.isResizing = true;
       this.resizeAnchor = this.getResizeAnchor();
@@ -389,7 +399,7 @@ export class SmartImage extends BaseSmartWidget {
   isMouseInRotatedArea() {
     const { x: mouseX, y: mouseY } = this.mousePos;
     const threshold = this.resizeThreshold;
-    const margin = 15; // Move the detection area slightly inside the image
+    const margin = this.rotateDrawMargin - 5; // Move the detection area slightly inside the image
 
     // Translate mouse position relative to the center of the image
     const dx = mouseX - (this.x + this.width / 2);
@@ -421,6 +431,16 @@ export class SmartImage extends BaseSmartWidget {
       ry <= this.height - margin;
 
     return topLeft || topRight || bottomLeft || bottomRight;
+  }
+
+  isInCloseButtonArea(){
+    const { x, y } = this.mousePos;
+    return (
+      x >= this.x + this.closeButtonOffsetX &&
+      x <= this.x + this.closeButtonWidth + this.closeButtonOffsetX &&
+      y >= this.y + this.closeButtonOffsetY &&
+      y <= this.y + this.closeButtonOffsetY + this.closeButtonHeight
+    );
   }
 
   getResizeAnchor() {
@@ -533,7 +553,7 @@ export class SmartImage extends BaseSmartWidget {
     }
   }
 
-  fillImage(pa,scale, offsetY = 80) {
+  fillImage(pa, scale, offsetY = 80) {
     this.width = Math.min(pa[0] / scale, 512);
     this.height = Math.min(pa[1] / scale, 512);
     // Center the image in the available space
@@ -583,7 +603,9 @@ export class SmartImage extends BaseSmartWidget {
       console.error("Invalid canvas context provided.");
       return;
     }
-
+    if (allow_debug) {
+      console.log("scale", scale);
+    }
     if (scale === -1 || scale === 0) scale = 1;
     else if (scale === 1) scale = 2;
     else if (scale === 2) scale = 4;
@@ -619,6 +641,7 @@ export class SmartImage extends BaseSmartWidget {
     // Restore the context state
     ctx.restore();
 
+    // plot preview
     this.isPlotted = true;
     setTimeout(() => {
       this.isPlotted = false;
@@ -626,26 +649,26 @@ export class SmartImage extends BaseSmartWidget {
   }
 
   createCloseButton() {
-    if (this.closeButton === null) {
-      this.closeButton = new SmartButton(
-        this.x + this.buttonXoffset,
-        this.y + this.buttonYoffset,
-        15,
-        15,
-        this.node,
-        "X",
-        {
-          color: "rgba(255, 255, 255, 0.5)",
-          textColor: "#434343",
-        }
-      );
+    // if (this.closeButton === null) {
+    //   this.closeButton = new SmartButton(
+    //     this.x + this.buttonXoffset,
+    //     this.y + this.buttonYoffset,
+    //     15,
+    //     15,
+    //     this.node,
+    //     "X",
+    //     {
+    //       color: "rgba(255, 255, 255, 0.5)",
+    //       textColor: "#434343",
+    //     }
+    //   );
 
-      this.closeButton.onClick = () => {
-        //this.img = null;
-        this.closeButton.markDelete = true;
-        this.markDelete = true;
-      };
-    }
+    //   this.closeButton.onClick = () => {
+    //     //this.img = null;
+    //     this.closeButton.markDelete = true;
+    //     this.markDelete = true;
+    //   };
+    // }
   }
 
   draw(ctx) {
@@ -719,7 +742,7 @@ export class SmartImage extends BaseSmartWidget {
     if ((this.isMouseInRotatedArea() && this.isSelected) || this.isRotating) {
       const handleSize = 10; // Diameter of the handle
       const radius = handleSize / 2;
-      const margin = 20; // Move handles slightly inside the image
+      const margin = this.rotateDrawMargin; // Move handles slightly inside the image
 
       ctx.strokeStyle = "red"; // Red color for handles
       ctx.lineWidth = 1.5;
@@ -744,19 +767,48 @@ export class SmartImage extends BaseSmartWidget {
       ctx.fillRect(this.x, this.y, this.width, this.height);
     }
 
-    // Draw Selected Frame
-    // if (this.isSelected || true) {
-    //   // Draw a dashed outline around the image
-    //   ctx.strokeStyle = "red"; // Color of the dashed outline
-    //   ctx.lineWidth = 2; // Width of the dashed outline
-    //   ctx.setLineDash([10,1, 10]); // Dash pattern: 5px dash, 5px gap
-    //   ctx.strokeRect(this.x, this.y, this.width, this.height);
-    // }
+    // Draw close button
+    if (this.closeButton) {
+      const radius = 2.5;
 
-    // Restore the context state // rotation
+      ctx.beginPath();
+      ctx.moveTo(this.x + this.closeButtonOffsetX + radius, this.y + this.closeButtonOffsetY);
+      ctx.lineTo(this.x + this.closeButtonOffsetX + this.closeButtonWidth - radius, this.y + this.closeButtonOffsetY);
+      ctx.arcTo(this.x + this.closeButtonOffsetX + this.closeButtonWidth, this.y + this.closeButtonOffsetY, this.x + this.closeButtonOffsetX + this.closeButtonWidth, this.y + this.closeButtonOffsetY + radius, radius);
+      ctx.lineTo(this.x + this.closeButtonOffsetX + this.closeButtonWidth, this.y + this.closeButtonOffsetY + this.closeButtonHeight - radius);
+      ctx.arcTo(this.x + this.closeButtonOffsetX + this.closeButtonWidth, this.y + this.closeButtonOffsetY + this.closeButtonHeight, this.x + this.closeButtonOffsetX + this.closeButtonWidth - radius, this.y + this.closeButtonOffsetY + this.closeButtonHeight, radius);
+      ctx.lineTo(this.x + this.closeButtonOffsetX + radius, this.y + this.closeButtonOffsetY + this.closeButtonHeight);
+      ctx.arcTo(this.x + this.closeButtonOffsetX, this.y + this.closeButtonOffsetY + this.closeButtonHeight, this.x + this.closeButtonOffsetX, this.y + this.closeButtonOffsetY + this.closeButtonHeight - radius, radius);
+      ctx.lineTo(this.x + this.closeButtonOffsetX, this.y + this.closeButtonOffsetY + radius);
+      ctx.arcTo(this.x + this.closeButtonOffsetX, this.y + this.closeButtonOffsetY, this.x + this.closeButtonOffsetX + radius, this.y + this.closeButtonOffsetY, radius);
+      ctx.closePath();
+
+      ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+      ctx.fill();
+
+      // Draw outline if enabled
+      if (false) {
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      // Draw text
+      if (this.closeButton) {
+        ctx.fillStyle = "black";
+        ctx.font = "12px Arial Bold";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(
+          "x",
+          this.x + this.closeButtonOffsetX + this.closeButtonWidth / 2 + 0,
+          this.y + this.closeButtonOffsetY +  this.closeButtonHeight / 2 + 0
+        );
+      }
+    }
+
     ctx.restore();
-    // close button
-    //this.createCloseButton();
+
   }
 }
 
@@ -1102,9 +1154,9 @@ export class SmartWidget extends BaseSmartWidget {
   }
 
   toggleActive() {
-    this.isActive = !this.isActive;
     this.color === "#80a1c0" ? (this.color = this.originalColor) : (this.color = "#80a1c0");
     this.textColor === "black" ? (this.textColor = this.originalTextColor) : (this.textColor = "black");
+    this.isActive = !this.isActive;
   }
 
   visualClick() {
@@ -1151,6 +1203,10 @@ export class SmartInfo extends BaseSmartWidget {
     this.width = width;
     this.height = height;
 
+    this.originalWidth = width;
+    this.originalHeight = height;
+    this.originalY = y;
+
     this.radius = width / 2;
     this._shape = Shapes.ROUND;
 
@@ -1192,20 +1248,26 @@ export class SmartInfo extends BaseSmartWidget {
   handleMove() {}
 
   start() {
+    this.done = false;
     setTimeout(() => {
       this.done = true;
+      this.width = this.originalWidth;
+      this.height = this.originalHeight;
+      this.y = this.originalY;
     }, this.previewDuration);
-    this.done = false;
   }
 
-  restart(newText, newWidth = null, newDuration = null) {
-    this.done = true;
-    if (newDuration === null) newDuration = this.previewDuration;
-    if (newWidth) { // recenter info
+  restart(newText, newWidth = null, newY = null, newHeight = null, newDuration = 2000) {
+    if (newWidth) {
       this.width = newWidth;
-      this.x = (512 / 2) - (newWidth / 2);
+      this.x = 512 / 2 - newWidth / 2; // recenter info
     }
+    if (newHeight) this.height = newHeight;
+    if (newY) this.y = newY;
+
     this.text = newText;
+    this.previewDuration = newDuration;
+
     this.start();
   }
 
@@ -1364,8 +1426,8 @@ export class SmartInfo extends BaseSmartWidget {
     return ctx.measureText(this.text).width;
   }
 
-  updateText(newText){
-    this.text = newText
+  updateText(newText) {
+    this.text = newText;
   }
 
   set shape(value) {
@@ -1395,7 +1457,7 @@ export class SmartLabel extends BaseSmartWidget {
     this.textBaseline = "top";
     this.font = "14px Arial Bold";
     this.textWidth = null;
-    this.isVisible = true
+    this.isVisible = true;
     // Apply options if provided
     Object.assign(this, options);
 
@@ -1403,7 +1465,7 @@ export class SmartLabel extends BaseSmartWidget {
     node.addCustomWidget(this);
   }
   draw(ctx) {
-    if(!this.isVisible) return;
+    if (!this.isVisible) return;
     // Draw text
     if (this.text) {
       ctx.fillStyle = this.textColor;
@@ -1417,10 +1479,9 @@ export class SmartLabel extends BaseSmartWidget {
       }
     }
   }
-  updateText(newText){
-    this.text = newText
+  updateText(newText) {
+    this.text = newText;
   }
-
 }
 
 export class SmartButton extends SmartWidget {
@@ -1670,12 +1731,12 @@ export class SmartSwitch extends SmartWidget {
 
   handleDown() {
     if (this.isMouseIn()) {
-      this.callClick()
+      this.callClick();
       if (this.onValueChange) this.onValueChange(this.isOn);
     }
   }
 
-  callClick(){
+  callClick() {
     this.isOn = !this.isOn;
     this.textOnColor = this.isOn ? "black" : LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
     this.textOffColor = this.isOn ? LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white" : "black";
@@ -1842,7 +1903,7 @@ export class SmartPaintArea extends BaseSmartWidget {
     // Initialize undo and redo stacks
     this.undoStack = [];
     this.redoStack = [];
-    this.maxUndoSteps = 10; // Limit undo steps to 10
+    this.maxUndoSteps = 20; // Limit undo steps to 20
 
     // Load saved drawing after initialization
     this.getDrawingFromAPI();
@@ -2212,9 +2273,9 @@ export class SmartPaintArea extends BaseSmartWidget {
         fgImg.src = `data:image/png;base64,${hexToBase64(foreground)}`;
         fgImg.onload = () => {
           // calc scale
-          const longSide = Math.max(fgImg.height,fgImg.width)
+          const longSide = Math.max(fgImg.height, fgImg.width);
           let scale = 1;
-          if (longSide <= 512 ) {
+          if (longSide <= 512) {
             scale = 1;
           } else if (longSide <= 1024) {
             scale = 2;
@@ -2222,9 +2283,9 @@ export class SmartPaintArea extends BaseSmartWidget {
             scale = 4;
           }
 
-          this.setNewSize({ width: fgImg.width/scale, height: fgImg.height/scale }, scale);
+          this.setNewSize({ width: fgImg.width / scale, height: fgImg.height / scale }, scale);
 
-          if(this.onReInit) this.onReInit() 
+          if (this.onReInit) this.onReInit();
 
           this.foregroundCtx.clearRect(0, 0, this.width, this.height);
           // Center the foreground image
@@ -2245,10 +2306,8 @@ export class SmartPaintArea extends BaseSmartWidget {
           const bgX = (this.width - bgImg.width) / 2;
           const bgY = (this.height - bgImg.height) / 2;
           this.backgroundCtx.drawImage(bgImg, bgX, bgY);
-
         };
         if (allow_debug) console.log("Drawing received successfully.");
-        
       } else {
         console.error("Error:", result.message);
       }
