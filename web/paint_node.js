@@ -82,7 +82,11 @@ app.registerExtension({
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
     const p = new SmartPreview(0, 80, 512, 512, node);
     const cp = new SmartColorPicker(0, 80, 170, 170, node);
-    const info = new SmartInfo(512 / 2 - 40, 85, 80, 15, node, "canvas size");
+    let info = null
+    function createInfo(){
+      info = new SmartInfo(512 / 2 - 40, 85, 80, 15, node, "canvas size");
+    }
+    createInfo()
     const ui = new SmartWidget(0, 30, node.width, 50, node, {
       color: lightenColor(LiteGraph.WIDGET_BGCOLOR, 5),
       shape: Shapes.SQUARE,
@@ -210,37 +214,41 @@ app.registerExtension({
 
     let dmR = null; //new SmartDropdownMenu(5, 85, 40, 15, node, "Ratio", ratioNames);
     let dmS = null; //new SmartDropdownMenu(5 + 45, 85, 40, 15, node, "Size", sizeNames);
-
+    let dmInfo = null;
     // TO DO
-    function createSetupButtons() {
+    function createDropMenus() {
       dmR = new SmartDropdownMenu(5, 85, 40, 15, node, "Ratio", ratioNames);
       dmS = new SmartDropdownMenu(5 + 45, 85, 40, 15, node, "Size", sizeNames);
+      dmInfo = new SmartButton(512/2-40, 85, 80, 15, node, `${loadedWidth} x ${loadedHeight}`);
+      dmInfo.isVisible = false;
       dmR.isVisible = false;
       dmS.isVisible = false;
 
       dmR.onSelect = () => {
-        if (dmR.isVisible) resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
+        if (dmR.isVisible) resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, dmInfo);
       };
       dmS.onSelect = () => {
-        if (dmS.isVisible) resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info);
+        if (dmS.isVisible) resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, dmInfo);
       };
     }
-    createSetupButtons();
+    createDropMenus();
 
     const bCanvas = new SmartButton(55, 60, 50, 15, node, "Canvas", {
       textXoffset: 0,
     });
     bCanvas.onClick = () => {
       if (dmR?.isVisible || dmS?.isVisible) {
-        info.done = true;
         dmR.isVisible = false;
         dmS.isVisible = false;
+        dmInfo.isVisible = false; 
         bCanvas.toggleActive();
       } else {
-        //createSetupButtons();
-        info.restart(`${loadedWidth} x ${loadedHeight}`);
+        createDropMenus(); // recreate menus to draw last
+        //createInfo() // recreate info to draw last
+        //info.restart(`${loadedWidth} x ${loadedHeight}`);
         dmR.isVisible = true;
         dmS.isVisible = true;
+        dmInfo.isVisible = true;
         bCanvas.toggleActive();
       }
     };
@@ -406,7 +414,8 @@ app.registerExtension({
       const itemA = ratiosArray[dmR.selectedItemIndex][1];
       const itemB = sizesArray[dmS.selectedItemIndex][1];
       pa.setNewSize(itemA, itemB);
-      info.restart(`${itemA.width * itemB} x ${itemA.height * itemB}`);
+      //info.restart(`${itemA.width * itemB} x ${itemA.height * itemB}`);
+      info.text = `${itemA.width * itemB} x ${itemA.height * itemB}`
       if (allow_debug) console.log(itemA, itemB);
     }
     function saveImgToDesk() {
