@@ -2063,6 +2063,7 @@ export class SmartPaintArea extends BaseSmartWidget {
     this.backgroundCtx.putImageData(backgroundData, 0, 0);
     if (allow_debug) {
       console.log("scaleFactor", this.scaleFactor);
+      console.log("pa.width, pa.height", this.width, this.height);
     }
   }
 
@@ -2210,19 +2211,18 @@ export class SmartPaintArea extends BaseSmartWidget {
         const fgImg = new Image();
         fgImg.src = `data:image/png;base64,${hexToBase64(foreground)}`;
         fgImg.onload = () => {
-
+          // calc scale
+          const longSide = Math.max(fgImg.height,fgImg.width)
           let scale = 1;
-  
-          if (fgImg.width <= 512 || fgImg.height <= 512) {
+          if (longSide <= 512 ) {
             scale = 1;
-          } else if (fgImg.width <= 1024 || fgImg.height <= 1024) {
+          } else if (longSide <= 1024) {
             scale = 2;
-          } else if (fgImg.width <= 2048 || fgImg.height <= 2048) {
+          } else if (longSide <= 2048) {
             scale = 4;
           }
 
-          this.setNewSize({ width: fgImg.width / scale, height: fgImg.width / scale }, scale);
-          
+          this.setNewSize({ width: fgImg.width/scale, height: fgImg.height/scale }, scale);
 
           this.foregroundCtx.clearRect(0, 0, this.width, this.height);
           // Center the foreground image
@@ -2246,6 +2246,7 @@ export class SmartPaintArea extends BaseSmartWidget {
 
         };
         if (allow_debug) console.log("Drawing received successfully.");
+        
         if(this.onReInit) this.onReInit() 
 
       } else {
