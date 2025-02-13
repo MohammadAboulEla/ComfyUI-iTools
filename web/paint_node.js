@@ -247,7 +247,7 @@ app.registerExtension({
         dmInfo.isVisible = false; 
       } else {
         createDropMenus(); // recreate menus to draw last
-        updateDMindexes(); // reupdate indexes
+        updateDMindexes(); // re-update indexes
         dmInfo.isVisible = true;
         dmR.isVisible = true;
         dmS.isVisible = true;
@@ -296,6 +296,8 @@ app.registerExtension({
     });
     bClear.onClick = () => {
       pa.clearWithColor("white");
+      let text = pa.isPaintingBackground ? "Background" : "Foreground";
+      showWarning(`${text} cleared`)
     };
 
     // Create layer switch
@@ -343,7 +345,18 @@ app.registerExtension({
 
     // COMMON FUNCTIONS
     function showWarning(msg) {
-      info.restart(msg,120 ,85 + 20,20)
+      const originalColor =  info.color
+      const originalTextColor =  info.textColor
+      
+      info.color = "#cd7f32"
+      info.textColor = "black"
+      
+      info.restart(msg,120, 85 + 20, 20)
+      
+      setTimeout(() => {
+        info.color = originalColor
+        info.textColor = originalTextColor
+      }, info.previewDuration);
     }
 
     function getActiveCtxText() {
@@ -425,10 +438,11 @@ app.registerExtension({
       info.text = `${itemA.width * itemB} x ${itemA.height * itemB}`
       if (allow_debug) console.log(itemA, itemB);
     }
-    function saveImgToDesk() {
+    
+    function saveImgToDesk(delay = 500) {
       setTimeout(() => {
         if (!pa.isPainting) pa.sendDrawingToAPI();
-      }, 1000);
+      }, delay);
     }
 
     function createCanvasButtons() {
@@ -463,6 +477,9 @@ app.registerExtension({
         textXoffset: 0,
         shape: Shapes.SQUARE,
       });
+      bMaskCanvas.onClick = () => {
+        showWarning("Not Implemented")
+      }
       bc.push(bMaskCanvas);
       bStampCanvas = new SmartButton(bcx, bcy, bcw, bch, node, "Stamp", {
         textXoffset: 0,
@@ -555,7 +572,7 @@ app.registerExtension({
     };
 
     node.onMouseUp = (e, pos, node) => {
-      saveImgToDesk();
+      saveImgToDesk(200);
     };
 
     node.onMouseMove = (e, pos) => {
@@ -570,7 +587,7 @@ app.registerExtension({
     node.onMouseEnter = (e, pos, node) => {};
 
     node.onMouseLeave = (e) => {
-      saveImgToDesk();
+      saveImgToDesk(500);
     };
 
     // COMMON CLICKS EVENTS
