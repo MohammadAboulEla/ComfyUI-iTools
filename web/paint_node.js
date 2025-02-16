@@ -30,7 +30,7 @@ import {
   SmartInfo,
   SmartImage,
   CanvasButtonManager,
-  SmartLoading
+  SmartLoading,
 } from "./makadi.js";
 
 app.registerExtension({
@@ -74,7 +74,7 @@ app.registerExtension({
     // START POINT
     let canvasImgs = [];
     let bc = [];
-    let loadedImageFile = null
+    let loadedImageFile = null;
     let keyPick = false;
     let isHoldingShift = false;
     let loadedWidth = 0;
@@ -82,14 +82,14 @@ app.registerExtension({
     let loadedScale = 0;
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
     const p = new SmartPreview(0, 80, 512, 512, node);
-    let loader = null
+    let loader = null;
 
     const cp = new SmartColorPicker(0, 80, 170, 170, node);
-    let info = null
-    function createInfo(){
+    let info = null;
+    function createInfo() {
       info = new SmartInfo(512 / 2 - 40, 85, 80, 15, node, "canvas size");
     }
-    createInfo()
+    createInfo();
     const ui = new SmartWidget(0, 30, node.width, 50, node, {
       color: lightenColor(LiteGraph.WIDGET_BGCOLOR, 5),
       shape: Shapes.SQUARE,
@@ -138,7 +138,7 @@ app.registerExtension({
 
               // Create a new SmartImage instance with dynamic dimensions
               const img = new SmartImage(centerX, centerY, calculatedWidth, baseHeight, node, {});
-              
+
               // Update the image source dynamically
               img.updateImage(imageUrl);
 
@@ -186,15 +186,12 @@ app.registerExtension({
     //   shape: Shapes.ROUND,
     // });
     // bPaste.onClick = () => {
-      
+
     // }
 
-    app.canvas.canvas.onpaste = (...args) => {
-    };
+    app.canvas.canvas.onpaste = (...args) => {};
 
-    globalThis.oncopy = (...args) => {
-    };
-
+    globalThis.oncopy = (...args) => {};
 
     const bColor = new SmartButton(5, 35, 40, 40, node);
     bColor.shape = Shapes.HVL_CIRCLE;
@@ -239,9 +236,9 @@ app.registerExtension({
     function createDropMenus() {
       dmR = new SmartDropdownMenu(5, 85, 40, 15, node, "Ratio", ratioNames);
       dmS = new SmartDropdownMenu(5 + 45, 85, 40, 15, node, "Size", sizeNames);
-      const infoXpos = 512/2-40 || 5 + 45 + 45 
+      const infoXpos = 512 / 2 - 40 || 5 + 45 + 45;
       dmInfo = new SmartButton(infoXpos, 85, 80, 15, node, `${pa.width} x ${pa.height}`);
-      
+
       // start invisible any way
       dmInfo.isVisible = false;
       dmR.isVisible = false;
@@ -264,7 +261,7 @@ app.registerExtension({
       if (dmR.isVisible) {
         dmR.isVisible = false;
         dmS.isVisible = false;
-        dmInfo.isVisible = false; 
+        dmInfo.isVisible = false;
       } else {
         createDropMenus(); // recreate menus to draw last
         updateDMindexes(); // re-update indexes
@@ -272,7 +269,6 @@ app.registerExtension({
         dmR.isVisible = true;
         dmS.isVisible = true;
       }
-      
     };
 
     const bUndo = new SmartButton(190 - 20, 60, 15, 15, node, "↺", {
@@ -317,7 +313,7 @@ app.registerExtension({
     bClear.onClick = () => {
       pa.clearWithColor("white");
       let text = pa.isPaintingBackground ? "Background" : "Foreground";
-      showWarning(`${text} cleared`)
+      showWarning(`${text} cleared`);
     };
 
     // Create layer switch
@@ -326,9 +322,10 @@ app.registerExtension({
     layerSwitch.textOff = "Background";
     layerSwitch.onValueChange = () => {
       pa.switchLayer();
-      if(lCanvasInfo){
-      lCanvasInfo.text = getActiveCtxText().text
-      lCanvasInfo.color = getActiveCtxText().color}
+      if (lCanvasInfo) {
+        lCanvasInfo.text = getActiveCtxText().text;
+        lCanvasInfo.color = getActiveCtxText().color;
+      }
     };
 
     // Create colors buttons
@@ -365,28 +362,30 @@ app.registerExtension({
 
     // COMMON FUNCTIONS
     function showWarning(msg) {
-      const originalColor =  info.color
-      const originalTextColor =  info.textColor
-      
-      info.color = "#cd7f32"
-      info.textColor = "black"
-      
-      info.restart(msg,120, 85 + 20, 20)
-      
+      const originalColor = info.color;
+      const originalTextColor = info.textColor;
+
+      info.color = "#cd7f32";
+      info.textColor = "black";
+
+      info.restart(msg, 120, 85 + 20, 20);
+
       setTimeout(() => {
-        info.color = originalColor
-        info.textColor = originalTextColor
+        info.color = originalColor;
+        info.textColor = originalTextColor;
       }, info.previewDuration);
     }
 
     function getActiveCtxText() {
       let text = pa.isPaintingBackground ? "Background" : "Foreground";
-      let color = pa.isPaintingBackground ? "#cd7f32" : "#5f9ea0" //"#deb887";
-      return {text: text, color:color}
+      let color = pa.isPaintingBackground ? "#cd7f32" : "#5f9ea0"; //"#deb887";
+      return { text: text, color: color };
     }
 
     function closeCanvas() {
-      bCloseCanvas.isVisible = false
+      bCloseCanvas.isVisible = false;
+      // enable brush preview
+      p.isVisible = true
       pa.isCheckerboardOn = false;
       // mark delete all canvas images
       canvasImgs.forEach((img) => {
@@ -400,6 +399,8 @@ app.registerExtension({
 
     function openCanvas() {
       createCanvasButtons();
+      // disable brush preview
+      p.isVisible = false;
       pa.isCheckerboardOn = true;
       // open all buttons
       bc.forEach((b) => (b.isVisible = true));
@@ -408,13 +409,13 @@ app.registerExtension({
     function fitCanvasImg(dim) {
       const img = canvasImgs.filter((img) => img.isSelected)[0];
       img?.fitImage([pa.width, pa.height], dim, 1 / pa.scaleFactor);
-      if (!img || img.markDelete) showWarning("No Image Selected!")
+      if (!img || img.markDelete) showWarning("No Image Selected!");
     }
 
     function fillCanvasImg() {
       const img = canvasImgs.filter((img) => img.isSelected)[0];
       img?.fillImage([pa.width, pa.height], 1 / pa.scaleFactor);
-      if (!img || img.markDelete) showWarning("No Image Selected!")
+      if (!img || img.markDelete) showWarning("No Image Selected!");
     }
 
     function selectCanvasImg() {
@@ -430,7 +431,6 @@ app.registerExtension({
         }
       }
     }
-
 
     function pickColor(e) {
       if (bCloseCanvas?.isVisible) return; // prevent picking in canvas mode
@@ -457,10 +457,10 @@ app.registerExtension({
       const itemB = sizesArray[dmS.selectedItemIndex][1];
       pa.setNewSize(itemA, itemB);
       //info.restart(`${itemA.width * itemB} x ${itemA.height * itemB}`);
-      info.text = `${itemA.width * itemB} x ${itemA.height * itemB}`
+      info.text = `${itemA.width * itemB} x ${itemA.height * itemB}`;
       // if (allow_debug) console.log(itemA, itemB);
     }
-    
+
     function saveImgToDesk(delay = 500) {
       setTimeout(() => {
         if (!pa.isPainting) pa.sendDrawingToAPI();
@@ -472,19 +472,17 @@ app.registerExtension({
       const bch = 20;
       const bcx = 512 / 2 - bcw / 2;
       const bcy = 592 - 40;
-      
+
       lCanvasInfo = new SmartButton(512 / 2 - 40, bcy + 15, 80, bch, node, getActiveCtxText().text || "", {
         textAlign: "center",
         textColor: "black",
         color: getActiveCtxText().color || "brown", // amber,
         textYoffset: 2.2,
-        font : "13px Arial Bold",
-        allowVisualPress : false,
-        allowVisualHover : false,
+        font: "13px Arial Bold",
+        allowVisualPress: false,
+        allowVisualHover: false,
       });
-      lCanvasInfo.onClick = () => {
-
-      };
+      lCanvasInfo.onClick = () => {};
       bc.push(lCanvasInfo);
 
       bCloseCanvas = new SmartButton(bcx - bcw * 2, bcy, bcw, bch, node, "Exit", {
@@ -502,18 +500,17 @@ app.registerExtension({
       bMaskCanvas.onClick = () => {
         let img = canvasImgs.find((img) => img.isSelected);
 
-        if(img.isMasked){
-          showWarning("Already Masked!")
-          return
+        if (img.isMasked) {
+          showWarning("Already Masked!");
+          return;
         }
 
-        if(img && !img.markDelete){
+        if (img && !img.markDelete) {
           img.requestMaskedImage(loadedImageFile);
+        } else {
+          showWarning("No Image Selected");
         }
-          else{
-            showWarning("No Image Selected")
-        }
-      }
+      };
       bc.push(bMaskCanvas);
       bStampCanvas = new SmartButton(bcx, bcy, bcw, bch, node, "Stamp", {
         textXoffset: 0,
@@ -522,8 +519,10 @@ app.registerExtension({
       bStampCanvas.onClick = () => {
         const ctx = pa.isPaintingBackground ? pa.backgroundCtx : pa.foregroundCtx;
         let img = canvasImgs.find((img) => img.isSelected);
-        if(img && !img.markDelete){img.plotImageOnCanvas(ctx, pa.x, pa.y, dmS.selectedItemIndex);}else{
-          showWarning("No Image Selected!")
+        if (img && !img.markDelete) {
+          img.plotImageOnCanvas(ctx, pa.x, pa.y, dmS.selectedItemIndex);
+        } else {
+          showWarning("No Image Selected!");
         }
       };
       bc.push(bStampCanvas);
@@ -546,18 +545,16 @@ app.registerExtension({
       bc.forEach((b) => (b.isVisible = false));
     }
 
-    
     function switchCanvasLayers(caller) {
       try {
-      } catch (error) {
-      }
+      } catch (error) {}
     }
-    
+
     // COMMON ACTIONS
     pa.onReInit = () => {
       updateDMindexes();
     };
-    
+
     pa.onPress = () => {
       pa.blockPainting = false;
 
@@ -588,16 +585,14 @@ app.registerExtension({
     };
 
     pa.onUpdate = () => {
-      // disable preview circle on canvas images
-      canvasImgs.forEach((img) => {
-        if (!img.isMouseIn(10)) {
-          p.isVisible = true;
-        } else {
-          p.isVisible = false;
-        }
-      });
+      //disable preview circle on canvas images
+      // canvasImgs.forEach((img) => {
+      //   if (img.isMouseIn(10)) {
+      //     p.isVisible = fa;
+      //   }
+      // });
     };
-  
+
     // COMMON NODE EVENTS
     node.onMouseDown = (e, pos, node) => {
       // if (allow_debug) {
@@ -679,29 +674,27 @@ app.registerExtension({
     const manager = new BaseSmartWidgetManager(node);
 
     function updateDMindexes() {
-        // Update dmR and dmS values after init
-        const w = pa.width;
-        const h = pa.height;
-        
-        const longSide = Math.max(w, h);
-        let scale = 1;
-        let scaleIndex = 0;
+      // Update dmR and dmS values after init
+      const w = pa.width;
+      const h = pa.height;
 
-        if (longSide <= 512) {
-          scale = 1;
-          scaleIndex = 0;
-        } else if (longSide <= 1024) {
-          scale = 2;
-          scaleIndex = 1;
-        } else if (longSide <= 2048) {
-          scale = 4;
-          scaleIndex = 2;
-        }
+      const longSide = Math.max(w, h);
+      let scale = 1;
+      let scaleIndex = 0;
 
-        dmS.selectedItemIndex = scaleIndex;
-        dmR.selectedItemIndex = getIndexByDimensions(w / scale, h / scale);
-        
+      if (longSide <= 512) {
+        scale = 1;
+        scaleIndex = 0;
+      } else if (longSide <= 1024) {
+        scale = 2;
+        scaleIndex = 1;
+      } else if (longSide <= 2048) {
+        scale = 4;
+        scaleIndex = 2;
+      }
 
+      dmS.selectedItemIndex = scaleIndex;
+      dmR.selectedItemIndex = getIndexByDimensions(w / scale, h / scale);
     }
   },
 });
