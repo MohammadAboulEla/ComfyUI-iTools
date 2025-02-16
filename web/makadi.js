@@ -99,13 +99,15 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   }
 
   filterDeletedWIdgets() {
-    console.log('node.widgets',this.node.widgets)
-    console.log('node.widgets',this.node.widgets.length)
+    // console.log('node.widgets',this.node.widgets)
+    // console.log('node.widgets',this.node.widgets.length)
+    
     // Filter out widgets marked for deletion
     this.node.widgets = this.node.widgets.filter((widget) => !widget.markDelete);
-    console.log('node.widgets',this.node.widgets.length)
     this.node.setDirtyCanvas(true, true);
-    console.log('node.widgets',this.node.widgets)
+    
+    // console.log('node.widgets',this.node.widgets.length)
+    // console.log('node.widgets',this.node.widgets)
   }
 }
 export class SmartImage extends BaseSmartWidget {

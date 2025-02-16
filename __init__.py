@@ -9,7 +9,7 @@ def get_user_dev_mode():
         settings_file = os.path.join(ud_dir, 'comfy.settings.json')
         with open(settings_file, 'r') as file:
             settings = json.load(file)
-        return settings.get('iTools.Nodes.Dev Mode', False)
+        return settings.get('iTools.Nodes.Dev Mode', True)
     except (OSError, json.JSONDecodeError, AttributeError):
         return False
 

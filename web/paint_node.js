@@ -82,7 +82,7 @@ app.registerExtension({
     let loadedHeight = 0;
     let loadedScale = 0;
     let loader = null;
-    
+
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
     const p = new SmartPreview(0, 80, 512, 512, node);
     // const bTest = new SmartButton(200, 200, 80, 20, node, "Test")
@@ -153,12 +153,8 @@ app.registerExtension({
               //   console.log("canvasImgs", canvasImgs);
               // }
 
-              // Optional: Define the onImgLoaded callback
+              // Define the onImgLoaded callback
               img.onImgLoaded = () => {
-                // // If no image is selected select last one
-                // if (canvasImgs.length > 0 && !canvasImgs.some((img) => img.isSelected)) {
-                //   canvasImgs[canvasImgs.length - 1].isSelected = true;
-                // }
                 // Remove old selected
                 canvasImgs.forEach((i) => {
                   i.isSelected = false;
@@ -174,7 +170,7 @@ app.registerExtension({
 
             // Handle errors if the image fails to load
             tempImg.onerror = () => {
-              console.error("Failed to load the image.");
+              if (allow_debug) console.error("Failed to load the image.");
             };
           };
 
@@ -193,10 +189,6 @@ app.registerExtension({
     // bPaste.onClick = () => {
 
     // }
-
-    app.canvas.canvas.onpaste = (...args) => {};
-
-    globalThis.oncopy = (...args) => {};
 
     const bColor = new SmartButton(5, 35, 40, 40, node);
     bColor.shape = Shapes.HVL_CIRCLE;
@@ -436,22 +428,44 @@ app.registerExtension({
       }
     }
 
-    function pickColor(e) {
+    function pickColor(e,caller) {
       if (bCloseCanvas?.isVisible) return; // prevent picking in canvas mode
-      cp.allowPickVis = true;
-      if (cp.isVisible || isHoldingShift) {
-        bFill.tagColor = trackMouseColor(e, app.canvas.canvas);
-        pa.brushColor = trackMouseColor(e, app.canvas.canvas);
-        cp.selectedColor = trackMouseColor(e, app.canvas.canvas);
 
-        if (cp.isGhost) {
-          bColor2.color = trackMouseColor(e, app.canvas.canvas);
+      if(caller === "click"){
+        let trackedColor = trackMouseColor(e, app.canvas.canvas);
+        cp.allowPickVis = true;
+        if (isHoldingShift) {
+          bFill.tagColor = trackedColor;
+          pa.brushColor = trackedColor;
+          cp.selectedColor = trackedColor;
+  
+          if (cp.isGhost) {
+            bColor2.color = trackedColor;
+          } else {
+            bColor.color = trackedColor;
+          }
         } else {
-          bColor.color = trackMouseColor(e, app.canvas.canvas);
+          cp.allowPickVis = false;
         }
-      } else {
-        cp.allowPickVis = false;
+      }else if(caller === "drag"){
+        let trackedColor = trackMouseColor(e, app.canvas.canvas);
+        cp.allowPickVis = true;
+        if (cp.isVisible && !isHoldingShift) {
+          bFill.tagColor = trackedColor;
+          pa.brushColor = trackedColor;
+          cp.selectedColor = trackedColor;
+  
+          if (cp.isGhost) {
+            bColor2.color = trackedColor;
+          } else {
+            bColor.color = trackedColor;
+          }
+        } else {
+          cp.allowPickVis = false;
+        }
       }
+      
+
     }
 
     function resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info) {
@@ -573,6 +587,15 @@ app.registerExtension({
 
     pa.onPress = () => {
       pa.blockPainting = false;
+      
+      if (allow_debug) {
+        console.log("isHoldingShift", isHoldingShift);
+      }
+      
+      // Block painting if holding shift
+      if (isHoldingShift) {
+        pa.blockPainting = true;
+      }
 
       // Block painting when drop menus open
       if (dmR?.isMouseInMenu() || dmR?.isMouseIn() || dmS?.isMouseInMenu() || dmS?.isMouseIn()) {
@@ -600,32 +623,28 @@ app.registerExtension({
       }
     };
 
-    pa.onUpdate = () => {
-      //disable preview circle on canvas images
-      // canvasImgs.forEach((img) => {
-      //   if (img.isMouseIn(10)) {
-      //     p.isVisible = fa;
-      //   }
-      // });
-    };
+    pa.onUpdate = () => {};
 
     // COMMON NODE EVENTS
     node.onMouseDown = (e, pos, node) => {
+      pickColor(e,"click");
       selectedImg = canvasImgs.find((img) => img.isSelected);
       if (selectedImg) {
         selectedImg.isUnderCover = false;
       }
+
       // if (allow_debug) {
       //   console.log("node", node);
       // }
     };
 
     node.onMouseUp = (e, pos, node) => {
+      
       saveImgToDesk(200);
     };
 
     node.onMouseMove = (e, pos) => {
-      pickColor(e);
+      pickColor(e,"drag");
       //prevent resize cursor while hovering over canvas buttons
       if (canvasImgs.length > 0 && bc.some((b) => b.isMouseIn())) {
         if (selectedImg) {
@@ -660,7 +679,7 @@ app.registerExtension({
       }
 
       if (event.key === "Shift") {
-        info.restart("Shift", 40);
+        if(!isHoldingShift) info.restart("Shift", 40);
         isHoldingShift = true;
         // if (allow_debug) {
         //   console.log("isHoldingShift", isHoldingShift);
@@ -687,11 +706,15 @@ app.registerExtension({
       //   console.log("keyUp");
       // }
       info.done = true;
-      if (event.key === "Shift") {
-        isHoldingShift = false;
-      }
+      isHoldingShift = false;
+      // if (event.key === "Shift") {
+      //   isHoldingShift = false;
+      // }
     };
 
+    app.canvas.canvas.onpaste = (...args) => {};
+
+    globalThis.oncopy = (...args) => {};
 
     function updateDMindexes() {
       // Update dmR and dmS values after init
