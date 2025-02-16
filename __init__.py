@@ -20,8 +20,8 @@ if allow_test_nodes:
     try:
         from .experimental.experimental_nodes import *
         
-        NODE_CLASS_MAPPINGS["iToolsTestNode"] = IToolsTestNode
-        NODE_DISPLAY_NAME_MAPPINGS["iToolsTestNode"] = "iTools Test Node (Dev)"
+        # NODE_CLASS_MAPPINGS["iToolsTestNode"] = IToolsTestNode
+        # NODE_DISPLAY_NAME_MAPPINGS["iToolsTestNode"] = "iTools Test Node (Dev)"
 
         NODE_CLASS_MAPPINGS["iToolsPaintNode"] = IToolsPaintNode
         NODE_DISPLAY_NAME_MAPPINGS["iToolsPaintNode"] = "iTools Paint Node (Beta)"

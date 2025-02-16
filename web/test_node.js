@@ -15,9 +15,9 @@ app.registerExtension({
     }
 
     if (allow_debug) {
-      console.log("nodeType", nodeType);
-      console.log("nodeData", nodeData);
-      console.log("app", app);
+      // console.log("nodeType", nodeType);
+      // console.log("nodeData", nodeData);
+      // console.log("app", app);
     }
 
     const onExecuted = nodeType.prototype.onExecuted;
