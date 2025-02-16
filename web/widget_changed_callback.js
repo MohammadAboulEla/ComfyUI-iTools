@@ -66,13 +66,3 @@ async function waitForInitialization(node, style) {
     await new Promise((resolve) => setTimeout(resolve, 100)); // Wait 100ms before checking again
   }
 }
-
-// not used
-function executeAfterDelay(func, delay) {
-  if (allow_debug) {
-    console.log(my_node, my_file);
-  }
-  setTimeout(() => {
-    func();
-  }, delay);
-}

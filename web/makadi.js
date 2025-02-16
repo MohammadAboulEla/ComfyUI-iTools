@@ -112,15 +112,15 @@ export class SmartImage extends BaseSmartWidget {
     this.isSelected = false;
     this.buttonXoffset = 5;
     this.buttonYoffset = 5;
-    
+
     this.closeButton = false;
     this.closeButtonWidth = 10;
     this.closeButtonHeight = 10;
-    this.closeButtonOffsetX = 10
-    this.closeButtonOffsetY = 10
-    
+    this.closeButtonOffsetX = 10;
+    this.closeButtonOffsetY = 10;
+
     // properties for rotation
-    this.rotateDrawMargin = 25
+    this.rotateDrawMargin = 25;
     this.rotationAngle = 0;
     this.initialRotationAngle = 0;
     this.isRotating = false;
@@ -128,6 +128,10 @@ export class SmartImage extends BaseSmartWidget {
       x: this.width / 2,
       y: this.height / 2,
     };
+
+    this.loader = null;
+
+    this.isMasked = false;
 
     // Apply options if provided
     Object.assign(this, options);
@@ -254,9 +258,87 @@ export class SmartImage extends BaseSmartWidget {
     }
   }
 
+  async fetchMaskedImageFromAPI() {
+    const formData = new FormData();
+    formData.append("filename_prefix", "iToolsMaskedImg");
+    try {
+      const response = await api.fetchApi(this.apiEndpoint, {
+        method: "POST",
+        body: formData,
+      });
+      const result = await response.json();
+      if (result.status === "success") {
+        const { img } = result.data;
+
+        function hexToBase64(hexString) {
+          if (!hexString || typeof hexString !== "string") {
+            console.error("Invalid hexadecimal string provided.");
+            return "";
+          }
+          let binaryString = "";
+          for (let i = 0; i < hexString.length; i += 2) {
+            const byte = parseInt(hexString.substr(i, 2), 16);
+            binaryString += String.fromCharCode(byte);
+          }
+          return btoa(binaryString);
+        }
+
+        this.img.src = `data:image/png;base64,${hexToBase64(img)}`;
+        this.img.onload = () => {};
+        this.img.onerror = () => {
+          console.error("Failed to load Masked image from API");
+        };
+        if (allow_debug) console.log("Masked image received successfully.");
+        this.node.setDirtyCanvas(true, true);
+      } else {
+        console.error("Error fetching image:", result.message);
+      }
+    } catch (error) {
+      console.error("Error communicating with the API:", error);
+    } finally {
+      this.isMasked = true;
+      this.loader.markDelete = true;
+      this.loader.isVisible = false;
+    }
+
+  }
+  
+  async requestMaskedImage(img_file) {
+    this.loader.isVisible = true
+    
+    const formData = new FormData();
+    formData.append("image", img_file);
+
+    try {
+      const response = await api.fetchApi("/itools/request_mask_img", {
+        method: "POST",
+        body: formData,
+        headers: {
+          enctype: "multipart/form-data",
+        },
+      });
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        this.fetchMaskedImageFromAPI();
+      } else {
+        console.error("Error:", result.message);
+      }
+    } catch (error) {
+      console.error("Error fetching the drawing:", error);
+    } finally {
+      // this.isMasked = true;
+      // this.loader.markDelete = true;
+      // this.loader.isVisible = false;
+    }
+  }
+
   handleDown() {
-    if(this.isInCloseButtonArea()){
-      if(allow_debug){console.log('close',);}
+    if (this.isInCloseButtonArea()) {
+      if (allow_debug) {
+        console.log("close");
+      }
       this.markDelete = true;
     }
     if (this.isMouseInResizeArea()) {
@@ -293,6 +375,11 @@ export class SmartImage extends BaseSmartWidget {
 
       // this.closeButton.x = this.x + this.buttonXoffset;
       // this.closeButton.y = this.y + this.buttonYoffset;
+    }
+
+    if(this.loader){
+      this.loader.x = this.x + this.width / 2
+      this.loader.y = this.y + this.height / 2
     }
   }
 
@@ -433,7 +520,7 @@ export class SmartImage extends BaseSmartWidget {
     return topLeft || topRight || bottomLeft || bottomRight;
   }
 
-  isInCloseButtonArea(){
+  isInCloseButtonArea() {
     const { x, y } = this.mousePos;
     return (
       x >= this.x + this.closeButtonOffsetX &&
@@ -662,7 +749,6 @@ export class SmartImage extends BaseSmartWidget {
     //       textColor: "#434343",
     //     }
     //   );
-
     //   this.closeButton.onClick = () => {
     //     //this.img = null;
     //     this.closeButton.markDelete = true;
@@ -774,13 +860,40 @@ export class SmartImage extends BaseSmartWidget {
       ctx.beginPath();
       ctx.moveTo(this.x + this.closeButtonOffsetX + radius, this.y + this.closeButtonOffsetY);
       ctx.lineTo(this.x + this.closeButtonOffsetX + this.closeButtonWidth - radius, this.y + this.closeButtonOffsetY);
-      ctx.arcTo(this.x + this.closeButtonOffsetX + this.closeButtonWidth, this.y + this.closeButtonOffsetY, this.x + this.closeButtonOffsetX + this.closeButtonWidth, this.y + this.closeButtonOffsetY + radius, radius);
-      ctx.lineTo(this.x + this.closeButtonOffsetX + this.closeButtonWidth, this.y + this.closeButtonOffsetY + this.closeButtonHeight - radius);
-      ctx.arcTo(this.x + this.closeButtonOffsetX + this.closeButtonWidth, this.y + this.closeButtonOffsetY + this.closeButtonHeight, this.x + this.closeButtonOffsetX + this.closeButtonWidth - radius, this.y + this.closeButtonOffsetY + this.closeButtonHeight, radius);
+      ctx.arcTo(
+        this.x + this.closeButtonOffsetX + this.closeButtonWidth,
+        this.y + this.closeButtonOffsetY,
+        this.x + this.closeButtonOffsetX + this.closeButtonWidth,
+        this.y + this.closeButtonOffsetY + radius,
+        radius
+      );
+      ctx.lineTo(
+        this.x + this.closeButtonOffsetX + this.closeButtonWidth,
+        this.y + this.closeButtonOffsetY + this.closeButtonHeight - radius
+      );
+      ctx.arcTo(
+        this.x + this.closeButtonOffsetX + this.closeButtonWidth,
+        this.y + this.closeButtonOffsetY + this.closeButtonHeight,
+        this.x + this.closeButtonOffsetX + this.closeButtonWidth - radius,
+        this.y + this.closeButtonOffsetY + this.closeButtonHeight,
+        radius
+      );
       ctx.lineTo(this.x + this.closeButtonOffsetX + radius, this.y + this.closeButtonOffsetY + this.closeButtonHeight);
-      ctx.arcTo(this.x + this.closeButtonOffsetX, this.y + this.closeButtonOffsetY + this.closeButtonHeight, this.x + this.closeButtonOffsetX, this.y + this.closeButtonOffsetY + this.closeButtonHeight - radius, radius);
+      ctx.arcTo(
+        this.x + this.closeButtonOffsetX,
+        this.y + this.closeButtonOffsetY + this.closeButtonHeight,
+        this.x + this.closeButtonOffsetX,
+        this.y + this.closeButtonOffsetY + this.closeButtonHeight - radius,
+        radius
+      );
       ctx.lineTo(this.x + this.closeButtonOffsetX, this.y + this.closeButtonOffsetY + radius);
-      ctx.arcTo(this.x + this.closeButtonOffsetX, this.y + this.closeButtonOffsetY, this.x + this.closeButtonOffsetX + radius, this.y + this.closeButtonOffsetY, radius);
+      ctx.arcTo(
+        this.x + this.closeButtonOffsetX,
+        this.y + this.closeButtonOffsetY,
+        this.x + this.closeButtonOffsetX + radius,
+        this.y + this.closeButtonOffsetY,
+        radius
+      );
       ctx.closePath();
 
       ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
@@ -802,13 +915,17 @@ export class SmartImage extends BaseSmartWidget {
         ctx.fillText(
           "x",
           this.x + this.closeButtonOffsetX + this.closeButtonWidth / 2 + 0,
-          this.y + this.closeButtonOffsetY +  this.closeButtonHeight / 2 + 0
+          this.y + this.closeButtonOffsetY + this.closeButtonHeight / 2 + 0
         );
       }
     }
 
-    ctx.restore();
+    // Draw loader
+    if(!this.loader){
+      this.loader = new SmartLoading(this.x + this.width/2, this.y+this.height/2, this.node);
+    }
 
+    ctx.restore();
   }
 }
 
@@ -1437,6 +1554,53 @@ export class SmartInfo extends BaseSmartWidget {
 
   get shape() {
     return this._shape;
+  }
+}
+
+export class SmartLoading extends BaseSmartWidget {
+  constructor(x, y, node) {
+    super(node);
+    this.x = x;
+    this.y = y;
+    this.radius = 20;
+    this.angle = 0;
+    this.color = "#cd7f32";
+    this.lineWidth = 8;
+    this.allowInnerCircle = true;
+    this.innerCircleColor = "rgba(255, 255, 255, 0.5)";
+    this.isVisible = false;
+
+    // this.maxTime = 20000
+
+    // setTimeout(() => {
+    //   this.isVisible = false
+    // }, this.maxTime);
+
+    // add self to the node
+    node.addCustomWidget(this);
+  }
+  handleMove() {
+    this.angle += 0.1;
+  }
+
+  draw(ctx) {
+    if (!this.isVisible) return;
+    if (!this.ctx) this.ctx = ctx;
+    //Draw circle
+    if (this.allowInnerCircle) {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = this.innerCircleColor;
+      ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, this.angle, this.angle + Math.PI / 2);
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = this.lineWidth;
+    ctx.lineCap = "round";
+    ctx.stroke();
+    this.node.setDirtyCanvas(true, true);
   }
 }
 

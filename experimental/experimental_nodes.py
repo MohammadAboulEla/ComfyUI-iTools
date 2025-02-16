@@ -5,6 +5,15 @@ except ImportError:
     import sys
     subprocess.check_call([sys.executable, "-m", "pip", "install", "together"])
     from together import Together  # Retry the import after installation  
+    
+try:
+    from rembg import remove
+except ImportError:
+    import subprocess
+    import sys
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "rembg "])
+    from rembg import remove  # Retry the import after installation  
+        
 import base64
 from PIL import Image
 import io
@@ -243,4 +252,66 @@ async def respond_to_request_load_img(request):
         }
     })
 
+def removeBackground(input_path, output_path):
+    input_img = Image.open(input_path)
+    output_img = remove(input_img)
+    output_img.save(output_path)
+
+# @PromptServer.instance.routes.post("/itools/request_mask_img")
+# async def respond_to_request_mask_img(request):
+#     post = await request.post()
     
+#     img_path = post.get("img_path")
+    
+#     # Define the directory where the images are saved
+#     save_directory = os.path.join(project_dir, "backend")
+    
+#     # Define file paths
+#     img_out = os.path.join(save_directory, "iToolsMaskedImg.png")
+    
+    
+#     # # Check if both files exist
+#     # if not os.path.exists(img_path):
+#     #     return web.json_response({"status": "error", "message": "File not found"}, status=404)
+    
+#     # save image to desk
+#     removeBackground(img_path,img_out)
+    
+#     return web.json_response({
+#         "status": "success",
+#     })
+    
+@PromptServer.instance.routes.post("/itools/request_mask_img")
+async def respond_to_request_mask_img(request):
+    # Parse the multipart form data
+    reader = await request.multipart()
+
+    # Read the uploaded file
+    field = await reader.next()  # Get the first field (should be "image")
+    if field.name != "image":
+        return web.json_response({"status": "error", "message": "Invalid field name"}, status=400)
+
+    # Define the save directory and ensure it exists
+    save_directory = os.path.join(project_dir, "backend")
+
+    # Define the temporary file path
+    temp_file_path = os.path.join(save_directory, "uploaded_image.png")
+
+    # Open the file in binary write mode and write the entire content
+    with open(temp_file_path, "wb") as f:
+        f.write(await field.read())
+
+    # Process the saved file
+    img_out = os.path.join(save_directory, "iToolsMaskedImg.png")
+    removeBackground(temp_file_path, img_out)
+
+    # Clean up the temporary file if needed
+    if os.path.exists(temp_file_path):
+        try:
+            os.remove(temp_file_path)
+        except Exception as e:
+            pass
+    
+    return web.json_response({
+        "status": "success",
+    })

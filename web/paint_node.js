@@ -30,6 +30,7 @@ import {
   SmartInfo,
   SmartImage,
   CanvasButtonManager,
+  SmartLoading
 } from "./makadi.js";
 
 app.registerExtension({
@@ -73,14 +74,16 @@ app.registerExtension({
     // START POINT
     let canvasImgs = [];
     let bc = [];
+    let loadedImageFile = null
     let keyPick = false;
     let isHoldingShift = false;
     let loadedWidth = 0;
     let loadedHeight = 0;
     let loadedScale = 0;
-
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
     const p = new SmartPreview(0, 80, 512, 512, node);
+    let loader = null
+
     const cp = new SmartColorPicker(0, 80, 170, 170, node);
     let info = null
     function createInfo(){
@@ -107,6 +110,8 @@ app.registerExtension({
       fileInput.addEventListener("change", (event) => {
         const file = event.target.files[0];
         if (file) {
+          loadedImageFile = file;
+
           const reader = new FileReader();
           reader.onload = (e) => {
             const imageUrl = e.target.result;
@@ -133,7 +138,7 @@ app.registerExtension({
 
               // Create a new SmartImage instance with dynamic dimensions
               const img = new SmartImage(centerX, centerY, calculatedWidth, baseHeight, node, {});
-
+              
               // Update the image source dynamically
               img.updateImage(imageUrl);
 
@@ -175,6 +180,23 @@ app.registerExtension({
 
       fileInput.click();
     };
+
+    // const bPaste = new SmartButton(90, 5, 80, 20, node, "Paste Image", {
+    //   textXoffset: 0,
+    //   shape: Shapes.ROUND,
+    // });
+    // bPaste.onClick = () => {
+      
+    // }
+
+    app.canvas.canvas.onpaste = (...args) => {
+      if(allow_debug){console.log('paste',args);}
+    };
+
+    globalThis.oncopy = (...args) => {
+      if(allow_debug){console.log('copy',args);}
+    };
+
 
     const bColor = new SmartButton(5, 35, 40, 40, node);
     bColor.shape = Shapes.HVL_CIRCLE;
@@ -366,6 +388,7 @@ app.registerExtension({
     }
 
     function closeCanvas() {
+      bCloseCanvas.isVisible = false
       pa.isCheckerboardOn = false;
       // mark delete all canvas images
       canvasImgs.forEach((img) => {
@@ -428,6 +451,7 @@ app.registerExtension({
         cp.allowPickVis = false;
       }
     }
+
     function resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info) {
       if (dmR.selectedItemIndex === -1) dmR.selectedItemIndex = 0;
       if (dmS.selectedItemIndex === -1) dmS.selectedItemIndex = 0;
@@ -478,7 +502,19 @@ app.registerExtension({
         shape: Shapes.SQUARE,
       });
       bMaskCanvas.onClick = () => {
-        showWarning("Not Implemented")
+        let img = canvasImgs.find((img) => img.isSelected);
+
+        if(img.isMasked){
+          showWarning("Already Masked!")
+          return
+        }
+
+        if(img && !img.markDelete){
+          img.requestMaskedImage(loadedImageFile);
+        }
+          else{
+            showWarning("No Image Selected")
+        }
       }
       bc.push(bMaskCanvas);
       bStampCanvas = new SmartButton(bcx, bcy, bcw, bch, node, "Stamp", {
