@@ -90,7 +90,7 @@ app.registerExtension({
       name: "Allow Masking in iTools Paint Node",
       type: "boolean",
       defaultValue: false,
-      tooltip: "Give a permission to download 209mb models needed for removing background from images.",
+      tooltip: "Give a permission to download 209mb models needed for removing background from images.\n\n As for this Beta version models are saved in the user home folder in the .u2net directory.",
     },
   ],
 });
