@@ -428,44 +428,27 @@ app.registerExtension({
       }
     }
 
-    function pickColor(e,caller) {
+    function pickColor(e, caller) {
       if (bCloseCanvas?.isVisible) return; // prevent picking in canvas mode
 
-      if(caller === "click"){
+      function updateColor(trackedColor) {
+        bFill.tagColor = trackedColor;
+        pa.brushColor = trackedColor;
+        cp.selectedColor = trackedColor;
+        (cp.isGhost ? bColor2 : bColor).color = trackedColor;
+        //bColor.color = trackedColor;
+      }
+
+      if (caller === "click" || caller === "drag") {
         let trackedColor = trackMouseColor(e, app.canvas.canvas);
         cp.allowPickVis = true;
-        if (isHoldingShift) {
-          bFill.tagColor = trackedColor;
-          pa.brushColor = trackedColor;
-          cp.selectedColor = trackedColor;
-  
-          if (cp.isGhost) {
-            bColor2.color = trackedColor;
-          } else {
-            bColor.color = trackedColor;
-          }
-        } else {
-          cp.allowPickVis = false;
-        }
-      }else if(caller === "drag"){
-        let trackedColor = trackMouseColor(e, app.canvas.canvas);
-        cp.allowPickVis = true;
-        if (cp.isVisible && !isHoldingShift) {
-          bFill.tagColor = trackedColor;
-          pa.brushColor = trackedColor;
-          cp.selectedColor = trackedColor;
-  
-          if (cp.isGhost) {
-            bColor2.color = trackedColor;
-          } else {
-            bColor.color = trackedColor;
-          }
+
+        if ((caller === "click" && isHoldingShift) || (caller === "drag" && cp.isVisible && !isHoldingShift)) {
+          updateColor(trackedColor);
         } else {
           cp.allowPickVis = false;
         }
       }
-      
-
     }
 
     function resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info) {
@@ -587,11 +570,11 @@ app.registerExtension({
 
     pa.onPress = () => {
       pa.blockPainting = false;
-      
+
       if (allow_debug) {
         console.log("isHoldingShift", isHoldingShift);
       }
-      
+
       // Block painting if holding shift
       if (isHoldingShift) {
         pa.blockPainting = true;
@@ -627,7 +610,7 @@ app.registerExtension({
 
     // COMMON NODE EVENTS
     node.onMouseDown = (e, pos, node) => {
-      pickColor(e,"click");
+      pickColor(e, "click");
       selectedImg = canvasImgs.find((img) => img.isSelected);
       if (selectedImg) {
         selectedImg.isUnderCover = false;
@@ -639,12 +622,11 @@ app.registerExtension({
     };
 
     node.onMouseUp = (e, pos, node) => {
-      
       saveImgToDesk(200);
     };
 
     node.onMouseMove = (e, pos) => {
-      pickColor(e,"drag");
+      pickColor(e, "drag");
       //prevent resize cursor while hovering over canvas buttons
       if (canvasImgs.length > 0 && bc.some((b) => b.isMouseIn())) {
         if (selectedImg) {
@@ -679,7 +661,7 @@ app.registerExtension({
       }
 
       if (event.key === "Shift") {
-        if(!isHoldingShift) info.restart("Shift", 40);
+        if (!isHoldingShift) info.restart("Shift", 40);
         isHoldingShift = true;
         // if (allow_debug) {
         //   console.log("isHoldingShift", isHoldingShift);
