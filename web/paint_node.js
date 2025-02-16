@@ -74,15 +74,17 @@ app.registerExtension({
     // START POINT
     let canvasImgs = [];
     let bc = [];
+    let selectedImg = null;
     let loadedImageFile = null;
     let keyPick = false;
     let isHoldingShift = false;
     let loadedWidth = 0;
     let loadedHeight = 0;
     let loadedScale = 0;
+    let loader = null;
+    
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
     const p = new SmartPreview(0, 80, 512, 512, node);
-    let loader = null;
 
     const cp = new SmartColorPicker(0, 80, 170, 170, node);
     let info = null;
@@ -255,6 +257,7 @@ app.registerExtension({
 
     const bCanvas = new SmartButton(55, 60, 50, 15, node, "Canvas", {
       textXoffset: 0,
+      resetColor: false,
     });
     bCanvas.onClick = () => {
       bCanvas.toggleActive();
@@ -313,7 +316,7 @@ app.registerExtension({
     bClear.onClick = () => {
       pa.clearWithColor("white");
       let text = pa.isPaintingBackground ? "Background" : "Foreground";
-      showWarning(`${text} cleared`);
+      showWarning(`${text} cleared`, 120, pa.isPaintingBackground ? "#cd7f32" : "#5f9ea0");
     };
 
     // Create layer switch
@@ -361,18 +364,15 @@ app.registerExtension({
     let lCanvasInfo = null;
 
     // COMMON FUNCTIONS
-    function showWarning(msg, newWidth=120) {
-      const originalColor = LiteGraph.WIDGET_BGCOLOR || info.color;
-      const originalTextColor = info.textColor;
-
-      info.color = "#cd7f32";
+    function showWarning(msg, newWidth = 120, newColor = "#cd7f32") {
+      info.color = newColor;
       info.textColor = "black";
 
       info.restart(msg, newWidth, 85 + 20, 20);
 
       setTimeout(() => {
-        info.color = originalColor;
-        info.textColor = originalTextColor;
+        info.color = info.originalColor;
+        info.textColor = info.originalTextColor;
       }, info.previewDuration);
     }
 
@@ -385,7 +385,7 @@ app.registerExtension({
     function closeCanvas() {
       bCloseCanvas.isVisible = false;
       // enable brush preview
-      p.isVisible = true
+      p.isVisible = true;
       pa.isCheckerboardOn = false;
       // mark delete all canvas images
       canvasImgs.forEach((img) => {
@@ -476,13 +476,20 @@ app.registerExtension({
       lCanvasInfo = new SmartButton(512 / 2 - 40, bcy + 15, 80, bch, node, getActiveCtxText().text || "", {
         textAlign: "center",
         textColor: "black",
-        color: getActiveCtxText().color || "brown", // amber,
+        color: getActiveCtxText().color || "brown",
         textYoffset: 2.2,
         font: "13px Arial Bold",
-        allowVisualPress: false,
+        allowVisualPress: true,
         allowVisualHover: false,
+        resetColor: false,
       });
-      lCanvasInfo.onClick = () => {};
+      lCanvasInfo.onClick = () => {
+        layerSwitch.callClick();
+        // pa.switchLayer()
+        //layerSwitch.onValueChange()
+        // lCanvasInfo.text = getActiveCtxText().text;
+        // lCanvasInfo.color = getActiveCtxText().color;
+      };
       bc.push(lCanvasInfo);
 
       bCloseCanvas = new SmartButton(bcx - bcw * 2, bcy, bcw, bch, node, "Exit", {
@@ -505,17 +512,16 @@ app.registerExtension({
           return;
         }
         // Get the value of a setting
-        const allow_masking = app.extensionManager.setting.get("iTools.Nodes.Mask Tool",false)
-        if(!allow_masking){
+        const allow_masking = app.extensionManager.setting.get("iTools.Nodes.Mask Tool", false);
+        if (!allow_masking) {
           showWarning("Check iTools Settings", 140);
-          return
+          return;
         }
         if (img && !img.markDelete) {
           img.requestMaskedImage(loadedImageFile);
         } else {
           showWarning("No Image Selected");
         }
-
       };
       bc.push(bMaskCanvas);
       bStampCanvas = new SmartButton(bcx, bcy, bcw, bch, node, "Stamp", {
@@ -601,6 +607,10 @@ app.registerExtension({
 
     // COMMON NODE EVENTS
     node.onMouseDown = (e, pos, node) => {
+      selectedImg = canvasImgs.find((img) => img.isSelected);
+      if (selectedImg) {
+        selectedImg.isUnderCover = false;
+      }
       // if (allow_debug) {
       //   console.log("node", node);
       // }
@@ -612,11 +622,12 @@ app.registerExtension({
 
     node.onMouseMove = (e, pos) => {
       pickColor(e);
-      // canvasImgs.forEach((img) => {
-      //   if (img.isMouseIn(10)) {
-      //     //img.handleRotateMove()
-      //   }
-      // });
+      //prevent resize cursor while hovering over canvas buttons
+      if (canvasImgs.length > 0 && bc.some((b) => b.isMouseIn())) {
+        if (selectedImg) {
+          selectedImg.isUnderCover = true;
+        }
+      }
     };
 
     node.onMouseEnter = (e, pos, node) => {};
@@ -677,7 +688,6 @@ app.registerExtension({
       }
     };
 
-    const manager = new BaseSmartWidgetManager(node);
 
     function updateDMindexes() {
       // Update dmR and dmS values after init
@@ -702,5 +712,7 @@ app.registerExtension({
       dmS.selectedItemIndex = scaleIndex;
       dmR.selectedItemIndex = getIndexByDimensions(w / scale, h / scale);
     }
+
+    const manager = new BaseSmartWidgetManager(node);
   },
 });

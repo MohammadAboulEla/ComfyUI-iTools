@@ -90,7 +90,6 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
     this.node.widgets = this.node.widgets.filter((widget) => !widget.markDelete);
   }
 }
-
 export class SmartImage extends BaseSmartWidget {
   constructor(x, y, width, height, node, options = {}) {
     super(node);
@@ -108,7 +107,8 @@ export class SmartImage extends BaseSmartWidget {
     this.resizeAnchor = null; // Store the anchor point being resized (e.g., 'top-left', 'right', etc.)
     this.resizeThreshold = 10; // Distance threshold for detecting resize areas
     this.onImgLoaded = null;
-
+    this.isUnderCover = false;
+    
     this.isSelected = false;
     this.buttonXoffset = 5;
     this.buttonYoffset = 5;
@@ -335,10 +335,8 @@ export class SmartImage extends BaseSmartWidget {
   }
 
   handleDown() {
+    if(this.isUnderCover) return;
     if (this.isInCloseButtonArea()) {
-      // if (allow_debug) {
-      //   console.log("close");
-      // }
       this.markDelete = true;
     }
     if (this.isMouseInResizeArea()) {
@@ -346,7 +344,7 @@ export class SmartImage extends BaseSmartWidget {
       this.resizeAnchor = this.getResizeAnchor();
     } else if (this.isMouseInRotatedArea()) {
       this.handleRotateStart();
-    } else if (this.isMouseIn(-20) && this.isSelected) {
+    } else if (this.isMouseIn(-20) && this.isSelected && !this.isUnderCover) {
       this.isPicked = true;
       this.pickOffset = {
         x: this.mousePos.x - this.x,
@@ -391,6 +389,7 @@ export class SmartImage extends BaseSmartWidget {
   }
 
   handleDrag() {
+    if(this.isUnderCover) return;
     if (this.isMouseIn()) {
       //app.canvas.canvas.style.cursor = "url('/cursor/colorSelect.png') 15 25, auto";
       //app.canvas.canvas.style.cursor = "grabbing";
@@ -949,6 +948,7 @@ export class SmartWidget extends BaseSmartWidget {
 
     this.allowVisualPress = true;
     this.allowVisualHover = true;
+    this.resetColor = true;
     this.onClick = null;
     this.onPress = null;
     this.onHover = null;
@@ -1280,11 +1280,11 @@ export class SmartWidget extends BaseSmartWidget {
     const originalPosX = this.x;
     const originalPosY = this.y;
     setTimeout(() => {
-      if (!this.allowVisualHover) this.color = this.originalColor;
+      if (!this.allowVisualHover && this.resetColor) this.color = this.originalColor;
       this.x = originalPosX;
       this.y = originalPosY;
     }, 100);
-    if (!this.allowVisualHover) this.color = lightenColor(this.originalColor, 20);
+    if (!this.allowVisualHover  && this.resetColor) this.color = lightenColor(this.originalColor, 20);
     this.x = originalPosX + 0.5;
     this.y = originalPosY + 0.5;
   }
@@ -1348,6 +1348,7 @@ export class SmartInfo extends BaseSmartWidget {
     // Apply options if provided
     Object.assign(this, options);
     this.originalColor = this.color; // Store original color
+    this.originalTextColor = this.textColor;
 
     // add self to the node
     node.addCustomWidget(this);
@@ -1896,7 +1897,7 @@ export class SmartSwitch extends SmartWidget {
   handleDown() {
     if (this.isMouseIn()) {
       this.callClick();
-      if (this.onValueChange) this.onValueChange(this.isOn);
+ 
     }
   }
 
@@ -1904,6 +1905,7 @@ export class SmartSwitch extends SmartWidget {
     this.isOn = !this.isOn;
     this.textOnColor = this.isOn ? "black" : LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
     this.textOffColor = this.isOn ? LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white" : "black";
+    if (this.onValueChange) this.onValueChange(this.isOn);
   }
 
   handleMove() {}
