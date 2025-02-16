@@ -336,9 +336,9 @@ export class SmartImage extends BaseSmartWidget {
 
   handleDown() {
     if (this.isInCloseButtonArea()) {
-      if (allow_debug) {
-        console.log("close");
-      }
+      // if (allow_debug) {
+      //   console.log("close");
+      // }
       this.markDelete = true;
     }
     if (this.isMouseInResizeArea()) {
@@ -654,9 +654,9 @@ export class SmartImage extends BaseSmartWidget {
       return;
     }
     const aspectRatio = this.img.width / this.img.height;
-    if (allow_debug) {
-      console.log("scale", scale);
-    }
+    // if (allow_debug) {
+    //   console.log("scale", scale);
+    // }
     let maxWidth = Math.min(pa[0] / scale, 512);
     let maxHeight = Math.min(pa[1] / scale, 512);
 
@@ -690,9 +690,9 @@ export class SmartImage extends BaseSmartWidget {
       console.error("Invalid canvas context provided.");
       return;
     }
-    if (allow_debug) {
-      console.log("scale", scale);
-    }
+    // if (allow_debug) {
+    //   console.log("scale", scale);
+    // }
     if (scale === -1 || scale === 0) scale = 1;
     else if (scale === 1) scale = 2;
     else if (scale === 2) scale = 4;
@@ -2286,10 +2286,10 @@ export class SmartPaintArea extends BaseSmartWidget {
     }
 
     this.backgroundCtx.putImageData(backgroundData, 0, 0);
-    if (allow_debug) {
-      console.log("scaleFactor", this.scaleFactor);
-      console.log("pa.width, pa.height", this.width, this.height);
-    }
+    // if (allow_debug) {
+    //   console.log("scaleFactor", this.scaleFactor);
+    //   console.log("pa.width, pa.height", this.width, this.height);
+    // }
   }
 
   switchLayer() {
@@ -2530,7 +2530,7 @@ export class SmartPaintArea extends BaseSmartWidget {
         body: formData,
       });
 
-      if (allow_debug) console.log("response", response);
+      // if (allow_debug) console.log("response", response);
 
       // Ensure the response is properly parsed as JSON
       const result = await response.json();

@@ -41,12 +41,12 @@ app.registerExtension({
     }
     const window = globalThis;
 
-    if (allow_debug) {
-      console.log("window", window);
-      console.log("nodeType", nodeType);
-      console.log("nodeData", nodeData);
-      console.log("app", app);
-    }
+    // if (allow_debug) {
+    //   console.log("window", window);
+    //   console.log("nodeType", nodeType);
+    //   console.log("nodeData", nodeData);
+    //   console.log("app", app);
+    // }
   },
 
   async nodeCreated(node) {
@@ -65,11 +65,11 @@ app.registerExtension({
     node.setDirtyCanvas(true, true);
     //node.selected = true;
 
-    if (allow_debug) {
-      console.log("node", node);
-      console.log("app", app);
-      console.log("app.canvas", app.canvas);
-    }
+    // if (allow_debug) {
+    //   console.log("node", node);
+    //   console.log("app", app);
+    //   console.log("app.canvas", app.canvas);
+    // }
 
     // START POINT
     let canvasImgs = [];
@@ -144,9 +144,9 @@ app.registerExtension({
 
               // Add the SmartImage instance to the canvasImgs array
               canvasImgs.push(img);
-              if (allow_debug) {
-                console.log("canvasImgs", canvasImgs);
-              }
+              // if (allow_debug) {
+              //   console.log("canvasImgs", canvasImgs);
+              // }
 
               // Optional: Define the onImgLoaded callback
               img.onImgLoaded = () => {
@@ -190,11 +190,9 @@ app.registerExtension({
     // }
 
     app.canvas.canvas.onpaste = (...args) => {
-      if(allow_debug){console.log('paste',args);}
     };
 
     globalThis.oncopy = (...args) => {
-      if(allow_debug){console.log('copy',args);}
     };
 
 
@@ -460,7 +458,7 @@ app.registerExtension({
       pa.setNewSize(itemA, itemB);
       //info.restart(`${itemA.width * itemB} x ${itemA.height * itemB}`);
       info.text = `${itemA.width * itemB} x ${itemA.height * itemB}`
-      if (allow_debug) console.log(itemA, itemB);
+      // if (allow_debug) console.log(itemA, itemB);
     }
     
     function saveImgToDesk(delay = 500) {
@@ -602,9 +600,9 @@ app.registerExtension({
   
     // COMMON NODE EVENTS
     node.onMouseDown = (e, pos, node) => {
-      if (allow_debug) {
-        console.log("node", node);
-      }
+      // if (allow_debug) {
+      //   console.log("node", node);
+      // }
     };
 
     node.onMouseUp = (e, pos, node) => {
@@ -648,9 +646,9 @@ app.registerExtension({
       if (event.key === "Shift") {
         info.restart("Shift", 40);
         isHoldingShift = true;
-        if (allow_debug) {
-          console.log("isHoldingShift", isHoldingShift);
-        }
+        // if (allow_debug) {
+        //   console.log("isHoldingShift", isHoldingShift);
+        // }
         // rotate with shift
         canvasImgs.forEach((img) => {
           if (img.isMouseIn(10)) {
@@ -665,13 +663,13 @@ app.registerExtension({
     };
 
     globalThis.onkeyup = (event) => {
-      if (allow_debug) {
-        console.log("canvasImgs.length", canvasImgs.length);
-      }
+      // if (allow_debug) {
+      //   console.log("canvasImgs.length", canvasImgs.length);
+      // }
 
-      if (allow_debug) {
-        console.log("keyUp");
-      }
+      // if (allow_debug) {
+      //   console.log("keyUp");
+      // }
       info.done = true;
       if (event.key === "Shift") {
         isHoldingShift = false;
