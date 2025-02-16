@@ -65,16 +65,47 @@ app.registerExtension({
   },
 });
 
+
+// Register TogetherApi setting
+app.registerExtension({
+  name: "makadi_iTools_together_api",
+  settings: [
+    {
+      id: "iTools.Nodes. together.ai Api Key",
+      name: "Together Api Key (needed for free schnell node)",
+      type: "text",
+      defaultValue: "None",
+      tooltip: "Get your free key from together.ai put it here or add it as TOGETHER_API_KEY in your system environment.",
+    },
+  ],
+});
+
+
 // Register a new setting
+app.registerExtension({
+  name: "makadi_iTools_mask_tool",
+  settings: [
+    {
+      id: "iTools.Nodes.Mask Tool",
+      name: "Allow Masking in iTools Paint Node",
+      type: "boolean",
+      defaultValue: false,
+      tooltip: "Give a permission to download 209mb models needed for removing background from images.",
+    },
+  ],
+});
+
+
+// Register experimental nodes
 app.registerExtension({
   name: "makadi_iTools_dev_mode",
   settings: [
     {
       id: "iTools.Nodes.Dev Mode",
-      name: "Enable iTools experimental nodes",
+      name: "Enable iTools beta nodes",
       type: "boolean",
-      defaultValue: false,
-      tooltip: "Will show some experimental nodes, restart ComfyUI after changing this value.",
+      defaultValue: true,
+      tooltip: "Will show/hide experimental nodes, restart ComfyUI after changing this value.",
     },
   ],
 });

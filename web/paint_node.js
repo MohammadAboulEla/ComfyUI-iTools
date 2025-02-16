@@ -361,14 +361,14 @@ app.registerExtension({
     let lCanvasInfo = null;
 
     // COMMON FUNCTIONS
-    function showWarning(msg) {
-      const originalColor = info.color;
+    function showWarning(msg, newWidth=120) {
+      const originalColor = LiteGraph.WIDGET_BGCOLOR || info.color;
       const originalTextColor = info.textColor;
 
       info.color = "#cd7f32";
       info.textColor = "black";
 
-      info.restart(msg, 120, 85 + 20, 20);
+      info.restart(msg, newWidth, 85 + 20, 20);
 
       setTimeout(() => {
         info.color = originalColor;
@@ -501,15 +501,21 @@ app.registerExtension({
         let img = canvasImgs.find((img) => img.isSelected);
 
         if (img.isMasked) {
-          showWarning("Already Masked!");
+          showWarning("Image Already Masked!", 140);
           return;
         }
-
+        // Get the value of a setting
+        const allow_masking = app.extensionManager.setting.get("iTools.Nodes.Mask Tool",false)
+        if(!allow_masking){
+          showWarning("Check iTools Settings", 140);
+          return
+        }
         if (img && !img.markDelete) {
           img.requestMaskedImage(loadedImageFile);
         } else {
           showWarning("No Image Selected");
         }
+
       };
       bc.push(bMaskCanvas);
       bStampCanvas = new SmartButton(bcx, bcy, bcw, bch, node, "Stamp", {

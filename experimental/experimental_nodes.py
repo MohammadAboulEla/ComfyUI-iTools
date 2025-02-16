@@ -11,7 +11,7 @@ try:
 except ImportError:
     import subprocess
     import sys
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "rembg "])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "rembg"])
     from rembg import remove  # Retry the import after installation  
         
 import base64
@@ -34,9 +34,8 @@ class IToolsFreeSchnell:
         with open(settings_file, 'r') as file:
             settings = json.load(file)
 
-        self.together_api = settings.get('iTools.iTools TogetherApi', 'default_value')
-        
-        
+        self.together_api = settings.get('iTools.Nodes. together.ai Api Key', 'None')
+    
     @classmethod
     def INPUT_TYPES(s):
         return {"required":
@@ -58,15 +57,13 @@ class IToolsFreeSchnell:
 
     def generate_image(self, prompt, width, height,seed):
         
-        # if self.together_api != "None":
-        #     api_key = self.together_api
-        # elif os.environ.get('TOGETHER_API_KEY'):
-        #     api_key = os.environ.get('TOGETHER_API_KEY')
-        # else:  
-        #     api_key = None
-            
-        # Seems like free Schnell works with None
-        client = Together(api_key = None)
+        try:
+            client = Together(api_key = self.together_api)
+        except Exception as e:
+            os.environ.get('TOGETHER_API_KEY')
+            api_key = os.environ.get('TOGETHER_API_KEY')
+            client = Together(api_key = api_key)
+
         response = client.images.generate(
             prompt=prompt,
             model="black-forest-labs/FLUX.1-schnell-Free",
