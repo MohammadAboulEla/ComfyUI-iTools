@@ -85,13 +85,16 @@ app.registerExtension({
     
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
     const p = new SmartPreview(0, 80, 512, 512, node);
-
+    // const bTest = new SmartButton(200, 200, 80, 20, node, "Test")
+    // setTimeout(() => {
+    //   bTest.delete()
+    // }, 3000);
     const cp = new SmartColorPicker(0, 80, 170, 170, node);
     let info = null;
-    function createInfo() {
+    function reCreateInfo() {
       info = new SmartInfo(512 / 2 - 40, 85, 80, 15, node, "canvas size");
     }
-    createInfo();
+    reCreateInfo();
     const ui = new SmartWidget(0, 30, node.width, 50, node, {
       color: lightenColor(LiteGraph.WIDGET_BGCOLOR, 5),
       shape: Shapes.SQUARE,
@@ -389,6 +392,7 @@ app.registerExtension({
       pa.isCheckerboardOn = false;
       // mark delete all canvas images
       canvasImgs.forEach((img) => {
+        img.loader.markDelete = true;
         img.markDelete = true;
       });
       //clear canvas images list

@@ -6,7 +6,7 @@ import { allow_debug } from "./js_shared.js";
 class BaseSmartWidget {
   constructor(node) {
     this.node = node;
-    this.markDelete = false;
+    this._markDelete = false;
     this._mousePos = [0, 0];
   }
 
@@ -20,6 +20,19 @@ class BaseSmartWidget {
     const canvas = app.canvas;
     const scale = canvas?.ds?.scale ?? 1; // Get scale, default to 1 if undefined
     return scale <= 0.5;
+  }
+
+  delete() {
+    this.node.widgets = this.node.widgets.filter(widget => widget !== this);
+    this.node.setDirtyCanvas(true, true);
+  }
+
+  get markDelete() {
+    return this._markDelete;
+  }
+
+  set markDelete(value) {
+    this._markDelete = Boolean(value);
   }
 
   get mousePos() {
@@ -86,8 +99,13 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   }
 
   filterDeletedWIdgets() {
+    console.log('node.widgets',this.node.widgets)
+    console.log('node.widgets',this.node.widgets.length)
     // Filter out widgets marked for deletion
     this.node.widgets = this.node.widgets.filter((widget) => !widget.markDelete);
+    console.log('node.widgets',this.node.widgets.length)
+    this.node.setDirtyCanvas(true, true);
+    console.log('node.widgets',this.node.widgets)
   }
 }
 export class SmartImage extends BaseSmartWidget {
@@ -289,6 +307,7 @@ export class SmartImage extends BaseSmartWidget {
           console.error("Failed to load Masked image from API");
         };
         if (allow_debug) console.log("Masked image received successfully.");
+        this.loader.markDelete = true;
         this.node.setDirtyCanvas(true, true);
       } else {
         console.error("Error fetching image:", result.message);
