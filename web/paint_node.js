@@ -486,7 +486,20 @@ app.registerExtension({
       // if (allow_debug) console.log(itemA, itemB);
     }
 
-    function saveImgToDesk(delay = 500) {
+    function saveImgToDesk(delay) {
+      
+      // override delay
+      const longestSide = Math.max(pa.width, pa.height)
+      // if(allow_debug){console.log('longestSide',longestSide);}
+      if (longestSide <= 512){
+        delay = 500
+      }
+        else if(longestSide <= 1024){
+          delay = 2000
+      }else{
+        delay = 5000
+      }
+
       setTimeout(() => {
         if (!pa.isPainting) pa.sendDrawingToAPI();
       }, delay);
@@ -660,7 +673,7 @@ app.registerExtension({
           selectedImg.isUnderCover = true;
         }
       }
-      
+
       toggleImagesCloseButton()
     };
 
