@@ -24,6 +24,9 @@ from aiohttp import web
 import json
 import folder_paths
 
+class MyCustomError(Exception):
+    def __init__(self, message="Something went wrong"):
+        super().__init__(message)
 
 class IToolsFreeSchnell:
     
@@ -56,13 +59,34 @@ class IToolsFreeSchnell:
     DESCRIPTION = ("Will return free Flux-Schnell image from a together.ai free API")
 
     def generate_image(self, prompt, width, height,seed):
-        
+        api_key = self.together_api if self.together_api and self.together_api != "None" else os.environ.get('TOGETHER_API_KEY')
+
         try:
-            client = Together(api_key = self.together_api)
+            client = Together(api_key=api_key)
         except Exception as e:
-            os.environ.get('TOGETHER_API_KEY')
-            api_key = os.environ.get('TOGETHER_API_KEY')
-            client = Together(api_key = api_key)
+            # If the first key fails, try the environment variable
+            api_key = os.environ.get('TOGETHER_API_KEY') if api_key != os.environ.get('TOGETHER_API_KEY') else None
+            if not api_key:
+                raise MyCustomError(
+                    "Invalid or missing API key.\n"
+                    "Get a free key from together.ai and add it to iTools settings,\n"
+                    "or set it in your environment as TOGETHER_API_KEY.\n"
+                    "Don't forget to restart ComfyUI after adding your key."
+                ) from e
+            try:
+                client = Together(api_key=api_key)
+            except Exception as e:
+                raise MyCustomError("Failed to initialize Together client with the fallback key.") from e
+
+    #   if not self.together_api or self.together_api == "None":
+    #     if not os.environ.get('TOGETHER_API_KEY'):
+    #         raise MyCustomError(
+    #         "API key not found in iTools settings or in your environment.\n"
+    #         "Get a free key from together.ai, then add it to iTools settings."
+    #         )
+            
+    #     api_key = self.together_api if self.together_api != "None" else os.environ.get('TOGETHER_API_KEY')
+    #     client = Together(api_key=api_key)
 
         response = client.images.generate(
             prompt=prompt,
