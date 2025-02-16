@@ -23,7 +23,7 @@ class BaseSmartWidget {
   }
 
   delete() {
-    this.node.widgets = this.node.widgets.filter(widget => widget !== this);
+    this.node.widgets = this.node.widgets.filter((widget) => widget !== this);
     this.node.setDirtyCanvas(true, true);
   }
 
@@ -101,11 +101,11 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   filterDeletedWIdgets() {
     // console.log('node.widgets',this.node.widgets)
     // console.log('node.widgets',this.node.widgets.length)
-    
+
     // Filter out widgets marked for deletion
     this.node.widgets = this.node.widgets.filter((widget) => !widget.markDelete);
     this.node.setDirtyCanvas(true, true);
-    
+
     // console.log('node.widgets',this.node.widgets.length)
     // console.log('node.widgets',this.node.widgets)
   }
@@ -127,8 +127,9 @@ export class SmartImage extends BaseSmartWidget {
     this.resizeAnchor = null; // Store the anchor point being resized (e.g., 'top-left', 'right', etc.)
     this.resizeThreshold = 10; // Distance threshold for detecting resize areas
     this.onImgLoaded = null;
+    this.onImgClosed = null;
     this.isUnderCover = false;
-    
+
     this.isSelected = false;
     this.buttonXoffset = 5;
     this.buttonYoffset = 5;
@@ -321,12 +322,11 @@ export class SmartImage extends BaseSmartWidget {
       this.loader.markDelete = true;
       this.loader.isVisible = false;
     }
-
   }
-  
+
   async requestMaskedImage(img_file) {
-    this.loader.isVisible = true
-    
+    this.loader.isVisible = true;
+
     const formData = new FormData();
     formData.append("image", img_file);
 
@@ -356,9 +356,11 @@ export class SmartImage extends BaseSmartWidget {
   }
 
   handleDown() {
-    if(this.isUnderCover) return;
-    if (this.isInCloseButtonArea()) {
+    if (this.isUnderCover) return;
+    if (this.closeButton && this.isInCloseButtonArea()) {
       this.markDelete = true;
+      if (this.onImgClosed) this.onImgClosed()
+      //this.delete
     }
     if (this.isMouseInResizeArea()) {
       this.isResizing = true;
@@ -396,9 +398,9 @@ export class SmartImage extends BaseSmartWidget {
       // this.closeButton.y = this.y + this.buttonYoffset;
     }
 
-    if(this.loader){
-      this.loader.x = this.x + this.width / 2
-      this.loader.y = this.y + this.height / 2
+    if (this.loader) {
+      this.loader.x = this.x + this.width / 2;
+      this.loader.y = this.y + this.height / 2;
     }
   }
 
@@ -410,7 +412,7 @@ export class SmartImage extends BaseSmartWidget {
   }
 
   handleDrag() {
-    if(this.isUnderCover) return;
+    // for changing cursor
     if (this.isMouseIn()) {
       //app.canvas.canvas.style.cursor = "url('/cursor/colorSelect.png') 15 25, auto";
       //app.canvas.canvas.style.cursor = "grabbing";
@@ -755,27 +757,6 @@ export class SmartImage extends BaseSmartWidget {
     }, 200);
   }
 
-  createCloseButton() {
-    // if (this.closeButton === null) {
-    //   this.closeButton = new SmartButton(
-    //     this.x + this.buttonXoffset,
-    //     this.y + this.buttonYoffset,
-    //     15,
-    //     15,
-    //     this.node,
-    //     "X",
-    //     {
-    //       color: "rgba(255, 255, 255, 0.5)",
-    //       textColor: "#434343",
-    //     }
-    //   );
-    //   this.closeButton.onClick = () => {
-    //     //this.img = null;
-    //     this.closeButton.markDelete = true;
-    //     this.markDelete = true;
-    //   };
-    // }
-  }
 
   draw(ctx) {
     if (this.markDelete) return;
@@ -941,8 +922,8 @@ export class SmartImage extends BaseSmartWidget {
     }
 
     // Draw loader
-    if(!this.loader){
-      this.loader = new SmartLoading(this.x + this.width/2, this.y+this.height/2, this.node);
+    if (!this.loader) {
+      this.loader = new SmartLoading(this.x + this.width / 2, this.y + this.height / 2, this.node);
     }
 
     ctx.restore();
@@ -1305,7 +1286,7 @@ export class SmartWidget extends BaseSmartWidget {
       this.x = originalPosX;
       this.y = originalPosY;
     }, 100);
-    if (!this.allowVisualHover  && this.resetColor) this.color = lightenColor(this.originalColor, 20);
+    if (!this.allowVisualHover && this.resetColor) this.color = lightenColor(this.originalColor, 20);
     this.x = originalPosX + 0.5;
     this.y = originalPosY + 0.5;
   }
@@ -1791,6 +1772,15 @@ export class SmartSlider extends SmartWidget {
     }
   }
 
+  callMove(v) {
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+    v = clamp(v, 0, 100);
+    this.handleX = v;
+    this.value = v;
+  }
+
   handleClick() {
     this.isDragging = false;
   }
@@ -1918,7 +1908,6 @@ export class SmartSwitch extends SmartWidget {
   handleDown() {
     if (this.isMouseIn()) {
       this.callClick();
- 
     }
   }
 

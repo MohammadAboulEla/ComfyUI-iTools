@@ -78,10 +78,12 @@ app.registerExtension({
     let loadedImageFile = null;
     let keyPick = false;
     let isHoldingShift = false;
+    let isHoldingAlt = false;
     let loadedWidth = 0;
     let loadedHeight = 0;
     let loadedScale = 0;
     let loader = null;
+    let mouseInNode = null;
 
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
     const p = new SmartPreview(0, 80, 512, 512, node);
@@ -159,13 +161,16 @@ app.registerExtension({
                 canvasImgs.forEach((i) => {
                   i.isSelected = false;
                 });
-                // select last loaded image
+                // mark last loaded image as selected
                 canvasImgs[canvasImgs.length - 1].isSelected = true;
-
                 if (allow_debug) console.log("Image loaded successfully!");
                 // open canvas buttons
                 openCanvas();
               };
+              img.onImgClosed = (img) => {
+                onImageClosed(img)
+              };
+
             };
 
             // Handle errors if the image fails to load
@@ -377,6 +382,10 @@ app.registerExtension({
       return { text: text, color: color };
     }
 
+    function onImageClosed() {
+      canvasImgs = canvasImgs.filter(img => !img.markDelete)
+    }
+
     function closeCanvas() {
       bCloseCanvas.isVisible = false;
       // enable brush preview
@@ -402,6 +411,20 @@ app.registerExtension({
       bc.forEach((b) => (b.isVisible = true));
     }
 
+    function toggleImagesCloseButton() {
+      //if(allow_debug){console.log('canvasImgs.length',canvasImgs.length);}
+      // allow close when multiple images loaded
+      if (canvasImgs.length > 1) {
+        canvasImgs.forEach((i) => {
+          i.closeButton = true;
+        });
+      } else {
+        canvasImgs.forEach((i) => {
+          i.closeButton = false;
+        });
+      }
+    }
+
     function fitCanvasImg(dim) {
       const img = canvasImgs.filter((img) => img.isSelected)[0];
       img?.fitImage([pa.width, pa.height], dim, 1 / pa.scaleFactor);
@@ -416,10 +439,11 @@ app.registerExtension({
 
     function selectCanvasImg() {
       if (bc.some((button) => button.isMouseIn?.())) return;
+      if (selectedImg && selectedImg.isMouseInResizeArea()) return; //prevent cancel resizing
       let found = false; // Flag to stop after selecting the topmost image
       for (let i = canvasImgs.length - 1; i >= 0; i--) {
         let img = canvasImgs[i];
-        if (!found && img.isMouseIn(10)) {
+        if (!found && img.isMouseIn(20)) {
           img.isSelected = true;
           found = true; // Stop selecting after the first match (topmost image)
         } else {
@@ -571,9 +595,9 @@ app.registerExtension({
     pa.onPress = () => {
       pa.blockPainting = false;
 
-      if (allow_debug) {
-        console.log("isHoldingShift", isHoldingShift);
-      }
+      // if (allow_debug) {
+      //   console.log("isHoldingShift", isHoldingShift);
+      // }
 
       // Block painting if holding shift
       if (isHoldingShift) {
@@ -618,32 +642,41 @@ app.registerExtension({
 
       // if (allow_debug) {
       //   console.log("node", node);
+      //   console.log("app",app)
       // }
     };
 
     node.onMouseUp = (e, pos, node) => {
       saveImgToDesk(200);
+      
     };
 
     node.onMouseMove = (e, pos) => {
       pickColor(e, "drag");
+      
       //prevent resize cursor while hovering over canvas buttons
       if (canvasImgs.length > 0 && bc.some((b) => b.isMouseIn())) {
         if (selectedImg) {
           selectedImg.isUnderCover = true;
         }
       }
+      
+      toggleImagesCloseButton()
     };
 
-    node.onMouseEnter = (e, pos, node) => {};
+    node.onMouseEnter = (e, pos, node) => {
+      mouseInNode = true;
+    };
 
     node.onMouseLeave = (e) => {
+      mouseInNode = false;
       saveImgToDesk(500);
     };
 
     // COMMON CLICKS EVENTS
     app.canvas.canvas.onkeydown = (event) => {
       if (event.key === "Alt") {
+        isHoldingAlt = true;
         info.restart("Alt", 40);
         event.preventDefault();
         // plot selected image on back ground
@@ -666,6 +699,7 @@ app.registerExtension({
         // if (allow_debug) {
         //   console.log("isHoldingShift", isHoldingShift);
         // }
+
         // rotate with shift
         canvasImgs.forEach((img) => {
           if (img.isMouseIn(10)) {
@@ -680,6 +714,10 @@ app.registerExtension({
     };
 
     globalThis.onkeyup = (event) => {
+      info.done = true;
+      isHoldingShift = false;
+      isHoldingAlt = false;
+
       // if (allow_debug) {
       //   console.log("canvasImgs.length", canvasImgs.length);
       // }
@@ -687,14 +725,38 @@ app.registerExtension({
       // if (allow_debug) {
       //   console.log("keyUp");
       // }
-      info.done = true;
-      isHoldingShift = false;
+
       // if (event.key === "Shift") {
       //   isHoldingShift = false;
       // }
     };
 
     app.canvas.canvas.onpaste = (...args) => {};
+
+    let c = 20; // change brush size with shift BUGGED
+    function changeBrushSizeWithKey(e) {
+      app.canvas.zoom_speed = 1;
+      // if (allow_debug) {
+      //   console.log(e.deltaY > 0 ? "wheel down" : "wheel up");
+      // }
+      if (isHoldingShift && node.flags.pinned) {
+        if (e.deltaY < 0) {
+          c += 2.5;
+          brushSlider.callMove(c);
+          brushSlider.onValueChange(c);
+        } else {
+          c -= 2.5;
+          brushSlider.callMove(c);
+          brushSlider.onValueChange(c);
+        }
+        app.canvas.zoom_speed = 1.0;
+      } else {
+        app.canvas.zoom_speed = 1.1;
+      }
+    }
+    globalThis.onwheel = (e) => {
+      //changeBrushSizeWithKey(e)
+    };
 
     globalThis.oncopy = (...args) => {};
 
