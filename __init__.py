@@ -11,7 +11,7 @@ def get_user_dev_mode():
             settings = json.load(file)
         return settings.get('iTools.Nodes.Dev Mode', True)
     except (OSError, json.JSONDecodeError, AttributeError):
-        return False
+        return True
 
 allow_test_nodes = get_user_dev_mode()
 

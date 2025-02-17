@@ -6,14 +6,6 @@ except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "together"])
     from together import Together  # Retry the import after installation  
     
-try:
-    from rembg import remove
-except ImportError:
-    import subprocess
-    import sys
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "rembg"])
-    from rembg import remove  # Retry the import after installation  
-        
 import base64
 from PIL import Image
 import io
@@ -274,6 +266,14 @@ async def respond_to_request_load_img(request):
     })
 
 def removeBackground(input_path, output_path):
+    try:
+        from rembg import remove
+    except ImportError:
+        import subprocess
+        import sys
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "rembg"])
+        from rembg import remove  # Retry the import after installation  
+    
     input_img = Image.open(input_path)
     output_img = remove(input_img)
     output_img.save(output_path)
