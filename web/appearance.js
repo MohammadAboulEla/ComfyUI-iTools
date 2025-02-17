@@ -105,7 +105,7 @@ app.registerExtension({
       name: "Enable iTools beta nodes",
       type: "boolean",
       defaultValue: true,
-      tooltip: "Will show/hide experimental nodes, restart ComfyUI after changing this value.",
+      tooltip: "Will show or hide some experimental nodes, Restart ComfyUI and refresh your browser after changing this value.",
     },
   ],
 });

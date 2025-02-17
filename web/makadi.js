@@ -141,7 +141,8 @@ export class SmartImage extends BaseSmartWidget {
     this.closeButtonOffsetY = 10;
 
     // properties for rotation
-    this.rotateDrawMargin = 25;
+    this.rotateThreshold = 15;
+    this.rotateDrawMargin = this.rotateThreshold - 2.5 ;
     this.rotationAngle = 0;
     this.initialRotationAngle = 0;
     this.isRotating = false;
@@ -507,7 +508,7 @@ export class SmartImage extends BaseSmartWidget {
 
   isMouseInRotatedArea() {
     const { x: mouseX, y: mouseY } = this.mousePos;
-    const threshold = this.resizeThreshold;
+    const threshold = this.rotateThreshold;
     const margin = this.rotateDrawMargin - 5; // Move the detection area slightly inside the image
 
     // Translate mouse position relative to the center of the image
@@ -827,7 +828,7 @@ export class SmartImage extends BaseSmartWidget {
 
     // draw rotate dots
     if ((this.isMouseInRotatedArea() && this.isSelected) || this.isRotating) {
-      const handleSize = 10; // Diameter of the handle
+      const handleSize = 16; // Diameter of the handle
       const radius = handleSize / 2;
       const margin = this.rotateDrawMargin; // Move handles slightly inside the image
 

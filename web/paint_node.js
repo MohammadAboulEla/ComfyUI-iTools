@@ -691,9 +691,10 @@ app.registerExtension({
     // COMMON CLICKS EVENTS
     app.canvas.canvas.onkeydown = (event) => {
       if (event.key === "Alt") {
+        if (!isHoldingAlt) info.restart("Alt", 40);
         isHoldingAlt = true;
-        info.restart("Alt", 40);
         event.preventDefault();
+        
         // plot selected image on back ground
         canvasImgs.forEach((img) => {
           if (img.isSelected) {
@@ -715,16 +716,16 @@ app.registerExtension({
         //   console.log("isHoldingShift", isHoldingShift);
         // }
 
-        // rotate with shift
-        canvasImgs.forEach((img) => {
-          if (img.isMouseIn(10)) {
-            if (!img.isRotating) {
-              img.handleRotateStart();
-            } else {
-              img.handleRotateEnd();
-            }
-          }
-        });
+        // rotate with shift 
+        // canvasImgs.forEach((img) => {
+        //   if (img.isMouseIn(10)) {
+        //     if (!img.isRotating) {
+        //       img.handleRotateStart();
+        //     } else {
+        //       img.handleRotateEnd();
+        //     }
+        //   }
+        // });
       }
     };
 
@@ -748,7 +749,7 @@ app.registerExtension({
 
     app.canvas.canvas.onpaste = (...args) => {};
 
-    let c = 20; // change brush size with shift BUGGED
+    let c = 20; // change brush size with wheel BUGGED
     function changeBrushSizeWithKey(e) {
       function clamp(value, min, max) {
         return Math.min(Math.max(value, min), max);
