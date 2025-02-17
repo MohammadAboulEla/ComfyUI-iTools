@@ -2,6 +2,7 @@ __pycache__
 .vscode
 .idea
 ignore
+excluded
 
 # Ignore all .yaml files
 *.yaml

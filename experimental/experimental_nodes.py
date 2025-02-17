@@ -1,11 +1,3 @@
-try:
-    from together import Together
-except ImportError:
-    import subprocess
-    import sys
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "together"])
-    from together import Together  # Retry the import after installation  
-    
 import base64
 from PIL import Image
 import io
@@ -15,6 +7,13 @@ from server import PromptServer
 from aiohttp import web
 import json
 import folder_paths
+
+
+def install_package(package):
+    import subprocess
+    import sys
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 class MyCustomError(Exception):
     def __init__(self, message="Something went wrong"):
@@ -51,6 +50,12 @@ class IToolsFreeSchnell:
     DESCRIPTION = ("Will return free Flux-Schnell image from a together.ai free API")
 
     def generate_image(self, prompt, width, height,seed):
+        # check if together is available
+        try:
+            from together import Together # type: ignore
+        except ImportError:
+            install_package("together")
+        
         api_key = self.together_api if self.together_api and self.together_api != "None" else os.environ.get('TOGETHER_API_KEY')
 
         try:
@@ -266,42 +271,17 @@ async def respond_to_request_load_img(request):
     })
 
 def removeBackground(input_path, output_path):
+    # Try importing rembg
     try:
         from rembg import remove
     except ImportError:
-        import subprocess
-        import sys
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "rembg"])
-        from rembg import remove  # Retry the import after installation  
-    
+        install_package("rembg[gpu]")
+        from rembg import remove  # Retry the import after installation
+       
     input_img = Image.open(input_path)
     output_img = remove(input_img)
     output_img.save(output_path)
 
-# @PromptServer.instance.routes.post("/itools/request_mask_img")
-# async def respond_to_request_mask_img(request):
-#     post = await request.post()
-    
-#     img_path = post.get("img_path")
-    
-#     # Define the directory where the images are saved
-#     save_directory = os.path.join(project_dir, "backend")
-    
-#     # Define file paths
-#     img_out = os.path.join(save_directory, "iToolsMaskedImg.png")
-    
-    
-#     # # Check if both files exist
-#     # if not os.path.exists(img_path):
-#     #     return web.json_response({"status": "error", "message": "File not found"}, status=404)
-    
-#     # save image to desk
-#     removeBackground(img_path,img_out)
-    
-#     return web.json_response({
-#         "status": "success",
-#     })
-    
 @PromptServer.instance.routes.post("/itools/request_mask_img")
 async def respond_to_request_mask_img(request):
     # Parse the multipart form data
@@ -336,3 +316,29 @@ async def respond_to_request_mask_img(request):
     return web.json_response({
         "status": "success",
     })
+
+# DEPRECATED
+# @PromptServer.instance.routes.post("/itools/request_mask_img")
+# async def respond_to_request_mask_img(request):
+#     post = await request.post()
+    
+#     img_path = post.get("img_path")
+    
+#     # Define the directory where the images are saved
+#     save_directory = os.path.join(project_dir, "backend")
+    
+#     # Define file paths
+#     img_out = os.path.join(save_directory, "iToolsMaskedImg.png")
+    
+    
+#     # # Check if both files exist
+#     # if not os.path.exists(img_path):
+#     #     return web.json_response({"status": "error", "message": "File not found"}, status=404)
+    
+#     # save image to desk
+#     removeBackground(img_path,img_out)
+    
+#     return web.json_response({
+#         "status": "success",
+#     })
+    
