@@ -63,7 +63,7 @@ app.registerExtension({
     node.setSize([512, 592]);
     node.resizable = false;
     node.setDirtyCanvas(true, true);
-    //node.selected = true;
+    node.selected = true;
 
     // if (allow_debug) {
     //   console.log("node", node);
@@ -455,12 +455,12 @@ app.registerExtension({
     function pickColor(e, caller) {
       if (bCloseCanvas?.isVisible) return; // prevent picking in canvas mode
 
-      function updateColor(trackedColor) {
+      function updateColor(trackedColor, apply=true) {
         bFill.tagColor = trackedColor;
         pa.brushColor = trackedColor;
         cp.selectedColor = trackedColor;
         (cp.isGhost ? bColor2 : bColor).color = trackedColor;
-        //bColor.color = trackedColor;
+        if(apply){} // ToDO
       }
 
       if (caller === "click" || caller === "drag") {
@@ -468,7 +468,8 @@ app.registerExtension({
         cp.allowPickVis = true;
 
         if ((caller === "click" && isHoldingShift) || (caller === "drag" && cp.isVisible && !isHoldingShift)) {
-          updateColor(trackedColor);
+          const applyColor = caller === "click"? true : false; 
+          updateColor(trackedColor, applyColor);
         } else {
           cp.allowPickVis = false;
         }
@@ -748,6 +749,11 @@ app.registerExtension({
 
     let c = 20; // change brush size with shift BUGGED
     function changeBrushSizeWithKey(e) {
+      function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+      }
+      
+
       app.canvas.zoom_speed = 1;
       // if (allow_debug) {
       //   console.log(e.deltaY > 0 ? "wheel down" : "wheel up");
@@ -755,10 +761,12 @@ app.registerExtension({
       if (isHoldingShift && node.flags.pinned) {
         if (e.deltaY < 0) {
           c += 2.5;
+          c = clamp(c, 0, 100);
           brushSlider.callMove(c);
           brushSlider.onValueChange(c);
         } else {
           c -= 2.5;
+          c = clamp(c, 0, 100);
           brushSlider.callMove(c);
           brushSlider.onValueChange(c);
         }
@@ -768,7 +776,7 @@ app.registerExtension({
       }
     }
     globalThis.onwheel = (e) => {
-      //changeBrushSizeWithKey(e)
+      //changeBrushSizeWithKey(e) // BUGGED
     };
 
     globalThis.oncopy = (...args) => {};

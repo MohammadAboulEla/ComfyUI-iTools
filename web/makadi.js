@@ -1773,10 +1773,6 @@ export class SmartSlider extends SmartWidget {
   }
 
   callMove(v) {
-    function clamp(value, min, max) {
-      return Math.min(Math.max(value, min), max);
-    }
-    v = clamp(v, 0, 100);
     this.handleX = v;
     this.value = v;
   }
@@ -2040,7 +2036,7 @@ export class SmartPaintArea extends BaseSmartWidget {
     this.yOffset = 0;
     this.xOffset = 0;
 
-    this.nodeYoffset = 80;
+    this.nodeYoffset = 50;
     this.nodeXoffset = 0;
 
     this.brushSize = 10;
