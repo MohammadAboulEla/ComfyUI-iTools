@@ -112,7 +112,8 @@ app.registerExtension({
     bLoad.onClick = () => {
       const fileInput = document.createElement("input");
       fileInput.type = "file";
-      fileInput.accept = ".png";
+      fileInput.accept = ".png, .jpg, .jpeg, .webp";
+      //fileInput.accept = ".png";
 
       fileInput.addEventListener("change", (event) => {
         const file = event.target.files[0];
