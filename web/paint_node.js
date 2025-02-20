@@ -31,6 +31,7 @@ import {
   SmartImage,
   CanvasButtonManager,
   SmartLoading,
+  SmartText,
 } from "./makadi.js";
 
 app.registerExtension({
@@ -55,7 +56,7 @@ app.registerExtension({
     }
 
     while (node.graph === null) {
-      console.log("loading ...");
+      if (allow_debug) console.log("loading ...");
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
@@ -65,32 +66,48 @@ app.registerExtension({
     node.setDirtyCanvas(true, true);
     node.selected = true;
 
-    // if (allow_debug) {
-    //   console.log("node", node);
-    //   console.log("app", app);
-    //   console.log("app.canvas", app.canvas);
-    // }
-
     // START POINT
     let canvasImgs = [];
-    let bc = [];
     let selectedImg = null;
     let loadedImageFile = null;
     let keyPick = false;
     let isHoldingShift = false;
     let isHoldingAlt = false;
+    let isHoldingSpace = false;
     let loadedWidth = 0;
     let loadedHeight = 0;
     let loadedScale = 0;
     let loader = null;
     let mouseInNode = null;
 
+    // create canvas buttons
+    let bc = [];
+    let bCloseCanvas = null;
+    let bMaskCanvas = null;
+    let bStampCanvas = null;
+    let bFitCanvas = null;
+    let bFillCanvas = null;
+    let lCanvasInfo = null;
+
     const pa = new SmartPaintArea(0, 80, 512, 512, node);
     const p = new SmartPreview(0, 80, 512, 512, node);
-    // const bTest = new SmartButton(200, 200, 80, 20, node, "Test")
-    // setTimeout(() => {
-    //   bTest.delete()
-    // }, 3000);
+    // const bTest = new SmartButton(85, 85, 80, 20, node, "Test");
+    // bTest.onClick = () => {
+    //   const t = new SmartText(50, 50 + 85, node);
+    //   canvasImgs.push(t);
+    //   // Remove old selected
+    //   canvasImgs.forEach((i) => {
+    //     i.isSelected = false;
+    //   });
+    //   // mark last loaded image as selected
+    //   canvasImgs[canvasImgs.length - 1].isSelected = true;
+    //   if (allow_debug) console.log("Image loaded successfully!");
+    //   // open canvas buttons
+    //   //openCanvas();
+    // };
+    // // setTimeout(() => {
+    // //   bTest.delete()
+    // // }, 3000);
     const cp = new SmartColorPicker(0, 80, 170, 170, node);
     let info = null;
     function reCreateInfo() {
@@ -104,10 +121,10 @@ app.registerExtension({
       allowVisualHover: false,
       outline: false,
     });
-
-    const bLoad = new SmartButton(5, 5, 80, 20, node, "Load Image", {
+    const startPosX = 5 || 512 / 2;
+    const bLoad = new SmartButton(startPosX, 5, 80, 20, node, "Load Image", {
       textXoffset: 0,
-      shape: Shapes.ROUND,
+      shape: Shapes.ROUND_L,
     });
     bLoad.onClick = () => {
       const fileInput = document.createElement("input");
@@ -169,9 +186,8 @@ app.registerExtension({
                 openCanvas();
               };
               img.onImgClosed = (img) => {
-                onImageClosed(img)
+                onImageClosed(img);
               };
-
             };
 
             // Handle errors if the image fails to load
@@ -188,13 +204,127 @@ app.registerExtension({
       fileInput.click();
     };
 
-    // const bPaste = new SmartButton(90, 5, 80, 20, node, "Paste Image", {
-    //   textXoffset: 0,
-    //   shape: Shapes.ROUND,
-    // });
-    // bPaste.onClick = () => {
+    const bText = new SmartButton(startPosX + 80, 5, 80, 20, node, "Add Text", {
+      textXoffset: 0,
+      shape: Shapes.SQUARE,
+    });
 
-    // }
+    bText.onClick = () => {
+      // window.prompt
+      window["app"].extensionManager.dialog
+        .prompt({
+          title: "iTools Paint Node",
+          message: "Add custom text",
+          default: "iTools",
+        })
+        .then((value) => {
+          if (!value || value.trim().length === 0) {
+            showWarning("No Valid Text!");
+            return;
+          }
+          // Calculate the center position for the text
+          const centerX = (node.width - 102*2.5) / 2; // 26*2.5 is starting font size
+          const centerY = (80 + node.height - 102*2.5) / 2;
+
+          const t = new SmartText(centerX,centerY, node);
+          t.text = value;
+
+          cp.onValueChange = (v) => {
+            if (allow_debug) {
+              console.log("value changed");
+            }
+            t.textColor = v;
+          };
+          canvasImgs.push(t);
+          t.onClosed = () => onImageClosed();
+          // Remove old selected
+          canvasImgs.forEach((i) => {
+            i.isSelected = false;
+          });
+          // mark last loaded image as selected
+          canvasImgs[canvasImgs.length - 1].isSelected = true;
+          if (allow_debug) console.log("Image loaded successfully!");
+          // open canvas buttons
+          openCanvas("text");
+        });
+    };
+    const bPaste = new SmartButton(startPosX + 160, 5, 80, 20, node, "Paste Image", {
+      textXoffset: 0,
+      shape: Shapes.ROUND_R,
+    });
+
+    bPaste.onClick = async () => {
+      try {
+        const clipboardItems = await navigator.clipboard.read();
+        for (const item of clipboardItems) {
+          for (const type of item.types) {
+            if (type.startsWith("image/")) {
+              const blob = await item.getType(type);
+              const reader = new FileReader();
+
+              reader.onload = function (event) {
+                const imageUrl = event.target.result;
+
+                // Create a temporary image element to get its dimensions
+                const tempImg = new Image();
+                tempImg.src = imageUrl;
+                // Wait for the image to load
+                tempImg.onload = () => {
+                  const naturalWidth = tempImg.naturalWidth;
+                  const naturalHeight = tempImg.naturalHeight;
+
+                  // Calculate the aspect ratio
+                  const aspectRatio = naturalWidth / naturalHeight;
+
+                  // Set a base height (or width) and calculate the other dimension based on the ratio
+                  const baseHeight = 256; // You can adjust this value as needed
+                  const calculatedWidth = baseHeight * aspectRatio;
+
+                  // Calculate the center position for the image
+                  const centerX = (node.width - calculatedWidth) / 2;
+                  const centerY = (80 + node.height - baseHeight) / 2;
+
+                  // Create a new SmartImage instance with dynamic dimensions
+                  const img = new SmartImage(centerX, centerY, calculatedWidth, baseHeight, node, {});
+
+                  // Update the image source dynamically
+                  img.updateImage(imageUrl);
+
+                  // Add the SmartImage instance to the canvasImgs array
+                  canvasImgs.push(img);
+                  // if (allow_debug) {
+                  //   console.log("canvasImgs", canvasImgs);
+                  // }
+
+                  // Define the onImgLoaded callback
+                  img.onImgLoaded = () => {
+                    // Remove old selected
+                    canvasImgs.forEach((i) => {
+                      i.isSelected = false;
+                    });
+                    // mark last loaded image as selected
+                    canvasImgs[canvasImgs.length - 1].isSelected = true;
+                    if (allow_debug) console.log("Image loaded successfully!");
+                    // open canvas buttons
+                    openCanvas();
+                  };
+                  img.onImgClosed = (img) => {
+                    onImageClosed(img);
+                  };
+                };
+              };
+
+              reader.readAsDataURL(blob); // Read image as Base64 URL
+              return;
+            } else {
+              showWarning("No Image In Clipboard!", 150);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to read clipboard:", err);
+      }
+    };
 
     const bColor = new SmartButton(5, 35, 40, 40, node);
     bColor.shape = Shapes.HVL_CIRCLE;
@@ -227,15 +357,15 @@ app.registerExtension({
       },
     });
 
+    // create canvas drop menus
     const ratiosArray = Array.from(canvasRatios.entries());
     const sizesArray = Array.from(canvasScales.entries());
     const ratioNames = Array.from(canvasRatios.keys());
     const sizeNames = Array.from(canvasScales.keys());
-
-    let dmR = null; //new SmartDropdownMenu(5, 85, 40, 15, node, "Ratio", ratioNames);
-    let dmS = null; //new SmartDropdownMenu(5 + 45, 85, 40, 15, node, "Size", sizeNames);
+    let dmR = null;
+    let dmS = null;
     let dmInfo = null;
-    // TO DO
+
     function createDropMenus() {
       dmR = new SmartDropdownMenu(5, 85, 40, 15, node, "Ratio", ratioNames);
       dmS = new SmartDropdownMenu(5 + 45, 85, 40, 15, node, "Size", sizeNames);
@@ -356,14 +486,6 @@ app.registerExtension({
       }
     }
 
-    // create canvas buttons
-    let bCloseCanvas = null;
-    let bMaskCanvas = null;
-    let bStampCanvas = null;
-    let bFitCanvas = null;
-    let bFillCanvas = null;
-    let lCanvasInfo = null;
-
     // COMMON FUNCTIONS
     function showWarning(msg, newWidth = 120, newColor = "#cd7f32") {
       info.color = newColor;
@@ -384,7 +506,7 @@ app.registerExtension({
     }
 
     function onImageClosed() {
-      canvasImgs = canvasImgs.filter(img => !img.markDelete)
+      canvasImgs = canvasImgs.filter((img) => !img.markDelete);
     }
 
     function closeCanvas() {
@@ -394,7 +516,7 @@ app.registerExtension({
       pa.isCheckerboardOn = false;
       // mark delete all canvas images
       canvasImgs.forEach((img) => {
-        img.loader.markDelete = true;
+        if (img.loader) img.loader.markDelete = true;
         img.markDelete = true;
       });
       //clear canvas images list
@@ -403,8 +525,8 @@ app.registerExtension({
       bc.forEach((b) => (b.markDelete = true));
     }
 
-    function openCanvas() {
-      createCanvasButtons();
+    function openCanvas(mode = "image") {
+      createCanvasButtons(mode);
       // disable brush preview
       p.isVisible = false;
       pa.isCheckerboardOn = true;
@@ -454,14 +576,20 @@ app.registerExtension({
     }
 
     function pickColor(e, caller) {
-      if (bCloseCanvas?.isVisible) return; // prevent picking in canvas mode
+      //if (bCloseCanvas?.isVisible) return; // prevent change color in canvas mode
 
-      function updateColor(trackedColor, apply=true) {
+      function updateColor(trackedColor, apply = true) {
         bFill.tagColor = trackedColor;
         pa.brushColor = trackedColor;
         cp.selectedColor = trackedColor;
+        canvasImgs.forEach((item) => {
+          if (item.isSelected && item.isTextObject) {
+            item.textColor = trackedColor;
+          }
+        });
         (cp.isGhost ? bColor2 : bColor).color = trackedColor;
-        if(apply){} // ToDO
+        if (apply) {
+        } // ToDO
       }
 
       if (caller === "click" || caller === "drag") {
@@ -469,7 +597,7 @@ app.registerExtension({
         cp.allowPickVis = true;
 
         if ((caller === "click" && isHoldingShift) || (caller === "drag" && cp.isVisible && !isHoldingShift)) {
-          const applyColor = caller === "click"? true : false; 
+          const applyColor = caller === "click" ? true : false;
           updateColor(trackedColor, applyColor);
         } else {
           cp.allowPickVis = false;
@@ -489,17 +617,15 @@ app.registerExtension({
     }
 
     function saveImgToDesk(delay) {
-      
       // override delay
-      const longestSide = Math.max(pa.width, pa.height)
+      const longestSide = Math.max(pa.width, pa.height);
       // if(allow_debug){console.log('longestSide',longestSide);}
-      if (longestSide <= 512){
-        delay = 500
-      }
-        else if(longestSide <= 1024){
-          delay = 2000
-      }else{
-        delay = 5000
+      if (longestSide <= 512) {
+        delay = 500;
+      } else if (longestSide <= 1024) {
+        delay = 2000;
+      } else {
+        delay = 5000;
       }
 
       setTimeout(() => {
@@ -507,11 +633,11 @@ app.registerExtension({
       }, delay);
     }
 
-    function createCanvasButtons() {
+    function createCanvasButtons(mode = "image") {
       const bcw = 50;
       const bch = 20;
       const bcx = 512 / 2 - bcw / 2;
-      const bcy = 592 - 40;
+      const bcy = 592 - 50;
 
       lCanvasInfo = new SmartButton(512 / 2 - 40, bcy + 15, 80, bch, node, getActiveCtxText().text || "", {
         textAlign: "center",
@@ -540,30 +666,45 @@ app.registerExtension({
       bCloseCanvas.onClick = () => {
         closeCanvas();
       };
-      bMaskCanvas = new SmartButton(bcx - bcw * 1, bcy, bcw, bch, node, "Mask", {
-        textXoffset: 0,
-        shape: Shapes.SQUARE,
-      });
-      bMaskCanvas.onClick = () => {
-        let img = canvasImgs.find((img) => img.isSelected);
 
-        if (img.isMasked) {
-          showWarning("Image Already Masked!", 140);
-          return;
-        }
-        // Get the value of a setting
-        const allow_masking = app.extensionManager.setting.get("iTools.Nodes.Mask Tool", false);
-        if (!allow_masking) {
-          showWarning("Check iTools Settings", 140);
-          return;
-        }
-        if (img && !img.markDelete) {
-          img.requestMaskedImage(loadedImageFile);
-        } else {
-          showWarning("No Image Selected");
-        }
-      };
-      bc.push(bMaskCanvas);
+      if (mode === "image") {
+        bMaskCanvas = new SmartButton(bcx - bcw * 1, bcy, bcw, bch, node, "Mask", {
+          textXoffset: 0,
+          shape: Shapes.SQUARE,
+        });
+        bMaskCanvas.onClick = () => {
+          let img = canvasImgs.find((img) => img.isSelected);
+
+          if (img.isMasked) {
+            showWarning("Image Already Masked!", 140);
+            return;
+          }
+          // Get the value of a setting
+          const allow_masking = app.extensionManager.setting.get("iTools.Nodes.Mask Tool", false);
+          if (!allow_masking) {
+            showWarning("Check iTools Settings", 140);
+            return;
+          }
+          if (img && !img.markDelete) {
+            img.requestMaskedImage(loadedImageFile);
+          } else {
+            showWarning("No Image Selected");
+          }
+        };
+        bc.push(bMaskCanvas);
+      } else if (mode === "text") {
+        bMaskCanvas = new SmartButton(bcx - bcw * 1, bcy, bcw, bch, node, "Font", {
+          textXoffset: 0,
+          shape: Shapes.SQUARE,
+        });
+        bMaskCanvas.onClick = () => {
+          const text = canvasImgs.find((item) => item.isSelected && item.isTextObject);
+          text.cycleFont();
+          showWarning(text.fontName);
+        };
+        bc.push(bMaskCanvas);
+      }
+
       bStampCanvas = new SmartButton(bcx, bcy, bcw, bch, node, "Stamp", {
         textXoffset: 0,
         shape: Shapes.SQUARE,
@@ -578,28 +719,101 @@ app.registerExtension({
         }
       };
       bc.push(bStampCanvas);
-      bFitCanvas = new SmartButton(bcx + bcw * 1, bcy, bcw, bch, node, "Fit", {
-        textXoffset: 0,
-        shape: Shapes.SQUARE,
-      });
-      bFitCanvas.onClick = () => {
-        fitCanvasImg("w");
-      };
-      bc.push(bFitCanvas);
-      bFillCanvas = new SmartButton(bcx + bcw * 2, bcy, bcw, bch, node, "Fill", {
-        textXoffset: 0,
-        shape: Shapes.ROUND_R,
-      });
-      bFillCanvas.onClick = () => {
-        fillCanvasImg();
-      };
-      bc.push(bFillCanvas);
+      if (mode === "image") {
+        bFitCanvas = new SmartButton(bcx + bcw * 1, bcy, bcw, bch, node, "Fit", {
+          textXoffset: 0,
+          shape: Shapes.SQUARE,
+        });
+        bFitCanvas.onClick = () => {
+          fitCanvasImg("w");
+        };
+        bc.push(bFitCanvas);
+      } else if (mode === "text") {
+        bFitCanvas = new SmartButton(bcx + bcw * 1, bcy, bcw, bch, node, "Bold", {
+          textXoffset: 0,
+          shape: Shapes.SQUARE,
+        });
+        bFitCanvas.onClick = () => {
+          const text = canvasImgs.find((item) => item.isSelected && item.isTextObject);
+          text.cycleFontWeight();
+          //showWarning(text.fontWeight)
+        };
+        bc.push(bFitCanvas);
+      }
+      if (mode === "image") {
+        bFillCanvas = new SmartButton(bcx + bcw * 2, bcy, bcw, bch, node, "Fill", {
+          textXoffset: 0,
+          shape: Shapes.ROUND_R,
+        });
+        bFillCanvas.onClick = () => {
+          fillCanvasImg();
+        };
+        bc.push(bFillCanvas);
+      } else if (mode === "text") {
+        bFillCanvas = new SmartButton(bcx + bcw * 2, bcy, bcw, bch, node, "Italic", {
+          textXoffset: 0,
+          shape: Shapes.ROUND_R,
+        });
+        bFillCanvas.onClick = () => {
+          const text = canvasImgs.find((item) => item.isSelected && item.isTextObject);
+          text.toggleItalic();
+          //showWarning(text.isItalic)
+        };
+        bc.push(bFillCanvas);
+      }
       bc.forEach((b) => (b.isVisible = false));
     }
 
-    function switchCanvasLayers(caller) {
-      try {
-      } catch (error) {}
+    let c = 20; // change brush size with wheel BUGGED
+    function changeBrushSizeWithKey(e) {
+      function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+      }
+
+      app.canvas.zoom_speed = 1;
+      // if (allow_debug) {
+      //   console.log(e.deltaY > 0 ? "wheel down" : "wheel up");
+      // }
+      if (isHoldingShift && node.flags.pinned) {
+        if (e.deltaY < 0) {
+          c += 2.5;
+          c = clamp(c, 0, 100);
+          brushSlider.callMove(c);
+          brushSlider.onValueChange(c);
+        } else {
+          c -= 2.5;
+          c = clamp(c, 0, 100);
+          brushSlider.callMove(c);
+          brushSlider.onValueChange(c);
+        }
+        app.canvas.zoom_speed = 1.0;
+      } else {
+        app.canvas.zoom_speed = 1.1;
+      }
+    }
+
+    function updateDMindexes() {
+      // Update dmR and dmS values after init
+      const w = pa.width;
+      const h = pa.height;
+
+      const longSide = Math.max(w, h);
+      let scale = 1;
+      let scaleIndex = 0;
+
+      if (longSide <= 512) {
+        scale = 1;
+        scaleIndex = 0;
+      } else if (longSide <= 1024) {
+        scale = 2;
+        scaleIndex = 1;
+      } else if (longSide <= 2048) {
+        scale = 4;
+        scaleIndex = 2;
+      }
+
+      dmS.selectedItemIndex = scaleIndex;
+      dmR.selectedItemIndex = getIndexByDimensions(w / scale, h / scale);
     }
 
     // COMMON ACTIONS
@@ -608,7 +822,7 @@ app.registerExtension({
     };
 
     pa.onPress = () => {
-      pa.blockPainting = false;
+      if (!isHoldingSpace) pa.blockPainting = false;
 
       // if (allow_debug) {
       //   console.log("isHoldingShift", isHoldingShift);
@@ -663,12 +877,21 @@ app.registerExtension({
 
     node.onMouseUp = (e, pos, node) => {
       saveImgToDesk(200);
-      
+    };
+
+    node.onKeyDown = (e, pos, node) => {
+      if (allow_debug) {
+        console.log("e.code", e.code);
+      }
+      if (e.code === "Space") {
+        isHoldingSpace = true;
+        pa.blockPainting = true;
+      }
     };
 
     node.onMouseMove = (e, pos) => {
       pickColor(e, "drag");
-      
+
       //prevent resize cursor while hovering over canvas buttons
       if (canvasImgs.length > 0 && bc.some((b) => b.isMouseIn())) {
         if (selectedImg) {
@@ -676,7 +899,7 @@ app.registerExtension({
         }
       }
 
-      toggleImagesCloseButton()
+      toggleImagesCloseButton();
     };
 
     node.onMouseEnter = (e, pos, node) => {
@@ -690,11 +913,17 @@ app.registerExtension({
 
     // COMMON CLICKS EVENTS
     app.canvas.canvas.onkeydown = (event) => {
+      // if (allow_debug) {
+      //   console.log("key down", event);
+      // }
+      if (allow_debug) {
+        console.log("app", app);
+      }
       if (event.key === "Alt") {
         if (!isHoldingAlt) info.restart("Alt", 40);
         isHoldingAlt = true;
         event.preventDefault();
-        
+
         // plot selected image on back ground
         canvasImgs.forEach((img) => {
           if (img.isSelected) {
@@ -715,17 +944,6 @@ app.registerExtension({
         // if (allow_debug) {
         //   console.log("isHoldingShift", isHoldingShift);
         // }
-
-        // rotate with shift 
-        // canvasImgs.forEach((img) => {
-        //   if (img.isMouseIn(10)) {
-        //     if (!img.isRotating) {
-        //       img.handleRotateStart();
-        //     } else {
-        //       img.handleRotateEnd();
-        //     }
-        //   }
-        // });
       }
     };
 
@@ -733,7 +951,10 @@ app.registerExtension({
       info.done = true;
       isHoldingShift = false;
       isHoldingAlt = false;
-
+      isHoldingSpace = false;
+      if (allow_debug) {
+        console.log("key up");
+      }
       // if (allow_debug) {
       //   console.log("canvasImgs.length", canvasImgs.length);
       // }
@@ -747,65 +968,13 @@ app.registerExtension({
       // }
     };
 
-    app.canvas.canvas.onpaste = (...args) => {};
+    app.canvas.canvas.onpaste = (e) => {};
 
-    let c = 20; // change brush size with wheel BUGGED
-    function changeBrushSizeWithKey(e) {
-      function clamp(value, min, max) {
-        return Math.min(Math.max(value, min), max);
-      }
-      
-
-      app.canvas.zoom_speed = 1;
-      // if (allow_debug) {
-      //   console.log(e.deltaY > 0 ? "wheel down" : "wheel up");
-      // }
-      if (isHoldingShift && node.flags.pinned) {
-        if (e.deltaY < 0) {
-          c += 2.5;
-          c = clamp(c, 0, 100);
-          brushSlider.callMove(c);
-          brushSlider.onValueChange(c);
-        } else {
-          c -= 2.5;
-          c = clamp(c, 0, 100);
-          brushSlider.callMove(c);
-          brushSlider.onValueChange(c);
-        }
-        app.canvas.zoom_speed = 1.0;
-      } else {
-        app.canvas.zoom_speed = 1.1;
-      }
-    }
     globalThis.onwheel = (e) => {
       //changeBrushSizeWithKey(e) // BUGGED
     };
 
     globalThis.oncopy = (...args) => {};
-
-    function updateDMindexes() {
-      // Update dmR and dmS values after init
-      const w = pa.width;
-      const h = pa.height;
-
-      const longSide = Math.max(w, h);
-      let scale = 1;
-      let scaleIndex = 0;
-
-      if (longSide <= 512) {
-        scale = 1;
-        scaleIndex = 0;
-      } else if (longSide <= 1024) {
-        scale = 2;
-        scaleIndex = 1;
-      } else if (longSide <= 2048) {
-        scale = 4;
-        scaleIndex = 2;
-      }
-
-      dmS.selectedItemIndex = scaleIndex;
-      dmR.selectedItemIndex = getIndexByDimensions(w / scale, h / scale);
-    }
 
     const manager = new BaseSmartWidgetManager(node);
   },
