@@ -228,7 +228,7 @@ app.registerExtension({
 
           const t = new SmartText(centerX,centerY, node);
           t.text = value;
-
+          t.textColor = bColor.color;
           cp.onValueChange = (v) => {
             if (allow_debug) {
               console.log("value changed");
@@ -880,9 +880,9 @@ app.registerExtension({
     };
 
     node.onKeyDown = (e, pos, node) => {
-      if (allow_debug) {
-        console.log("e.code", e.code);
-      }
+      // if (allow_debug) {
+      //   console.log("e.code", e.code);
+      // }
       if (e.code === "Space") {
         isHoldingSpace = true;
         pa.blockPainting = true;
@@ -913,12 +913,10 @@ app.registerExtension({
 
     // COMMON CLICKS EVENTS
     app.canvas.canvas.onkeydown = (event) => {
+
       // if (allow_debug) {
-      //   console.log("key down", event);
+      //   console.log("app", app);
       // }
-      if (allow_debug) {
-        console.log("app", app);
-      }
       if (event.key === "Alt") {
         if (!isHoldingAlt) info.restart("Alt", 40);
         isHoldingAlt = true;
@@ -952,9 +950,7 @@ app.registerExtension({
       isHoldingShift = false;
       isHoldingAlt = false;
       isHoldingSpace = false;
-      if (allow_debug) {
-        console.log("key up");
-      }
+
       // if (allow_debug) {
       //   console.log("canvasImgs.length", canvasImgs.length);
       // }

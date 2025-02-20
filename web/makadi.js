@@ -1439,7 +1439,7 @@ export class SmartText extends BaseSmartWidget {
     ctx.save();
 
     // Calculate the scaled dimensions and offsets
-    if(allow_debug){console.log('SCALE is',scale);}
+    //if(allow_debug){console.log('SCALE is',scale);}
     const scaledWidth = width * scale;
     const scaledHeight = height * scale;
     const scaledX = (x - xOffset) * scale;
