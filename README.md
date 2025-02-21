@@ -86,7 +86,7 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 ![iTools KSampler](examples/Screenshot15.jpg)
 
 **# iTools Line Loader:**
-Will return a line from a multi line text at given index, help ypu make your own list of words or prompts and load them one by one or randomized.
+Will return a line from a multi line text at given index, help you make your own list of words or prompts and load them one by one or randomized.
 ![iTools Line Loader](examples/Screenshot9.jpg)
 
 **# iTools Text Replacer:** A text replacer tool that might also be useful
