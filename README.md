@@ -11,6 +11,8 @@ The iTools Paint node is currently in beta and functions as a standalone project
 
 [![Watch the video](https://github.com/user-attachments/assets/7961aba8-1cfb-4493-bcad-500ca49f0297)](https://github.com/user-attachments/assets/7961aba8-1cfb-4493-bcad-500ca49f0297)  
 
+[![Watch the video](https://github.com/user-attachments/assets/c0515b70-48a7-4b70-b3fa-080fb877cee5)](https://github.com/user-attachments/assets/c0515b70-48a7-4b70-b3fa-080fb877cee5)  
+
 ### **Features:**  
 - **`Load image key`** – Will load an image from your desk to the canvas.
 - **`Add text key`** - Will add custom text to the canvas.
