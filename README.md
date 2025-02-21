@@ -3,6 +3,28 @@ The iTools are some quality of life nodes, like read a possible prompt used to c
 
 ![iTools Welcome](examples/iTools_a.webp)
 ### Nodes:
+### **iTools Paint Node**  
+
+The iTools Paint node is currently in beta and functions as a standalone project. It may be the most complex node in ComfyUI, and future updates could break its functionality. However, I will strive to keep it working. All custom widget code was built from scratch specifically for ComfyUI and this node. It supports painting, compositing, remove background, text editing, and pasting images from the clipboard, making it the fastest mini Photoshop for ComfyUI.  
+
+[![Watch the video](https://github.com/user-attachments/assets/29781d9e-cf7e-49b1-9f7c-7c70684fdd9b)](https://github.com/user-attachments/assets/29781d9e-cf7e-49b1-9f7c-7c70684fdd9b)  
+
+### **Features:**  
+- **`Load image key`** – Will load an image from your desk to the canvas.
+- **`Add text key`** - Will add custom text to the canvas.
+- **`Paste image key`** - Will paste last copied image from the clipboard.
+### **UI buttons:**  
+- **`canvas key`** – Sets the canvas size.  
+- **`fill key`** – Fills the canvas with the selected color.  
+- **`clear key`** – Clears the currently selected layer.  
+- **`hold key`** – Saves the current state of the node (quick save).  
+- **`fetch key`** – Restores the saved state of the node (quick load).  
+
+### **Shortcuts:**  
+- **`Shift`** – Eyedropper tool for picking colors under the cursor while painting.  
+- **`Alt`** – Stamps an image onto the background or foreground layer.  
+- **`Alt`** (while the color picker is visible) – Swaps the position of the color palette.  
+
 **# iTools Image Loader Plus:** is an enhancement of the original ComfyUI ImageLoader node. It attempts to return the possible prompt used to create an image. If the prompt isn't found directly, this node will search for the prompt within the following supported nodes in the workflow:
 
   - `CLIPTextEncodeSDXL`
