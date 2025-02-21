@@ -286,8 +286,9 @@ class CropWidget {
   }
 
   handleDown(e) {
-    const { x, y } = this.mousePos;
+    if(!this.isMouseOnImage()) return;
 
+    const { x, y } = this.mousePos;
     // Swap startX/endX and startY/endY if necessary during drawing
     if (this.startX > this.endX) {
       [this.startX, this.endX] = [this.endX, this.startX];
@@ -396,7 +397,6 @@ class CropWidget {
     this.cropNewImage();
 
     // for python
-
     if (this.croppedImage.src === "data:;" || this.croppedImage.src.startsWith("data:,") || this.croppedImage.src.length < 50) {
         console.log("Image has small or empty data.");
         this.name = "crop";
@@ -421,6 +421,16 @@ class CropWidget {
     const cropH = Math.abs(this.endY - this.startY) - 2 * margin;
 
     return x >= cropX && x <= cropX + cropW && y >= cropY && y <= cropY + cropH;
+  }
+
+  isMouseOnImage(){
+    const { x, y } = this.mousePos;
+    return(
+        x >= this.imgOffsetX&&
+        x <= this.img.width&&
+        y >= this.imgOffsetY &&
+        y<= this.img.height
+    )
   }
 
   isMouseInResizeArea() {
