@@ -28,6 +28,9 @@ if allow_test_nodes:
         
         NODE_CLASS_MAPPINGS["iToolsFreeSchnell"] = IToolsFreeSchnell
         NODE_DISPLAY_NAME_MAPPINGS["iToolsFreeSchnell"] = "iTools Free Schnell (Beta)"
+        
+        NODE_CLASS_MAPPINGS["iToolsCropImage"] = IToolsCropImage
+        NODE_DISPLAY_NAME_MAPPINGS["iToolsCropImage"] = "iTools Crop Image"
 
     except ModuleNotFoundError as e:
         pass

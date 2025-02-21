@@ -1,5 +1,5 @@
 import base64
-from PIL import Image
+from PIL import Image, ImageSequence, ImageOps
 import io
 from ..backend.shared import pil2tensor, project_dir
 import os
@@ -7,7 +7,9 @@ from server import PromptServer
 from aiohttp import web
 import json
 import folder_paths
-
+import node_helpers
+import numpy as np
+import torch
 
 def install_package(package):
     import subprocess
@@ -174,6 +176,82 @@ class IToolsPaintNode:
         return pil2tensor(result)
 
     def IS_CHANGED(cls,):
+        return True
+
+class IToolsCropImage:
+    @classmethod
+    def INPUT_TYPES(s):
+        input_dir = folder_paths.get_input_directory()
+        files = [f for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f))]
+        return {"required":
+                    {"image": (sorted(files), {"image_upload": True})},
+                }
+
+    CATEGORY = "iTools"
+
+    RETURN_TYPES = ("IMAGE",) #"MASK", "STRING", "STRING")
+    RETURN_NAMES = ("image",) #"MASK", "possible prompt", "image name")
+    FUNCTION = "crop_image"
+    DESCRIPTION = ("Crop an Image.")
+
+    def crop_image(self, image):
+        image_path = folder_paths.get_annotated_filepath(image)
+        # filename = image.rsplit('.', 1)[0]  # get image name
+        img = node_helpers.pillow(Image.open, image_path)
+
+        output_images = []
+        output_masks = []
+        w, h = None, None
+
+        excluded_formats = ['MPO']
+
+        for i in ImageSequence.Iterator(img):
+            i = node_helpers.pillow(ImageOps.exif_transpose, i)
+
+            if i.mode == 'I':
+                i = i.point(lambda i: i * (1 / 255))
+            image = i.convert("RGB")
+
+            if len(output_images) == 0:
+                w = image.size[0]
+                h = image.size[1]
+
+            if image.size[0] != w or image.size[1] != h:
+                continue
+
+            image = np.array(image).astype(np.float32) / 255.0
+            image = torch.from_numpy(image)[None,]
+            if 'A' in i.getbands():
+                mask = np.array(i.getchannel('A')).astype(np.float32) / 255.0
+                mask = 1. - torch.from_numpy(mask)
+            else:
+                mask = torch.zeros((64, 64), dtype=torch.float32, device="cpu")
+            output_images.append(image)
+            output_masks.append(mask.unsqueeze(0))
+
+        if len(output_images) > 1 and img.format not in excluded_formats:
+            output_image = torch.cat(output_images, dim=0)
+            output_mask = torch.cat(output_masks, dim=0)
+        else:
+            output_image = output_images[0]
+            output_mask = output_masks[0]
+
+        
+        return (output_image,)
+
+    @classmethod
+    def IS_CHANGED(cls, image):
+        image_path = folder_paths.get_annotated_filepath(image)
+        m = hashlib.sha256()
+        with open(image_path, 'rb') as f:
+            m.update(f.read())
+        return m.digest().hex()
+
+    @classmethod
+    def VALIDATE_INPUTS(cls, image):
+        if not folder_paths.exists_annotated_filepath(image):
+            return "Invalid image file: {}".format(image)
+
         return True
 
 @PromptServer.instance.routes.post("/itools/request_save_paint")
