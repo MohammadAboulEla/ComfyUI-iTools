@@ -205,6 +205,26 @@ class CropWidget {
   handleDown(e) {
     const { x, y } = this.mousePos;
 
+    // Swap startX/endX and startY/endY if necessary during drawing
+    if (this.startX > this.endX) {
+      [this.startX, this.endX] = [this.endX, this.startX];
+    }
+    if (this.startY > this.endY) {
+      [this.startY, this.endY] = [this.endY, this.startY];
+    }
+
+    if (this.isMouseInCropArea()) {
+      const cropX = Math.min(this.startX, this.endX);
+      const cropY = Math.min(this.startY, this.endY);
+      const cropW = Math.abs(this.endX - this.startX);
+      const cropH = Math.abs(this.endY - this.startY);
+
+      this.dragging = true;
+      this.dragOffsetX = x - cropX;
+      this.dragOffsetY = y - cropY;
+      return;
+    }
+
     // Check if the mouse is over a resize handle
     if (this.isCroppingDone && this.getResizeHandle(x, y)) {
       this.resizing = this.getResizeHandle(x, y); // Start resizing
@@ -216,19 +236,21 @@ class CropWidget {
       this.endX = x; // Initialize endX and endY to the same values
       this.endY = y;
     }
-
-    // Swap startX/endX and startY/endY if necessary during drawing
-    if (this.startX > this.endX) {
-      [this.startX, this.endX] = [this.endX, this.startX];
-    }
-    if (this.startY > this.endY) {
-      [this.startY, this.endY] = [this.endY, this.startY];
-    }
   }
   handleMove(ctx) {
-    if (this.cropping || this.resizing) {
-      const { x, y } = this.mousePos;
+    const { x, y } = this.mousePos;
+    if (this.dragging) {
+      const cropW = this.endX - this.startX;
+      const cropH = this.endY - this.startY;
 
+      this.startX = Math.max(this.imgOffsetX, x - this.dragOffsetX);
+      this.startY = Math.max(this.imgOffsetY, y - this.dragOffsetY);
+      this.endX = this.startX + cropW;
+      this.endY = this.startY + cropH;
+      return;
+    }
+
+    if (this.cropping || this.resizing) {
       if (this.resizing) {
         // Resizing logic
         if (this.resizing === "top-left") {
@@ -287,10 +309,21 @@ class CropWidget {
     }
     // Reset resizing state
     this.resizing = null;
+    this.dragging = false;
   }
 
   isMouseDown() {
     return app.canvas.pointer.isDown;
+  }
+
+  isMouseInCropArea(margin = 5) {
+    const { x, y } = this.mousePos;
+    const cropX = Math.min(this.startX, this.endX) + margin;
+    const cropY = Math.min(this.startY, this.endY) + margin;
+    const cropW = Math.abs(this.endX - this.startX) - 2 * margin;
+    const cropH = Math.abs(this.endY - this.startY) - 2 * margin;
+
+    return x >= cropX && x <= cropX + cropW && y >= cropY && y <= cropY + cropH;
   }
 
   isMouseInResizeArea() {
