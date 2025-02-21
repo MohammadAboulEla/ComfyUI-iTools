@@ -61,10 +61,12 @@ class CropWidget {
 
     this.cropping = false;
     this.isCroppingDone = false;
+    this.drawCropPreview = true;
     this.startX = null;
     this.startY = null;
     this.endX = null;
     this.endY = null;
+
 
     this.resizing = null; // Track which handle is being resized
     this.resizeThreshold = 10; // Sensitivity for detecting resize handles
@@ -200,6 +202,73 @@ class CropWidget {
       ctx.strokeRect(cropX - handleSize / 2, cropY + cropH - handleSize / 2, handleSize, handleSize); // Bottom-left
       ctx.strokeRect(cropX + cropW - handleSize / 2, cropY + cropH - handleSize / 2, handleSize, handleSize); // Bottom-right
     }
+    if (this.drawCropPreview && !this.cropping) {
+      // Calculate the crop area dimensions
+      const cropWidth = Math.abs(this.endX - this.startX);
+      const cropHeight = Math.abs(this.endY - this.startY);
+
+      // Define a maximum size for the preview (e.g., 100x100 pixels)
+      const maxPreviewSize = 100;
+
+      // Calculate the aspect ratio of the crop area
+      const aspectRatio = cropWidth / cropHeight;
+
+      // Determine the preview dimensions while maintaining the aspect ratio
+      let croppedImageWidth, croppedImageHeight;
+      if (cropWidth > cropHeight) {
+        croppedImageWidth = maxPreviewSize;
+        croppedImageHeight = maxPreviewSize / aspectRatio;
+      } else {
+        croppedImageHeight = maxPreviewSize;
+        croppedImageWidth = maxPreviewSize * aspectRatio;
+      }
+
+      // Define the position for the cropped image in the left corner
+      const croppedImageX = this.x + 10; // 10 pixels from the left edge of the node
+      const croppedImageY = this.y + 10; // 10 pixels from the top edge of the node
+
+      try {
+        // Draw the cropped image
+        ctx.drawImage(this.croppedImage, croppedImageX, croppedImageY, croppedImageWidth, croppedImageHeight);
+      } catch (error) {}
+    }
+  }
+
+  cropNewImage() {
+    if (!this.img) return;
+
+    // Calculate the scale factors for the image
+    const scaleX = this.img.naturalWidth / this.width;
+    const scaleY = this.img.naturalHeight / this.height;
+
+    // Calculate the crop area in the original image coordinates
+    const cropX = (Math.min(this.startX, this.endX) - this.imgOffsetX) * scaleX;
+    const cropY = (Math.min(this.startY, this.endY) - this.imgOffsetY) * scaleY;
+    const cropWidth = Math.abs(this.endX - this.startX) * scaleX;
+    const cropHeight = Math.abs(this.endY - this.startY) * scaleY;
+
+    // Create a canvas to hold the cropped image
+    const canvas = document.createElement("canvas");
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
+    const ctx = canvas.getContext("2d");
+
+    // Draw the cropped portion of the image onto the canvas
+    ctx.drawImage(
+      this.img,
+      cropX,
+      cropY,
+      cropWidth,
+      cropHeight, // Source rectangle (cropped area)
+      0,
+      0,
+      cropWidth,
+      cropHeight // Destination rectangle (canvas)
+    );
+
+    // Create a new image from the canvas and store it
+    this.croppedImage = new Image();
+    this.croppedImage.src = canvas.toDataURL();
   }
 
   handleDown(e) {
@@ -310,6 +379,7 @@ class CropWidget {
     // Reset resizing state
     this.resizing = null;
     this.dragging = false;
+    this.cropNewImage();
   }
 
   isMouseDown() {
