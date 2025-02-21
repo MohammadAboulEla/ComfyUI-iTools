@@ -36,6 +36,7 @@ import {
 
 class CropWidget {
   constructor(node) {
+    this.value = null;
     this.x = 0;
     this.y = 80;
     this.yOffset = this.y + 30;
@@ -67,7 +68,6 @@ class CropWidget {
     this.endX = null;
     this.endY = null;
 
-
     this.resizing = null; // Track which handle is being resized
     this.resizeThreshold = 10; // Sensitivity for detecting resize handles
 
@@ -93,10 +93,24 @@ class CropWidget {
     }
   }
 
+  resetCroppingData(){
+    this.cropping = false;
+    this.isCroppingDone = false;
+    this.croppedImage = null
+    this.value = null
+    this.startX = null;
+    this.startY = null;
+    this.endX = null;
+    this.endY = null;
+    this.resizing = null;
+  }
+
   isImageChanged() {
+    //this.resetCroppingData();
     if (this.node.imgs[0] && this.lastLoadedImg.src !== this.node.imgs[0].src) {
       this.lastLoadedImg = this.node.imgs[0];
       this.img = this.node.imgs[0];
+      this.resetCroppingData();
       return true;
     } else {
       return false;
@@ -202,7 +216,7 @@ class CropWidget {
       ctx.strokeRect(cropX - handleSize / 2, cropY + cropH - handleSize / 2, handleSize, handleSize); // Bottom-left
       ctx.strokeRect(cropX + cropW - handleSize / 2, cropY + cropH - handleSize / 2, handleSize, handleSize); // Bottom-right
     }
-    if (this.drawCropPreview && !this.cropping) {
+    if (this.drawCropPreview && !this.cropping && !this.resizing) {
       // Calculate the crop area dimensions
       const cropWidth = Math.abs(this.endX - this.startX);
       const cropHeight = Math.abs(this.endY - this.startY);
@@ -380,6 +394,19 @@ class CropWidget {
     this.resizing = null;
     this.dragging = false;
     this.cropNewImage();
+
+    // for python
+
+    if (this.croppedImage.src === "data:;" || this.croppedImage.src.startsWith("data:,") || this.croppedImage.src.length < 50) {
+        console.log("Image has small or empty data.");
+        this.name = "crop";
+        this.value = null
+        this.isCroppingDone = false
+    }else{
+        this.name = "crop";
+        this.value = this.croppedImage.src;
+    }
+
   }
 
   isMouseDown() {
@@ -467,6 +494,14 @@ app.registerExtension({
     }
     const window = globalThis;
 
+    const onExecuted = nodeType.prototype.onExecuted;
+    nodeType.prototype.onExecuted = function (message) {
+      onExecuted?.apply(this, arguments);
+      if (allow_debug) {
+        console.log("executed");
+      }
+    };
+
     // if (allow_debug) {
     //   console.log("window", window);
     //   console.log("nodeType", nodeType);
@@ -490,5 +525,8 @@ app.registerExtension({
     if (allow_debug) {
       console.log("node", node);
     }
+
+    const x = 10;
+    // const y = 50
   },
 });
