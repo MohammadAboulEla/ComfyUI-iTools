@@ -35,8 +35,8 @@ import {
 } from "./makadi.js";
 
 class CropWidget {
-  constructor(node) {
-    this.value = null;
+  constructor(node, value) {
+    this.value = value;
     this.x = 0;
     this.y = 80;
     this.yOffset = this.y + 30;
@@ -62,7 +62,7 @@ class CropWidget {
 
     this.cropping = false;
     this.isCroppingDone = false;
-    this.drawCropPreview = true;
+    this.drawCropPreview = false;
     this.startX = null;
     this.startY = null;
     this.endX = null;
@@ -73,9 +73,45 @@ class CropWidget {
 
     this.adjustNewImageSize();
 
-    // Add self to the node
-    node.addCustomWidget(this);
+    if (this.value.data) {
+      if (allow_debug) {
+        console.log("has value");
+      }
+      this.loadCropData();
+      this.cropNewImage();
+      this.saveCropData();
+    } else {
+      if (allow_debug) {
+        console.log("does not has value");
+      }
+    }
+
     this.init();
+  }
+
+  init() {
+    // app.canvas.onMouseDown = (e) => this.handleDown(e);
+    // app.canvas.onDrawForeground = (ctx) => this.handleMove(ctx);
+    // app.canvas.canvas.onclick = (e) => this.handleClick(e);
+    this.node.onMouseDown = (e) => this.handleDown(e);
+    this.node.onMouseUp = (e) => this.handleClick(e);
+    this.node.onMouseMove = (e) => this.handleMove(e);
+  }
+
+  loadCropData() {
+    this.startX = this.value.startX;
+    this.startY = this.value.startY;
+    this.endX = this.value.endX;
+    this.endY = this.value.endY;
+    this.isCroppingDone = true;
+    this.node.setDirtyCanvas(true, true);
+  }
+
+  saveCropData() {
+    this.value.startX = this.startX;
+    this.value.startY = this.startY;
+    this.value.endX = this.endX;
+    this.value.endY = this.endY;
   }
 
   autoPinNode() {
@@ -93,11 +129,12 @@ class CropWidget {
     }
   }
 
-  resetCroppingData(){
+  resetCroppingData() {
     this.cropping = false;
     this.isCroppingDone = false;
-    this.croppedImage = null
-    this.value = null
+    this.croppedImage = null;
+    this.value = {};
+    this.value.data = null;
     this.startX = null;
     this.startY = null;
     this.endX = null;
@@ -167,11 +204,7 @@ class CropWidget {
     this.imgOffsetY = this.y + (this.nodeSize - this.height) / 2;
   }
 
-  init() {
-    this.node.onMouseDown = (e) => this.handleDown(e);
-    app.canvas.onDrawForeground = (ctx) => this.handleMove(ctx);
-    app.canvas.canvas.onclick = (e) => this.handleClick(e);
-  }
+
 
   draw(ctx) {
     if (!this.isVisible) return;
@@ -216,7 +249,7 @@ class CropWidget {
       ctx.strokeRect(cropX - handleSize / 2, cropY + cropH - handleSize / 2, handleSize, handleSize); // Bottom-left
       ctx.strokeRect(cropX + cropW - handleSize / 2, cropY + cropH - handleSize / 2, handleSize, handleSize); // Bottom-right
     }
-    if (this.drawCropPreview && !this.cropping && !this.resizing) {
+    if (this.croppedImage && this.drawCropPreview && !this.cropping && !this.resizing) {
       // Calculate the crop area dimensions
       const cropWidth = Math.abs(this.endX - this.startX);
       const cropHeight = Math.abs(this.endY - this.startY);
@@ -283,10 +316,35 @@ class CropWidget {
     // Create a new image from the canvas and store it
     this.croppedImage = new Image();
     this.croppedImage.src = canvas.toDataURL();
+
+    // for python
+    if (this.croppedImage) {
+      if (
+        this.croppedImage.src === "data:;" ||
+        this.croppedImage.src.startsWith("data:,") ||
+        this.croppedImage.src.length < 50
+      ) {
+        // console.log("Image has small or empty data.");
+        this.name = "crop";
+        this.value.data = null;
+        this.isCroppingDone = false;
+      } else {
+        this.name = "crop";
+        this.value.data = this.croppedImage.src;
+      }
+    }
   }
 
   handleDown(e) {
-    if(!this.isMouseOnImage()) return;
+    if (this.isMouseOnImage()) {
+      if (allow_debug) {
+        console.log("mouse in");
+      }
+    } else {
+      if (allow_debug) {
+        console.log("mouse out");
+      }
+    }
 
     const { x, y } = this.mousePos;
     // Swap startX/endX and startY/endY if necessary during drawing
@@ -302,7 +360,9 @@ class CropWidget {
       const cropY = Math.min(this.startY, this.endY);
       const cropW = Math.abs(this.endX - this.startX);
       const cropH = Math.abs(this.endY - this.startY);
-
+      if (allow_debug) {
+        console.log("mouse in crop area");
+      }
       this.dragging = true;
       this.dragOffsetX = x - cropX;
       this.dragOffsetY = y - cropY;
@@ -312,16 +372,17 @@ class CropWidget {
     // Check if the mouse is over a resize handle
     if (this.isCroppingDone && this.getResizeHandle(x, y)) {
       this.resizing = this.getResizeHandle(x, y); // Start resizing
-    } else if (!this.cropping) {
+    } else if (!this.cropping && this.isMouseOnImage()) {
       this.cropping = true;
-      this.isCroppingDone = false; // Reset cropping state
+      this.isCroppingDone = false;
       this.startX = x;
       this.startY = y;
-      this.endX = x; // Initialize endX and endY to the same values
+      this.endX = x;
       this.endY = y;
     }
   }
   handleMove(ctx) {
+    this.autoPinNode();
     const { x, y } = this.mousePos;
     if (this.dragging) {
       const cropW = this.endX - this.startX;
@@ -387,25 +448,16 @@ class CropWidget {
     }
   }
   handleClick(e) {
-    if (this.cropping && this.startX !== null && this.endX !== null) {
-      this.cropping = false;
+    if (this.startX !== null && this.endX !== null) {
       this.isCroppingDone = true;
+      this.saveCropData();
+      this.cropNewImage();
     }
+
     // Reset resizing state
+    this.cropping = false;
     this.resizing = null;
     this.dragging = false;
-    this.cropNewImage();
-
-    // for python
-    if (this.croppedImage.src === "data:;" || this.croppedImage.src.startsWith("data:,") || this.croppedImage.src.length < 50) {
-        console.log("Image has small or empty data.");
-        this.name = "crop";
-        this.value = null
-        this.isCroppingDone = false
-    }else{
-        this.name = "crop";
-        this.value = this.croppedImage.src;
-    }
 
   }
 
@@ -423,14 +475,14 @@ class CropWidget {
     return x >= cropX && x <= cropX + cropW && y >= cropY && y <= cropY + cropH;
   }
 
-  isMouseOnImage(){
+  isMouseOnImage() {
     const { x, y } = this.mousePos;
-    return(
-        x >= this.imgOffsetX&&
-        x <= this.img.width&&
-        y >= this.imgOffsetY &&
-        y<= this.img.height
-    )
+    return (
+      x >= this.imgOffsetX &&
+      x <= this.imgOffsetX + this.width &&
+      y >= this.imgOffsetY &&
+      y <= this.imgOffsetY + this.height
+    );
   }
 
   isMouseInResizeArea() {
@@ -502,22 +554,6 @@ app.registerExtension({
     if (nodeData.name !== "iToolsCropImage") {
       return;
     }
-    const window = globalThis;
-
-    const onExecuted = nodeType.prototype.onExecuted;
-    nodeType.prototype.onExecuted = function (message) {
-      onExecuted?.apply(this, arguments);
-      if (allow_debug) {
-        console.log("executed");
-      }
-    };
-
-    // if (allow_debug) {
-    //   console.log("window", window);
-    //   console.log("nodeType", nodeType);
-    //   console.log("nodeData", nodeData);
-    //   console.log("app", app);
-    // }
   },
 
   async nodeCreated(node) {
@@ -525,18 +561,28 @@ app.registerExtension({
       return;
     }
 
-    while (node.graph === null) {
+    while (!node.graph) {
       if (allow_debug) console.log("loading ...");
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
+    let value = {};
+    value.data = null;
+    if (allow_debug) {
+      console.log("node.widgets_values", node.widgets_values);
+    }
+    if (node.widgets_values && node.widgets_values[2] && node.widgets_values[2].data !== null) {
+      value = node.widgets_values[2];
+    }
+
     //START POINT
-    const cropPreview = new CropWidget(node);
+    const cropPreview = new CropWidget(node, value);
+    // Add self to the node
+    node.addCustomWidget(cropPreview);
     if (allow_debug) {
       console.log("node", node);
     }
 
     const x = 10;
-    // const y = 50
   },
 });

@@ -205,7 +205,8 @@ class IToolsCropImage:
     def crop_image(self, image, **kwargs):
         for key, value in kwargs.items():
             if key == "crop" and value is not None:
-                cropped_img = base64_to_pil(value)
+                print(f"key:{key} value:{value}")
+                cropped_img = base64_to_pil(value["data"])
         
         image_path = folder_paths.get_annotated_filepath(image)
         # filename = image.rsplit('.', 1)[0]  # get image name

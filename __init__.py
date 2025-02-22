@@ -30,7 +30,7 @@ if allow_test_nodes:
         NODE_DISPLAY_NAME_MAPPINGS["iToolsFreeSchnell"] = "iTools Free Schnell (Beta)"
         
         NODE_CLASS_MAPPINGS["iToolsCropImage"] = IToolsCropImage
-        NODE_DISPLAY_NAME_MAPPINGS["iToolsCropImage"] = "iTools Crop Image"
+        NODE_DISPLAY_NAME_MAPPINGS["iToolsCropImage"] = "iTools Crop Image (Beta)"
 
     except ModuleNotFoundError as e:
         pass
