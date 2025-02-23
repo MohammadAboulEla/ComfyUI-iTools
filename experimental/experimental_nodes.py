@@ -10,6 +10,7 @@ import folder_paths
 import node_helpers
 import numpy as np
 import torch
+import hashlib
 
 def install_package(package):
     import subprocess
@@ -188,10 +189,15 @@ class IToolsPaintNode:
 class IToolsCropImage:
     @classmethod
     def INPUT_TYPES(s):
+        ratios = ["free","1:1", "2:3", "3:4", "4:5", "9:16", "9:21",  
+                                "3:2", "4:3","5:4", "16:9", "21:9"]
         input_dir = folder_paths.get_input_directory()
         files = [f for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f))]
         return {"required":
-                    {"image": (sorted(files), {"image_upload": True})},
+                    {"ratio": (ratios, {"default": "free"}),
+                        "image": (sorted(files), {"image_upload": True}),
+                     
+                     },
                     "optional": FlexibleOptionalInputType(any_type),
                 }
 
@@ -201,11 +207,11 @@ class IToolsCropImage:
     RETURN_NAMES = ("image",) #"MASK", "possible prompt", "image name")
     FUNCTION = "crop_image"
     DESCRIPTION = ("Crop an Image.")
-
+    OUTPUT_NODE = True
     def crop_image(self, image, **kwargs):
         for key, value in kwargs.items():
             if key == "crop" and value is not None:
-                print(f"key:{key} value:{value}")
+                # print(f"key:{key} value:{value}")
                 cropped_img = base64_to_pil(value["data"])
         
         image_path = folder_paths.get_annotated_filepath(image)
