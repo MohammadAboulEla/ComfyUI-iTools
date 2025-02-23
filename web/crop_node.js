@@ -13,26 +13,7 @@ import {
   fakeMouseDown,
   getIndexByDimensions,
 } from "./utils.js";
-import {
-  BaseSmartWidgetManager,
-  SmartButton,
-  SmartWidget,
-  SmartSlider,
-  SmartLabel,
-  SmartSwitch,
-  SmartCheckBox,
-  SmartPaintArea,
-  SmartPreview,
-  SmartColorPicker,
-  SmartDropdownMenu,
-  TextObject,
-  AdvancedLabel,
-  SmartInfo,
-  SmartImage,
-  CanvasButtonManager,
-  SmartLoading,
-  SmartText,
-} from "./makadi.js";
+import { SmartInfo } from "./makadi.js";
 
 class CropWidget {
   constructor(node, value) {
@@ -90,12 +71,13 @@ class CropWidget {
   }
 
   init() {
+    // better to be handled from out side the node
     // app.canvas.onMouseDown = (e) => this.handleDown(e);
     // app.canvas.onDrawForeground = (ctx) => this.handleMove(ctx);
     // app.canvas.canvas.onclick = (e) => this.handleClick(e);
-    this.node.onMouseDown = (e) => this.handleDown(e);
-    this.node.onMouseUp = (e) => this.handleClick(e);
-    this.node.onMouseMove = (e) => this.handleMove(e);
+    // this.node.onMouseDown = (e) => this.handleDown(e);
+    // this.node.onMouseUp = (e) => this.handleClick(e);
+    // this.node.onMouseMove = (e) => this.handleMove(e);
   }
 
   loadCropData() {
@@ -203,8 +185,6 @@ class CropWidget {
     this.imgOffsetX = (this.node.width - this.width) / 2;
     this.imgOffsetY = this.y + (this.nodeSize - this.height) / 2;
   }
-
-
 
   draw(ctx) {
     if (!this.isVisible) return;
@@ -397,6 +377,7 @@ class CropWidget {
 
     if (this.cropping || this.resizing) {
       if (this.resizing) {
+        this.showInfo();
         // Resizing logic
         if (this.resizing === "top-left") {
           this.startX = Math.max(this.imgOffsetX, x); // Limit to image bounds
@@ -458,11 +439,23 @@ class CropWidget {
     this.cropping = false;
     this.resizing = null;
     this.dragging = false;
-
   }
 
   isMouseDown() {
     return app.canvas.pointer.isDown;
+  }
+
+  showInfo() {
+    // Calculate the scale factors for the image
+    const scaleX = this.img.naturalWidth / this.width;
+    const scaleY = this.img.naturalHeight / this.height;
+
+    // Calculate the crop area in the original image coordinates
+    const cropWidth = Math.round(Math.abs(this.endX - this.startX) * scaleX);
+    const cropHeight = Math.round(Math.abs(this.endY - this.startY) * scaleY);
+
+    const info = new SmartInfo(this.nodeSize / 2 - 40, 85, 80, 15, this.node, "");
+    info.restart(`${cropWidth} x ${cropHeight}`)
   }
 
   isMouseInCropArea(margin = 5) {
@@ -561,7 +554,14 @@ app.registerExtension({
       return;
     }
 
+    // wait for init
+    const timeout = 3000; // 3 seconds
+    const startTime = Date.now();
     while (!node.graph) {
+      if (Date.now() - startTime > timeout) {
+        if (allow_debug) console.error("Timeout: Failed to load graph.");
+        break;
+      }
       if (allow_debug) console.log("loading ...");
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
@@ -577,12 +577,36 @@ app.registerExtension({
 
     //START POINT
     const cropPreview = new CropWidget(node, value);
-    // Add self to the node
     node.addCustomWidget(cropPreview);
-    if (allow_debug) {
-      console.log("node", node);
-    }
 
-    const x = 10;
+    node.clone = () => {
+      console.warn("Cloning is disabled for this node.");
+      return null;
+    };
+
+    app.canvas.onMouseDown = (e) => {
+      const nodes = app.graph.nodes;
+      nodes.forEach((n) => {
+        if (n.type === "iToolsCropImage") {
+          n.widgets[2]?.handleDown?.(e);
+        }
+      });
+    };
+    app.canvas.onDrawForeground = (ctx) => {
+      const nodes = app.graph.nodes;
+      nodes.forEach((n) => {
+        if (n.type === "iToolsCropImage") {
+          n.widgets[2]?.handleMove?.(ctx);
+        }
+      });
+    };
+    app.canvas.canvas.onclick = (e) => {
+      const nodes = app.graph.nodes;
+      nodes.forEach((n) => {
+        if (n.type === "iToolsCropImage") {
+          n.widgets[2]?.handleClick?.(e);
+        }
+      });
+    };
   },
 });
