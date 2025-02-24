@@ -79,7 +79,6 @@ export class LiteInfo extends BaseSmartWidget {
 
     // add self to the node
     //node.addCustomWidget(this);
-
   }
 
   handleDown() {}
@@ -144,11 +143,7 @@ export class LiteInfo extends BaseSmartWidget {
 class CropWidget {
   constructor(node) {
     this.node = node;
-    this.value = {}
-    if(node.widgets_values && node.widgets_values[3]){
-      this.value = node.widgets_values[3];
-    }
-
+    this.value = {};
     this.x = 0;
     this.y = 80 + 17;
     this.yOffset = this.y + 30;
@@ -171,9 +166,9 @@ class CropWidget {
     node.setSize([this.nodeSize, this.nodeSize + this.y]);
     node.resizable = false;
     this.resizeRatio = null;
-    
-    this.info = new LiteInfo(this.nodeSize/2-40,80+17+5,80,15,node,"")
-    
+
+    this.info = new LiteInfo(this.nodeSize / 2 - 40, 80 + 17 + 5, 80, 15, node, "");
+
     this.cropping = false;
     this.isCroppingDone = false;
     this.drawCropPreview = false;
@@ -187,6 +182,7 @@ class CropWidget {
 
     if (node.widgets_values && node.widgets_values[3]) {
       if (allow_debug) console.log("node has crop data value");
+      this.value = node.widgets_values[3];
       this.node.properties.value = node.widgets_values[3];
     } else {
       if (allow_debug) console.log("node does not has crop data value");
@@ -216,12 +212,13 @@ class CropWidget {
       while (this.img !== this.node.imgs[0]) {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
-        this.cropNewImage();
+      this.cropNewImage();
     };
 
     this.node.onMouseUp = (e) => {
-      this.hideInfo()
+      this.hideInfo();
     };
+    this.node.onMouseLeave = (e) => {};
   }
 
   loadCropData() {
@@ -283,7 +280,7 @@ class CropWidget {
     const cropY = Math.min(this.startY, this.endY);
     const cropW = Math.abs(this.endX - this.startX);
     const cropH = Math.abs(this.endY - this.startY);
-  
+
     // Check corners
     if (x >= cropX - handleSize && x <= cropX + handleSize && y >= cropY - handleSize && y <= cropY + handleSize) {
       return "top-left";
@@ -312,7 +309,7 @@ class CropWidget {
     ) {
       return "bottom-right";
     }
-  
+
     // Only check midpoints if the ratio is set to "free"
     if (this.resizeRatio === null) {
       if (
@@ -348,7 +345,7 @@ class CropWidget {
         return "right-mid";
       }
     }
-  
+
     return null;
   }
 
@@ -382,18 +379,18 @@ class CropWidget {
 
   draw(ctx) {
     if (!this.isVisible) return;
-    
+
     // Clear original image
     ctx.clearRect(this.x, this.y, this.node.width, this.node.height - this.yOffset);
-  
+
     // Fill with background color
     ctx.fillStyle = this.node.bgcolor;
     ctx.fillRect(this.x, this.y, this.node.width, this.node.height - this.yOffset);
-  
+
     // Draw loaded image
     this.adjustNewImageSize();
     ctx.drawImage(this.img, this.imgOffsetX, this.imgOffsetY, this.width, this.height);
-  
+
     // Draw crop rect fill area
     if (this.cropping || this.isCroppingDone) {
       // Calculate the crop area boundaries
@@ -401,28 +398,28 @@ class CropWidget {
       const cropY = Math.min(this.startY, this.endY);
       const cropW = Math.abs(this.endX - this.startX);
       const cropH = Math.abs(this.endY - this.startY);
-  
+
       ctx.fillStyle = this.cropFillColor;
       ctx.fillRect(cropX, cropY, cropW, cropH);
-  
+
       // Draw a dashed outline around the crop rect
       ctx.strokeStyle = "#333";
       ctx.lineWidth = 1.5;
       ctx.setLineDash([5, 5]);
       ctx.strokeRect(cropX, cropY, cropW, cropH);
-  
+
       // Draw handles at corners and midpoints
       const handleSize = 10;
       ctx.strokeStyle = "#333";
       ctx.lineWidth = 1.5;
       ctx.setLineDash([]); // Reset dash pattern for solid lines
-  
+
       // Corner handles
       ctx.strokeRect(cropX - handleSize / 2, cropY - handleSize / 2, handleSize, handleSize); // Top-left
       ctx.strokeRect(cropX + cropW - handleSize / 2, cropY - handleSize / 2, handleSize, handleSize); // Top-right
       ctx.strokeRect(cropX - handleSize / 2, cropY + cropH - handleSize / 2, handleSize, handleSize); // Bottom-left
       ctx.strokeRect(cropX + cropW - handleSize / 2, cropY + cropH - handleSize / 2, handleSize, handleSize); // Bottom-right
-  
+
       // Only draw midpoint handles if the ratio is set to "free"
       if (this.resizeRatio === null) {
         ctx.strokeRect(cropX + cropW / 2 - handleSize / 2, cropY - handleSize / 2, handleSize, handleSize); // Top-mid
@@ -431,18 +428,18 @@ class CropWidget {
         ctx.strokeRect(cropX + cropW - handleSize / 2, cropY + cropH / 2 - handleSize / 2, handleSize, handleSize); // Right-mid
       }
     }
-  
+
     if (this.croppedImage && this.drawCropPreview && !this.cropping && !this.resizing) {
       // Calculate the crop area dimensions
       const cropWidth = Math.abs(this.endX - this.startX);
       const cropHeight = Math.abs(this.endY - this.startY);
-  
+
       // Define a maximum size for the preview (e.g., 100x100 pixels)
       const maxPreviewSize = 100;
-  
+
       // Calculate the aspect ratio of the crop area
       const aspectRatio = cropWidth / cropHeight;
-  
+
       // Determine the preview dimensions while maintaining the aspect ratio
       let croppedImageWidth, croppedImageHeight;
       if (cropWidth > cropHeight) {
@@ -452,17 +449,17 @@ class CropWidget {
         croppedImageHeight = maxPreviewSize;
         croppedImageWidth = maxPreviewSize * aspectRatio;
       }
-  
+
       // Define the position for the cropped image in the left corner
       const croppedImageX = this.x + 10; // 10 pixels from the left edge of the node
       const croppedImageY = this.y + 10; // 10 pixels from the top edge of the node
-  
+
       try {
         // Draw the cropped image
         ctx.drawImage(this.croppedImage, croppedImageX, croppedImageY, croppedImageWidth, croppedImageHeight);
       } catch (error) {}
     }
-    this.info.draw(ctx)
+    this.info.draw(ctx);
   }
 
   cropNewImage() {
@@ -483,6 +480,10 @@ class CropWidget {
     canvas.width = cropWidth;
     canvas.height = cropHeight;
     const ctx = canvas.getContext("2d");
+
+    // Cash values
+    this.cropWidth = cropWidth;
+    this.cropHeight = cropHeight;
 
     // Draw the cropped portion of the image onto the canvas
     ctx.drawImage(
@@ -517,6 +518,7 @@ class CropWidget {
         this.value.data = this.croppedImage.src;
       }
     }
+    if (allow_debug) console.log("cropped image");
   }
 
   handleDown(e) {
@@ -566,11 +568,11 @@ class CropWidget {
   handleMove(ctx) {
     this.autoPinNode();
     const { x, y } = this.mousePos;
-  
+
     if (this.cropping || this.resizing) {
       if (this.resizing) {
         let newWidth, newHeight;
-  
+
         if (this.resizeRatio) {
           // Determine new dimensions based on mouse movement
           if (this.resizing.includes("left") || this.resizing.includes("right")) {
@@ -580,11 +582,11 @@ class CropWidget {
             newHeight = Math.abs(this.resizing.includes("top") ? this.endY - y : y - this.startY);
             newWidth = newHeight * this.resizeRatio;
           }
-  
+
           // Round dimensions to whole pixels
           newWidth = Math.round(newWidth);
           newHeight = Math.round(newHeight);
-  
+
           // Adjust based on specific handle boundaries so the crop stays inside the image
           if (this.resizing === "top-left") {
             if (this.endX - newWidth < this.imgOffsetX) {
@@ -655,7 +657,7 @@ class CropWidget {
               newHeight = Math.round(newWidth / this.resizeRatio);
             }
           }
-  
+
           // Apply the new dimensions for the resizing handle
           switch (this.resizing) {
             case "top-left":
@@ -715,47 +717,46 @@ class CropWidget {
             this.endX = Math.round(Math.min(this.imgOffsetX + this.width, x));
           }
         }
-        this.showInfo()
+        this.showInfo();
       } else {
         // Regular cropping mode: clamp x,y to image boundaries and round values
         this.endX = Math.round(Math.max(this.imgOffsetX, Math.min(this.imgOffsetX + this.width, x)));
         this.endY = Math.round(Math.max(this.imgOffsetY, Math.min(this.imgOffsetY + this.height, y)));
       }
     }
-  
+
     if (this.dragging) {
       const cropW = Math.round(Math.abs(this.endX - this.startX));
       const cropH = Math.round(Math.abs(this.endY - this.startY));
-  
+
       let newStartX = Math.round(Math.max(this.imgOffsetX, x - this.dragOffsetX));
       let newStartY = Math.round(Math.max(this.imgOffsetY, y - this.dragOffsetY));
-  
+
       // Clamp to ensure the crop box stays within image boundaries
       newStartX = Math.round(Math.min(newStartX, this.imgOffsetX + this.width - cropW));
       newStartY = Math.round(Math.min(newStartY, this.imgOffsetY + this.height - cropH));
-  
+
       this.startX = newStartX;
       this.startY = newStartY;
       this.endX = this.startX + cropW;
       this.endY = this.startY + cropH;
-      this.showInfo()
-      return;
+      this.showInfo();
     }
   }
 
   handleClick(e) {
-    if (allow_debug) console.log("this.node.widgets", this.node.widgets);
+    if (this.isMouseOnImage()) {
+      if (this.startX && this.endX && this.startY && this.endY) {
+        this.isCroppingDone = true;
+        this.cropNewImage();
+        this.saveCropData();
+      }
 
-    if (this.startX && this.endX && this.startY && this.endY) {
-      this.isCroppingDone = true;
-      this.saveCropData();
-      this.cropNewImage();
+      // Reset resizing state
+      this.cropping = false;
+      this.resizing = null;
+      this.dragging = false;
     }
-
-    // Reset resizing state
-    this.cropping = false;
-    this.resizing = null;
-    this.dragging = false;
   }
 
   isMouseDown() {
@@ -763,7 +764,7 @@ class CropWidget {
   }
 
   showInfo() {
-    this.info.isVisible = true
+    this.info.isVisible = true;
 
     // Calculate the scale factors for the image
     const scaleX = this.img.naturalWidth / this.width;
@@ -772,18 +773,15 @@ class CropWidget {
     // Calculate the crop area in the original image coordinates
     const cropWidth = Math.round(Math.abs(this.endX - this.startX) * scaleX);
     const cropHeight = Math.round(Math.abs(this.endY - this.startY) * scaleY);
-    
-    this.info.text = `${cropWidth} x ${cropHeight}`
-    
-    // if (allow_debug) console.log(`${cropWidth} x ${cropHeight}`);
+
+    this.info.text = `${cropWidth} x ${cropHeight}`;
   }
 
-  hideInfo(){
-    this.info.isVisible = true
+  hideInfo() {
+    this.info.isVisible = true;
     setTimeout(() => {
-      this.info.isVisible = false
+      this.info.isVisible = false;
     }, 2000);
-    
   }
 
   isMouseInCropArea(margin = 5) {
