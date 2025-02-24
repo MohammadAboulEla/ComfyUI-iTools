@@ -13,7 +13,7 @@ import {
   fakeMouseDown,
   getIndexByDimensions,
 } from "./utils.js";
-import { SmartInfo } from "./makadi.js";
+import { BaseSmartWidget, SmartInfo } from "./makadi.js";
 
 function fakeGraphClick(graph, x, y) {
   const canvas = graph.canvas;
@@ -38,11 +38,114 @@ function fakeGraphClick(graph, x, y) {
   }, 50);
 }
 
+export class LiteInfo extends BaseSmartWidget {
+  constructor(x, y, width, height, node, text, options = {}) {
+    super(node);
+
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+
+    this.originalWidth = width;
+    this.originalHeight = height;
+    this.originalY = y;
+
+    this.radius = width / 2;
+    this._shape = Shapes.ROUND;
+
+    this.color = LiteGraph.WIDGET_BGCOLOR || "crimson";
+
+    this.outline = true;
+    this.outlineColor = "#434343";
+    this.outlineWidth = 0.8;
+
+    this.text = text;
+    this.textWidth = null;
+    this.textColor = LiteGraph.WIDGET_SECONDARY_TEXT_COLOR || "white";
+    this.textYoffset = 0.7;
+    this.textXoffset = 0.0;
+    this.textAlign = "center";
+    this.textBaseline = "middle";
+    this.font = "14px Arial Bold";
+
+    this.previewDuration = 2000;
+    this.isVisible = false;
+
+    // Apply options if provided
+    Object.assign(this, options);
+    this.originalColor = this.color; // Store original color
+    this.originalTextColor = this.textColor;
+
+    // add self to the node
+    //node.addCustomWidget(this);
+
+  }
+
+  handleDown() {}
+
+  handleClick() {}
+
+  handleMove() {}
+
+  draw(ctx) {
+    if (!this.isVisible || !this.text) return;
+
+    // Draw rounded rectangle
+    if (this.shape === Shapes.ROUND) {
+      const radius = Math.min(this.width, this.height) / 5; // Adjust rounding level
+      ctx.beginPath();
+      ctx.moveTo(this.x + radius, this.y);
+      ctx.lineTo(this.x + this.width - radius, this.y);
+      ctx.arcTo(this.x + this.width, this.y, this.x + this.width, this.y + radius, radius);
+      ctx.lineTo(this.x + this.width, this.y + this.height - radius);
+      ctx.arcTo(this.x + this.width, this.y + this.height, this.x + this.width - radius, this.y + this.height, radius);
+      ctx.lineTo(this.x + radius, this.y + this.height);
+      ctx.arcTo(this.x, this.y + this.height, this.x, this.y + this.height - radius, radius);
+      ctx.lineTo(this.x, this.y + radius);
+      ctx.arcTo(this.x, this.y, this.x + radius, this.y, radius);
+      ctx.closePath();
+
+      ctx.fillStyle = this.color;
+      ctx.fill();
+
+      // Draw outline if enabled
+      if (this.outline) {
+        ctx.strokeStyle = this.outlineColor;
+        ctx.lineWidth = this.outlineWidth;
+        ctx.stroke();
+      }
+    }
+
+    // Draw text
+    if (this.text) {
+      ctx.fillStyle = this.textColor;
+      ctx.font = this.font;
+      ctx.textAlign = this.textAlign;
+      ctx.textBaseline = this.textBaseline;
+      ctx.fillText(this.text, this.x + this.width / 2 + this.textXoffset, this.y + this.height / 2 + this.textYoffset);
+    }
+  }
+
+  updateText(newText) {
+    this.text = newText;
+  }
+
+  set shape(value) {
+    this._shape = value;
+    if (value === Shapes.CIRCLE) this.height = this.width;
+  }
+
+  get shape() {
+    return this._shape;
+  }
+}
+
 class CropWidget {
   constructor(node) {
     this.node = node;
     this.value = node.widgets_values[3] ?? {};
-
+    
     this.x = 0;
     this.y = 80 + 17;
     this.yOffset = this.y + 30;
@@ -65,7 +168,9 @@ class CropWidget {
     node.setSize([this.nodeSize, this.nodeSize + this.y]);
     node.resizable = false;
     this.resizeRatio = null;
-
+    
+    this.info = new LiteInfo(this.nodeSize/2-40,80+17+5,80,15,node,"")
+    
     this.cropping = false;
     this.isCroppingDone = false;
     this.drawCropPreview = false;
@@ -109,6 +214,10 @@ class CropWidget {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
         this.cropNewImage();
+    };
+
+    this.node.onMouseUp = (e) => {
+      this.hideInfo()
     };
   }
 
@@ -270,7 +379,7 @@ class CropWidget {
 
   draw(ctx) {
     if (!this.isVisible) return;
-  
+    
     // Clear original image
     ctx.clearRect(this.x, this.y, this.node.width, this.node.height - this.yOffset);
   
@@ -350,6 +459,7 @@ class CropWidget {
         ctx.drawImage(this.croppedImage, croppedImageX, croppedImageY, croppedImageWidth, croppedImageHeight);
       } catch (error) {}
     }
+    this.info.draw(ctx)
   }
 
   cropNewImage() {
@@ -453,11 +563,11 @@ class CropWidget {
   handleMove(ctx) {
     this.autoPinNode();
     const { x, y } = this.mousePos;
-
+  
     if (this.cropping || this.resizing) {
       if (this.resizing) {
         let newWidth, newHeight;
-
+  
         if (this.resizeRatio) {
           // Determine new dimensions based on mouse movement
           if (this.resizing.includes("left") || this.resizing.includes("right")) {
@@ -467,165 +577,171 @@ class CropWidget {
             newHeight = Math.abs(this.resizing.includes("top") ? this.endY - y : y - this.startY);
             newWidth = newHeight * this.resizeRatio;
           }
-
+  
+          // Round dimensions to whole pixels
+          newWidth = Math.round(newWidth);
+          newHeight = Math.round(newHeight);
+  
           // Adjust based on specific handle boundaries so the crop stays inside the image
           if (this.resizing === "top-left") {
             if (this.endX - newWidth < this.imgOffsetX) {
-              newWidth = this.endX - this.imgOffsetX;
-              newHeight = newWidth / this.resizeRatio;
+              newWidth = Math.round(this.endX - this.imgOffsetX);
+              newHeight = Math.round(newWidth / this.resizeRatio);
             }
             if (this.endY - newHeight < this.imgOffsetY) {
-              newHeight = this.endY - this.imgOffsetY;
-              newWidth = newHeight * this.resizeRatio;
+              newHeight = Math.round(this.endY - this.imgOffsetY);
+              newWidth = Math.round(newHeight * this.resizeRatio);
             }
           } else if (this.resizing === "top-right") {
             if (this.startX + newWidth > this.imgOffsetX + this.width) {
-              newWidth = this.imgOffsetX + this.width - this.startX;
-              newHeight = newWidth / this.resizeRatio;
+              newWidth = Math.round(this.imgOffsetX + this.width - this.startX);
+              newHeight = Math.round(newWidth / this.resizeRatio);
             }
             if (this.endY - newHeight < this.imgOffsetY) {
-              newHeight = this.endY - this.imgOffsetY;
-              newWidth = newHeight * this.resizeRatio;
+              newHeight = Math.round(this.endY - this.imgOffsetY);
+              newWidth = Math.round(newHeight * this.resizeRatio);
             }
           } else if (this.resizing === "bottom-left") {
             if (this.endX - newWidth < this.imgOffsetX) {
-              newWidth = this.endX - this.imgOffsetX;
-              newHeight = newWidth / this.resizeRatio;
+              newWidth = Math.round(this.endX - this.imgOffsetX);
+              newHeight = Math.round(newWidth / this.resizeRatio);
             }
             if (this.startY + newHeight > this.imgOffsetY + this.height) {
-              newHeight = this.imgOffsetY + this.height - this.startY;
-              newWidth = newHeight * this.resizeRatio;
+              newHeight = Math.round(this.imgOffsetY + this.height - this.startY);
+              newWidth = Math.round(newHeight * this.resizeRatio);
             }
           } else if (this.resizing === "bottom-right") {
             if (this.startX + newWidth > this.imgOffsetX + this.width) {
-              newWidth = this.imgOffsetX + this.width - this.startX;
-              newHeight = newWidth / this.resizeRatio;
+              newWidth = Math.round(this.imgOffsetX + this.width - this.startX);
+              newHeight = Math.round(newWidth / this.resizeRatio);
             }
             if (this.startY + newHeight > this.imgOffsetY + this.height) {
-              newHeight = this.imgOffsetY + this.height - this.startY;
-              newWidth = newHeight * this.resizeRatio;
+              newHeight = Math.round(this.imgOffsetY + this.height - this.startY);
+              newWidth = Math.round(newHeight * this.resizeRatio);
             }
           } else if (this.resizing === "top-mid") {
             // Enforce aspect ratio for top-mid resizing
-            newHeight = Math.abs(this.endY - y);
-            newWidth = newHeight * this.resizeRatio;
+            newHeight = Math.round(Math.abs(this.endY - y));
+            newWidth = Math.round(newHeight * this.resizeRatio);
             if (this.endY - newHeight < this.imgOffsetY) {
-              newHeight = this.endY - this.imgOffsetY;
-              newWidth = newHeight * this.resizeRatio;
+              newHeight = Math.round(this.endY - this.imgOffsetY);
+              newWidth = Math.round(newHeight * this.resizeRatio);
             }
           } else if (this.resizing === "bottom-mid") {
             // Enforce aspect ratio for bottom-mid resizing
-            newHeight = Math.abs(y - this.startY);
-            newWidth = newHeight * this.resizeRatio;
+            newHeight = Math.round(Math.abs(y - this.startY));
+            newWidth = Math.round(newHeight * this.resizeRatio);
             if (this.startY + newHeight > this.imgOffsetY + this.height) {
-              newHeight = this.imgOffsetY + this.height - this.startY;
-              newWidth = newHeight * this.resizeRatio;
+              newHeight = Math.round(this.imgOffsetY + this.height - this.startY);
+              newWidth = Math.round(newHeight * this.resizeRatio);
             }
           } else if (this.resizing === "left-mid") {
             // Enforce aspect ratio for left-mid resizing
-            newWidth = Math.abs(this.endX - x);
-            newHeight = newWidth / this.resizeRatio;
+            newWidth = Math.round(Math.abs(this.endX - x));
+            newHeight = Math.round(newWidth / this.resizeRatio);
             if (this.endX - newWidth < this.imgOffsetX) {
-              newWidth = this.endX - this.imgOffsetX;
-              newHeight = newWidth / this.resizeRatio;
+              newWidth = Math.round(this.endX - this.imgOffsetX);
+              newHeight = Math.round(newWidth / this.resizeRatio);
             }
           } else if (this.resizing === "right-mid") {
             // Enforce aspect ratio for right-mid resizing
-            newWidth = Math.abs(x - this.startX);
-            newHeight = newWidth / this.resizeRatio;
+            newWidth = Math.round(Math.abs(x - this.startX));
+            newHeight = Math.round(newWidth / this.resizeRatio);
             if (this.startX + newWidth > this.imgOffsetX + this.width) {
-              newWidth = this.imgOffsetX + this.width - this.startX;
-              newHeight = newWidth / this.resizeRatio;
+              newWidth = Math.round(this.imgOffsetX + this.width - this.startX);
+              newHeight = Math.round(newWidth / this.resizeRatio);
             }
           }
-
+  
           // Apply the new dimensions for the resizing handle
           switch (this.resizing) {
             case "top-left":
-              this.startX = this.endX - newWidth;
-              this.startY = this.endY - newHeight;
+              this.startX = Math.round(this.endX - newWidth);
+              this.startY = Math.round(this.endY - newHeight);
               break;
             case "top-right":
-              this.endX = this.startX + newWidth;
-              this.startY = this.endY - newHeight;
+              this.endX = Math.round(this.startX + newWidth);
+              this.startY = Math.round(this.endY - newHeight);
               break;
             case "bottom-left":
-              this.startX = this.endX - newWidth;
-              this.endY = this.startY + newHeight;
+              this.startX = Math.round(this.endX - newWidth);
+              this.endY = Math.round(this.startY + newHeight);
               break;
             case "bottom-right":
-              this.endX = this.startX + newWidth;
-              this.endY = this.startY + newHeight;
+              this.endX = Math.round(this.startX + newWidth);
+              this.endY = Math.round(this.startY + newHeight);
               break;
             case "top-mid":
-              this.startY = this.endY - newHeight;
-              this.startX = this.endX - newWidth; // Adjust X to maintain aspect ratio
+              this.startY = Math.round(this.endY - newHeight);
+              this.startX = Math.round(this.endX - newWidth); // Adjust X to maintain aspect ratio
               break;
             case "bottom-mid":
-              this.endY = this.startY + newHeight;
-              this.endX = this.startX + newWidth; // Adjust X to maintain aspect ratio
+              this.endY = Math.round(this.startY + newHeight);
+              this.endX = Math.round(this.startX + newWidth); // Adjust X to maintain aspect ratio
               break;
             case "left-mid":
-              this.startX = this.endX - newWidth;
-              this.startY = this.endY - newHeight; // Adjust Y to maintain aspect ratio
+              this.startX = Math.round(this.endX - newWidth);
+              this.startY = Math.round(this.endY - newHeight); // Adjust Y to maintain aspect ratio
               break;
             case "right-mid":
-              this.endX = this.startX + newWidth;
-              this.endY = this.startY + newHeight; // Adjust Y to maintain aspect ratio
+              this.endX = Math.round(this.startX + newWidth);
+              this.endY = Math.round(this.startY + newHeight); // Adjust Y to maintain aspect ratio
               break;
           }
         } else {
-          // Non-ratio resizing (unchanged)
+          // Non-ratio resizing (unchanged, but rounded)
           if (this.resizing === "top-left") {
-            this.startX = Math.max(this.imgOffsetX, x);
-            this.startY = Math.max(this.imgOffsetY, y);
+            this.startX = Math.round(Math.max(this.imgOffsetX, x));
+            this.startY = Math.round(Math.max(this.imgOffsetY, y));
           } else if (this.resizing === "top-right") {
-            this.endX = Math.min(this.imgOffsetX + this.width, x);
-            this.startY = Math.max(this.imgOffsetY, y);
+            this.endX = Math.round(Math.min(this.imgOffsetX + this.width, x));
+            this.startY = Math.round(Math.max(this.imgOffsetY, y));
           } else if (this.resizing === "bottom-left") {
-            this.startX = Math.max(this.imgOffsetX, x);
-            this.endY = Math.min(this.imgOffsetY + this.height, y);
+            this.startX = Math.round(Math.max(this.imgOffsetX, x));
+            this.endY = Math.round(Math.min(this.imgOffsetY + this.height, y));
           } else if (this.resizing === "bottom-right") {
-            this.endX = Math.min(this.imgOffsetX + this.width, x);
-            this.endY = Math.min(this.imgOffsetY + this.height, y);
+            this.endX = Math.round(Math.min(this.imgOffsetX + this.width, x));
+            this.endY = Math.round(Math.min(this.imgOffsetY + this.height, y));
           } else if (this.resizing === "top-mid") {
-            this.startY = Math.max(this.imgOffsetY, y);
+            this.startY = Math.round(Math.max(this.imgOffsetY, y));
           } else if (this.resizing === "bottom-mid") {
-            this.endY = Math.min(this.imgOffsetY + this.height, y);
+            this.endY = Math.round(Math.min(this.imgOffsetY + this.height, y));
           } else if (this.resizing === "left-mid") {
-            this.startX = Math.max(this.imgOffsetX, x);
+            this.startX = Math.round(Math.max(this.imgOffsetX, x));
           } else if (this.resizing === "right-mid") {
-            this.endX = Math.min(this.imgOffsetX + this.width, x);
+            this.endX = Math.round(Math.min(this.imgOffsetX + this.width, x));
           }
         }
+        this.showInfo()
       } else {
-        // Regular cropping mode: clamp x,y to image boundaries
-        this.endX = Math.max(this.imgOffsetX, Math.min(this.imgOffsetX + this.width, x));
-        this.endY = Math.max(this.imgOffsetY, Math.min(this.imgOffsetY + this.height, y));
+        // Regular cropping mode: clamp x,y to image boundaries and round values
+        this.endX = Math.round(Math.max(this.imgOffsetX, Math.min(this.imgOffsetX + this.width, x)));
+        this.endY = Math.round(Math.max(this.imgOffsetY, Math.min(this.imgOffsetY + this.height, y)));
       }
     }
-
+  
     if (this.dragging) {
-      const cropW = Math.abs(this.endX - this.startX);
-      const cropH = Math.abs(this.endY - this.startY);
-
-      let newStartX = Math.max(this.imgOffsetX, x - this.dragOffsetX);
-      let newStartY = Math.max(this.imgOffsetY, y - this.dragOffsetY);
-
+      const cropW = Math.round(Math.abs(this.endX - this.startX));
+      const cropH = Math.round(Math.abs(this.endY - this.startY));
+  
+      let newStartX = Math.round(Math.max(this.imgOffsetX, x - this.dragOffsetX));
+      let newStartY = Math.round(Math.max(this.imgOffsetY, y - this.dragOffsetY));
+  
       // Clamp to ensure the crop box stays within image boundaries
-      newStartX = Math.min(newStartX, this.imgOffsetX + this.width - cropW);
-      newStartY = Math.min(newStartY, this.imgOffsetY + this.height - cropH);
-
+      newStartX = Math.round(Math.min(newStartX, this.imgOffsetX + this.width - cropW));
+      newStartY = Math.round(Math.min(newStartY, this.imgOffsetY + this.height - cropH));
+  
       this.startX = newStartX;
       this.startY = newStartY;
       this.endX = this.startX + cropW;
       this.endY = this.startY + cropH;
+      this.showInfo()
       return;
     }
   }
 
   handleClick(e) {
-    // if (allow_debug) console.log("this.node.widgets", this.node.widgets);
+    if (allow_debug) console.log("this.node.widgets", this.node.widgets);
 
     if (this.startX && this.endX && this.startY && this.endY) {
       this.isCroppingDone = true;
@@ -644,6 +760,8 @@ class CropWidget {
   }
 
   showInfo() {
+    this.info.isVisible = true
+
     // Calculate the scale factors for the image
     const scaleX = this.img.naturalWidth / this.width;
     const scaleY = this.img.naturalHeight / this.height;
@@ -651,10 +769,18 @@ class CropWidget {
     // Calculate the crop area in the original image coordinates
     const cropWidth = Math.round(Math.abs(this.endX - this.startX) * scaleX);
     const cropHeight = Math.round(Math.abs(this.endY - this.startY) * scaleY);
+    
+    this.info.text = `${cropWidth} x ${cropHeight}`
+    
+    // if (allow_debug) console.log(`${cropWidth} x ${cropHeight}`);
+  }
 
-    if (allow_debug) {
-      console.log(`${cropWidth} x ${cropHeight}`);
-    }
+  hideInfo(){
+    this.info.isVisible = true
+    setTimeout(() => {
+      this.info.isVisible = false
+    }, 2000);
+    
   }
 
   isMouseInCropArea(margin = 5) {

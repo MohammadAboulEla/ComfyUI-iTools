@@ -3,7 +3,7 @@ import { Shapes, lightenColor, hexDataToImage, trackMouseColor, drawCheckerboard
 import { api } from "../../../scripts/api.js";
 import { allow_debug } from "./js_shared.js";
 
-class BaseSmartWidget {
+export class BaseSmartWidget {
   constructor(node) {
     this.node = node;
     this._markDelete = false;
