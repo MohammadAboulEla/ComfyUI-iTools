@@ -40,14 +40,15 @@ function fakeGraphClick(graph, x, y) {
 
 class CropWidget {
   constructor(node) {
+    this.node = node;
     this.value = node.widgets_values[3] ?? {};
-    // if (allow_debug) console.log("init values", this.value);
+    
     this.x = 0;
     this.y = 80 + 17;
     this.yOffset = this.y + 30;
     this.width = 50;
     this.height = 50;
-    this.node = node;
+    
     this._markDelete = false;
     this._mousePos = { x: 0, y: 0 };
     this.color = "crimson";
@@ -76,17 +77,22 @@ class CropWidget {
     this.resizing = null; // Track which handle is being resized
     this.resizeThreshold = 10; // Sensitivity for detecting resize handles
 
-    this.adjustNewImageSize();
-
-    if (this.value.startX) {
+    if (node.widgets_values[3]) {
       if (allow_debug) console.log("node has crop data value");
-      this.loadCropData();
-      this.cropNewImage();
+      this.node.properties.value = node.widgets_values[3];
     } else {
       if (allow_debug) console.log("node does not has crop data value");
     }
+    
+    if(node.properties.value){
+      this.loadCropData();
+      this.cropNewImage();
+    }else{
+      node.properties.value = {}
+    }
 
-    this.init();
+
+    this.adjustNewImageSize();
     this.setResizeRatio(); // init ratio
 
     // ON Ratio Changed
@@ -114,10 +120,11 @@ class CropWidget {
   }
 
   loadCropData() {
-    this.startX = this.value.startX;
-    this.startY = this.value.startY;
-    this.endX = this.value.endX;
-    this.endY = this.value.endY;
+    this.startX = this.node.properties.value.startX;
+    this.startY = this.node.properties.value.startY;
+    this.endX = this.node.properties.value.endX;
+    this.endY = this.node.properties.value.endY;
+    if(allow_debug) console.log('loaded',this.node.properties.value);
     this.isCroppingDone = true;
   }
 
@@ -128,8 +135,11 @@ class CropWidget {
       this.value.endX = this.endX;
       this.value.endY = this.endY;
 
-      //this.node.widgets_values[3] = this.value
-      //if (allow_debug) console.log("AFTER SAVE this.node.widgets_values[3]", this.node.widgets_values[3]);
+      this.node.properties.value.startX = this.startX;
+      this.node.properties.value.startY = this.startY;
+      this.node.properties.value.endX = this.endX;
+      this.node.properties.value.endY = this.endY;
+
       if (allow_debug) console.log("crop data saved");
     }
   }
@@ -381,20 +391,21 @@ class CropWidget {
     this.croppedImage.src = canvas.toDataURL();
 
     // for python
-    if (this.croppedImage){
-    if (
-      this.croppedImage.src === "data:;" ||
-      this.croppedImage.src.startsWith("data:,") ||
-      this.croppedImage.src.length < 50
-    ) {
-      if (allow_debug) console.log("Image has small or empty data.");
-      this.name = "crop";
-      this.value.data = null;
-      this.isCroppingDone = false;
-    } else {
-      this.name = "crop";
-      this.value.data = this.croppedImage.src;
-    }}
+    if (this.croppedImage) {
+      if (
+        this.croppedImage.src === "data:;" ||
+        this.croppedImage.src.startsWith("data:,") ||
+        this.croppedImage.src.length < 50
+      ) {
+        if (allow_debug) console.log("Image has small or empty data.");
+        this.name = "crop";
+        this.value.data = null;
+        this.isCroppingDone = false;
+      } else {
+        this.name = "crop";
+        this.value.data = this.croppedImage.src;
+      }
+    }
   }
 
   handleDown(e) {
@@ -616,7 +627,6 @@ class CropWidget {
   }
 
   handleClick(e) {
-
     if (allow_debug) {
       console.log("this.node.widgets", this.node.widgets);
     }
@@ -753,7 +763,6 @@ app.registerExtension({
       return;
     }
 
-    // if (allow_debug) console.log("node", node);
     // if (allow_debug) console.log("node.widgets_values", node.widgets_values);
     // wait for init
     const timeout = 3000; // 3 seconds
@@ -781,6 +790,7 @@ app.registerExtension({
     //START POINT
     const cropPreview = new CropWidget(node);
     node.addCustomWidget(cropPreview);
+    if (allow_debug) console.log("node", node);
 
     const originalOnExecuted = node.onExecuted;
     node.onExecuted = async function (message) {
