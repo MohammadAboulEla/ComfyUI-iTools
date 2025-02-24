@@ -42,13 +42,13 @@ class CropWidget {
   constructor(node) {
     this.node = node;
     this.value = node.widgets_values[3] ?? {};
-    
+
     this.x = 0;
     this.y = 80 + 17;
     this.yOffset = this.y + 30;
     this.width = 50;
     this.height = 50;
-    
+
     this._markDelete = false;
     this._mousePos = { x: 0, y: 0 };
     this.color = "crimson";
@@ -83,16 +83,15 @@ class CropWidget {
     } else {
       if (allow_debug) console.log("node does not has crop data value");
     }
-    
-    if(node.properties.value){
+
+    if (node.properties.value) {
       this.loadCropData();
       this.cropNewImage();
-    }else{
-      node.properties.value = {}
+    } else {
+      node.properties.value = {};
     }
 
-
-    this.adjustNewImageSize();
+    this.adjustNewImageSize(); // init
     this.setResizeRatio(); // init ratio
 
     // ON Ratio Changed
@@ -102,21 +101,15 @@ class CropWidget {
 
     // ON Image Changed
     const originalOnChanged = this.node.widgets[1].callback;
-    this.node.widgets[1].callback = (img) => {
+    this.node.widgets[1].callback = async (img) => {
       originalOnChanged.apply(this);
-      this.adjustNewImageSize();
-      this.resetCroppingData();
+      this.img = null;
+      //this.resetCroppingData();
+      while (this.img !== this.node.imgs[0]) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+        this.cropNewImage();
     };
-  }
-
-  init() {
-    // better to be handled from out side the node
-    // app.canvas.onMouseDown = (e) => this.handleDown(e);
-    // app.canvas.onDrawForeground = (ctx) => this.handleMove(ctx);
-    // app.canvas.canvas.onclick = (e) => this.handleClick(e);
-    // this.node.onMouseDown = (e) => this.handleDown(e);
-    // this.node.onMouseUp = (e) => this.handleClick(e);
-    // this.node.onMouseMove = (e) => this.handleMove(e);
   }
 
   loadCropData() {
@@ -124,8 +117,9 @@ class CropWidget {
     this.startY = this.node.properties.value.startY;
     this.endX = this.node.properties.value.endX;
     this.endY = this.node.properties.value.endY;
-    if(allow_debug) console.log('loaded',this.node.properties.value);
+    //if(allow_debug) console.log('loaded',this.node.properties.value);
     this.isCroppingDone = true;
+    this.node.setDirtyCanvas(true, true);
   }
 
   saveCropData() {
@@ -145,10 +139,9 @@ class CropWidget {
   }
 
   autoPinNode() {
-    // AUTO PIN
     const safeZone = 50;
     const { x, y } = this.mousePos;
-    if (y > 30 && y < this.node.height + safeZone) {
+    if (y > 50 && y < this.node.height + safeZone) {
       if (x > this.node.width + safeZone || x < -safeZone) {
         this.node.flags.pinned = false;
       } else {
@@ -161,10 +154,10 @@ class CropWidget {
 
   resetCroppingData() {
     this.croppedImage = null;
-    this.cropping = false;
-    this.isCroppingDone = false;
     this.value = {};
     this.value.data = null;
+    this.cropping = false;
+    this.isCroppingDone = false;
     this.startX = null;
     this.startY = null;
     this.endX = null;
@@ -246,9 +239,10 @@ class CropWidget {
   }
 
   adjustNewImageSize() {
-    if (this.img === this.node.imgs[0]) return;
-    this.img = this.node.imgs[0];
     const img = this.node.imgs[0];
+    if (this.img === img) return; // Avoid redundant assignment
+
+    this.img = img;
     const longestSide = Math.max(img.width, img.height);
     const scale = this.nodeSize / longestSide;
 
@@ -258,6 +252,8 @@ class CropWidget {
     // Center the image correctly
     this.imgOffsetX = (this.node.width - this.width) / 2;
     this.imgOffsetY = this.y + (this.nodeSize - this.height) / 2;
+
+    this.node.setDirtyCanvas(true, true);
   }
 
   setResizeRatio() {
@@ -767,7 +763,7 @@ app.registerExtension({
     // wait for init
     const timeout = 3000; // 3 seconds
     const startTime = Date.now();
-    while (!node.widgets_values) {
+    while (!node.graph) {
       if (Date.now() - startTime > timeout) {
         if (allow_debug) console.error("Timeout: Failed to load graph.");
         break;
@@ -775,17 +771,6 @@ app.registerExtension({
       if (allow_debug) console.log("loading ...");
       await new Promise((resolve) => setTimeout(resolve, 200));
     }
-
-    // let value = {};
-    // value.data = null;
-    // if (allow_debug) {
-    //   console.log("node.widgets_values", node.widgets_values);
-    // }
-    // if (node.widgets_values && node.widgets_values[3]) {
-    //   value = node.widgets_values[3];
-    // }
-
-    // if (allow_debug) console.log("BEFORE node.widgets_values[3]", node.widgets_values[3]);
 
     //START POINT
     const cropPreview = new CropWidget(node);
