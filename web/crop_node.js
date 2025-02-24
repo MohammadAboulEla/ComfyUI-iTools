@@ -144,8 +144,11 @@ export class LiteInfo extends BaseSmartWidget {
 class CropWidget {
   constructor(node) {
     this.node = node;
-    this.value = node.widgets_values[3] ?? {};
-    
+    this.value = {}
+    if(node.widgets_values && node.widgets_values[3]){
+      this.value = node.widgets_values[3];
+    }
+
     this.x = 0;
     this.y = 80 + 17;
     this.yOffset = this.y + 30;
@@ -182,7 +185,7 @@ class CropWidget {
     this.resizing = null; // Track which handle is being resized
     this.resizeThreshold = 10; // Sensitivity for detecting resize handles
 
-    if (node.widgets_values[3]) {
+    if (node.widgets_values && node.widgets_values[3]) {
       if (allow_debug) console.log("node has crop data value");
       this.node.properties.value = node.widgets_values[3];
     } else {
