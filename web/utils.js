@@ -251,7 +251,7 @@ function exitFreezeMode() {
   this.node.allow_dragnodes = true;
 }
 
-export function drawCheckerboard(ctx, width, height, cellSize = 10, yOffset=80,) {
+export function drawCheckerboard(ctx, width, height, cellSize = 10, yOffset = 80) {
   // Create an off-screen canvas for the pattern
   const patternCanvas = document.createElement("canvas");
   patternCanvas.width = cellSize * 2;
@@ -281,8 +281,8 @@ export function drawAngledStripsOld(ctx, width, height, stripeWidth = 5, angle =
   // Save the current state of the canvas
   ctx.save();
 
-  const canvasWidth = 512
-  const canvasHeight = 592 + 80
+  const canvasWidth = 512;
+  const canvasHeight = 592 + 80;
   // Calculate offsets to center the rectangle within the canvas
   const xOffset = (canvasWidth - width) / 2;
   const yOffset = (canvasHeight - height) / 2;
@@ -366,12 +366,6 @@ export function drawAngledStrips(ctx, width, height, scaleFactor = 1.0, stripeWi
   // Restore the original canvas state
   ctx.restore();
 }
-
-
-
-
-
-
 
 // Helper function to check if the color is transparent
 function isTransparent(color) {

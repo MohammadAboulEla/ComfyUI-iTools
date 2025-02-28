@@ -215,6 +215,7 @@ class IToolsCropImage:
     def INPUT_TYPES(s):
         ratios = [
             "free",
+            "grid",
             "1:1",
             "2:3",
             "3:4",
@@ -235,7 +236,8 @@ class IToolsCropImage:
         ]
         return {
             "required": {
-                "ratio": (ratios, {"default": "free"}),
+                "resize_rule": (ratios, {"default": "free"}),
+                "grid_step": ("INT", {"default": 5, "min": 1, "max": 128}),
                 "image": (sorted(files), {"image_upload": True}),
             },
             "optional": FlexibleOptionalInputType(any_type),
