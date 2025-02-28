@@ -662,7 +662,7 @@ class CropWidget {
           switch (this.resizing) {
             case "top-left":
               this.startX = Math.round(this.endX - newWidth);
-              this.startY = Math.round(this.endY - newHeight);
+              // this.startY = Math.round(this.endY - newHeight);
               break;
             case "top-right":
               this.endX = Math.round(this.startX + newWidth);

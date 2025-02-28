@@ -65,6 +65,11 @@ app.registerExtension({
     node.resizable = false;
     node.setDirtyCanvas(true, true);
     node.selected = true;
+    node.clone = () => {
+      showWarning("Cloning is disabled for this node",200)
+      //console.warn("Cloning is disabled for this node.");
+      return null;
+    };
 
     // START POINT
     let canvasImgs = [];
@@ -223,10 +228,10 @@ app.registerExtension({
             return;
           }
           // Calculate the center position for the text
-          const centerX = (node.width - 102*2.5) / 2; // 26*2.5 is starting font size
-          const centerY = (80 + node.height - 102*2.5) / 2;
+          const centerX = (node.width - 102 * 2.5) / 2; // 26*2.5 is starting font size
+          const centerY = (80 + node.height - 102 * 2.5) / 2;
 
-          const t = new SmartText(centerX,centerY, node);
+          const t = new SmartText(centerX, centerY, node);
           t.text = value;
           t.textColor = bColor.color;
           cp.onValueChange = (v) => {
@@ -770,25 +775,16 @@ app.registerExtension({
         return Math.min(Math.max(value, min), max);
       }
 
-      app.canvas.zoom_speed = 1;
-      // if (allow_debug) {
-      //   console.log(e.deltaY > 0 ? "wheel down" : "wheel up");
-      // }
-      if (isHoldingShift && node.flags.pinned) {
-        if (e.deltaY < 0) {
-          c += 2.5;
-          c = clamp(c, 0, 100);
-          brushSlider.callMove(c);
-          brushSlider.onValueChange(c);
-        } else {
-          c -= 2.5;
-          c = clamp(c, 0, 100);
-          brushSlider.callMove(c);
-          brushSlider.onValueChange(c);
-        }
-        app.canvas.zoom_speed = 1.0;
+      if (e.deltaY < 0) {
+        c += 2.5;
+        c = clamp(c, 1, 100);
+        brushSlider.callMove(c);
+        brushSlider.onValueChange(c);
       } else {
-        app.canvas.zoom_speed = 1.1;
+        c -= 2.5;
+        c = clamp(c, 1, 100);
+        brushSlider.callMove(c);
+        brushSlider.onValueChange(c);
       }
     }
 
@@ -904,16 +900,17 @@ app.registerExtension({
 
     node.onMouseEnter = (e, pos, node) => {
       mouseInNode = true;
+      app.canvas.zoom_speed = 1; // disable zoom
     };
 
     node.onMouseLeave = (e) => {
       mouseInNode = false;
+      app.canvas.zoom_speed = 1.1; // enable zoom
       saveImgToDesk(500);
     };
 
     // COMMON CLICKS EVENTS
     app.canvas.canvas.onkeydown = (event) => {
-
       // if (allow_debug) {
       //   console.log("app", app);
       // }
@@ -966,8 +963,11 @@ app.registerExtension({
 
     app.canvas.canvas.onpaste = (e) => {};
 
-    globalThis.onwheel = (e) => {
-      //changeBrushSizeWithKey(e) // BUGGED
+    const originalWheel = globalThis.onwheel;
+    globalThis.onwheel = function (e) {
+      if (originalWheel) originalWheel.call(this);
+      changeBrushSizeWithKey(e);
+      node.setDirtyCanvas(true,true)
     };
 
     globalThis.oncopy = (...args) => {};
