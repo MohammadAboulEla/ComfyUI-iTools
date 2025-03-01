@@ -482,6 +482,11 @@ app.registerExtension({
             bColor.color = color;
             bFill.tagColor = color;
             pa.brushColor = color;
+            canvasImgs.forEach((item) => {
+              if (item.isSelected && item.isTextObject) {
+                item.textColor = color;
+              }
+            });
             if (this.allowDebug) console.log(`Widget ${bhIndex} clicked`);
           },
         });
