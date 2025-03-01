@@ -236,8 +236,8 @@ class IToolsCropImage:
         ]
         return {
             "required": {
-                "resize_rule": (ratios, {"default": "free"}),
-                "grid_step": ("INT", {"default": 5, "min": 1, "max": 128}),
+                "resize_rule": (ratios, {"default": "grid"}),
+                "grid_step": ("INT", {"default": 64, "min": 1, "max": 128}),
                 "image": (sorted(files), {"image_upload": True}),
             },
             "optional": FlexibleOptionalInputType(any_type),

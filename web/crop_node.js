@@ -166,7 +166,7 @@ class CropWidget {
     node.setSize([this.nodeSize, this.nodeSize + this.y]);
     node.resizable = false;
     this.resizeRatio = null;
-    this.multipleFactor = 10;
+    this.multipleFactor = 64;
 
     this.info = new LiteInfo(this.nodeSize / 2 - 40, this.y + 5, 80, 15, node, "");
 
@@ -592,7 +592,7 @@ class CropWidget {
           this.resizing === "bottom-right";
 
         const shouldMaintainRatio = !["free", "grid"].includes(this.node.widgets[0].value);
-        
+
         // Calculate new dimensions based on mouse movement
         if (this.resizing.includes("left") || this.resizing.includes("right")) {
           newWidth = Math.abs(this.resizing.includes("left") ? this.endX - x : x - this.startX);
