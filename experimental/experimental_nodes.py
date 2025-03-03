@@ -168,6 +168,32 @@ class IToolsTestNode:
                 Click = int(value)
         return str(Click), Click
 
+class IToolsDomNode:
+
+    @classmethod
+    def INPUT_TYPES(self):
+        return {
+            "required": {},
+            "optional": FlexibleOptionalInputType(any_type),
+        }
+
+    CATEGORY = "iTools"
+
+    RETURN_TYPES = ("STRING", "INT")
+    RETURN_NAMES = ("my_string", "my_int")
+    FUNCTION = "dom_func"
+    DESCRIPTION = "a try to create dom object in nodes"
+
+    def dom_func(self, **kwargs):
+        counter = 0
+        print("dom start")
+        for key, value in kwargs.items():
+            print("domFunc")
+            print(key, value)
+            if key == "counter":
+                counter = int(value)
+        return str(counter), counter
+
 
 class IToolsPaintNode:
 

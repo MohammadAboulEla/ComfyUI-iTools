@@ -5,7 +5,7 @@ app.registerExtension({
 	name: "iTools.previewText",
 	async beforeRegisterNodeDef(nodeType, nodeData, app) {
 		if (nodeData.name === "iToolsPreviewText") {
-			function populate(texlt) {
+			function populate(text) {
 				if (this.widgets?.length > 1) {
 					this.widgets.slice(1).forEach(w => w.onRemove?.());
 					this.widgets.splice(1);
