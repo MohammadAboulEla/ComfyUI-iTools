@@ -9,7 +9,6 @@ export class BaseSmartWidget {
     this._markDelete = false;
     this._mousePos = [0, 0];
     this._fix_y = 0;
-    this.index = null
     this.init()
   }
 
@@ -18,11 +17,10 @@ export class BaseSmartWidget {
   }
 
   init() {
-    Object.values(this.node.widgets).forEach((widget,index) => {
-      if (widget instanceof BaseSmartWidget ) {
-        this.index = index
-      }
-    });
+    // Object.values(this.node.widgets).forEach((widget,index) => {
+    //   if (widget instanceof BaseSmartWidget ) {
+    //   }
+    // });
   }
   
 
@@ -77,7 +75,6 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   init() {
     Object.values(this.node.widgets).forEach((widget) => {
       if (widget instanceof BaseSmartWidget) {
-        if(allow_debug) console.log('done',);
       }
     });
   }
@@ -142,9 +139,8 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
 export class SmartImage extends BaseSmartWidget {
   constructor(x, y, width, height, node, options = {}) {
     super(node);
-    this.x = x;
-    this.fix_y = -744 + 180 + 255
-    this.y = y;
+    this.myX = x;
+    this.myY = y;
     this.width = width;
     this.height = height;
     this.placeholderColor = "grey";
@@ -209,8 +205,8 @@ export class SmartImage extends BaseSmartWidget {
   handleRotateMove() {
     if (this.isRotating) {
       // Calculate mouse position relative to the center of rotation
-      const centerX = this.x + this.width / 2;
-      const centerY = this.y + this.height / 2;
+      const centerX = this.myX + this.width / 2;
+      const centerY = this.myY + this.height / 2;
       const dx = this.mousePos.x - centerX;
       const dy = this.mousePos.y - centerY;
 
@@ -401,8 +397,8 @@ export class SmartImage extends BaseSmartWidget {
     } else if (this.isMouseIn(-20) && this.isSelected && !this.isUnderCover) {
       this.isPicked = true;
       this.pickOffset = {
-        x: this.mousePos.x - this.x,
-        y: this.mousePos.y - this.y,
+        x: this.mousePos.x - this.myX,
+        y: this.mousePos.y - this.myY,
       };
     }
   }
@@ -423,17 +419,13 @@ export class SmartImage extends BaseSmartWidget {
       let newY = this.mousePos.y - this.pickOffset.y;
       
       // Corrected clamping logic
-      this.x = Math.max(canvasX, Math.min(newX, canvasX + width));
-      this.y = Math.max(canvasY, Math.min(newY, canvasY + height)) - this.fix_y;
-      
-      //this.fix_y = this.pickOffset.y - this.mousePos.y
-      // this.reFixY = true
-
+      this.myX = Math.max(canvasX, Math.min(newX, canvasX + width));
+      this.myY = Math.max(canvasY, Math.min(newY, canvasY + height));
     }
 
     if (this.loader) {
-      this.loader.x = this.x + this.width / 2;
-      this.loader.y = this.y + this.height / 2;
+      this.loader.x = this.myX + this.width / 2;
+      this.loader.y = this.myY + this.height / 2;
     }
   }
 
@@ -490,10 +482,10 @@ export class SmartImage extends BaseSmartWidget {
   isMouseIn(safeZone = 0) {
     const { x, y } = this.mousePos;
     return (
-      x >= this.x - safeZone &&
-      x <= this.x + this.width + safeZone &&
-      y >= this.y - safeZone &&
-      y <= this.y + this.height + safeZone
+      x >= this.myX - safeZone &&
+      x <= this.myX + this.width + safeZone &&
+      y >= this.myY - safeZone &&
+      y <= this.myY + this.height + safeZone
     );
   }
 
@@ -502,8 +494,8 @@ export class SmartImage extends BaseSmartWidget {
     const threshold = this.resizeThreshold;
 
     // Translate mouse position relative to the center of the image
-    const dx = mouseX - (this.x + this.width / 2);
-    const dy = mouseY - (this.y + this.height / 2);
+    const dx = mouseX - (this.myX + this.width / 2);
+    const dy = mouseY - (this.myY + this.height / 2);
 
     // Rotate the coordinates back by the negative of the rotation angle
     const radianAngle = -(this.rotationAngle * Math.PI) / 180;
@@ -544,8 +536,8 @@ export class SmartImage extends BaseSmartWidget {
     const margin = this.rotateDrawMargin - 5; // Move the detection area slightly inside the image
 
     // Translate mouse position relative to the center of the image
-    const dx = mouseX - (this.x + this.width / 2);
-    const dy = mouseY - (this.y + this.height / 2);
+    const dx = mouseX - (this.myX + this.width / 2);
+    const dy = mouseY - (this.myY + this.height / 2);
 
     // Rotate the coordinates back by the negative of the rotation angle
     const radianAngle = -(this.rotationAngle * Math.PI) / 180;
@@ -578,10 +570,10 @@ export class SmartImage extends BaseSmartWidget {
   isMouseInCloseButtonArea() {
     const { x, y } = this.mousePos;
     return (
-      x >= this.x + this.closeButtonOffsetX &&
-      x <= this.x + this.closeButtonWidth + this.closeButtonOffsetX &&
-      y >= this.y + this.closeButtonOffsetY &&
-      y <= this.y + this.closeButtonOffsetY + this.closeButtonHeight
+      x >= this.myX + this.closeButtonOffsetX &&
+      x <= this.myX + this.closeButtonWidth + this.closeButtonOffsetX &&
+      y >= this.myY + this.closeButtonOffsetY &&
+      y <= this.myY + this.closeButtonOffsetY + this.closeButtonHeight
     );
   }
 
@@ -590,8 +582,8 @@ export class SmartImage extends BaseSmartWidget {
     const threshold = this.resizeThreshold;
 
     // Translate mouse position relative to the center of the image
-    const dx = mouseX - (this.x + this.width / 2);
-    const dy = mouseY - (this.y + this.height / 2);
+    const dx = mouseX - (this.myX + this.width / 2);
+    const dy = mouseY - (this.myY + this.height / 2);
 
     // Rotate the coordinates back by the negative of the rotation angle
     const radianAngle = -(this.rotationAngle * Math.PI) / 180;
@@ -643,51 +635,51 @@ export class SmartImage extends BaseSmartWidget {
 
     switch (this.resizeAnchor) {
       case "top-left": {
-        const newWidth = this.x + this.width - x;
-        const newHeight = this.y + this.height - y;
-        this.x = Math.max(canvasX, x); // Ensure x stays within canvas
-        this.y = Math.max(canvasY, y); // Ensure y stays within canvas
-        this.width = Math.max(10, Math.min(newWidth, maxWidth - this.x));
-        this.height = Math.max(10, Math.min(newHeight, maxHeight - this.y));
+        const newWidth = this.myX + this.width - x;
+        const newHeight = this.myY + this.height - y;
+        this.myX = Math.max(canvasX, x); // Ensure x stays within canvas
+        this.myY = Math.max(canvasY, y); // Ensure y stays within canvas
+        this.width = Math.max(10, Math.min(newWidth, maxWidth - this.myX));
+        this.height = Math.max(10, Math.min(newHeight, maxHeight - this.myY));
         break;
       }
       case "top-right": {
-        const newHeight = this.y + this.height - y;
-        this.y = Math.max(canvasY, y); // Ensure y stays within canvas
-        this.width = Math.max(10, Math.min(x - this.x, maxWidth - this.x));
-        this.height = Math.max(10, Math.min(newHeight, maxHeight - this.y));
+        const newHeight = this.myY + this.height - y;
+        this.myY = Math.max(canvasY, y); // Ensure y stays within canvas
+        this.width = Math.max(10, Math.min(x - this.myX, maxWidth - this.myX));
+        this.height = Math.max(10, Math.min(newHeight, maxHeight - this.myY));
         break;
       }
       case "bottom-left": {
-        const newWidth = this.x + this.width - x;
-        this.x = Math.max(canvasX, x); // Ensure x stays within canvas
-        this.width = Math.max(10, Math.min(newWidth, maxWidth - this.x));
-        this.height = Math.max(10, Math.min(y - this.y, maxHeight - this.y));
+        const newWidth = this.myX + this.width - x;
+        this.myX = Math.max(canvasX, x); // Ensure x stays within canvas
+        this.width = Math.max(10, Math.min(newWidth, maxWidth - this.myX));
+        this.height = Math.max(10, Math.min(y - this.myY, maxHeight - this.myY));
         break;
       }
       case "bottom-right": {
-        this.width = Math.max(10, Math.min(x - this.x, maxWidth - this.x));
-        this.height = Math.max(10, Math.min(y - this.y, maxHeight - this.y));
+        this.width = Math.max(10, Math.min(x - this.myX, maxWidth - this.myX));
+        this.height = Math.max(10, Math.min(y - this.myY, maxHeight - this.myY));
         break;
       }
       case "top": {
-        const newHeight = this.y + this.height - y;
-        this.y = Math.max(canvasY, y); // Ensure y stays within canvas
-        this.height = Math.max(10, Math.min(newHeight, maxHeight - this.y));
+        const newHeight = this.myY + this.height - y;
+        this.myY = Math.max(canvasY, y); // Ensure y stays within canvas
+        this.height = Math.max(10, Math.min(newHeight, maxHeight - this.myY));
         break;
       }
       case "bottom": {
-        this.height = Math.max(10, Math.min(y - this.y, maxHeight - this.y));
+        this.height = Math.max(10, Math.min(y - this.myY, maxHeight - this.myY));
         break;
       }
       case "left": {
-        const newWidth = this.x + this.width - x;
-        this.x = Math.max(canvasX, x); // Ensure x stays within canvas
-        this.width = Math.max(10, Math.min(newWidth, maxWidth - this.x));
+        const newWidth = this.myX + this.width - x;
+        this.myX = Math.max(canvasX, x); // Ensure x stays within canvas
+        this.width = Math.max(10, Math.min(newWidth, maxWidth - this.myX));
         break;
       }
       case "right": {
-        this.width = Math.max(10, Math.min(x - this.x, maxWidth - this.x));
+        this.width = Math.max(10, Math.min(x - this.myX, maxWidth - this.myX));
         break;
       }
       default:
@@ -699,8 +691,8 @@ export class SmartImage extends BaseSmartWidget {
     this.width = Math.min(pa[0] / scale, 512);
     this.height = Math.min(pa[1] / scale, 512);
     // Center the image in the available space
-    this.x = (512 - this.width) / 2;
-    this.y = (512 - this.height) / 2 + offsetY;
+    this.myX = (512 - this.width) / 2;
+    this.myY = (512 - this.height) / 2 + offsetY;
   }
 
   fitImage(pa, dim = "w", scale = 1, offsetY = 80) {
@@ -736,8 +728,8 @@ export class SmartImage extends BaseSmartWidget {
     }
 
     // Center the image in the available space
-    this.x = (512 - this.width) / 2;
-    this.y = (512 - this.height) / 2 + offsetY;
+    this.myX = (512 - this.width) / 2;
+    this.myY = (512 - this.height) / 2 + offsetY;
   }
 
   plotImageOnCanvas(ctx, xOffset, yOffset, scale) {
@@ -752,7 +744,7 @@ export class SmartImage extends BaseSmartWidget {
     else if (scale === 1) scale = 2;
     else if (scale === 2) scale = 4;
 
-    const { x, y, width, height, rotationAngle } = this;
+    const { myX, myY, width, height, rotationAngle } = this;
 
     // Save the context state before transformations
     ctx.save();
@@ -760,8 +752,8 @@ export class SmartImage extends BaseSmartWidget {
     // Calculate the scaled dimensions and offsets
     const scaledWidth = width * scale;
     const scaledHeight = height * scale;
-    const scaledX = (x - xOffset) * scale;
-    const scaledY = (y - yOffset) * scale;
+    const scaledX = (myX - xOffset) * scale;
+    const scaledY = (myY - yOffset) * scale;
 
     // Translate to the center of the scaled image
     ctx.translate(scaledX + scaledWidth / 2, scaledY + scaledHeight / 2);
@@ -791,37 +783,30 @@ export class SmartImage extends BaseSmartWidget {
   }
 
   draw(ctx) {
-    //this.y -= this.fix_y
-    // if(this.reFixY){
-    //   this.y -= this.fix_y
-    //   //this.reFixY = false
-    // }
-    
-    // if(allow_debug) console.log('this.y',this.y);
-    // if(allow_debug) console.log('this.fix_y',this.fix_y);
+
     if (this.markDelete) return;
 
     // Save the context state before transformations
     ctx.save();
 
-    this.rotationCenter = { x: this.x + this.width / 2, y: this.y + this.height / 2 };
+    this.rotationCenter = { x: this.myX + this.width / 2, y: this.myY + this.height / 2 };
     // Translate to the center of the image
     ctx.translate(this.rotationCenter.x, this.rotationCenter.y);
-    //ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+    //ctx.translate(this.myX + this.width / 2, this.myY + this.height / 2);
 
     // Rotate the context
     ctx.rotate((this.rotationAngle * Math.PI) / 180);
 
     // Translate back to the top-left corner of the image
-    ctx.translate(-this.x - this.width / 2, -this.y - this.height / 2);
+    ctx.translate(-this.myX - this.width / 2, -this.myY - this.height / 2);
     // rotation
 
     // Draw the image or placeholder
     if (!this.imgLoaded) {
       ctx.fillStyle = this.placeholderColor;
-      ctx.fillRect(this.x, this.y, this.width, this.height);
+      ctx.fillRect(this.myX, this.myY, this.width, this.height);
     } else {
-      ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+      ctx.drawImage(this.img, this.myX, this.myY, this.width, this.height);
     }
 
     // Draw resize handles (small outlined squares) at the edges and corners
@@ -830,7 +815,7 @@ export class SmartImage extends BaseSmartWidget {
       ctx.strokeStyle = "#333"; // Color of the dashed outline
       ctx.lineWidth = 1.5; // Width of the dashed outline
       ctx.setLineDash([5, 5]); // Dash pattern: 5px dash, 5px gap
-      ctx.strokeRect(this.x, this.y, this.width, this.height);
+      ctx.strokeRect(this.myX, this.myY, this.width, this.height);
 
       const handleSize = 10; // Size of the resize handle (width and height)
       ctx.strokeStyle = "#333"; // Color of the resize handles
@@ -838,28 +823,28 @@ export class SmartImage extends BaseSmartWidget {
       ctx.setLineDash([]); // Reset dash pattern for solid lines
 
       // Draw handles at the corners
-      ctx.strokeRect(this.x - handleSize / 2, this.y - handleSize / 2, handleSize, handleSize); // Top-left
-      ctx.strokeRect(this.x + this.width - handleSize / 2, this.y - handleSize / 2, handleSize, handleSize); // Top-right
-      ctx.strokeRect(this.x - handleSize / 2, this.y + this.height - handleSize / 2, handleSize, handleSize); // Bottom-left
+      ctx.strokeRect(this.myX - handleSize / 2, this.myY - handleSize / 2, handleSize, handleSize); // Top-left
+      ctx.strokeRect(this.myX + this.width - handleSize / 2, this.myY - handleSize / 2, handleSize, handleSize); // Top-right
+      ctx.strokeRect(this.myX - handleSize / 2, this.myY + this.height - handleSize / 2, handleSize, handleSize); // Bottom-left
       ctx.strokeRect(
-        this.x + this.width - handleSize / 2,
-        this.y + this.height - handleSize / 2,
+        this.myX + this.width - handleSize / 2,
+        this.myY + this.height - handleSize / 2,
         handleSize,
         handleSize
       ); // Bottom-right
 
       // Draw handles at the midpoints of the edges
-      ctx.strokeRect(this.x + this.width / 2 - handleSize / 2, this.y - handleSize / 2, handleSize, handleSize); // Top
+      ctx.strokeRect(this.myX + this.width / 2 - handleSize / 2, this.myY - handleSize / 2, handleSize, handleSize); // Top
       ctx.strokeRect(
-        this.x + this.width / 2 - handleSize / 2,
-        this.y + this.height - handleSize / 2,
+        this.myX + this.width / 2 - handleSize / 2,
+        this.myY + this.height - handleSize / 2,
         handleSize,
         handleSize
       ); // Bottom
-      ctx.strokeRect(this.x - handleSize / 2, this.y + this.height / 2 - handleSize / 2, handleSize, handleSize); // Left
+      ctx.strokeRect(this.myX - handleSize / 2, this.myY + this.height / 2 - handleSize / 2, handleSize, handleSize); // Left
       ctx.strokeRect(
-        this.x + this.width - handleSize / 2,
-        this.y + this.height / 2 - handleSize / 2,
+        this.myX + this.width - handleSize / 2,
+        this.myY + this.height / 2 - handleSize / 2,
         handleSize,
         handleSize
       ); // Right
@@ -882,16 +867,16 @@ export class SmartImage extends BaseSmartWidget {
       };
 
       // Draw circles at the slightly inset corners
-      if (!this.closeButton) drawHandle(this.x + margin, this.y + margin); // Top-left
-      drawHandle(this.x + this.width - margin, this.y + margin); // Top-right
-      drawHandle(this.x + margin, this.y + this.height - margin); // Bottom-left
-      drawHandle(this.x + this.width - margin, this.y + this.height - margin); // Bottom-right
+      if (!this.closeButton) drawHandle(this.myX + margin, this.myY + margin); // Top-left
+      drawHandle(this.myX + this.width - margin, this.myY + margin); // Top-right
+      drawHandle(this.myX + margin, this.myY + this.height - margin); // Bottom-left
+      drawHandle(this.myX + this.width - margin, this.myY + this.height - margin); // Bottom-right
     }
 
     // Draw visual plot
     if (this.isPlotted) {
       ctx.fillStyle = "rgba(255,0, 0, 0.1)";
-      ctx.fillRect(this.x, this.y, this.width, this.height);
+      ctx.fillRect(this.myX, this.myY, this.width, this.height);
     }
 
     // Draw close button
@@ -899,40 +884,40 @@ export class SmartImage extends BaseSmartWidget {
       const radius = 2.5;
 
       ctx.beginPath();
-      ctx.moveTo(this.x + this.closeButtonOffsetX + radius, this.y + this.closeButtonOffsetY);
-      ctx.lineTo(this.x + this.closeButtonOffsetX + this.closeButtonWidth - radius, this.y + this.closeButtonOffsetY);
+      ctx.moveTo(this.myX + this.closeButtonOffsetX + radius, this.myY + this.closeButtonOffsetY);
+      ctx.lineTo(this.myX + this.closeButtonOffsetX + this.closeButtonWidth - radius, this.myY + this.closeButtonOffsetY);
       ctx.arcTo(
-        this.x + this.closeButtonOffsetX + this.closeButtonWidth,
-        this.y + this.closeButtonOffsetY,
-        this.x + this.closeButtonOffsetX + this.closeButtonWidth,
-        this.y + this.closeButtonOffsetY + radius,
+        this.myX + this.closeButtonOffsetX + this.closeButtonWidth,
+        this.myY + this.closeButtonOffsetY,
+        this.myX + this.closeButtonOffsetX + this.closeButtonWidth,
+        this.myY + this.closeButtonOffsetY + radius,
         radius
       );
       ctx.lineTo(
-        this.x + this.closeButtonOffsetX + this.closeButtonWidth,
-        this.y + this.closeButtonOffsetY + this.closeButtonHeight - radius
+        this.myX + this.closeButtonOffsetX + this.closeButtonWidth,
+        this.myY + this.closeButtonOffsetY + this.closeButtonHeight - radius
       );
       ctx.arcTo(
-        this.x + this.closeButtonOffsetX + this.closeButtonWidth,
-        this.y + this.closeButtonOffsetY + this.closeButtonHeight,
-        this.x + this.closeButtonOffsetX + this.closeButtonWidth - radius,
-        this.y + this.closeButtonOffsetY + this.closeButtonHeight,
+        this.myX + this.closeButtonOffsetX + this.closeButtonWidth,
+        this.myY + this.closeButtonOffsetY + this.closeButtonHeight,
+        this.myX + this.closeButtonOffsetX + this.closeButtonWidth - radius,
+        this.myY + this.closeButtonOffsetY + this.closeButtonHeight,
         radius
       );
-      ctx.lineTo(this.x + this.closeButtonOffsetX + radius, this.y + this.closeButtonOffsetY + this.closeButtonHeight);
+      ctx.lineTo(this.myX + this.closeButtonOffsetX + radius, this.myY + this.closeButtonOffsetY + this.closeButtonHeight);
       ctx.arcTo(
-        this.x + this.closeButtonOffsetX,
-        this.y + this.closeButtonOffsetY + this.closeButtonHeight,
-        this.x + this.closeButtonOffsetX,
-        this.y + this.closeButtonOffsetY + this.closeButtonHeight - radius,
+        this.myX + this.closeButtonOffsetX,
+        this.myY + this.closeButtonOffsetY + this.closeButtonHeight,
+        this.myX + this.closeButtonOffsetX,
+        this.myY + this.closeButtonOffsetY + this.closeButtonHeight - radius,
         radius
       );
-      ctx.lineTo(this.x + this.closeButtonOffsetX, this.y + this.closeButtonOffsetY + radius);
+      ctx.lineTo(this.myX + this.closeButtonOffsetX, this.myY + this.closeButtonOffsetY + radius);
       ctx.arcTo(
-        this.x + this.closeButtonOffsetX,
-        this.y + this.closeButtonOffsetY,
-        this.x + this.closeButtonOffsetX + radius,
-        this.y + this.closeButtonOffsetY,
+        this.myX + this.closeButtonOffsetX,
+        this.myY + this.closeButtonOffsetY,
+        this.myX + this.closeButtonOffsetX + radius,
+        this.myY + this.closeButtonOffsetY,
         radius
       );
       ctx.closePath();
@@ -955,15 +940,15 @@ export class SmartImage extends BaseSmartWidget {
         ctx.textBaseline = "middle";
         ctx.fillText(
           "x",
-          this.x + this.closeButtonOffsetX + this.closeButtonWidth / 2 + 0,
-          this.y + this.closeButtonOffsetY + this.closeButtonHeight / 2 + 0
+          this.myX + this.closeButtonOffsetX + this.closeButtonWidth / 2 + 0,
+          this.myY + this.closeButtonOffsetY + this.closeButtonHeight / 2 + 0
         );
       }
     }
 
     // Draw loader
     if (!this.loader) {
-      this.loader = new SmartLoading(this.x + this.width / 2, this.y + this.height / 2, this.node);
+      this.loader = new SmartLoading(this.myX + this.width / 2, this.myY + this.height / 2, this.node);
     }
 
     ctx.restore();
@@ -973,8 +958,8 @@ export class SmartImage extends BaseSmartWidget {
 export class SmartText extends BaseSmartWidget {
   constructor(x, y, node, options = {}) {
     super(node);
-    this.x = x;
-    this.y = y;
+    this.myX = x;
+    this.myY = y;
 
     this.placeholderColor = "grey";
     this.img = new Image(); // Create an image object
@@ -1085,8 +1070,8 @@ export class SmartText extends BaseSmartWidget {
   handleRotateMove() {
     if (this.isRotating) {
       // Calculate mouse position relative to the center of rotation
-      const centerX = this.x + this.width / 2;
-      const centerY = this.y + this.height / 2;
+      const centerX = this.myX + this.width / 2;
+      const centerY = this.myY + this.height / 2;
       const dx = this.mousePos.x - centerX;
       const dy = this.mousePos.y - centerY;
 
@@ -1128,8 +1113,8 @@ export class SmartText extends BaseSmartWidget {
     } else if (this.isMouseIn(-20) && this.isSelected && !this.isUnderCover) {
       this.isPicked = true;
       this.pickOffset = {
-        x: this.mousePos.x - this.x,
-        y: this.mousePos.y - this.y,
+        x: this.mousePos.x - this.myX,
+        y: this.mousePos.y - this.myY,
       };
     }
   }
@@ -1149,8 +1134,8 @@ export class SmartText extends BaseSmartWidget {
       let newY = this.mousePos.y - this.pickOffset.y;
 
       // Corrected clamping logic
-      this.x = Math.max(canvasX, Math.min(newX, canvasX + width));
-      this.y = Math.max(canvasY, Math.min(newY, canvasY + height));
+      this.myX = Math.max(canvasX, Math.min(newX, canvasX + width));
+      this.myY = Math.max(canvasY, Math.min(newY, canvasY + height));
     }
   }
 
@@ -1207,10 +1192,10 @@ export class SmartText extends BaseSmartWidget {
   isMouseIn(safeZone = 0) {
     const { x, y } = this.mousePos;
     return (
-      x >= this.x - safeZone &&
-      x <= this.x + this.width + safeZone &&
-      y >= this.y - safeZone &&
-      y <= this.y + this.height + safeZone
+      x >= this.myX - safeZone &&
+      x <= this.myX + this.width + safeZone &&
+      y >= this.myY - safeZone &&
+      y <= this.myY + this.height + safeZone
     );
   }
 
@@ -1219,8 +1204,8 @@ export class SmartText extends BaseSmartWidget {
     const threshold = this.resizeThreshold;
 
     // Translate mouse position relative to the center of the image
-    const dx = mouseX - (this.x + this.width / 2);
-    const dy = mouseY - (this.y + this.height / 2);
+    const dx = mouseX - (this.myX + this.width / 2);
+    const dy = mouseY - (this.myY + this.height / 2);
 
     // Rotate the coordinates back by the negative of the rotation angle
     const radianAngle = -(this.rotationAngle * Math.PI) / 180;
@@ -1261,8 +1246,8 @@ export class SmartText extends BaseSmartWidget {
     const margin = this.rotateDrawMargin - 5; // Move the detection area slightly inside the image
 
     // Translate mouse position relative to the center of the image
-    const dx = mouseX - (this.x + this.width / 2);
-    const dy = mouseY - (this.y + this.height / 2);
+    const dx = mouseX - (this.myX + this.width / 2);
+    const dy = mouseY - (this.myY + this.height / 2);
 
     // Rotate the coordinates back by the negative of the rotation angle
     const radianAngle = -(this.rotationAngle * Math.PI) / 180;
@@ -1295,10 +1280,10 @@ export class SmartText extends BaseSmartWidget {
   isMouseInCloseButtonArea() {
     const { x, y } = this.mousePos;
     return (
-      x >= this.x + this.closeButtonOffsetX &&
-      x <= this.x + this.closeButtonWidth + this.closeButtonOffsetX &&
-      y >= this.y + this.closeButtonOffsetY &&
-      y <= this.y + this.closeButtonOffsetY + this.closeButtonHeight
+      x >= this.myX + this.closeButtonOffsetX &&
+      x <= this.myX + this.closeButtonWidth + this.closeButtonOffsetX &&
+      y >= this.myY + this.closeButtonOffsetY &&
+      y <= this.myY + this.closeButtonOffsetY + this.closeButtonHeight
     );
   }
 
@@ -1307,8 +1292,8 @@ export class SmartText extends BaseSmartWidget {
     const threshold = this.resizeThreshold;
 
     // Translate mouse position relative to the center of the image
-    const dx = mouseX - (this.x + this.width / 2);
-    const dy = mouseY - (this.y + this.height / 2);
+    const dx = mouseX - (this.myX + this.width / 2);
+    const dy = mouseY - (this.myY + this.height / 2);
 
     // Rotate the coordinates back by the negative of the rotation angle
     const radianAngle = -(this.rotationAngle * Math.PI) / 180;
@@ -1360,51 +1345,51 @@ export class SmartText extends BaseSmartWidget {
 
     switch (this.resizeAnchor) {
       case "top-left": {
-        const newWidth = this.x + this.width - x;
-        const newHeight = this.y + this.height - y;
-        this.x = Math.max(canvasX, x); // Ensure x stays within canvas
-        this.y = Math.max(canvasY, y); // Ensure y stays within canvas
-        this.width = Math.max(10, Math.min(newWidth, maxWidth - this.x));
-        this.height = Math.max(10, Math.min(newHeight, maxHeight - this.y));
+        const newWidth = this.myX + this.width - x;
+        const newHeight = this.myY + this.height - y;
+        this.myX = Math.max(canvasX, x); // Ensure x stays within canvas
+        this.myY = Math.max(canvasY, y); // Ensure y stays within canvas
+        this.width = Math.max(10, Math.min(newWidth, maxWidth - this.myX));
+        this.height = Math.max(10, Math.min(newHeight, maxHeight - this.myY));
         break;
       }
       case "top-right": {
-        const newHeight = this.y + this.height - y;
-        this.y = Math.max(canvasY, y); // Ensure y stays within canvas
-        this.width = Math.max(10, Math.min(x - this.x, maxWidth - this.x));
-        this.height = Math.max(10, Math.min(newHeight, maxHeight - this.y));
+        const newHeight = this.myY + this.height - y;
+        this.myY = Math.max(canvasY, y); // Ensure y stays within canvas
+        this.width = Math.max(10, Math.min(x - this.myX, maxWidth - this.myX));
+        this.height = Math.max(10, Math.min(newHeight, maxHeight - this.myY));
         break;
       }
       case "bottom-left": {
-        const newWidth = this.x + this.width - x;
-        this.x = Math.max(canvasX, x); // Ensure x stays within canvas
-        this.width = Math.max(10, Math.min(newWidth, maxWidth - this.x));
-        this.height = Math.max(10, Math.min(y - this.y, maxHeight - this.y));
+        const newWidth = this.myX + this.width - x;
+        this.myX = Math.max(canvasX, x); // Ensure x stays within canvas
+        this.width = Math.max(10, Math.min(newWidth, maxWidth - this.myX));
+        this.height = Math.max(10, Math.min(y - this.myY, maxHeight - this.myY));
         break;
       }
       case "bottom-right": {
-        this.width = Math.max(10, Math.min(x - this.x, maxWidth - this.x));
-        this.height = Math.max(10, Math.min(y - this.y, maxHeight - this.y));
+        this.width = Math.max(10, Math.min(x - this.myX, maxWidth - this.myX));
+        this.height = Math.max(10, Math.min(y - this.myY, maxHeight - this.myY));
         break;
       }
       case "top": {
-        const newHeight = this.y + this.height - y;
-        this.y = Math.max(canvasY, y); // Ensure y stays within canvas
-        this.height = Math.max(10, Math.min(newHeight, maxHeight - this.y));
+        const newHeight = this.myY + this.height - y;
+        this.myY = Math.max(canvasY, y); // Ensure y stays within canvas
+        this.height = Math.max(10, Math.min(newHeight, maxHeight - this.myY));
         break;
       }
       case "bottom": {
-        this.height = Math.max(10, Math.min(y - this.y, maxHeight - this.y));
+        this.height = Math.max(10, Math.min(y - this.myY, maxHeight - this.myY));
         break;
       }
       case "left": {
-        const newWidth = this.x + this.width - x;
-        this.x = Math.max(canvasX, x); // Ensure x stays within canvas
-        this.width = Math.max(10, Math.min(newWidth, maxWidth - this.x));
+        const newWidth = this.myX + this.width - x;
+        this.myX = Math.max(canvasX, x); // Ensure x stays within canvas
+        this.width = Math.max(10, Math.min(newWidth, maxWidth - this.myX));
         break;
       }
       case "right": {
-        this.width = Math.max(10, Math.min(x - this.x, maxWidth - this.x));
+        this.width = Math.max(10, Math.min(x - this.myX, maxWidth - this.myX));
         break;
       }
       default:
@@ -1417,8 +1402,8 @@ export class SmartText extends BaseSmartWidget {
     this.width = Math.min(pa[0] / scale, 512);
     this.height = Math.min(pa[1] / scale, 512);
     // Center the image in the available space
-    this.x = (512 - this.width) / 2;
-    this.y = (512 - this.height) / 2 + offsetY;
+    this.myX = (512 - this.width) / 2;
+    this.myY = (512 - this.height) / 2 + offsetY;
   }
 
   fitImage(pa, dim = "w", scale = 1, offsetY = 80) {
@@ -1454,8 +1439,8 @@ export class SmartText extends BaseSmartWidget {
     }
 
     // Center the image in the available space
-    this.x = (512 - this.width) / 2;
-    this.y = (512 - this.height) / 2 + offsetY;
+    this.myX = (512 - this.width) / 2;
+    this.myY = (512 - this.height) / 2 + offsetY;
   }
 
   plotImageOnCanvas(ctx, xOffset, yOffset, scale) {
@@ -1469,7 +1454,7 @@ export class SmartText extends BaseSmartWidget {
     if (scale === -1 || scale === 0) scale = 1;
     else if (scale === 1) scale = 2;
     else if (scale === 2) scale = 4;
-    const { x, y, width, height, rotationAngle } = this;
+    const { myX, myY, width, height, rotationAngle } = this;
 
     // Save the context state before transformations
     ctx.save();
@@ -1478,8 +1463,8 @@ export class SmartText extends BaseSmartWidget {
     //if(allow_debug){console.log('SCALE is',scale);}
     const scaledWidth = width * scale;
     const scaledHeight = height * scale;
-    const scaledX = (x - xOffset) * scale;
-    const scaledY = (y - yOffset) * scale;
+    const scaledX = (myX - xOffset) * scale;
+    const scaledY = (myY - yOffset) * scale;
 
     // Translate to the center of the scaled image
     ctx.translate(scaledX + scaledWidth / 2, scaledY + scaledHeight / 2);
@@ -1513,27 +1498,27 @@ export class SmartText extends BaseSmartWidget {
     // Save the context state before transformations
     ctx.save();
 
-    this.rotationCenter = { x: this.x + this.width / 2, y: this.y + this.height / 2 };
+    this.rotationCenter = { x: this.myX + this.width / 2, y: this.myY + this.height / 2 };
     // Translate to the center of the image
     ctx.translate(this.rotationCenter.x, this.rotationCenter.y);
-    //ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+    //ctx.translate(this.myX + this.width / 2, this.myY + this.height / 2);
 
     // Rotate the context
     ctx.rotate((this.rotationAngle * Math.PI) / 180);
 
     // Translate back to the top-left corner of the image
-    ctx.translate(-this.x - this.width / 2, -this.y - this.height / 2);
+    ctx.translate(-this.myX - this.width / 2, -this.myY - this.height / 2);
 
     // Draw the text
     if (this.text) {
       ctx.fillStyle = "rgba(128, 128, 128, 0.0)";
-      ctx.fillRect(this.x, this.y, this.width, this.height);
+      ctx.fillRect(this.myX, this.myY, this.width, this.height);
 
       ctx.fillStyle = this.textColor;
       ctx.font = `${this.isItalic ? "italic" : ""} ${this.fontWeight} ${this.fontSize}px ${this.fontName}`;
       ctx.textAlign = this.textAlign;
       ctx.textBaseline = this.textBaseline;
-      ctx.fillText(this.text, this.x + this.width / 2, this.y + this.height / 2);
+      ctx.fillText(this.text, this.myX + this.width / 2, this.myY + this.height / 2);
     }
 
     // Draw resize handles (small outlined squares) at the edges and corners
@@ -1542,7 +1527,7 @@ export class SmartText extends BaseSmartWidget {
       ctx.strokeStyle = "#333"; // Color of the dashed outline
       ctx.lineWidth = 1.5; // Width of the dashed outline
       ctx.setLineDash([5, 5]); // Dash pattern: 5px dash, 5px gap
-      ctx.strokeRect(this.x, this.y, this.width, this.height);
+      ctx.strokeRect(this.myX, this.myY, this.width, this.height);
 
       const handleSize = 10; // Size of the resize handle (width and height)
       ctx.strokeStyle = "#333"; // Color of the resize handles
@@ -1550,28 +1535,28 @@ export class SmartText extends BaseSmartWidget {
       ctx.setLineDash([]); // Reset dash pattern for solid lines
 
       // Draw handles at the corners
-      ctx.strokeRect(this.x - handleSize / 2, this.y - handleSize / 2, handleSize, handleSize); // Top-left
-      ctx.strokeRect(this.x + this.width - handleSize / 2, this.y - handleSize / 2, handleSize, handleSize); // Top-right
-      ctx.strokeRect(this.x - handleSize / 2, this.y + this.height - handleSize / 2, handleSize, handleSize); // Bottom-left
+      ctx.strokeRect(this.myX - handleSize / 2, this.myY - handleSize / 2, handleSize, handleSize); // Top-left
+      ctx.strokeRect(this.myX + this.width - handleSize / 2, this.myY - handleSize / 2, handleSize, handleSize); // Top-right
+      ctx.strokeRect(this.myX - handleSize / 2, this.myY + this.height - handleSize / 2, handleSize, handleSize); // Bottom-left
       ctx.strokeRect(
-        this.x + this.width - handleSize / 2,
-        this.y + this.height - handleSize / 2,
+        this.myX + this.width - handleSize / 2,
+        this.myY + this.height - handleSize / 2,
         handleSize,
         handleSize
       ); // Bottom-right
 
       // Draw handles at the midpoints of the edges
-      ctx.strokeRect(this.x + this.width / 2 - handleSize / 2, this.y - handleSize / 2, handleSize, handleSize); // Top
+      ctx.strokeRect(this.myX + this.width / 2 - handleSize / 2, this.myY - handleSize / 2, handleSize, handleSize); // Top
       ctx.strokeRect(
-        this.x + this.width / 2 - handleSize / 2,
-        this.y + this.height - handleSize / 2,
+        this.myX + this.width / 2 - handleSize / 2,
+        this.myY + this.height - handleSize / 2,
         handleSize,
         handleSize
       ); // Bottom
-      ctx.strokeRect(this.x - handleSize / 2, this.y + this.height / 2 - handleSize / 2, handleSize, handleSize); // Left
+      ctx.strokeRect(this.myX - handleSize / 2, this.myY + this.height / 2 - handleSize / 2, handleSize, handleSize); // Left
       ctx.strokeRect(
-        this.x + this.width - handleSize / 2,
-        this.y + this.height / 2 - handleSize / 2,
+        this.myX + this.width - handleSize / 2,
+        this.myY + this.height / 2 - handleSize / 2,
         handleSize,
         handleSize
       ); // Right
@@ -1594,16 +1579,16 @@ export class SmartText extends BaseSmartWidget {
       };
 
       // Draw circles at the slightly inset corners
-      if (!this.closeButton) drawHandle(this.x + margin, this.y + margin); // Top-left
-      drawHandle(this.x + this.width - margin, this.y + margin); // Top-right
-      drawHandle(this.x + margin, this.y + this.height - margin); // Bottom-left
-      drawHandle(this.x + this.width - margin, this.y + this.height - margin); // Bottom-right
+      if (!this.closeButton) drawHandle(this.myX + margin, this.myY + margin); // Top-left
+      drawHandle(this.myX + this.width - margin, this.myY + margin); // Top-right
+      drawHandle(this.myX + margin, this.myY + this.height - margin); // Bottom-left
+      drawHandle(this.myX + this.width - margin, this.myY + this.height - margin); // Bottom-right
     }
 
     // Draw visual plot
     if (this.isPlotted) {
       ctx.fillStyle = "rgba(255,0, 0, 0.1)";
-      ctx.fillRect(this.x, this.y, this.width, this.height);
+      ctx.fillRect(this.myX, this.myY, this.width, this.height);
     }
 
     // Draw close button
@@ -1611,40 +1596,40 @@ export class SmartText extends BaseSmartWidget {
       const radius = 2.5;
 
       ctx.beginPath();
-      ctx.moveTo(this.x + this.closeButtonOffsetX + radius, this.y + this.closeButtonOffsetY);
-      ctx.lineTo(this.x + this.closeButtonOffsetX + this.closeButtonWidth - radius, this.y + this.closeButtonOffsetY);
+      ctx.moveTo(this.myX + this.closeButtonOffsetX + radius, this.myY + this.closeButtonOffsetY);
+      ctx.lineTo(this.myX + this.closeButtonOffsetX + this.closeButtonWidth - radius, this.myY + this.closeButtonOffsetY);
       ctx.arcTo(
-        this.x + this.closeButtonOffsetX + this.closeButtonWidth,
-        this.y + this.closeButtonOffsetY,
-        this.x + this.closeButtonOffsetX + this.closeButtonWidth,
-        this.y + this.closeButtonOffsetY + radius,
+        this.myX + this.closeButtonOffsetX + this.closeButtonWidth,
+        this.myY + this.closeButtonOffsetY,
+        this.myX + this.closeButtonOffsetX + this.closeButtonWidth,
+        this.myY + this.closeButtonOffsetY + radius,
         radius
       );
       ctx.lineTo(
-        this.x + this.closeButtonOffsetX + this.closeButtonWidth,
-        this.y + this.closeButtonOffsetY + this.closeButtonHeight - radius
+        this.myX + this.closeButtonOffsetX + this.closeButtonWidth,
+        this.myY + this.closeButtonOffsetY + this.closeButtonHeight - radius
       );
       ctx.arcTo(
-        this.x + this.closeButtonOffsetX + this.closeButtonWidth,
-        this.y + this.closeButtonOffsetY + this.closeButtonHeight,
-        this.x + this.closeButtonOffsetX + this.closeButtonWidth - radius,
-        this.y + this.closeButtonOffsetY + this.closeButtonHeight,
+        this.myX + this.closeButtonOffsetX + this.closeButtonWidth,
+        this.myY + this.closeButtonOffsetY + this.closeButtonHeight,
+        this.myX + this.closeButtonOffsetX + this.closeButtonWidth - radius,
+        this.myY + this.closeButtonOffsetY + this.closeButtonHeight,
         radius
       );
-      ctx.lineTo(this.x + this.closeButtonOffsetX + radius, this.y + this.closeButtonOffsetY + this.closeButtonHeight);
+      ctx.lineTo(this.myX + this.closeButtonOffsetX + radius, this.myY + this.closeButtonOffsetY + this.closeButtonHeight);
       ctx.arcTo(
-        this.x + this.closeButtonOffsetX,
-        this.y + this.closeButtonOffsetY + this.closeButtonHeight,
-        this.x + this.closeButtonOffsetX,
-        this.y + this.closeButtonOffsetY + this.closeButtonHeight - radius,
+        this.myX + this.closeButtonOffsetX,
+        this.myY + this.closeButtonOffsetY + this.closeButtonHeight,
+        this.myX + this.closeButtonOffsetX,
+        this.myY + this.closeButtonOffsetY + this.closeButtonHeight - radius,
         radius
       );
-      ctx.lineTo(this.x + this.closeButtonOffsetX, this.y + this.closeButtonOffsetY + radius);
+      ctx.lineTo(this.myX + this.closeButtonOffsetX, this.myY + this.closeButtonOffsetY + radius);
       ctx.arcTo(
-        this.x + this.closeButtonOffsetX,
-        this.y + this.closeButtonOffsetY,
-        this.x + this.closeButtonOffsetX + radius,
-        this.y + this.closeButtonOffsetY,
+        this.myX + this.closeButtonOffsetX,
+        this.myY + this.closeButtonOffsetY,
+        this.myX + this.closeButtonOffsetX + radius,
+        this.myY + this.closeButtonOffsetY,
         radius
       );
       ctx.closePath();
@@ -1667,8 +1652,8 @@ export class SmartText extends BaseSmartWidget {
         ctx.textBaseline = "middle";
         ctx.fillText(
           "x",
-          this.x + this.closeButtonOffsetX + this.closeButtonWidth / 2 + 0,
-          this.y + this.closeButtonOffsetY + this.closeButtonHeight / 2 + 0
+          this.myX + this.closeButtonOffsetX + this.closeButtonWidth / 2 + 0,
+          this.myY + this.closeButtonOffsetY + this.closeButtonHeight / 2 + 0
         );
       }
     }
@@ -1681,8 +1666,8 @@ export class SmartWidget extends BaseSmartWidget {
   constructor(x, y, width, height, node, options = {}) {
     super(node);
 
-    this.x = x;
-    this.y = y;
+    this.myX = x;
+    this.myY = y;
     this.width = width;
     this.height = height;
 
@@ -1741,24 +1726,23 @@ export class SmartWidget extends BaseSmartWidget {
   }
 
   draw(ctx) {
-    this.y -= this.fix_y
     // Draw half-horizontal circle
-    const centerX = this.x + this.radius;
-    const centerY = this.y + this.radius;
+    const centerX = this.myX + this.radius;
+    const centerY = this.myY + this.radius;
 
     // Draw rounded rectangle //HAS NO DETECT YET
     if (this.shape === Shapes.ROUND) {
       const radius = Math.min(this.width, this.height) / 5; // Adjust rounding level
       ctx.beginPath();
-      ctx.moveTo(this.x + radius, this.y);
-      ctx.lineTo(this.x + this.width - radius, this.y);
-      ctx.arcTo(this.x + this.width, this.y, this.x + this.width, this.y + radius, radius);
-      ctx.lineTo(this.x + this.width, this.y + this.height - radius);
-      ctx.arcTo(this.x + this.width, this.y + this.height, this.x + this.width - radius, this.y + this.height, radius);
-      ctx.lineTo(this.x + radius, this.y + this.height);
-      ctx.arcTo(this.x, this.y + this.height, this.x, this.y + this.height - radius, radius);
-      ctx.lineTo(this.x, this.y + radius);
-      ctx.arcTo(this.x, this.y, this.x + radius, this.y, radius);
+      ctx.moveTo(this.myX + radius, this.myY);
+      ctx.lineTo(this.myX + this.width - radius, this.myY);
+      ctx.arcTo(this.myX + this.width, this.myY, this.myX + this.width, this.myY + radius, radius);
+      ctx.lineTo(this.myX + this.width, this.myY + this.height - radius);
+      ctx.arcTo(this.myX + this.width, this.myY + this.height, this.myX + this.width - radius, this.myY + this.height, radius);
+      ctx.lineTo(this.myX + radius, this.myY + this.height);
+      ctx.arcTo(this.myX, this.myY + this.height, this.myX, this.myY + this.height - radius, radius);
+      ctx.lineTo(this.myX, this.myY + radius);
+      ctx.arcTo(this.myX, this.myY, this.myX + radius, this.myY, radius);
       ctx.closePath();
 
       ctx.fillStyle = this.color;
@@ -1775,7 +1759,7 @@ export class SmartWidget extends BaseSmartWidget {
     // Draw circle
     else if (this.shape === Shapes.CIRCLE) {
       ctx.beginPath();
-      ctx.arc(this.x + this.radius, this.y + this.radius, this.radius, 0, Math.PI * 2);
+      ctx.arc(this.myX + this.radius, this.myY + this.radius, this.radius, 0, Math.PI * 2);
       ctx.fillStyle = this.color;
       ctx.fill();
 
@@ -1792,12 +1776,12 @@ export class SmartWidget extends BaseSmartWidget {
       // Rounded on the left side only
       const radius = Math.min(this.width, this.height) / 5; // Adjust rounding level
       ctx.beginPath();
-      ctx.moveTo(this.x + radius, this.y); // Start at the top-left corner, slightly inside
-      ctx.arcTo(this.x, this.y, this.x, this.y + radius, radius); // Round the top-left corner
-      ctx.lineTo(this.x, this.y + this.height - radius); // Go down the left edge
-      ctx.arcTo(this.x, this.y + this.height, this.x + radius, this.y + this.height, radius); // Round the bottom-left corner
-      ctx.lineTo(this.x + this.width, this.y + this.height); // Go across the bottom edge
-      ctx.lineTo(this.x + this.width, this.y); // Go up the right edge
+      ctx.moveTo(this.myX + radius, this.myY); // Start at the top-left corner, slightly inside
+      ctx.arcTo(this.myX, this.myY, this.myX, this.myY + radius, radius); // Round the top-left corner
+      ctx.lineTo(this.myX, this.myY + this.height - radius); // Go down the left edge
+      ctx.arcTo(this.myX, this.myY + this.height, this.myX + radius, this.myY + this.height, radius); // Round the bottom-left corner
+      ctx.lineTo(this.myX + this.width, this.myY + this.height); // Go across the bottom edge
+      ctx.lineTo(this.myX + this.width, this.myY); // Go up the right edge
       ctx.closePath();
       ctx.fillStyle = this.color;
       ctx.fill();
@@ -1814,13 +1798,13 @@ export class SmartWidget extends BaseSmartWidget {
       // Rounded on the right side only
       const radius = Math.min(this.width, this.height) / 5; // Adjust rounding level
       ctx.beginPath();
-      ctx.moveTo(this.x, this.y); // Start at the top-left corner
-      ctx.lineTo(this.x + this.width - radius, this.y); // Go across the top edge
-      ctx.arcTo(this.x + this.width, this.y, this.x + this.width, this.y + radius, radius); // Round the top-right corner
-      ctx.lineTo(this.x + this.width, this.y + this.height - radius); // Go down the right edge
-      ctx.arcTo(this.x + this.width, this.y + this.height, this.x + this.width - radius, this.y + this.height, radius); // Round the bottom-right corner
-      ctx.lineTo(this.x, this.y + this.height); // Go across the bottom edge
-      ctx.lineTo(this.x, this.y); // Go up the left edge
+      ctx.moveTo(this.myX, this.myY); // Start at the top-left corner
+      ctx.lineTo(this.myX + this.width - radius, this.myY); // Go across the top edge
+      ctx.arcTo(this.myX + this.width, this.myY, this.myX + this.width, this.myY + radius, radius); // Round the top-right corner
+      ctx.lineTo(this.myX + this.width, this.myY + this.height - radius); // Go down the right edge
+      ctx.arcTo(this.myX + this.width, this.myY + this.height, this.myX + this.width - radius, this.myY + this.height, radius); // Round the bottom-right corner
+      ctx.lineTo(this.myX, this.myY + this.height); // Go across the bottom edge
+      ctx.lineTo(this.myX, this.myY); // Go up the left edge
       ctx.closePath();
       ctx.fillStyle = this.color;
       ctx.fill();
@@ -1903,22 +1887,22 @@ export class SmartWidget extends BaseSmartWidget {
     // Draw rectangle
     else if (this.shape === Shapes.SQUARE) {
       ctx.fillStyle = this.color;
-      ctx.fillRect(this.x, this.y, this.width, this.height);
+      ctx.fillRect(this.myX, this.myY, this.width, this.height);
 
       // Draw outline if enabled
       if (this.outline) {
         ctx.strokeStyle = this.outlineColor;
         ctx.lineWidth = this.outlineWidth;
-        ctx.strokeRect(this.x, this.y, this.width, this.height);
+        ctx.strokeRect(this.myX, this.myY, this.width, this.height);
       }
     }
 
     // Draw triangle
     else if (this.shape === Shapes.TRIANGLE) {
       ctx.beginPath();
-      ctx.moveTo(this.x + this.width / 2, this.y);
-      ctx.lineTo(this.x, this.y + this.height);
-      ctx.lineTo(this.x + this.width, this.y + this.height);
+      ctx.moveTo(this.myX + this.width / 2, this.myY);
+      ctx.lineTo(this.myX, this.myY + this.height);
+      ctx.lineTo(this.myX + this.width, this.myY + this.height);
       ctx.closePath();
 
       ctx.fillStyle = this.color;
@@ -1934,8 +1918,8 @@ export class SmartWidget extends BaseSmartWidget {
 
     // Draw star
     else if (this.shape === Shapes.STAR) {
-      const centerX = this.x + this.width / 2;
-      const centerY = this.y + this.height / 2;
+      const centerX = this.myX + this.width / 2;
+      const centerY = this.myY + this.height / 2;
       const radius = Math.min(this.width, this.height) / 2;
       const spikes = 5;
       const step = Math.PI / spikes;
@@ -1965,8 +1949,8 @@ export class SmartWidget extends BaseSmartWidget {
     else if (this.shape === Shapes.ELLIPSE) {
       ctx.beginPath();
       ctx.ellipse(
-        this.x + this.width / 2,
-        this.y + this.height / 2,
+        this.myX + this.width / 2,
+        this.myY + this.height / 2,
         this.width / 2,
         this.height / 2,
         0,
@@ -1989,8 +1973,8 @@ export class SmartWidget extends BaseSmartWidget {
     if (!this.isVisible) return false;
     const { x, y } = this.mousePos;
 
-    const centerX = this.x + this.radius;
-    const centerY = this.y + this.radius;
+    const centerX = this.myX + this.radius;
+    const centerY = this.myY + this.radius;
 
     if (
       this.shape === Shapes.SQUARE ||
@@ -1999,9 +1983,9 @@ export class SmartWidget extends BaseSmartWidget {
       this.shape === Shapes.ROUND_R ||
       this.shape === Shapes.ELLIPSE
     ) {
-      return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
+      return x >= this.myX && x <= this.myX + this.width && y >= this.myY && y <= this.myY + this.height;
     } else if (this.shape === Shapes.CIRCLE) {
-      const distance = Math.sqrt((x - (this.x + this.radius)) ** 2 + (y - (this.y + this.radius)) ** 2);
+      const distance = Math.sqrt((x - (this.myX + this.radius)) ** 2 + (y - (this.myY + this.radius)) ** 2);
       return distance <= this.radius;
     } else if (this.shape === Shapes.HVL_CIRCLE) {
       const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
@@ -2027,16 +2011,16 @@ export class SmartWidget extends BaseSmartWidget {
   }
 
   visualClick() {
-    const originalPosX = this.x;
-    const originalPosY = this.y;
+    const originalPosX = this.myX;
+    const originalPosY = this.myY;
     setTimeout(() => {
       if (!this.allowVisualHover && this.resetColor) this.color = this.originalColor;
-      this.x = originalPosX;
-      this.y = originalPosY;
+      this.myX = originalPosX;
+      this.myY = originalPosY;
     }, 100);
     if (!this.allowVisualHover && this.resetColor) this.color = lightenColor(this.originalColor, 20);
-    this.x = originalPosX + 0.5;
-    this.y = originalPosY + 0.5;
+    this.myX = originalPosX + 0.5;
+    this.myY = originalPosY + 0.5;
   }
 
   visualHover() {
@@ -2065,8 +2049,8 @@ export class SmartInfo extends BaseSmartWidget {
   constructor(x, y, width, height, node, text, options = {}) {
     super(node);
 
-    this.x = x;
-    this.y = y;
+    this.myX = x;
+    this.myY = y;
     this.width = width;
     this.height = height;
 
@@ -2121,17 +2105,17 @@ export class SmartInfo extends BaseSmartWidget {
       this.done = true;
       this.width = this.originalWidth;
       this.height = this.originalHeight;
-      this.y = this.originalY;
+      this.myY = this.originalY;
     }, this.previewDuration);
   }
 
   restart(newText, newWidth = null, newY = null, newHeight = null, newDuration = 2000) {
     if (newWidth) {
       this.width = newWidth;
-      this.x = 512 / 2 - newWidth / 2; // recenter info
+      this.myX = 512 / 2 - newWidth / 2; // recenter info
     }
     if (newHeight) this.height = newHeight;
-    if (newY) this.y = newY;
+    if (newY) this.myY = newY;
 
     this.text = newText;
     this.previewDuration = newDuration;
@@ -2140,26 +2124,25 @@ export class SmartInfo extends BaseSmartWidget {
   }
 
   draw(ctx) {
-    this.y = this.fix_y
     if (this.done) return;
 
     // Draw rectangle
     if (this.shape === Shapes.SQUARE) {
       ctx.fillStyle = this.color;
-      ctx.fillRect(this.x, this.y, this.width, this.height);
+      ctx.fillRect(this.myX, this.myY, this.width, this.height);
 
       // Draw outline if enabled
       if (this.outline) {
         ctx.strokeStyle = this.outlineColor;
         ctx.lineWidth = this.outlineWidth;
-        ctx.strokeRect(this.x, this.y, this.width, this.height);
+        ctx.strokeRect(this.myX, this.myY, this.width, this.height);
       }
     }
 
     // Draw circle
     if (this.shape === Shapes.CIRCLE) {
       ctx.beginPath();
-      ctx.arc(this.x + this.radius, this.y + this.radius, this.radius, 0, Math.PI * 2);
+      ctx.arc(this.myX + this.radius, this.myY + this.radius, this.radius, 0, Math.PI * 2);
       ctx.fillStyle = this.color;
       ctx.fill();
 
@@ -2175,15 +2158,15 @@ export class SmartInfo extends BaseSmartWidget {
     if (this.shape === Shapes.ROUND) {
       const radius = Math.min(this.width, this.height) / 5; // Adjust rounding level
       ctx.beginPath();
-      ctx.moveTo(this.x + radius, this.y);
-      ctx.lineTo(this.x + this.width - radius, this.y);
-      ctx.arcTo(this.x + this.width, this.y, this.x + this.width, this.y + radius, radius);
-      ctx.lineTo(this.x + this.width, this.y + this.height - radius);
-      ctx.arcTo(this.x + this.width, this.y + this.height, this.x + this.width - radius, this.y + this.height, radius);
-      ctx.lineTo(this.x + radius, this.y + this.height);
-      ctx.arcTo(this.x, this.y + this.height, this.x, this.y + this.height - radius, radius);
-      ctx.lineTo(this.x, this.y + radius);
-      ctx.arcTo(this.x, this.y, this.x + radius, this.y, radius);
+      ctx.moveTo(this.myX + radius, this.myY);
+      ctx.lineTo(this.myX + this.width - radius, this.myY);
+      ctx.arcTo(this.myX + this.width, this.myY, this.myX + this.width, this.myY + radius, radius);
+      ctx.lineTo(this.myX + this.width, this.myY + this.height - radius);
+      ctx.arcTo(this.myX + this.width, this.myY + this.height, this.myX + this.width - radius, this.myY + this.height, radius);
+      ctx.lineTo(this.myX + radius, this.myY + this.height);
+      ctx.arcTo(this.myX, this.myY + this.height, this.myX, this.myY + this.height - radius, radius);
+      ctx.lineTo(this.myX, this.myY + radius);
+      ctx.arcTo(this.myX, this.myY, this.myX + radius, this.myY, radius);
       ctx.closePath();
 
       ctx.fillStyle = this.color;
@@ -2200,9 +2183,9 @@ export class SmartInfo extends BaseSmartWidget {
     // Draw triangle
     if (this.shape === Shapes.TRIANGLE) {
       ctx.beginPath();
-      ctx.moveTo(this.x + this.width / 2, this.y);
-      ctx.lineTo(this.x, this.y + this.height);
-      ctx.lineTo(this.x + this.width, this.y + this.height);
+      ctx.moveTo(this.myX + this.width / 2, this.myY);
+      ctx.lineTo(this.myX, this.myY + this.height);
+      ctx.lineTo(this.myX + this.width, this.myY + this.height);
       ctx.closePath();
 
       ctx.fillStyle = this.color;
@@ -2218,8 +2201,8 @@ export class SmartInfo extends BaseSmartWidget {
 
     // Draw star
     if (this.shape === Shapes.STAR) {
-      const centerX = this.x + this.width / 2;
-      const centerY = this.y + this.height / 2;
+      const centerX = this.myX + this.width / 2;
+      const centerY = this.myY + this.height / 2;
       const radius = Math.min(this.width, this.height) / 2;
       const spikes = 5;
       const step = Math.PI / spikes;
@@ -2249,8 +2232,8 @@ export class SmartInfo extends BaseSmartWidget {
     if (this.shape === Shapes.ELLIPSE) {
       ctx.beginPath();
       ctx.ellipse(
-        this.x + this.width / 2,
-        this.y + this.height / 2,
+        this.myX + this.width / 2,
+        this.myY + this.height / 2,
         this.width / 2,
         this.height / 2,
         0,
@@ -2274,16 +2257,16 @@ export class SmartInfo extends BaseSmartWidget {
       ctx.font = this.font;
       ctx.textAlign = this.textAlign;
       ctx.textBaseline = this.textBaseline;
-      ctx.fillText(this.text, this.x + this.width / 2 + this.textXoffset, this.y + this.height / 2 + this.textYoffset);
+      ctx.fillText(this.text, this.myX + this.width / 2 + this.textXoffset, this.myY + this.height / 2 + this.textYoffset);
     }
   }
 
   isMouseIn() {
     const { x, y } = this.mousePos;
     if (this.shape === Shapes.SQUARE || this.shape === Shapes.ROUND || this.shape === Shapes.ELLIPSE) {
-      return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
+      return x >= this.myX && x <= this.myX + this.width && y >= this.myY && y <= this.myY + this.height;
     } else if (this.shape === Shapes.CIRCLE || this.shape === Shapes.STAR) {
-      const distance = Math.sqrt((x - (this.x + this.radius)) ** 2 + (y - (this.y + this.radius)) ** 2);
+      const distance = Math.sqrt((x - (this.myX + this.radius)) ** 2 + (y - (this.myY + this.radius)) ** 2);
       return distance <= this.radius;
     }
 
@@ -2312,8 +2295,8 @@ export class SmartInfo extends BaseSmartWidget {
 export class SmartLoading extends BaseSmartWidget {
   constructor(x, y, node) {
     super(node);
-    this.x = x;
-    this.y = y;
+    this.myX = x;
+    this.myY = y;
     this.radius = 20;
     this.angle = 0;
     this.color = "#cd7f32";
@@ -2341,13 +2324,13 @@ export class SmartLoading extends BaseSmartWidget {
     //Draw circle
     if (this.allowInnerCircle) {
       ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.arc(this.myX, this.myY, this.radius, 0, Math.PI * 2);
       ctx.fillStyle = this.innerCircleColor;
       ctx.fill();
     }
 
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, this.angle, this.angle + Math.PI / 2);
+    ctx.arc(this.myX, this.myY, this.radius, this.angle, this.angle + Math.PI / 2);
     ctx.strokeStyle = this.color;
     ctx.lineWidth = this.lineWidth;
     ctx.lineCap = "round";
@@ -2360,8 +2343,8 @@ export class SmartLabel extends BaseSmartWidget {
   constructor(x, y, width, height, node, text, options = {}) {
     super(node);
 
-    this.x = x;
-    this.y = y;
+    this.myX = x;
+    this.myY = y;
     this.width = width;
     this.height = height;
 
@@ -2388,7 +2371,7 @@ export class SmartLabel extends BaseSmartWidget {
       ctx.font = this.font;
       ctx.textAlign = this.textAlign;
       ctx.textBaseline = this.textBaseline;
-      ctx.fillText(this.text, this.x + this.textXoffset, this.y + this.textYoffset);
+      ctx.fillText(this.text, this.myX + this.textXoffset, this.myY + this.textYoffset);
       if (this.textWidth === null) {
         const textMetrics = ctx.measureText(this.text);
         this.textWidth = textMetrics.width;
@@ -2437,7 +2420,7 @@ export class SmartButton extends SmartWidget {
 
       if (this.tagPosition === "left") {
         // Round only the left side
-        ctx.roundRect(this.x + 0.5, this.y + 0.5, this.withTagWidth, this.height - 1, [
+        ctx.roundRect(this.myX + 0.5, this.myY + 0.5, this.withTagWidth, this.height - 1, [
           this.tagRound,
           0,
           0,
@@ -2445,7 +2428,7 @@ export class SmartButton extends SmartWidget {
         ]);
       } else {
         // Round only the right side
-        ctx.roundRect(this.x + this.width - this.withTagWidth - 0.5, this.y + 0.5, this.withTagWidth, this.height - 1, [
+        ctx.roundRect(this.myX + this.width - this.withTagWidth - 0.5, this.myY + 0.5, this.withTagWidth, this.height - 1, [
           0,
           this.tagRound,
           this.tagRound,
@@ -2462,7 +2445,7 @@ export class SmartButton extends SmartWidget {
       ctx.font = this.font;
       ctx.textAlign = this.textAlign;
       ctx.textBaseline = this.textBaseline;
-      ctx.fillText(this.text, this.x + this.width / 2 + this.textXoffset, this.y + this.height / 2 + this.textYoffset);
+      ctx.fillText(this.text, this.myX + this.width / 2 + this.textXoffset, this.myY + this.height / 2 + this.textYoffset);
     }
   }
 }
@@ -2494,8 +2477,8 @@ export class SmartSlider extends SmartWidget {
 
     // Calculate handle position based on initial value
     this.handleX =
-      this.x + ((this.value - this.minValue) / (this.maxValue - this.minValue)) * (this.width - this.handleWidth);
-    this.handleY = this.y + (this.height - this.handleHeight) / 2;
+      this.myX + ((this.value - this.minValue) / (this.maxValue - this.minValue)) * (this.width - this.handleWidth);
+    this.handleY = this.myY + (this.height - this.handleHeight) / 2;
 
     // Track dragging state
     this.isDragging = false;
@@ -2511,9 +2494,9 @@ export class SmartSlider extends SmartWidget {
   handleMove() {
     if (this.isDragging) {
       const { x } = this.mousePos;
-      this.handleX = Math.max(this.x, Math.min(x - this.handleWidth / 2, this.x + this.width - this.handleWidth));
+      this.handleX = Math.max(this.myX, Math.min(x - this.handleWidth / 2, this.myX + this.width - this.handleWidth));
       this.value =
-        this.minValue + ((this.handleX - this.x) / (this.width - this.handleWidth)) * (this.maxValue - this.minValue);
+        this.minValue + ((this.handleX - this.myX) / (this.width - this.handleWidth)) * (this.maxValue - this.minValue);
 
       if (this.onValueChange) {
         this.onValueChange(this.value);
@@ -2543,41 +2526,40 @@ export class SmartSlider extends SmartWidget {
   isMouseInTrack() {
     const { x, y } = this.mousePos;
     return (
-      x >= this.x &&
-      x <= this.x + this.width &&
-      y >= this.y + (this.height - this.trackHeight) / 2 &&
-      y <= this.y + (this.height + this.trackHeight) / 2
+      x >= this.myX &&
+      x <= this.myX + this.width &&
+      y >= this.myY + (this.height - this.trackHeight) / 2 &&
+      y <= this.myY + (this.height + this.trackHeight) / 2
     );
   }
 
   draw(ctx) {
-    this.y -= this.fix_y
-    const trackY = this.y + (this.handleHeight - this.height) / 2;
+    const trackY = this.myY + (this.handleHeight - this.height) / 2;
 
     // Draw the track
     //ctx.fillStyle = this.trackColor;
-    //ctx.fillRect(this.x, trackY, this.width, this.height);
+    //ctx.fillRect(this.myX, trackY, this.width, this.height);
     ctx.fillStyle = this.trackColor;
     ctx.beginPath();
-    ctx.roundRect(this.x, trackY, this.width, this.height, 5);
+    ctx.roundRect(this.myX, trackY, this.width, this.height, 5);
     ctx.fill();
 
     // Calculate handle position correctly
     const handleX =
-      this.x + ((this.value - this.minValue) / (this.maxValue - this.minValue)) * (this.width - this.handleWidth);
+      this.myX + ((this.value - this.minValue) / (this.maxValue - this.minValue)) * (this.width - this.handleWidth);
 
     // Draw the progress
     if (this.isProgressBar) {
       const progressWidth = ((this.value - this.minValue) / (this.maxValue - this.minValue)) * this.width;
       ctx.fillStyle = this.handleColor; // You can change this to any color for the progress
       ctx.beginPath();
-      ctx.roundRect(this.x, trackY, progressWidth, this.height, 5);
+      ctx.roundRect(this.myX, trackY, progressWidth, this.height, 5);
       ctx.fill();
     } else {
       // Draw the handle
       ctx.fillStyle = this.handleColor;
       ctx.beginPath();
-      ctx.roundRect(handleX, this.y, this.handleWidth, this.handleHeight, 5);
+      ctx.roundRect(handleX, this.myY, this.handleWidth, this.handleHeight, 5);
       ctx.fill();
     }
 
@@ -2591,8 +2573,8 @@ export class SmartSlider extends SmartWidget {
       ctx.textBaseline = this.textBaseline;
       ctx.fillText(
         `${this.text}${this.value.toFixed(2)}`,
-        this.x + this.width / 2,
-        this.y + this.height / 2 + this.textYoffset
+        this.myX + this.width / 2,
+        this.myY + this.height / 2 + this.textYoffset
       );
       return;
     }
@@ -2619,8 +2601,8 @@ export class SmartSlider extends SmartWidget {
     ctx.textBaseline = this.textBaseline;
     ctx.fillText(
       `${this.text}${this.value.toFixed(2)}`,
-      this.x + this.width / 2,
-      this.y + this.height / 2 + this.textYoffset
+      this.myX + this.width / 2,
+      this.myY + this.height / 2 + this.textYoffset
     );
   }
 }
@@ -2680,21 +2662,21 @@ export class SmartSwitch extends SmartWidget {
 
   draw(ctx) {
     super.draw(ctx);
-    const trackY = this.y + (this.handleHeight - this.height) / 2;
+    const trackY = this.myY + (this.handleHeight - this.height) / 2;
 
     // Draw the track
     ctx.fillStyle = this.trackColor;
     ctx.beginPath();
-    ctx.roundRect(this.x, trackY, this.width, this.height, 5);
+    ctx.roundRect(this.myX, trackY, this.width, this.height, 5);
     ctx.fill();
 
     // Calculate handle position correctly
-    const handleX = this.isOn ? this.x : this.x + this.width / 2;
+    const handleX = this.isOn ? this.myX : this.myX + this.width / 2;
 
     // Draw the handle
     ctx.fillStyle = this.handleColor;
     ctx.beginPath();
-    ctx.roundRect(handleX, this.y, this.handleWidth, this.handleHeight, 5);
+    ctx.roundRect(handleX, this.myY, this.handleWidth, this.handleHeight, 5);
     ctx.fill();
 
     // Draw text on
@@ -2702,14 +2684,14 @@ export class SmartSwitch extends SmartWidget {
     ctx.font = this.font;
     ctx.textAlign = "center";
     ctx.textBaseline = this.textBaseline;
-    ctx.fillText(this.textOn, this.x + this.width / 4, this.y + this.height / 2 + this.textYoffset);
+    ctx.fillText(this.textOn, this.myX + this.width / 4, this.myY + this.height / 2 + this.textYoffset);
 
     // Draw text off
     ctx.fillStyle = this.textOffColor;
     ctx.font = this.font;
     ctx.textAlign = "center";
     ctx.textBaseline = this.textBaseline;
-    ctx.fillText(this.textOff, this.x + this.width / 2 + this.width / 4, this.y + this.height / 2 + this.textYoffset);
+    ctx.fillText(this.textOff, this.myX + this.width / 2 + this.width / 4, this.myY + this.height / 2 + this.textYoffset);
   }
 }
 
@@ -2756,7 +2738,7 @@ export class SmartCheckBox extends SmartWidget {
     // Draw the background
     ctx.fillStyle = this.trackColor;
     ctx.beginPath();
-    ctx.roundRect(this.x, this.y, this.width, this.height, 5);
+    ctx.roundRect(this.myX, this.myY, this.width, this.height, 5);
     ctx.fill();
 
     // Draw the handle
@@ -2764,8 +2746,8 @@ export class SmartCheckBox extends SmartWidget {
     ctx.fillStyle = this.handleColor;
     ctx.beginPath();
     ctx.roundRect(
-      this.x + this.gap / 2,
-      this.y + this.gap / 2,
+      this.myX + this.gap / 2,
+      this.myY + this.gap / 2,
       this.width - this.gap,
       this.height - this.gap,
       5 - this.gap / 2
@@ -2778,13 +2760,13 @@ export class SmartPaintArea extends BaseSmartWidget {
   constructor(x, y, width, height, node) {
     super(node);
 
-    this.x = x;
-    this.y = y;
+    this.myX = x;
+    this.myY = y;
     this.width = width;
     this.height = height;
 
-    this.yOffset = 0;
-    this.xOffset = 0;
+    this.myYOffset = 0;
+    this.myXOffset = 0;
 
     this.nodeYoffset = 50;
     this.nodeXoffset = 0;
@@ -2835,7 +2817,6 @@ export class SmartPaintArea extends BaseSmartWidget {
 
   draw(ctx) {
     this.node.setSize([512, 592]);
-    this.y -= this.fix_y
     if (this.ctx === null) this.ctx = ctx;
     const { x, y } = this.mousePos;
 
@@ -2856,22 +2837,22 @@ export class SmartPaintArea extends BaseSmartWidget {
 
           // Draw a line with white color
           activeCtx.lineTo(
-            (x - this.x - this.xOffset) / this.scaleFactor,
-            (y - this.y - this.yOffset) / this.scaleFactor
+            (x - this.myX - this.myXOffset) / this.scaleFactor,
+            (y - this.myY - this.myYOffset) / this.scaleFactor
           );
           activeCtx.stroke();
           activeCtx.beginPath();
           activeCtx.moveTo(
-            (x - this.x - this.xOffset) / this.scaleFactor,
-            (y - this.y - this.yOffset) / this.scaleFactor
+            (x - this.myX - this.myXOffset) / this.scaleFactor,
+            (y - this.myY - this.myYOffset) / this.scaleFactor
           );
         } else {
           // Clear the area in a circular shape for foregroundCtx
           activeCtx.save();
           activeCtx.beginPath();
           activeCtx.arc(
-            (x - this.x - this.xOffset) / this.scaleFactor,
-            (y - this.y - this.yOffset) / this.scaleFactor,
+            (x - this.myX - this.myXOffset) / this.scaleFactor,
+            (y - this.myY - this.myYOffset) / this.scaleFactor,
             this.brushSize / this.scaleFactor, // radius in scale
             0,
             Math.PI * 2
@@ -2886,14 +2867,14 @@ export class SmartPaintArea extends BaseSmartWidget {
         // Normal drawing logic
         activeCtx.strokeStyle = strokeStyle;
         activeCtx.lineTo(
-          (x - this.x - this.xOffset) / this.scaleFactor,
-          (y - this.y - this.yOffset) / this.scaleFactor
+          (x - this.myX - this.myXOffset) / this.scaleFactor,
+          (y - this.myY - this.myYOffset) / this.scaleFactor
         );
         activeCtx.stroke();
         activeCtx.beginPath();
         activeCtx.moveTo(
-          (x - this.x - this.xOffset) / this.scaleFactor,
-          (y - this.y - this.yOffset) / this.scaleFactor
+          (x - this.myX - this.myXOffset) / this.scaleFactor,
+          (y - this.myY - this.myYOffset) / this.scaleFactor
         );
       }
     } else {
@@ -2907,10 +2888,10 @@ export class SmartPaintArea extends BaseSmartWidget {
     ctx.scale(this.scaleFactor, this.scaleFactor);
 
     // Ensure the background canvas is drawn first
-    ctx.drawImage(this.backgroundCanvas, this.x / this.scaleFactor, this.y / this.scaleFactor);
+    ctx.drawImage(this.backgroundCanvas, this.myX / this.scaleFactor, this.myY / this.scaleFactor);
 
     // Then draw the foreground canvas on top
-    ctx.drawImage(this.foregroundCanvas, this.x / this.scaleFactor, this.y / this.scaleFactor);
+    ctx.drawImage(this.foregroundCanvas, this.myX / this.scaleFactor, this.myY / this.scaleFactor);
 
     if (this.isCheckerboardOn) drawAngledStrips(ctx, this.width, this.height, this.scaleFactor);
 
@@ -2943,7 +2924,7 @@ export class SmartPaintArea extends BaseSmartWidget {
 
   isMouseIn() {
     const { x, y } = this.mousePos;
-    return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
+    return x >= this.myX && x <= this.myX + this.width && y >= this.myY && y <= this.myY + this.height;
   }
 
   setNewSize(size, scale) {
@@ -2961,8 +2942,8 @@ export class SmartPaintArea extends BaseSmartWidget {
     this.scaleFactor = Math.min(scaleFactorX, scaleFactorY);
 
     // Center the canvas on the x and y axis of the node
-    this.x = (this.node.width - newX * this.scaleFactor) / 2;
-    this.y = (this.node.height + this.nodeYoffset - newY * this.scaleFactor) / 2;
+    this.myX = (this.node.width - newX * this.scaleFactor) / 2;
+    this.myY = (this.node.height + this.nodeYoffset - newY * this.scaleFactor) / 2;
 
     // Update the width and height properties
     this.width = newX;
@@ -3382,8 +3363,8 @@ export class SmartPreview extends BaseSmartWidget {
   constructor(x, y, width, height, node) {
     super(node);
 
-    this.x = x;
-    this.y = y;
+    this.myX = x;
+    this.myY = y;
     this.width = width;
     this.height = height;
 
@@ -3392,8 +3373,8 @@ export class SmartPreview extends BaseSmartWidget {
     this.dashColor = "black";
     this.widthLimit = this.width;
     this.heightLimit = this.height;
-    this.yOffset = 80;
-    this.xOffset = 0;
+    this.myYOffset = 80;
+    this.myXOffset = 0;
     this.isVisible = true;
     this.allowInnerCircle = false;
     this.init();
@@ -3415,15 +3396,14 @@ export class SmartPreview extends BaseSmartWidget {
   }
 
   draw(ctx) {
-    this.y -= this.fix_y
 
     // ctx.fillStyle = "red"
-    // ctx.fillRect(this.x, this.y, this.width, this.height);
+    // ctx.fillRect(this.myX, this.myY, this.width, this.height);
     const { x, y } = this.mousePos;
     if (!this.isVisible) return;
     // if (x > this.widthLimit) return;
     // if (y > this.heightLimit) return;
-    if (y < this.yOffset) return;
+    if (y < this.myYOffset) return;
     if (!this.isMouseIn(x, y)) return;
     ctx.beginPath();
     ctx.arc(x, y, this.brushSize, 0, Math.PI * 2);
@@ -3438,7 +3418,7 @@ export class SmartPreview extends BaseSmartWidget {
     ctx.setLineDash([]); // Reset line dash to solid
   }
   isMouseIn(x, y) {
-    return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
+    return x >= this.myX && x <= this.myX + this.width && y >= this.myY && y <= this.myY + this.height;
   }
   handleMove() {
     // AUTO PIN
@@ -3460,8 +3440,8 @@ export class SmartColorPicker extends BaseSmartWidget {
   constructor(x, y, width, height, node) {
     super(node);
 
-    this.x = x;
-    this.y = y;
+    this.myX = x;
+    this.myY = y;
     this.width = width;
     this.height = height;
 
@@ -3514,7 +3494,6 @@ export class SmartColorPicker extends BaseSmartWidget {
   }
 
   draw(ctx) {
-    this.y -=this.fix_y
     const transparentColor = "rgba(0, 0, 0, 0.0)"; // 100% transparency (semi-transparent red)
 
     // Ensure the context is set
@@ -3522,7 +3501,7 @@ export class SmartColorPicker extends BaseSmartWidget {
     if (!this.isVisible) return;
 
     // Create a horizontal gradient for hue
-    const hueGradient = ctx.createLinearGradient(this.x, this.y, this.x + this.width, this.y);
+    const hueGradient = ctx.createLinearGradient(this.myX, this.myY, this.myX + this.width, this.myY);
     hueGradient.addColorStop(0, "red");
     hueGradient.addColorStop(0.17, "orange");
     hueGradient.addColorStop(0.34, "yellow");
@@ -3533,10 +3512,10 @@ export class SmartColorPicker extends BaseSmartWidget {
 
     // Fill the canvas with the hue gradient
     ctx.fillStyle = this.isGhost ? transparentColor : hueGradient;
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+    ctx.fillRect(this.myX, this.myY, this.width, this.height);
 
     // Create a vertical gradient for brightness
-    const brightnessGradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+    const brightnessGradient = ctx.createLinearGradient(this.myX, this.myY, this.myX, this.myY + this.height);
     brightnessGradient.addColorStop(0, "rgba(255, 255, 255, 1)"); // White
     brightnessGradient.addColorStop(0.5, "rgba(255, 255, 255, 0)"); // Transparent
     brightnessGradient.addColorStop(0.5, "rgba(0, 0, 0, 0)"); // Transparent
@@ -3545,7 +3524,7 @@ export class SmartColorPicker extends BaseSmartWidget {
     // Use global composite operation to blend the gradients
     ctx.globalCompositeOperation = "multiply";
     ctx.fillStyle = this.isGhost ? transparentColor : brightnessGradient;
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+    ctx.fillRect(this.myX, this.myY, this.width, this.height);
 
     // Reset the global composite operation to default
     ctx.globalCompositeOperation = "source-over";
@@ -3574,7 +3553,7 @@ export class SmartColorPicker extends BaseSmartWidget {
     // this.ctx.clearRect(0, this.canvas.height - 30, this.canvas.width, 30); // Adjusted coordinates
     //if(!this.selectedColor) return;
     ctx.fillStyle = this.selectedColor;
-    ctx.fillRect(this.x, this.y + this.height, this.width, this.heightDisplay); // Adjusted coordinates
+    ctx.fillRect(this.myX, this.myY + this.height, this.width, this.heightDisplay); // Adjusted coordinates
     // // Add text to show the RGB value
     // this.ctx.fillStyle = "#000";
     // this.ctx.font = "16px Arial";
@@ -3586,15 +3565,15 @@ export class SmartColorPicker extends BaseSmartWidget {
   }
 
   isMouseIn(x, y) {
-    return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
+    return x >= this.myX && x <= this.myX + this.width && y >= this.myY && y <= this.myY + this.height;
   }
 }
 
 export class SmartDropdownMenu extends BaseSmartWidget {
   constructor(x, y, width, height, node, title, items) {
     super(node);
-    this.x = x;
-    this.y = y;
+    this.myX = x;
+    this.myY = y;
     this.width = width;
     this.height = height;
     this.items = items;
@@ -3634,7 +3613,6 @@ export class SmartDropdownMenu extends BaseSmartWidget {
   }
 
   draw(ctx) {
-    this.y -= this.fix_y;
     if (!this.isVisible) return;
     this.drawButton(ctx);
     if (this.isOpen) {
@@ -3645,7 +3623,7 @@ export class SmartDropdownMenu extends BaseSmartWidget {
   drawButton(ctx) {
     ctx.fillStyle = this.bgColor;
     ctx.beginPath();
-    ctx.roundRect(this.x, this.y, this.width, this.height, 5);
+    ctx.roundRect(this.myX, this.myY, this.width, this.height, 5);
     ctx.fill();
 
     // Draw outline if enabled
@@ -3661,7 +3639,7 @@ export class SmartDropdownMenu extends BaseSmartWidget {
     ctx.textBaseline = this.textBaseline;
 
     const text = this.selectedItemIndex >= 0 ? this.items[this.selectedItemIndex] : this.title;
-    ctx.fillText(text, this.x + this.width / 2, this.y + this.height / 2 + this.textYOffset);
+    ctx.fillText(text, this.myX + this.width / 2, this.myY + this.height / 2 + this.textYOffset);
   }
 
   drawMenu(ctx) {
@@ -3670,18 +3648,18 @@ export class SmartDropdownMenu extends BaseSmartWidget {
 
     ctx.fillStyle = this.dropMenuBg;
     ctx.beginPath();
-    ctx.roundRect(this.x - 1, this.y - 1 + this.height + this.dropMenuOffset, menuWidth, menuHeight, 5);
+    ctx.roundRect(this.myX - 1, this.myY - 1 + this.height + this.dropMenuOffset, menuWidth, menuHeight, 5);
     ctx.fill();
 
     for (let i = 0; i < this.items.length; i++) {
-      const itemY = this.y + this.height * (i + 1) + this.dropMenuOffset + i * this.dropMenuGap;
+      const itemY = this.myY + this.height * (i + 1) + this.dropMenuOffset + i * this.dropMenuGap;
       ctx.fillStyle = i === this.selectedItemIndex ? this.handleColor : this.bgColor;
       ctx.beginPath();
-      ctx.roundRect(this.x, itemY, this.width, this.height, 5);
+      ctx.roundRect(this.myX, itemY, this.width, this.height, 5);
       ctx.fill();
 
       ctx.fillStyle = i === this.selectedItemIndex ? "black" : this.textColor;
-      ctx.fillText(this.items[i], this.x + this.width / 2, itemY + this.height / 2 + this.textYOffset);
+      ctx.fillText(this.items[i], this.myX + this.width / 2, itemY + this.height / 2 + this.textYOffset);
     }
   }
 
@@ -3691,7 +3669,7 @@ export class SmartDropdownMenu extends BaseSmartWidget {
       this.toggle();
     } else if (this.isOpen) {
       for (let i = 0; i < this.items.length; i++) {
-        const itemY = this.y + this.height * (i + 1) + this.dropMenuOffset + i * this.dropMenuGap;
+        const itemY = this.myY + this.height * (i + 1) + this.dropMenuOffset + i * this.dropMenuGap;
         if (y >= itemY && y <= itemY + this.height) {
           this.select(i);
           break;
@@ -3702,7 +3680,7 @@ export class SmartDropdownMenu extends BaseSmartWidget {
 
   isMouseIn() {
     const { x, y } = this.mousePos;
-    return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
+    return x >= this.myX && x <= this.myX + this.width && y >= this.myY && y <= this.myY + this.height;
   }
 
   isMouseInMenu() {
@@ -3715,10 +3693,10 @@ export class SmartDropdownMenu extends BaseSmartWidget {
 
     // Check if the mouse is inside the dropdown menu area
     if (
-      x >= this.x - 1 &&
-      x <= this.x - 1 + menuWidth &&
-      y >= this.y - 1 + this.height + this.dropMenuOffset &&
-      y <= this.y - 1 + this.height + this.dropMenuOffset + menuHeight
+      x >= this.myX - 1 &&
+      x <= this.myX - 1 + menuWidth &&
+      y >= this.myY - 1 + this.height + this.dropMenuOffset &&
+      y <= this.myY - 1 + this.height + this.dropMenuOffset + menuHeight
     ) {
       return true;
     }
@@ -3800,8 +3778,8 @@ export class CanvasButtonManager {
 // TODO CLASSES
 export class TextObject {
   constructor(text) {
-    this.x = 0;
-    this.y = 0;
+    this.myX = 0;
+    this.myY = 0;
     this.width = 50;
     this.height = 50;
     this.text = text;

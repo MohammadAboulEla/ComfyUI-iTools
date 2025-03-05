@@ -120,7 +120,7 @@ app.registerExtension({
     const bLoad = new SmartButton(startPosX, 5, 85, 20, node, "Load Image", {
       textXoffset: 0,
       fix_y: 45,
-      isVisible:false,
+      isVisible:true,
       shape: Shapes.ROUND_L,
     });
     bLoad.onClick = () => {
@@ -203,7 +203,7 @@ app.registerExtension({
     const bText = new SmartButton(startPosX + 85, 5, 85, 20, node, "Add Text", {
       textXoffset: 0,
      fix_y: 45,
-     isVisible:false,
+     isVisible:true,
       shape: Shapes.SQUARE,
     });
     bText.onClick = () => {
@@ -248,7 +248,7 @@ app.registerExtension({
     const bPaste = new SmartButton(startPosX + 170, 5, 85, 20, node, "Paste Image", {
       textXoffset: 0,
       fix_y: 45,
-      isVisible:false,
+      isVisible:true,
       shape: Shapes.ROUND_R,
     });
     bPaste.onClick = async () => {
@@ -749,7 +749,7 @@ app.registerExtension({
         const ctx = pa.isPaintingBackground ? pa.backgroundCtx : pa.foregroundCtx;
         let img = canvasImgs.find((img) => img.isSelected);
         if (img && !img.markDelete) {
-          img.plotImageOnCanvas(ctx, pa.x, pa.y, dmS.selectedItemIndex);
+          img.plotImageOnCanvas(ctx, pa.myX, pa.myY, dmS.selectedItemIndex);
         } else {
           showWarning("No Image Selected!");
         }
@@ -895,7 +895,6 @@ app.registerExtension({
     // COMMON NODE EVENTS
     node.onMouseDown = (e, pos, node) => {
       pickColor(e, "click");
-      if(allow_debug) console.log('pos',pos);
       selectedImg = canvasImgs.find((img) => img.isSelected);
       if (selectedImg) {
         selectedImg.isUnderCover = false;
@@ -959,7 +958,7 @@ app.registerExtension({
         canvasImgs.forEach((img) => {
           if (img.isSelected) {
             const ctx = pa.isPaintingBackground ? pa.backgroundCtx : pa.foregroundCtx;
-            img.plotImageOnCanvas(ctx, pa.x, pa.y, dmS.selectedItemIndex);
+            img.plotImageOnCanvas(ctx, pa.myX, pa.myY, dmS.selectedItemIndex);
           }
         });
 
