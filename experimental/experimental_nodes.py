@@ -186,9 +186,7 @@ class IToolsDomNode:
 
     def dom_func(self, **kwargs):
         counter = 0
-        print("dom start")
         for key, value in kwargs.items():
-            print("domFunc")
             print(key, value)
             if key == "counter":
                 counter = int(value)

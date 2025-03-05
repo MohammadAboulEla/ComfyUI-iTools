@@ -8,9 +8,23 @@ export class BaseSmartWidget {
     this.node = node;
     this._markDelete = false;
     this._mousePos = [0, 0];
+    this._fix_y = 0;
+    this.index = null
+    this.init()
   }
 
-  init() {}
+  getIndex(array, item) {
+    return array.indexOf(item);
+  }
+
+  init() {
+    Object.values(this.node.widgets).forEach((widget,index) => {
+      if (widget instanceof BaseSmartWidget ) {
+        this.index = index
+      }
+    });
+  }
+  
 
   isMouseDown() {
     return app.canvas.pointer.isDown;
@@ -25,6 +39,14 @@ export class BaseSmartWidget {
   delete() {
     this.node.widgets = this.node.widgets.filter((widget) => widget !== this);
     this.node.setDirtyCanvas(true, true);
+  }
+
+  get fix_y() {
+    return this._fix_y;
+  }
+
+  set fix_y(value) {
+    this._fix_y = this.index * 24 + value
   }
 
   get markDelete() {
@@ -52,7 +74,13 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
     this.initEventListeners();
   }
 
-  init() {}
+  init() {
+    Object.values(this.node.widgets).forEach((widget) => {
+      if (widget instanceof BaseSmartWidget) {
+        if(allow_debug) console.log('done',);
+      }
+    });
+  }
 
   initEventListeners() {
     app.canvas.onMouseDown = (e) => this.handleMouseDown(e); //works even out of node
@@ -115,6 +143,7 @@ export class SmartImage extends BaseSmartWidget {
   constructor(x, y, width, height, node, options = {}) {
     super(node);
     this.x = x;
+    this.fix_y = -744 + 180 + 255
     this.y = y;
     this.width = width;
     this.height = height;
@@ -143,7 +172,7 @@ export class SmartImage extends BaseSmartWidget {
 
     // properties for rotation
     this.rotateThreshold = 15;
-    this.rotateDrawMargin = this.rotateThreshold - 2.5 ;
+    this.rotateDrawMargin = this.rotateThreshold - 2.5;
     this.rotationAngle = 0;
     this.initialRotationAngle = 0;
     this.isRotating = false;
@@ -361,7 +390,7 @@ export class SmartImage extends BaseSmartWidget {
     if (this.isUnderCover) return;
     if (this.closeButton && this.isMouseInCloseButtonArea()) {
       this.markDelete = true;
-      if (this.onImgClosed) this.onImgClosed()
+      if (this.onImgClosed) this.onImgClosed();
       //this.delete
     }
     if (this.isMouseInResizeArea()) {
@@ -389,15 +418,17 @@ export class SmartImage extends BaseSmartWidget {
     } else if (this.isRotating) {
       this.handleRotateMove();
     } else if (this.isPicked) {
+      
       let newX = this.mousePos.x - this.pickOffset.x;
       let newY = this.mousePos.y - this.pickOffset.y;
-
+      
       // Corrected clamping logic
       this.x = Math.max(canvasX, Math.min(newX, canvasX + width));
-      this.y = Math.max(canvasY, Math.min(newY, canvasY + height));
+      this.y = Math.max(canvasY, Math.min(newY, canvasY + height)) - this.fix_y;
+      
+      //this.fix_y = this.pickOffset.y - this.mousePos.y
+      // this.reFixY = true
 
-      // this.closeButton.x = this.x + this.buttonXoffset;
-      // this.closeButton.y = this.y + this.buttonYoffset;
     }
 
     if (this.loader) {
@@ -760,6 +791,14 @@ export class SmartImage extends BaseSmartWidget {
   }
 
   draw(ctx) {
+    //this.y -= this.fix_y
+    // if(this.reFixY){
+    //   this.y -= this.fix_y
+    //   //this.reFixY = false
+    // }
+    
+    // if(allow_debug) console.log('this.y',this.y);
+    // if(allow_debug) console.log('this.fix_y',this.fix_y);
     if (this.markDelete) return;
 
     // Save the context state before transformations
@@ -843,7 +882,7 @@ export class SmartImage extends BaseSmartWidget {
       };
 
       // Draw circles at the slightly inset corners
-      if(!this.closeButton)drawHandle(this.x + margin, this.y + margin); // Top-left
+      if (!this.closeButton) drawHandle(this.x + margin, this.y + margin); // Top-left
       drawHandle(this.x + this.width - margin, this.y + margin); // Top-right
       drawHandle(this.x + margin, this.y + this.height - margin); // Bottom-left
       drawHandle(this.x + this.width - margin, this.y + this.height - margin); // Bottom-right
@@ -940,8 +979,8 @@ export class SmartText extends BaseSmartWidget {
     this.placeholderColor = "grey";
     this.img = new Image(); // Create an image object
     this.imgLoaded = true;
-    
-    this.text = "iTools"
+
+    this.text = "iTools";
     this.isPicked = false;
     this.isResizing = false; // Track if the user is resizing
     this.resizeAnchor = null; // Store the anchor point being resized (e.g., 'top-left', 'right', etc.)
@@ -958,16 +997,16 @@ export class SmartText extends BaseSmartWidget {
     this.closeButtonHeight = 10;
     this.closeButtonOffsetX = 10;
     this.closeButtonOffsetY = 10;
-    this.onClosed = null
+    this.onClosed = null;
 
     // properties of text
     this.textColor = "brown";
-    this.fontSize = 102
+    this.fontSize = 102;
     this.fontWeight = "bolder"; // Options: normal, bold, bolder, lighter, or numeric (100–900)
-    this.handleScale = 2.5 
-    this.width =  this.fontSize * this.handleScale;
+    this.handleScale = 2.5;
+    this.width = this.fontSize * this.handleScale;
     this.height = (this.fontSize * this.handleScale) / 2;
-    this.isItalic = false
+    this.isItalic = false;
     this.fonts = [
       "Arial",
       "Verdana",
@@ -979,7 +1018,7 @@ export class SmartText extends BaseSmartWidget {
       "Courier New",
       "Consolas",
       "Lucida Console",
-      "Comic Sans MS"
+      "Comic Sans MS",
     ];
     this.fontIndex = 0;
     this.fonts = [
@@ -993,17 +1032,17 @@ export class SmartText extends BaseSmartWidget {
       "Courier New",
       "Consolas",
       "Lucida Console",
-      "Comic Sans MS"
+      "Comic Sans MS",
     ];
     this.fontName = this.fonts[this.fontIndex];
     this.font = `${this.isItalic ? "italic" : ""} ${this.fontWeight} ${this.fontSize}px ${this.fontName}`;
-    this.textAlign= "center";
-    this.textBaseline= "middle";
-    this.isTextObject = true
+    this.textAlign = "center";
+    this.textBaseline = "middle";
+    this.isTextObject = true;
 
     // properties for rotation
     this.rotateThreshold = 15;
-    this.rotateDrawMargin = this.rotateThreshold - 2.5 ;
+    this.rotateDrawMargin = this.rotateThreshold - 2.5;
     this.rotationAngle = 0;
     this.initialRotationAngle = 0;
     this.isRotating = false;
@@ -1011,7 +1050,6 @@ export class SmartText extends BaseSmartWidget {
       x: this.width / 2,
       y: this.height / 2,
     };
-
 
     // Apply options if provided
     Object.assign(this, options);
@@ -1024,7 +1062,7 @@ export class SmartText extends BaseSmartWidget {
     this.fontName = this.fonts[this.fontIndex];
   }
   cycleFontWeight() {
-    const weights = ["normal", "bold"] //, "bolder", "lighter"/"100", "200", "300", "400", "500", "600", "700", "800", "900"];
+    const weights = ["normal", "bold"]; //, "bolder", "lighter"/"100", "200", "300", "400", "500", "600", "700", "800", "900"];
     const currentIndex = weights.indexOf(this.fontWeight);
     this.fontWeight = weights[(currentIndex + 1) % weights.length];
     this.font = `${this.fontWeight} ${this.fontSize}px ${this.fontName}`;
@@ -1080,7 +1118,7 @@ export class SmartText extends BaseSmartWidget {
     if (this.isUnderCover) return;
     if (this.closeButton && this.isMouseInCloseButtonArea()) {
       this.markDelete = true;
-      if (this.onClosed) this.onClosed()
+      if (this.onClosed) this.onClosed();
     }
     if (this.isMouseInResizeArea()) {
       this.isResizing = true;
@@ -1113,9 +1151,7 @@ export class SmartText extends BaseSmartWidget {
       // Corrected clamping logic
       this.x = Math.max(canvasX, Math.min(newX, canvasX + width));
       this.y = Math.max(canvasY, Math.min(newY, canvasY + height));
-
     }
-
   }
 
   handleClick() {
@@ -1374,7 +1410,7 @@ export class SmartText extends BaseSmartWidget {
       default:
         break;
     }
-    this.fontSize = this.width / this.handleScale
+    this.fontSize = this.width / this.handleScale;
   }
 
   fillImage(pa, scale, offsetY = 80) {
@@ -1456,11 +1492,10 @@ export class SmartText extends BaseSmartWidget {
 
     // Plot the text
     ctx.fillStyle = this.textColor;
-    ctx.font = `${this.isItalic ? "italic" : ""} ${this.fontWeight} ${this.fontSize * scale}px ${this.fontName}`
+    ctx.font = `${this.isItalic ? "italic" : ""} ${this.fontWeight} ${this.fontSize * scale}px ${this.fontName}`;
     ctx.textAlign = this.textAlign;
     ctx.textBaseline = this.textBaseline;
     ctx.fillText(this.text, scaledWidth / 2, scaledHeight / 2);
-    
 
     // Restore the context state
     ctx.restore();
@@ -1488,9 +1523,9 @@ export class SmartText extends BaseSmartWidget {
 
     // Translate back to the top-left corner of the image
     ctx.translate(-this.x - this.width / 2, -this.y - this.height / 2);
-    
+
     // Draw the text
-    if(this.text){
+    if (this.text) {
       ctx.fillStyle = "rgba(128, 128, 128, 0.0)";
       ctx.fillRect(this.x, this.y, this.width, this.height);
 
@@ -1498,12 +1533,7 @@ export class SmartText extends BaseSmartWidget {
       ctx.font = `${this.isItalic ? "italic" : ""} ${this.fontWeight} ${this.fontSize}px ${this.fontName}`;
       ctx.textAlign = this.textAlign;
       ctx.textBaseline = this.textBaseline;
-      ctx.fillText(
-        this.text,
-        this.x + this.width/2,
-        this.y + this.height/2
-      );
-
+      ctx.fillText(this.text, this.x + this.width / 2, this.y + this.height / 2);
     }
 
     // Draw resize handles (small outlined squares) at the edges and corners
@@ -1564,7 +1594,7 @@ export class SmartText extends BaseSmartWidget {
       };
 
       // Draw circles at the slightly inset corners
-      if(!this.closeButton)drawHandle(this.x + margin, this.y + margin); // Top-left
+      if (!this.closeButton) drawHandle(this.x + margin, this.y + margin); // Top-left
       drawHandle(this.x + this.width - margin, this.y + margin); // Top-right
       drawHandle(this.x + margin, this.y + this.height - margin); // Bottom-left
       drawHandle(this.x + this.width - margin, this.y + this.height - margin); // Bottom-right
@@ -1711,6 +1741,7 @@ export class SmartWidget extends BaseSmartWidget {
   }
 
   draw(ctx) {
+    this.y -= this.fix_y
     // Draw half-horizontal circle
     const centerX = this.x + this.radius;
     const centerY = this.y + this.radius;
@@ -2109,6 +2140,7 @@ export class SmartInfo extends BaseSmartWidget {
   }
 
   draw(ctx) {
+    this.y = this.fix_y
     if (this.done) return;
 
     // Draw rectangle
@@ -2519,6 +2551,7 @@ export class SmartSlider extends SmartWidget {
   }
 
   draw(ctx) {
+    this.y -= this.fix_y
     const trackY = this.y + (this.handleHeight - this.height) / 2;
 
     // Draw the track
@@ -2801,6 +2834,8 @@ export class SmartPaintArea extends BaseSmartWidget {
   }
 
   draw(ctx) {
+    this.node.setSize([512, 592]);
+    this.y -= this.fix_y
     if (this.ctx === null) this.ctx = ctx;
     const { x, y } = this.mousePos;
 
@@ -2883,7 +2918,7 @@ export class SmartPaintArea extends BaseSmartWidget {
   }
 
   handleDown(e) {
-    if(e.button !== 0) return; // return if right mouse click
+    if (e.button !== 0) return; // return if right mouse click
     if (this.isMouseIn()) {
       if (this.onPress) this.onPress();
       // Save the current state before starting to paint
@@ -3380,6 +3415,10 @@ export class SmartPreview extends BaseSmartWidget {
   }
 
   draw(ctx) {
+    this.y -= this.fix_y
+
+    // ctx.fillStyle = "red"
+    // ctx.fillRect(this.x, this.y, this.width, this.height);
     const { x, y } = this.mousePos;
     if (!this.isVisible) return;
     // if (x > this.widthLimit) return;
@@ -3475,6 +3514,7 @@ export class SmartColorPicker extends BaseSmartWidget {
   }
 
   draw(ctx) {
+    this.y -=this.fix_y
     const transparentColor = "rgba(0, 0, 0, 0.0)"; // 100% transparency (semi-transparent red)
 
     // Ensure the context is set
@@ -3526,7 +3566,7 @@ export class SmartColorPicker extends BaseSmartWidget {
 
     const pixel = this.ctx.getImageData(canvasX, canvasY, 1, 1).data;
     this.selectedColor = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
-    if(this.onValueChange) this.onValueChange(this.selectedColor);
+    if (this.onValueChange) this.onValueChange(this.selectedColor);
   }
 
   displaySelectedColor(ctx) {
@@ -3594,6 +3634,7 @@ export class SmartDropdownMenu extends BaseSmartWidget {
   }
 
   draw(ctx) {
+    this.y -= this.fix_y;
     if (!this.isVisible) return;
     this.drawButton(ctx);
     if (this.isOpen) {

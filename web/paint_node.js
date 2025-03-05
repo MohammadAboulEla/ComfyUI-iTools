@@ -41,7 +41,6 @@ app.registerExtension({
       return;
     }
     const window = globalThis;
-
     // if (allow_debug) {
     //   console.log("window", window);
     //   console.log("nodeType", nodeType);
@@ -66,10 +65,11 @@ app.registerExtension({
     node.setDirtyCanvas(true, true);
     node.selected = true;
     node.clone = () => {
-      showWarning("Cloning is disabled for this node",200)
+      showWarning("Cloning is disabled for this node", 200);
       //console.warn("Cloning is disabled for this node.");
       return null;
     };
+    if(allow_debug) console.log('node',node);
 
     // START POINT
     let canvasImgs = [];
@@ -94,41 +94,33 @@ app.registerExtension({
     let bFillCanvas = null;
     let lCanvasInfo = null;
 
-    const pa = new SmartPaintArea(0, 80, 512, 512, node);
-    const p = new SmartPreview(0, 80, 512, 512, node);
-    // const bTest = new SmartButton(85, 85, 80, 20, node, "Test");
-    // bTest.onClick = () => {
-    //   const t = new SmartText(50, 50 + 85, node);
-    //   canvasImgs.push(t);
-    //   // Remove old selected
-    //   canvasImgs.forEach((i) => {
-    //     i.isSelected = false;
-    //   });
-    //   // mark last loaded image as selected
-    //   canvasImgs[canvasImgs.length - 1].isSelected = true;
-    //   if (allow_debug) console.log("Image loaded successfully!");
-    //   // open canvas buttons
-    //   //openCanvas();
-    // };
-    // // setTimeout(() => {
-    // //   bTest.delete()
-    // // }, 3000);
-    const cp = new SmartColorPicker(0, 80, 170, 170, node);
-    let info = null;
-    function reCreateInfo() {
-      info = new SmartInfo(512 / 2 - 40, 85, 80, 15, node, "canvas size");
-    }
-    reCreateInfo();
+    // // Create a wrapper
+    // const wrapper = document.createElement("div");
+    // wrapper.style.backgroundColor = "crimson";
+    // wrapper.style.width = "100%";
+    // wrapper.style.height = "100%";
+    // wrapper.style.display = "flex";
+
+    // // Add the counter as a DOM widget
+    // node.addDOMWidget("wrapper", "div", wrapper, {
+    //   getValue: () => {},
+    //   setValue: (v) => {},
+    // });
+
     const ui = new SmartWidget(0, 30, node.width, 50, node, {
       color: lightenColor(LiteGraph.WIDGET_BGCOLOR, 5),
       shape: Shapes.SQUARE,
       allowVisualPress: false,
       allowVisualHover: false,
       outline: false,
+      fix_y: -4,
     });
+
     const startPosX = 5 || 512 / 2;
-    const bLoad = new SmartButton(startPosX, 5, 80, 20, node, "Load Image", {
+    const bLoad = new SmartButton(startPosX, 5, 85, 20, node, "Load Image", {
       textXoffset: 0,
+      fix_y: 45,
+      isVisible:false,
       shape: Shapes.ROUND_L,
     });
     bLoad.onClick = () => {
@@ -168,7 +160,7 @@ app.registerExtension({
 
               // Create a new SmartImage instance with dynamic dimensions
               const img = new SmartImage(centerX, centerY, calculatedWidth, baseHeight, node, {});
-
+              
               // Update the image source dynamically
               img.updateImage(imageUrl);
 
@@ -208,12 +200,12 @@ app.registerExtension({
 
       fileInput.click();
     };
-
-    const bText = new SmartButton(startPosX + 80, 5, 80, 20, node, "Add Text", {
+    const bText = new SmartButton(startPosX + 85, 5, 85, 20, node, "Add Text", {
       textXoffset: 0,
+     fix_y: 45,
+     isVisible:false,
       shape: Shapes.SQUARE,
     });
-
     bText.onClick = () => {
       // window.prompt
       window["app"].extensionManager.dialog
@@ -253,11 +245,12 @@ app.registerExtension({
           openCanvas("text");
         });
     };
-    const bPaste = new SmartButton(startPosX + 160, 5, 80, 20, node, "Paste Image", {
+    const bPaste = new SmartButton(startPosX + 170, 5, 85, 20, node, "Paste Image", {
       textXoffset: 0,
+      fix_y: 45,
+      isVisible:false,
       shape: Shapes.ROUND_R,
     });
-
     bPaste.onClick = async () => {
       try {
         const clipboardItems = await navigator.clipboard.read();
@@ -332,6 +325,7 @@ app.registerExtension({
     };
 
     const bColor = new SmartButton(5, 35, 40, 40, node);
+    bColor.fix_y = 15;
     bColor.shape = Shapes.HVL_CIRCLE;
     bColor.color = "crimson";
     (bColor.allowVisualHover = false),
@@ -341,6 +335,7 @@ app.registerExtension({
       });
 
     const bColor2 = new SmartButton(5, 35, 40, 40, node);
+    bColor2.fix_y = 15;
     bColor2.shape = Shapes.HVR_CIRCLE;
     bColor2.color = "orange";
     (bColor2.allowVisualHover = false),
@@ -351,6 +346,7 @@ app.registerExtension({
 
     const brushSlider = new SmartSlider(55, 35, 150, 20, node, {
       minValue: 1,
+      fix_y:15,
       maxValue: 100,
       value: 20,
       textColorNormalize: true,
@@ -361,6 +357,19 @@ app.registerExtension({
         pa.brushSize = value;
       },
     });
+
+    const pa = new SmartPaintArea(0, 80, 512, 512, node);
+    pa.fix_y = -30
+    const p = new SmartPreview(0, 80, 512, 512, node);
+    p.fix_y = 80 + 30 + 28
+    const cp = new SmartColorPicker(0, 80, 170, 170, node);
+    cp.fix_y = -30
+    let info = null;
+    function reCreateInfo() {
+      info = new SmartInfo(512 / 2 - 40, 85, 80, 15, node, "canvas size");
+      info.fix_y = -130
+    }
+    reCreateInfo();
 
     // create canvas drop menus
     const ratiosArray = Array.from(canvasRatios.entries());
@@ -374,9 +383,11 @@ app.registerExtension({
     function createDropMenus() {
       dmR = new SmartDropdownMenu(5, 85, 40, 15, node, "Ratio", ratioNames);
       dmS = new SmartDropdownMenu(5 + 45, 85, 40, 15, node, "Size", sizeNames);
+      dmR.fix_y = -35
+      dmS.fix_y = -35
       const infoXpos = 512 / 2 - 40 || 5 + 45 + 45;
       dmInfo = new SmartButton(infoXpos, 85, 80, 15, node, `${pa.width} x ${pa.height}`);
-
+      dmInfo.fix_y = -35
       // start invisible any way
       dmInfo.isVisible = false;
       dmR.isVisible = false;
@@ -393,6 +404,7 @@ app.registerExtension({
 
     const bCanvas = new SmartButton(55, 60, 50, 15, node, "Canvas", {
       textXoffset: 0,
+      fix_y:-10,
       resetColor: false,
     });
     bCanvas.onClick = () => {
@@ -412,6 +424,7 @@ app.registerExtension({
 
     const bUndo = new SmartButton(190 - 20, 60, 15, 15, node, "↺", {
       textXoffset: 0,
+      fix_y:-10,
     });
     bUndo.onClick = () => {
       pa.undo();
@@ -419,6 +432,7 @@ app.registerExtension({
 
     const bRedo = new SmartButton(190, 60, 15, 15, node, "↻", {
       textXoffset: 0,
+      fix_y:-10,
     });
     bRedo.onClick = () => {
       pa.redo();
@@ -426,6 +440,7 @@ app.registerExtension({
 
     const bFill = new SmartButton(215, 35, 40, 15, node, "Fill", {
       withTagWidth: 10,
+      fix_y:15,
       textXoffset: 5,
     });
     bFill.onClick = () => {
@@ -434,6 +449,7 @@ app.registerExtension({
 
     const bHold = new SmartButton(215 + 45, 35, 40, 15, node, "Hold", {
       textXoffset: 0,
+      fix_y:15,
     });
     bHold.onClick = () => {
       pa.saveTempImage();
@@ -441,22 +457,25 @@ app.registerExtension({
 
     const bFetch = new SmartButton(215 + 45 + 45, 35, 40, 15, node, "Fetch", {
       textXoffset: 0,
+      fix_y:15,
     });
     bFetch.onClick = () => {
       pa.loadTempImage();
     };
 
     const bClear = new SmartButton(215 + 45 + 45 + 45, 35, 40, 15, node, "Clear", {
+      fix_y:15,
       textXoffset: 0,
     });
     bClear.onClick = () => {
       pa.clearWithColor("white");
       let text = pa.isPaintingBackground ? "Background" : "Foreground";
-      showWarning(`${text} cleared`, 120, pa.isPaintingBackground ? "#cd7f32" : "#5f9ea0");
+      showWarning(`${text} cleared`, 140, pa.isPaintingBackground ? "#cd7f32" : "#5f9ea0");
     };
 
     // Create layer switch
     const layerSwitch = new SmartSwitch(215, 55, 175, 20, node);
+    layerSwitch.fix_y = -5,
     layerSwitch.textOn = "Foreground";
     layerSwitch.textOff = "Background";
     layerSwitch.onValueChange = () => {
@@ -477,6 +496,7 @@ app.registerExtension({
         const widget = new SmartButton(512 - 22 * i - 3, 35 + 22 * j, 18, 18, node, "", {
           color: color,
           text: t,
+          fix_y: -20 * (j-0.7),
           shape: Shapes.CIRCLE,
           onClick: () => {
             bColor.color = color;
@@ -500,12 +520,13 @@ app.registerExtension({
     function showWarning(msg, newWidth = 120, newColor = "#cd7f32") {
       info.color = newColor;
       info.textColor = "black";
-
+      info.fix_y = -110
       info.restart(msg, newWidth, 85 + 20, 20);
 
       setTimeout(() => {
         info.color = info.originalColor;
         info.textColor = info.originalTextColor;
+        info.fix_y = -130
       }, info.previewDuration);
     }
 
@@ -648,12 +669,13 @@ app.registerExtension({
       const bch = 20;
       const bcx = 512 / 2 - bcw / 2;
       const bcy = 592 - 50;
-
+      const fY = -490
       lCanvasInfo = new SmartButton(512 / 2 - 40, bcy + 15, 80, bch, node, getActiveCtxText().text || "", {
         textAlign: "center",
         textColor: "black",
         color: getActiveCtxText().color || "brown",
         textYoffset: 2.2,
+        fix_y: fY-17,
         font: "13px Arial Bold",
         allowVisualPress: true,
         allowVisualHover: false,
@@ -670,6 +692,7 @@ app.registerExtension({
 
       bCloseCanvas = new SmartButton(bcx - bcw * 2, bcy, bcw, bch, node, "Exit", {
         textXoffset: 0,
+        fix_y: fY,
         shape: Shapes.ROUND_L,
       });
       bc.push(bCloseCanvas);
@@ -680,6 +703,7 @@ app.registerExtension({
       if (mode === "image") {
         bMaskCanvas = new SmartButton(bcx - bcw * 1, bcy, bcw, bch, node, "Mask", {
           textXoffset: 0,
+          fix_y: fY,
           shape: Shapes.SQUARE,
         });
         bMaskCanvas.onClick = () => {
@@ -705,6 +729,7 @@ app.registerExtension({
       } else if (mode === "text") {
         bMaskCanvas = new SmartButton(bcx - bcw * 1, bcy, bcw, bch, node, "Font", {
           textXoffset: 0,
+          fix_y: fY,
           shape: Shapes.SQUARE,
         });
         bMaskCanvas.onClick = () => {
@@ -717,6 +742,7 @@ app.registerExtension({
 
       bStampCanvas = new SmartButton(bcx, bcy, bcw, bch, node, "Stamp", {
         textXoffset: 0,
+        fix_y: fY,
         shape: Shapes.SQUARE,
       });
       bStampCanvas.onClick = () => {
@@ -732,6 +758,7 @@ app.registerExtension({
       if (mode === "image") {
         bFitCanvas = new SmartButton(bcx + bcw * 1, bcy, bcw, bch, node, "Fit", {
           textXoffset: 0,
+          fix_y: fY,
           shape: Shapes.SQUARE,
         });
         bFitCanvas.onClick = () => {
@@ -741,6 +768,7 @@ app.registerExtension({
       } else if (mode === "text") {
         bFitCanvas = new SmartButton(bcx + bcw * 1, bcy, bcw, bch, node, "Bold", {
           textXoffset: 0,
+          fix_y: fY,
           shape: Shapes.SQUARE,
         });
         bFitCanvas.onClick = () => {
@@ -753,6 +781,7 @@ app.registerExtension({
       if (mode === "image") {
         bFillCanvas = new SmartButton(bcx + bcw * 2, bcy, bcw, bch, node, "Fill", {
           textXoffset: 0,
+          fix_y: fY,
           shape: Shapes.ROUND_R,
         });
         bFillCanvas.onClick = () => {
@@ -762,6 +791,7 @@ app.registerExtension({
       } else if (mode === "text") {
         bFillCanvas = new SmartButton(bcx + bcw * 2, bcy, bcw, bch, node, "Italic", {
           textXoffset: 0,
+          fix_y: fY,
           shape: Shapes.ROUND_R,
         });
         bFillCanvas.onClick = () => {
@@ -865,6 +895,7 @@ app.registerExtension({
     // COMMON NODE EVENTS
     node.onMouseDown = (e, pos, node) => {
       pickColor(e, "click");
+      if(allow_debug) console.log('pos',pos);
       selectedImg = canvasImgs.find((img) => img.isSelected);
       if (selectedImg) {
         selectedImg.isUnderCover = false;
@@ -972,7 +1003,7 @@ app.registerExtension({
     globalThis.onwheel = function (e) {
       if (originalWheel) originalWheel.call(this);
       changeBrushSizeWithKey(e);
-      node.setDirtyCanvas(true,true)
+      node.setDirtyCanvas(true, true);
     };
 
     globalThis.oncopy = (...args) => {};

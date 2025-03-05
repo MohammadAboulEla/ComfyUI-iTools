@@ -2,23 +2,10 @@ import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
 
-import {
-  Shapes,
-  Colors,
-  lightenColor,
-  canvasRatios,
-  canvasScales,
-  commonColors,
-  trackMouseColor,
-  fakeMouseDown,
-  getIndexByDimensions,
-} from "./utils.js";
-import { BaseSmartWidget, SmartInfo } from "./makadi.js";
-
-class ValueClass{
-  constructor(value){
-    this.name = "counter"
-    this.value = value
+class ValueClass {
+  constructor(value) {
+    this.name = "counter";
+    this.value = value;
   }
 }
 
@@ -39,7 +26,6 @@ app.registerExtension({
     if (node.comfyClass !== "iToolsDomNode") {
       return;
     }
-    node.size = [300,300] 
 
     // wait for init
     const timeout = 3000; // 3 seconds
@@ -52,10 +38,7 @@ app.registerExtension({
       if (allow_debug) console.log("loading ...");
       await new Promise((resolve) => setTimeout(resolve, 200));
     }
-    const vc = new ValueClass(0)
-    node.addCustomWidget(vc)
-    
-    // Function to style buttons
+
     function styleButton(button) {
       button.style.backgroundColor = "#4CAF50"; // Green background
       button.style.border = "none";
@@ -69,13 +52,13 @@ app.registerExtension({
       button.style.cursor = "pointer";
       button.style.borderRadius = "4px";
     }
-    
+
     function createDiv() {
       const div = document.createElement("div");
       div.style.visibility = "hidden";
       div.id = `node-${node.id}`;
-      div.style.width = "0px";
-      div.style.height = "0px";
+      div.style.width = "50px";
+      div.style.height = "50px";
       div.style.position = "absolute";
       div.style.top = "0px";
       div.style.left = "0px";
@@ -87,7 +70,6 @@ app.registerExtension({
       div.style.border = "none"; // Removed border
       div.style.borderRadius = "12px"; // Increased border radius
       div.style.padding = "5px"; // Increased padding
-   
 
       const label0 = document.createElement("label");
       label0.textContent = "HTML DOM Elements in Comfy Node";
@@ -124,17 +106,17 @@ app.registerExtension({
 
       btnIncrease.addEventListener("click", () => {
         label.textContent = parseInt(label.textContent) + 1;
-        vc.value = vc.value + 1
+        vc.value = vc.value + 1;
       });
 
       btnDecrease.addEventListener("click", () => {
         label.textContent = parseInt(label.textContent) - 1;
-        vc.value = vc.value - 1
+        vc.value = vc.value - 1;
       });
 
       btnReset.addEventListener("click", () => {
         label.textContent = "0";
-        vc.value = 0
+        vc.value = 0;
       });
 
       buttonContainer.appendChild(btnIncrease);
@@ -148,7 +130,7 @@ app.registerExtension({
 
       document.body.appendChild(div);
     }
-    
+
     function updateDivPosition(node, offsetX = 40, offsetY = 0) {
       if (!node || !node.pos || !node.size || !app.canvas.ds) return;
 
@@ -157,7 +139,6 @@ app.registerExtension({
       div.style.visibility = "visible";
 
       const zoom = app.canvas.ds.scale || 1;
-      if(allow_debug) console.log('zoom',zoom);
       const canvasOffsetX = app.canvas.ds.offset[0] || 0;
       const canvasOffsetY = app.canvas.ds.offset[1] || 0;
 
@@ -171,7 +152,7 @@ app.registerExtension({
 
       // Center horizontally and align to bottom
       screenX = screenX + (node.size[0] * zoom - scaledWidth) / 2; // Center in x-axis
-      screenY = screenY -10 + node.size[1] * zoom - scaledHeight; // Align to bottom
+      screenY = screenY - 10 + node.size[1] * zoom - scaledHeight; // Align to bottom
 
       div.style.width = `${scaledWidth}px`;
       div.style.height = `${scaledHeight}px`;
@@ -191,17 +172,16 @@ app.registerExtension({
 
     function deleteDiv() {
       // Construct the div's id based on the node's id
-      const divId = `node-${node.id}`;
+      const divId = `node-${node.id+1}`;
       // Retrieve the div element
       const div = document.getElementById(divId);
       // If the div exists, remove it from its parent
       if (div) {
-          div.remove();
+        div.remove();
       } else {
-          console.warn(`Div with id ${divId} not found.`);
+        console.warn(`Div with id ${divId} not found.`);
       }
-  }
-  
+    }
 
     function mousePos(node) {
       const graphMouse = app.canvas.graph_mouse;
@@ -211,12 +191,123 @@ app.registerExtension({
       };
     }
 
+    function createCounterApp() {
+      let count = 0;
+      // Create elements
+      const container = document.createElement("div");
+      container.id = `node-${node.id}`;
+      container.style.position = "absolute";
+      container.style.top = "80px";
+      container.style.left = "80px";
+      const counter = document.createElement("p");
+      const incrementBtn = document.createElement("button");
+      const decrementBtn = document.createElement("button");
+
+      // Set text content
+      counter.textContent = `Count: ${count}`;
+      incrementBtn.textContent = "+";
+      decrementBtn.textContent = "-";
+
+      // Style elements
+      container.style.display = "flex";
+      container.style.alignItems = "center";
+      container.style.gap = "10px";
+      counter.style.fontSize = "20px";
+      incrementBtn.style.padding = decrementBtn.style.padding = "5px 10px";
+
+      // Button actions
+      incrementBtn.addEventListener("click", () => {
+        count++;
+        counter.textContent = `Count: ${count}`;
+      });
+
+      decrementBtn.addEventListener("click", () => {
+        count--;
+        counter.textContent = `Count: ${count}`;
+      });
+
+      // Append elements
+      container.appendChild(decrementBtn);
+      container.appendChild(counter);
+      container.appendChild(incrementBtn);
+      document.body.appendChild(container);
+    }
+
     //START POINT
+    node.size = [300, 300]; //init size
+    const vc = new ValueClass(0);
+    node.addCustomWidget(vc);
+    //createDiv();
+    // Create an input element
+    // const inputElement = document.createElement("input");
+    // inputElement.type = "text";
+    // inputElement.placeholder = "Enter text";
+
+    // // Add the input as a DOM widget
+    // node.addDOMWidget("Text Input", "input", inputElement, {
+    //   getValue: () => inputElement.value,
+    //   setValue: (v) => (inputElement.value = v),
+    // });
+
+    // Create a container div
+    const counterDiv = document.createElement("div");
+    counterDiv.style.width = "100%";
+    counterDiv.style.height = "100%";
+    counterDiv.style.display = "flex";
+    counterDiv.style.alignItems = "center";
+    counterDiv.style.flexDirection = "column";
+    counterDiv.style.justifyContent = "center";
+    counterDiv.style.gap = "10px";
+    counterDiv.style.padding = "5px";
+    counterDiv.style.backgroundColor = "crimson";
+
+    // Create a label
+    const label = document.createElement("label");
+    label.textContent = "addDOMWidget"
+
+    // Create a wrapper
+    const wrapper = document.createElement("div");
+    wrapper.id = `node-${node.id+1}`;
+    wrapper.style.width = "100%";
+    wrapper.style.display = "flex";
+    wrapper.style.justifyContent = "center";
+    wrapper.appendChild(counterDiv);
+
+    // Create a button to decrease the counter
+    const minusButton = document.createElement("button");
+    minusButton.textContent = "-";
+    minusButton.onclick = () => updateCounter(-1);
+
+    // Create a span to display the counter value
+    const counterValue = document.createElement("span");
+    counterValue.textContent = "0";
+
+    // Create a button to increase the counter
+    const plusButton = document.createElement("button");
+    plusButton.textContent = "+";
+    plusButton.onclick = () => updateCounter(1);
+
+    // Append elements to the container
+    counterDiv.appendChild(label);
+    counterDiv.appendChild(minusButton);
+    counterDiv.appendChild(counterValue);
+    counterDiv.appendChild(plusButton);
+
+    // Function to update the counter
+    function updateCounter(delta) {
+      counterValue.textContent = String(parseInt(counterValue.textContent) + delta);
+    }
+
+    // Add the counter as a DOM widget
+    node.addDOMWidget("counter", "div", wrapper, {
+      getValue: () => parseInt(counterValue.textContent),
+      setValue: (v) => (counterValue.textContent = String(v)),
+    });
+
+    //createCounterApp()
+    node.setDirtyCanvas(true, false);
     if (allow_debug) console.log("node", node);
     if (allow_debug) console.log("app", app);
-
-    createDiv();
-    node.setDirtyCanvas(true, false);
 
     //BINDING
     app.canvas.onMouseDown = (e) => {
@@ -243,8 +334,7 @@ app.registerExtension({
     };
 
     node.onRemoved = () => {
-      deleteDiv()
+      deleteDiv();
     };
-
   },
 });
