@@ -10,6 +10,17 @@ app.registerExtension({
       type: "boolean",
       defaultValue: false,
       tooltip: "Refresh your browser after changing this value.",
+      onChange: (value) => {
+        const prevValue = app.ui.settings.getSettingValue("iTools.iTools Tab");
+        if (prevValue !== undefined && prevValue !== value) {
+          app.extensionManager.toast.add({
+            severity: "warn",
+            summary: "Alert!",
+            detail: "Refresh your browser",
+            life: 3000,
+          });
+        }
+      },
     },
   ],
 });
@@ -60,9 +71,7 @@ export function addMenuTab() {
             let pos = 8;
             while (pos < uint8.length) {
               const length = new DataView(arrayBuffer, pos, 4).getUint32(0);
-              const chunkType = textDecoder.decode(
-                uint8.slice(pos + 4, pos + 8)
-              );
+              const chunkType = textDecoder.decode(uint8.slice(pos + 4, pos + 8));
               if (chunkType === "tEXt") {
                 const textData = uint8.slice(pos + 8, pos + 8 + length);
                 const keyValue = textDecoder.decode(textData).split("\x00");
@@ -78,14 +87,7 @@ export function addMenuTab() {
           };
 
           const extractKeys = (data) => {
-            const keys = [
-              "text",
-              "text_positive",
-              "positive",
-              "text_g",
-              "text_l",
-              "t5xxl",
-            ];
+            const keys = ["text", "text_positive", "positive", "text_g", "text_l", "t5xxl"];
             const results = [];
 
             for (const key in data) {
@@ -102,9 +104,7 @@ export function addMenuTab() {
           };
 
           const findLongestString = (strings) =>
-            strings.reduce((longest, current) =>
-              current.length > longest.length ? current : longest
-            );
+            strings.reduce((longest, current) => (current.length > longest.length ? current : longest));
 
           const copyToClipboard = (text) => {
             navigator.clipboard.writeText(text).catch((err) => {
@@ -131,13 +131,10 @@ export function addMenuTab() {
               app.extensionManager.toast.add({
                 severity: "warn",
                 summary: "Alert!",
-                detail:
-                  "Failed to fetch prompt from image.\n Select ComfyUI image with metadata",
+                detail: "Failed to fetch prompt from image.\n Select ComfyUI image with metadata",
                 life: 4000,
               });
-              console.error(
-                `Error processing file ${file.name}: ${error.message}`
-              );
+              console.error(`Error processing file ${file.name}: ${error.message}`);
             }
           };
 

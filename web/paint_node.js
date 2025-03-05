@@ -63,9 +63,9 @@ app.registerExtension({
     node.setSize([512, 592]);
     node.resizable = false;
     node.setDirtyCanvas(true, true);
-    node.selected = true;
+    
     node.clone = () => {
-      showWarning("Cloning is disabled for this node", 200);
+      showWarning("Cloning is disabled for this node", 220);
       //console.warn("Cloning is disabled for this node.");
       return null;
     };
@@ -629,7 +629,9 @@ app.registerExtension({
 
         if ((caller === "click" && isHoldingShift) || (caller === "drag" && cp.isVisible && !isHoldingShift)) {
           const applyColor = caller === "click" ? true : false;
-          updateColor(trackedColor, applyColor);
+          setTimeout(() => {
+            updateColor(trackedColor, applyColor);
+          }, 200);
         } else {
           cp.allowPickVis = false;
         }
@@ -971,6 +973,7 @@ app.registerExtension({
       if (event.key === "Shift") {
         if (!isHoldingShift) info.restart("Shift", 40);
         isHoldingShift = true;
+
         // if (allow_debug) {
         //   console.log("isHoldingShift", isHoldingShift);
         // }

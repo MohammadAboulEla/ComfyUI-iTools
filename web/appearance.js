@@ -10,7 +10,17 @@ app.registerExtension({
       name: "Auto color nodes when created",
       type: "boolean",
       defaultValue: true,
-      // tooltip:"Refresh your browser after changing this value"
+      onChange: (value) => {
+        const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.Auto Color");
+        if (prevValue !== undefined && prevValue !== value) {
+          app.extensionManager.toast.add({
+            severity: "warn",
+            summary: "Alert!",
+            detail: "Refresh your browser",
+            life: 3000,
+          });
+        }
+      },
     },
   ],
 });
@@ -95,6 +105,30 @@ app.registerExtension({
   ],
 });
 
+// Register experimental nodes
+app.registerExtension({
+  name: "makadi_iTools_dev_mode2",
+  settings: [
+    {
+      id: "iTools.Nodes.Dev Mode2",
+      name: "Enable iTools dev nodes",
+      type: "boolean",
+      defaultValue: false,
+      tooltip: "You do not have to enable this, these are just test nodes for development.",
+      onChange: (value) => {
+        const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.Dev Mode2");
+        if (prevValue !== undefined && prevValue !== value) {
+          app.extensionManager.toast.add({
+            severity: "warn",
+            summary: "Alert!",
+            detail: "Restart ComfyUI and refresh your browser",
+            life: 3000,
+          });
+        }
+      },
+    },
+  ],
+});
 
 // Register experimental nodes
 app.registerExtension({
@@ -106,6 +140,18 @@ app.registerExtension({
       type: "boolean",
       defaultValue: true,
       tooltip: "Will show or hide some experimental nodes, Restart ComfyUI and refresh your browser after changing this value.",
+      onChange: (value) => {
+        const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.Dev Mode");
+        if (prevValue !== undefined && prevValue !== value) {
+          app.extensionManager.toast.add({
+            severity: "warn",
+            summary: "Alert!",
+            detail: "Restart ComfyUI and refresh your browser",
+            life: 3000,
+          });
+        }
+      },
     },
   ],
 });
+
