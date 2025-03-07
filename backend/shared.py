@@ -97,7 +97,7 @@ styles = get_yaml_names(os.path.join(project_dir, "styles"))
 
 if allow_extra_styles:
     more_styles = get_yaml_names(os.path.join(project_dir, "styles", "more examples"))
-    styles += more_styles
+    styles.extend(x for x in more_styles if x not in styles)
     
 def read_styles(_yaml_data):
     if not isinstance(_yaml_data, list):
