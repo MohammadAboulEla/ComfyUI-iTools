@@ -27,7 +27,8 @@ The iTools Paint node is currently in beta and functions as a standalone project
 ### **Shortcuts:**  
 - **`Shift`** – Eyedropper tool for picking colors under the cursor while painting.  
 - **`Alt`** – Stamps an image onto the background or foreground layer.  
-- **`Alt`** (while the color picker is visible) – Swaps the position of the color palette.  
+- **`Alt`** (while the color picker is visible) – Swaps the position of the color palette.
+- **`Double Click`** – Will Reset selecting image or text rotation.  
 
 **# iTools Image Loader Plus:** is an enhancement of the original ComfyUI ImageLoader node. It attempts to return the possible prompt used to create an image. If the prompt isn't found directly, this node will search for the prompt within the following supported nodes in the workflow:
 

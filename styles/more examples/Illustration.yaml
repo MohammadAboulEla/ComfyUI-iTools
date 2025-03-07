@@ -6,11 +6,9 @@
 # Adding - name: random will allow the node to pick random name from this file
 
 - name: none
-  negative_prompt: ''
   prompt: ''
 
 - name: random
-  negative_prompt: ''
   prompt: ''  
 
 - name: Art Deco

@@ -46,6 +46,7 @@ export function hexToImageData(hex) {
 }
 
 export function trackMouseColor(event, canvas) {
+  if (!canvas) return "rgb(255, 255, 255)"; // Default color if canvas is null
   const rect = canvas.getBoundingClientRect();
   const scaleX = canvas.width / rect.width;
   const scaleY = canvas.height / rect.height;
@@ -56,8 +57,15 @@ export function trackMouseColor(event, canvas) {
   const ctx = canvas.getContext("2d", {
     willReadFrequently: true,
   });
-  const pixel = ctx.getImageData(mouseX, mouseY, 1, 1).data;
-  return `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+  if (!ctx) return "rgb(255, 255, 255)"; // Handle missing context
+
+  try {
+    const pixel = ctx.getImageData(mouseX, mouseY, 1, 1).data;
+    return `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+  } catch (error) {
+    console.error("Error reading pixel data:", error);
+    return "rgb(255, 255, 255)"; // Default color on error
+  }
 }
 
 // Function to convert hex data to a Blob

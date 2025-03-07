@@ -618,6 +618,7 @@ app.registerExtension({
         bFill.tagColor = trackedColor;
         pa.brushColor = trackedColor;
         cp.selectedColor = trackedColor;
+        (cp.isGhost ? bColor2 : bColor).color = trackedColor;
         canvasImgs.forEach((item) => {
           if (item.isSelected && item.isTextObject) {
             if (trackedColor === "rgba(255, 255, 255, 0.0)"){
@@ -627,24 +628,21 @@ app.registerExtension({
             }
           }
         });
-        (cp.isGhost ? bColor2 : bColor).color = trackedColor;
-        if (apply) {
-        } // ToDO
+        // if (apply) {
+        // } // ToDO
       }
-
       if (caller === "click" || caller === "drag") {
         let trackedColor = trackMouseColor(e, app.canvas.canvas);
         cp.allowPickVis = true;
 
         if ((caller === "click" && isHoldingShift) || (caller === "drag" && cp.isVisible && !isHoldingShift)) {
-          const applyColor = caller === "click" ? true : false;
-          setTimeout(() => {
-            updateColor(trackedColor, applyColor);
-          }, 200);
+          //const applyColor = caller === "click" ? true : false;
+          updateColor(trackedColor);
         } else {
           cp.allowPickVis = false;
         }
       }
+
     }
 
     function resizeCanvas(dmR, dmS, ratiosArray, sizesArray, pa, info) {
@@ -955,6 +953,12 @@ app.registerExtension({
       saveImgToDesk(500);
     };
 
+    node.onIdle = () => {
+      if(allow_debug) console.log('idle',);
+    };
+
+
+
     // COMMON CLICKS EVENTS
     app.canvas.canvas.onkeydown = (event) => {
       // if (allow_debug) {
@@ -979,22 +983,26 @@ app.registerExtension({
         }
       }
 
-      if (event.key === "Shift") {
+      if (event.key === "Shift" && !isHoldingShift) {
         if (!isHoldingShift) info.restart("Shift", 40);
         isHoldingShift = true;
+        // if(allow_debug) console.log('isHoldingShift',isHoldingShift);
 
-        // if (allow_debug) {
-        //   console.log("isHoldingShift", isHoldingShift);
-        // }
       }
     };
+
+    app.canvas.canvas.ondblclick = (e)=>{
+      // reset image rotation
+      canvasImgs.forEach(item => {
+        item.rotationAngle = 0
+      });
+    }
 
     globalThis.onkeyup = (event) => {
       info.done = true;
       isHoldingShift = false;
       isHoldingAlt = false;
       isHoldingSpace = false;
-
       // if (allow_debug) {
       //   console.log("canvasImgs.length", canvasImgs.length);
       // }
