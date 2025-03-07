@@ -6,6 +6,7 @@ import time
 import numpy as np
 import torch
 from PIL import Image
+import json
 
 def time_it(func, *args, **kwargs):
     start_time = time.time()  # Record start time
@@ -80,9 +81,24 @@ def check_detect_project_dir():
 
 project_dir = check_detect_project_dir()
 
+def get_user_extra_style_choice():
+    try:
+        ud_dir = os.path.join(folder_paths.base_path, "user", "default")
+        settings_file = os.path.join(ud_dir, 'comfy.settings.json')
+        with open(settings_file, 'r') as file:
+            settings = json.load(file)
+        return settings.get('iTools.Nodes.More Styles', False)
+    except (OSError, json.JSONDecodeError, AttributeError):
+        return False
+
+allow_extra_styles = get_user_extra_style_choice()
+
 styles = get_yaml_names(os.path.join(project_dir, "styles"))
 
-
+if allow_extra_styles:
+    more_styles = get_yaml_names(os.path.join(project_dir, "styles", "more examples"))
+    styles += more_styles
+    
 def read_styles(_yaml_data):
     if not isinstance(_yaml_data, list):
         print("Error: input data must be a list")

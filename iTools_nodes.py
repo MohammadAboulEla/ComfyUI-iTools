@@ -338,19 +338,7 @@ class IToolsPromptStylerExtra:
                             third_file, third_style,
                             fourth_file, fourth_style,
                             ):
-        def get_template_format(f, t, i):
-            i = str(i)  # may use later for other formats
-            if t != "none":
-                return f"({f[:-5]}:{t})".replace(" | ", "|").replace(" > ", ">")
-            else:
-                return ""
-
-        t1 = get_template_format(base_file, base_style, 1)
-        t2 = get_template_format(second_file, second_style, 2)
-        t3 = get_template_format(third_file, third_style, 3)
-        t4 = get_template_format(fourth_file, fourth_style, 4)
-        _templates = f"{t1}{t2}{t3}{t4}"  # [:-1]
-        positive_prompt, negative_prompt = combine_multi(
+        positive_prompt, negative_prompt, _templates = combine_multi(
             text_positive, text_negative,
             base_file, base_style,
             second_file, second_style,

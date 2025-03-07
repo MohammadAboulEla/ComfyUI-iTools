@@ -12,7 +12,9 @@ templates = read_styles(yaml_data)
 def read_replace_and_combine(template_name, positive_prompt, negative_prompt, _file_name):
 
     _file_path = os.path.join(project_dir, "styles", _file_name)
-    _yaml_data = load_yaml_data(_file_path)
+    _file_path2 = os.path.join(project_dir, "styles", "more examples", _file_name)
+    _yaml_data = load_yaml_data(_file_path) or load_yaml_data(_file_path2)
+
 
     if template_name == "none":
         return clean_text(positive_prompt), clean_text(negative_prompt)
@@ -82,7 +84,8 @@ async def respond_to_js_message(request):
     # print("Post received", file_name)
 
     file_path = os.path.join(project_dir, "styles", file_name)
-    yaml_data = load_yaml_data(file_path)
+    file_path2 = os.path.join(project_dir, "styles","more examples", file_name)
+    yaml_data = load_yaml_data(file_path) or load_yaml_data(file_path2)
     templates = read_styles(yaml_data)
 
     data = {"new_templates": templates}

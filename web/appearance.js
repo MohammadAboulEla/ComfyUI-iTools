@@ -1,5 +1,29 @@
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
+// Register a new setting
+app.registerExtension({
+  name: "makadi_iTools_more_styles",
+  settings: [
+    {
+      id: "iTools.Nodes.More Styles",
+      name: "Load extra styles",
+      type: "boolean",
+      defaultValue: false,
+      tooltip: "Yaml files in the 'styles/more examples' folder will also be loaded for prompt styler nodes.",
+      onChange: (value) => {
+        const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.More Styles");
+        if (prevValue !== undefined && prevValue !== value) {
+          app.extensionManager.toast.add({
+            severity: "warn",
+            summary: "Alert!",
+            detail: "Restart ComfyUI and refresh your browser",
+            life: 3000,
+          });
+        }
+      },
+    },
+  ],
+});
 
 // Register a new setting
 app.registerExtension({
@@ -111,7 +135,7 @@ app.registerExtension({
   settings: [
     {
       id: "iTools.Nodes.Dev Mode2",
-      name: "Enable iTools dev nodes",
+      name: "Enable dev nodes",
       type: "boolean",
       defaultValue: false,
       tooltip: "You do not have to enable this, these are just test nodes for development.",
@@ -136,7 +160,7 @@ app.registerExtension({
   settings: [
     {
       id: "iTools.Nodes.Dev Mode",
-      name: "Enable iTools beta nodes",
+      name: "Enable beta nodes",
       type: "boolean",
       defaultValue: true,
       tooltip: "Will show or hide some experimental nodes, Restart ComfyUI and refresh your browser after changing this value.",
