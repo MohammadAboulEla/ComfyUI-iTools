@@ -225,7 +225,7 @@ app.registerExtension({
 
           const t = new SmartText(centerX, centerY, node);
           t.text = value;
-          t.textColor = bColor.color;
+          t.textColor = bColor.color === "rgba(255, 255, 255, 0.0)"? 'black': bColor.color;
           cp.onValueChange = (v) => {
             if (allow_debug) {
               console.log("value changed");
@@ -504,7 +504,12 @@ app.registerExtension({
             pa.brushColor = color;
             canvasImgs.forEach((item) => {
               if (item.isSelected && item.isTextObject) {
-                item.textColor = color;
+                if (color === "rgba(255, 255, 255, 0.0)"){
+                  item.textColor = 'black'
+                }else{
+                  item.textColor = color;
+                }
+                
               }
             });
             if (this.allowDebug) console.log(`Widget ${bhIndex} clicked`);
@@ -615,7 +620,11 @@ app.registerExtension({
         cp.selectedColor = trackedColor;
         canvasImgs.forEach((item) => {
           if (item.isSelected && item.isTextObject) {
-            item.textColor = trackedColor;
+            if (trackedColor === "rgba(255, 255, 255, 0.0)"){
+              item.textColor = "black"
+            }else{
+              item.textColor = trackedColor;
+            }
           }
         });
         (cp.isGhost ? bColor2 : bColor).color = trackedColor;
