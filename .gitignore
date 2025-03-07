@@ -4,13 +4,13 @@ __pycache__
 ignore
 excluded
 
-# Ignore all .yaml files
-# *.yaml
-# !artist.yaml
-# !basic.yaml
-# !camera.yaml
-# !mood.yaml
-# !original.yaml
+Ignore all .yaml files
+*.yaml
+!artist.yaml
+!basic.yaml
+!camera.yaml
+!mood.yaml
+!original.yaml
 
 # ignore painted image
 iToolsPaintedImage_background.png
