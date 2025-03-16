@@ -9,7 +9,7 @@ export class BaseSmartWidget {
     this._markDelete = false;
     this._mousePos = [0, 0];
     this._fix_y = 0;
-    this.init()
+    this.init();
   }
 
   getIndex(array, item) {
@@ -22,7 +22,6 @@ export class BaseSmartWidget {
     //   }
     // });
   }
-  
 
   isMouseDown() {
     return app.canvas.pointer.isDown;
@@ -44,7 +43,7 @@ export class BaseSmartWidget {
   }
 
   set fix_y(value) {
-    this._fix_y = this.index * 24 + value
+    this._fix_y = this.index * 24 + value;
   }
 
   get markDelete() {
@@ -414,10 +413,9 @@ export class SmartImage extends BaseSmartWidget {
     } else if (this.isRotating) {
       this.handleRotateMove();
     } else if (this.isPicked) {
-      
       let newX = this.mousePos.x - this.pickOffset.x;
       let newY = this.mousePos.y - this.pickOffset.y;
-      
+
       // Corrected clamping logic
       this.myX = Math.max(canvasX, Math.min(newX, canvasX + width));
       this.myY = Math.max(canvasY, Math.min(newY, canvasY + height));
@@ -783,7 +781,6 @@ export class SmartImage extends BaseSmartWidget {
   }
 
   draw(ctx) {
-
     if (this.markDelete) return;
 
     // Save the context state before transformations
@@ -885,7 +882,10 @@ export class SmartImage extends BaseSmartWidget {
 
       ctx.beginPath();
       ctx.moveTo(this.myX + this.closeButtonOffsetX + radius, this.myY + this.closeButtonOffsetY);
-      ctx.lineTo(this.myX + this.closeButtonOffsetX + this.closeButtonWidth - radius, this.myY + this.closeButtonOffsetY);
+      ctx.lineTo(
+        this.myX + this.closeButtonOffsetX + this.closeButtonWidth - radius,
+        this.myY + this.closeButtonOffsetY
+      );
       ctx.arcTo(
         this.myX + this.closeButtonOffsetX + this.closeButtonWidth,
         this.myY + this.closeButtonOffsetY,
@@ -904,7 +904,10 @@ export class SmartImage extends BaseSmartWidget {
         this.myY + this.closeButtonOffsetY + this.closeButtonHeight,
         radius
       );
-      ctx.lineTo(this.myX + this.closeButtonOffsetX + radius, this.myY + this.closeButtonOffsetY + this.closeButtonHeight);
+      ctx.lineTo(
+        this.myX + this.closeButtonOffsetX + radius,
+        this.myY + this.closeButtonOffsetY + this.closeButtonHeight
+      );
       ctx.arcTo(
         this.myX + this.closeButtonOffsetX,
         this.myY + this.closeButtonOffsetY + this.closeButtonHeight,
@@ -1597,7 +1600,10 @@ export class SmartText extends BaseSmartWidget {
 
       ctx.beginPath();
       ctx.moveTo(this.myX + this.closeButtonOffsetX + radius, this.myY + this.closeButtonOffsetY);
-      ctx.lineTo(this.myX + this.closeButtonOffsetX + this.closeButtonWidth - radius, this.myY + this.closeButtonOffsetY);
+      ctx.lineTo(
+        this.myX + this.closeButtonOffsetX + this.closeButtonWidth - radius,
+        this.myY + this.closeButtonOffsetY
+      );
       ctx.arcTo(
         this.myX + this.closeButtonOffsetX + this.closeButtonWidth,
         this.myY + this.closeButtonOffsetY,
@@ -1616,7 +1622,10 @@ export class SmartText extends BaseSmartWidget {
         this.myY + this.closeButtonOffsetY + this.closeButtonHeight,
         radius
       );
-      ctx.lineTo(this.myX + this.closeButtonOffsetX + radius, this.myY + this.closeButtonOffsetY + this.closeButtonHeight);
+      ctx.lineTo(
+        this.myX + this.closeButtonOffsetX + radius,
+        this.myY + this.closeButtonOffsetY + this.closeButtonHeight
+      );
       ctx.arcTo(
         this.myX + this.closeButtonOffsetX,
         this.myY + this.closeButtonOffsetY + this.closeButtonHeight,
@@ -1738,7 +1747,13 @@ export class SmartWidget extends BaseSmartWidget {
       ctx.lineTo(this.myX + this.width - radius, this.myY);
       ctx.arcTo(this.myX + this.width, this.myY, this.myX + this.width, this.myY + radius, radius);
       ctx.lineTo(this.myX + this.width, this.myY + this.height - radius);
-      ctx.arcTo(this.myX + this.width, this.myY + this.height, this.myX + this.width - radius, this.myY + this.height, radius);
+      ctx.arcTo(
+        this.myX + this.width,
+        this.myY + this.height,
+        this.myX + this.width - radius,
+        this.myY + this.height,
+        radius
+      );
       ctx.lineTo(this.myX + radius, this.myY + this.height);
       ctx.arcTo(this.myX, this.myY + this.height, this.myX, this.myY + this.height - radius, radius);
       ctx.lineTo(this.myX, this.myY + radius);
@@ -1802,7 +1817,13 @@ export class SmartWidget extends BaseSmartWidget {
       ctx.lineTo(this.myX + this.width - radius, this.myY); // Go across the top edge
       ctx.arcTo(this.myX + this.width, this.myY, this.myX + this.width, this.myY + radius, radius); // Round the top-right corner
       ctx.lineTo(this.myX + this.width, this.myY + this.height - radius); // Go down the right edge
-      ctx.arcTo(this.myX + this.width, this.myY + this.height, this.myX + this.width - radius, this.myY + this.height, radius); // Round the bottom-right corner
+      ctx.arcTo(
+        this.myX + this.width,
+        this.myY + this.height,
+        this.myX + this.width - radius,
+        this.myY + this.height,
+        radius
+      ); // Round the bottom-right corner
       ctx.lineTo(this.myX, this.myY + this.height); // Go across the bottom edge
       ctx.lineTo(this.myX, this.myY); // Go up the left edge
       ctx.closePath();
@@ -2100,13 +2121,46 @@ export class SmartInfo extends BaseSmartWidget {
   handleMove() {}
 
   start() {
-    this.done = false;
-    setTimeout(() => {
-      this.done = true;
-      this.width = this.originalWidth;
-      this.height = this.originalHeight;
-      this.myY = this.originalY;
-    }, this.previewDuration);
+    this.throttledFunction = this.throttledFunction || this.throttle(() => {
+      // start
+      this.done = false;
+      // clean
+      setTimeout(() => {
+        this.clean()
+      }, this.previewDuration);
+    }, 200);
+  
+    this.throttledFunction(); // Call the throttled function
+  }
+
+  throttle(fn, limit) {
+    let inThrottle = false;
+    return function (...args) {
+      if (!inThrottle) {
+        fn(...args);
+        inThrottle = true;
+        setTimeout(() => (inThrottle = false), limit);
+      }
+    };
+  }
+
+  clean(){
+    this.done = true;
+    this.width = this.originalWidth;
+    this.height = this.originalHeight;
+    this.myY = this.originalY;
+    this.color = this.originalColor;
+    this.textColor = this.originalTextColor;
+  }
+
+  showWarning(msg, newWidth = 120, newColor = "#cd7f32") {
+    this.color = newColor;
+    this.textColor = "black";
+    this.restart(msg, newWidth, 85 + 20, 20);
+  }
+
+  show(msg, newWidth = 120){
+    this.restart(msg, newWidth)
   }
 
   restart(newText, newWidth = null, newY = null, newHeight = null, newDuration = 2000) {
@@ -2119,7 +2173,7 @@ export class SmartInfo extends BaseSmartWidget {
 
     this.text = newText;
     this.previewDuration = newDuration;
-
+    
     this.start();
   }
 
@@ -2162,7 +2216,13 @@ export class SmartInfo extends BaseSmartWidget {
       ctx.lineTo(this.myX + this.width - radius, this.myY);
       ctx.arcTo(this.myX + this.width, this.myY, this.myX + this.width, this.myY + radius, radius);
       ctx.lineTo(this.myX + this.width, this.myY + this.height - radius);
-      ctx.arcTo(this.myX + this.width, this.myY + this.height, this.myX + this.width - radius, this.myY + this.height, radius);
+      ctx.arcTo(
+        this.myX + this.width,
+        this.myY + this.height,
+        this.myX + this.width - radius,
+        this.myY + this.height,
+        radius
+      );
       ctx.lineTo(this.myX + radius, this.myY + this.height);
       ctx.arcTo(this.myX, this.myY + this.height, this.myX, this.myY + this.height - radius, radius);
       ctx.lineTo(this.myX, this.myY + radius);
@@ -2257,7 +2317,11 @@ export class SmartInfo extends BaseSmartWidget {
       ctx.font = this.font;
       ctx.textAlign = this.textAlign;
       ctx.textBaseline = this.textBaseline;
-      ctx.fillText(this.text, this.myX + this.width / 2 + this.textXoffset, this.myY + this.height / 2 + this.textYoffset);
+      ctx.fillText(
+        this.text,
+        this.myX + this.width / 2 + this.textXoffset,
+        this.myY + this.height / 2 + this.textYoffset
+      );
     }
   }
 
@@ -2428,12 +2492,13 @@ export class SmartButton extends SmartWidget {
         ]);
       } else {
         // Round only the right side
-        ctx.roundRect(this.myX + this.width - this.withTagWidth - 0.5, this.myY + 0.5, this.withTagWidth, this.height - 1, [
-          0,
-          this.tagRound,
-          this.tagRound,
-          0,
-        ]);
+        ctx.roundRect(
+          this.myX + this.width - this.withTagWidth - 0.5,
+          this.myY + 0.5,
+          this.withTagWidth,
+          this.height - 1,
+          [0, this.tagRound, this.tagRound, 0]
+        );
       }
 
       ctx.fill();
@@ -2445,7 +2510,11 @@ export class SmartButton extends SmartWidget {
       ctx.font = this.font;
       ctx.textAlign = this.textAlign;
       ctx.textBaseline = this.textBaseline;
-      ctx.fillText(this.text, this.myX + this.width / 2 + this.textXoffset, this.myY + this.height / 2 + this.textYoffset);
+      ctx.fillText(
+        this.text,
+        this.myX + this.width / 2 + this.textXoffset,
+        this.myY + this.height / 2 + this.textYoffset
+      );
     }
   }
 }
@@ -2691,7 +2760,11 @@ export class SmartSwitch extends SmartWidget {
     ctx.font = this.font;
     ctx.textAlign = "center";
     ctx.textBaseline = this.textBaseline;
-    ctx.fillText(this.textOff, this.myX + this.width / 2 + this.width / 4, this.myY + this.height / 2 + this.textYoffset);
+    ctx.fillText(
+      this.textOff,
+      this.myX + this.width / 2 + this.width / 4,
+      this.myY + this.height / 2 + this.textYoffset
+    );
   }
 }
 
@@ -3396,7 +3469,6 @@ export class SmartPreview extends BaseSmartWidget {
   }
 
   draw(ctx) {
-
     // ctx.fillStyle = "red"
     // ctx.fillRect(this.myX, this.myY, this.width, this.height);
     const { x, y } = this.mousePos;

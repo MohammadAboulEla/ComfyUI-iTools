@@ -65,7 +65,7 @@ app.registerExtension({
     node.setDirtyCanvas(true, true);
     
     node.clone = () => {
-      showWarning("Cloning is disabled for this node", 220);
+      info2.showWarning("Cloning is disabled for this node", 220);
       //console.warn("Cloning is disabled for this node.");
       return null;
     };
@@ -216,7 +216,7 @@ app.registerExtension({
         })
         .then((value) => {
           if (!value || value.trim().length === 0) {
-            showWarning("No Valid Text!");
+            info2.showWarning("No Valid Text!");
             return;
           }
           // Calculate the center position for the text
@@ -315,7 +315,7 @@ app.registerExtension({
               reader.readAsDataURL(blob); // Read image as Base64 URL
               return;
             } else {
-              showWarning("No Image In Clipboard!", 150);
+              info2.showWarning("No Image In Clipboard!", 150);
             }
           }
         }
@@ -365,9 +365,12 @@ app.registerExtension({
     const cp = new SmartColorPicker(0, 80, 170, 170, node);
     cp.fix_y = -30
     let info = null;
+    let info2 = null;
     function reCreateInfo() {
       info = new SmartInfo(512 / 2 - 40, 85, 80, 15, node, "canvas size");
+      info2 = new SmartInfo(512 / 2 - 40, 85, 80, 15, node, "");
       info.fix_y = -130
+      info2.fix_y = -110
     }
     reCreateInfo();
 
@@ -470,7 +473,7 @@ app.registerExtension({
     bClear.onClick = () => {
       pa.clearWithColor("white");
       let text = pa.isPaintingBackground ? "Background" : "Foreground";
-      showWarning(`${text} cleared`, 140, pa.isPaintingBackground ? "#cd7f32" : "#5f9ea0");
+      info2.showWarning(`${text} cleared`, 140, pa.isPaintingBackground ? "#cd7f32" : "#5f9ea0");
     };
 
     // Create layer switch
@@ -522,18 +525,19 @@ app.registerExtension({
     }
 
     // COMMON FUNCTIONS
-    function showWarning(msg, newWidth = 120, newColor = "#cd7f32") {
-      info.color = newColor;
-      info.textColor = "black";
-      info.fix_y = -110
-      info.restart(msg, newWidth, 85 + 20, 20);
+    // function showWarning(msg, newWidth = 120, newColor = "#cd7f32") {
+    //   info.color = newColor;
+    //   info.textColor = "black";
+    //   info.fix_y = -110
+    //   info.show(msg, newWidth, 85 + 20, 20);
 
-      setTimeout(() => {
-        info.color = info.originalColor;
-        info.textColor = info.originalTextColor;
-        info.fix_y = -130
-      }, info.previewDuration);
-    }
+    //   setTimeout(() => {
+    //     info.color = info.originalColor;
+    //     info.textColor = info.originalTextColor;
+    //     info.fix_y = -130
+    //     info.done = true;
+    //   }, info.previewDuration);
+    // }
 
     function getActiveCtxText() {
       let text = pa.isPaintingBackground ? "Background" : "Foreground";
@@ -587,13 +591,13 @@ app.registerExtension({
     function fitCanvasImg(dim) {
       const img = canvasImgs.filter((img) => img.isSelected)[0];
       img?.fitImage([pa.width, pa.height], dim, 1 / pa.scaleFactor);
-      if (!img || img.markDelete) showWarning("No Image Selected!");
+      if (!img || img.markDelete) info2.showWarning("No Image Selected!");
     }
 
     function fillCanvasImg() {
       const img = canvasImgs.filter((img) => img.isSelected)[0];
       img?.fillImage([pa.width, pa.height], 1 / pa.scaleFactor);
-      if (!img || img.markDelete) showWarning("No Image Selected!");
+      if (!img || img.markDelete) info2.showWarning("No Image Selected!");
     }
 
     function selectCanvasImg() {
@@ -651,7 +655,7 @@ app.registerExtension({
       const itemA = ratiosArray[dmR.selectedItemIndex][1];
       const itemB = sizesArray[dmS.selectedItemIndex][1];
       pa.setNewSize(itemA, itemB);
-      //info.restart(`${itemA.width * itemB} x ${itemA.height * itemB}`);
+      //info.show(`${itemA.width * itemB} x ${itemA.height * itemB}`);
       info.text = `${itemA.width * itemB} x ${itemA.height * itemB}`;
       // if (allow_debug) console.log(itemA, itemB);
     }
@@ -719,19 +723,19 @@ app.registerExtension({
           let img = canvasImgs.find((img) => img.isSelected);
 
           if (img.isMasked) {
-            showWarning("Image Already Masked!", 140);
+            info2.showWarning("Image Already Masked!", 140);
             return;
           }
           // Get the value of a setting
           const allow_masking = app.extensionManager.setting.get("iTools.Nodes.Mask Tool", false);
           if (!allow_masking) {
-            showWarning("Check iTools Settings", 140);
+            info2.showWarning("Check iTools Settings", 140);
             return;
           }
           if (img && !img.markDelete) {
             img.requestMaskedImage(loadedImageFile);
           } else {
-            showWarning("No Image Selected");
+            info2.showWarning("No Image Selected");
           }
         };
         bc.push(bMaskCanvas);
@@ -744,7 +748,7 @@ app.registerExtension({
         bMaskCanvas.onClick = () => {
           const text = canvasImgs.find((item) => item.isSelected && item.isTextObject);
           text.cycleFont();
-          showWarning(text.fontName);
+          info2.showWarning(text.fontName);
         };
         bc.push(bMaskCanvas);
       }
@@ -760,7 +764,7 @@ app.registerExtension({
         if (img && !img.markDelete) {
           img.plotImageOnCanvas(ctx, pa.myX, pa.myY, dmS.selectedItemIndex);
         } else {
-          showWarning("No Image Selected!");
+          info2.showWarning("No Image Selected!");
         }
       };
       bc.push(bStampCanvas);
@@ -783,7 +787,7 @@ app.registerExtension({
         bFitCanvas.onClick = () => {
           const text = canvasImgs.find((item) => item.isSelected && item.isTextObject);
           text.cycleFontWeight();
-          //showWarning(text.fontWeight)
+          //info2.showWarning(text.fontWeight)
         };
         bc.push(bFitCanvas);
       }
@@ -806,7 +810,7 @@ app.registerExtension({
         bFillCanvas.onClick = () => {
           const text = canvasImgs.find((item) => item.isSelected && item.isTextObject);
           text.toggleItalic();
-          //showWarning(text.isItalic)
+          //info2.showWarning(text.isItalic)
         };
         bc.push(bFillCanvas);
       }
@@ -965,7 +969,7 @@ app.registerExtension({
       //   console.log("app", app);
       // }
       if (event.key === "Alt") {
-        if (!isHoldingAlt) info.restart("Alt", 40);
+        if (!isHoldingAlt) info.show("Alt", 40);
         isHoldingAlt = true;
         event.preventDefault();
 
@@ -984,7 +988,7 @@ app.registerExtension({
       }
 
       if (event.key === "Shift" && !isHoldingShift) {
-        if (!isHoldingShift) info.restart("Shift", 40);
+        if (!isHoldingShift) info.show("Shift", 40);
         isHoldingShift = true;
         // if(allow_debug) console.log('isHoldingShift',isHoldingShift);
 
