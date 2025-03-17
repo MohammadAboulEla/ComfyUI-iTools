@@ -32,6 +32,25 @@ class MyCustomError(Exception):
         super().__init__(message)
 
 
+class AnyType(str):
+    def __ne__(self, __value: object) -> bool:
+        return False
+
+
+any_type = AnyType("*")
+
+
+class FlexibleOptionalInputType(dict):
+    def __init__(self, type):
+        self.type = type
+
+    def __getitem__(self, key):
+        return (self.type,)
+
+    def __contains__(self, key):
+        return True
+
+
 class IToolsFreeSchnell:
 
     def __init__(self):
@@ -126,25 +145,6 @@ class IToolsFreeSchnell:
         return images
 
 
-class AnyType(str):
-    def __ne__(self, __value: object) -> bool:
-        return False
-
-
-any_type = AnyType("*")
-
-
-class FlexibleOptionalInputType(dict):
-    def __init__(self, type):
-        self.type = type
-
-    def __getitem__(self, key):
-        return (self.type,)
-
-    def __contains__(self, key):
-        return True
-
-
 class IToolsTestNode:
 
     @classmethod
@@ -168,6 +168,7 @@ class IToolsTestNode:
                 Click = int(value)
         return str(Click), Click
 
+
 class IToolsDomNode:
 
     @classmethod
@@ -179,19 +180,22 @@ class IToolsDomNode:
 
     CATEGORY = "iTools"
 
-    RETURN_TYPES = ("STRING", "INT")
-    RETURN_NAMES = ("my_string", "my_int")
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("output",)
     FUNCTION = "dom_func"
-    DESCRIPTION = "a try to create dom object in nodes"
+    DESCRIPTION = "Example to create dom HTML object in nodes"
 
     def dom_func(self, **kwargs):
         counter = 0
         for key, value in kwargs.items():
-            print(key, value)
-            if key == "counter":
-                counter = int(value)
-        return str(counter), counter
+            if key == "CounterWidget":
+                print(key, value)
+                counter = str(value["count"]) or "0"
+                text = value["text"] or ""
+        return (str(text + " " + counter),)
 
+    def IS_CHANGED(cls,):
+        return True
 
 class IToolsPaintNode:
 

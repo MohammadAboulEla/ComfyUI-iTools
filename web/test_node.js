@@ -23,6 +23,7 @@ app.registerExtension({
     const onExecuted = nodeType.prototype.onExecuted;
     nodeType.prototype.onExecuted = function (message) {
       onExecuted?.apply(this, arguments);
+      if(allow_debug) console.log('iToolsTestNode executed',);
     };
   },
 
