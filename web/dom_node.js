@@ -10,9 +10,9 @@ app.registerExtension({
       return;
     }
 
-    const originalOnExecuted = nodeType.prototype.onExecuted;
+    // const originalOnExecuted = nodeType.prototype.onExecuted;
     nodeType.prototype.onExecuted = function (message) {
-      originalOnExecuted?.apply(this, arguments);
+      // originalOnExecuted?.apply(this, arguments);
       if(allow_debug) console.log('iToolsDomNode executed',);
     };
 
@@ -24,7 +24,7 @@ app.registerExtension({
     }
 
     // Set initial node size if needed
-    //node.size = [300, 300];
+    node.size = [200, 230];
     // if(allow_debug) console.log('node',node);
 
     // Create container div
