@@ -10,9 +10,9 @@ app.registerExtension({
       return;
     }
 
-    // const originalOnExecuted = nodeType.prototype.onExecuted;
+    const originalOnExecuted = nodeType.prototype.onExecuted;
     nodeType.prototype.onExecuted = function (message) {
-      // originalOnExecuted?.apply(this, arguments);
+      originalOnExecuted?.apply(this, arguments);
       if(allow_debug) console.log('iToolsDomNode executed',);
     };
 
