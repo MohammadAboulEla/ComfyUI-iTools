@@ -42,8 +42,8 @@ export class LiteInfo extends BaseSmartWidget {
   constructor(x, y, width, height, node, text, options = {}) {
     super(node);
 
-    this.x = x;
-    this.y = y;
+    this.myX = x;
+    this.myY = y;
     this.width = width;
     this.height = height;
 
@@ -94,15 +94,15 @@ export class LiteInfo extends BaseSmartWidget {
     if (this.shape === Shapes.ROUND) {
       const radius = Math.min(this.width, this.height) / 5; // Adjust rounding level
       ctx.beginPath();
-      ctx.moveTo(this.x + radius, this.y);
-      ctx.lineTo(this.x + this.width - radius, this.y);
-      ctx.arcTo(this.x + this.width, this.y, this.x + this.width, this.y + radius, radius);
-      ctx.lineTo(this.x + this.width, this.y + this.height - radius);
-      ctx.arcTo(this.x + this.width, this.y + this.height, this.x + this.width - radius, this.y + this.height, radius);
-      ctx.lineTo(this.x + radius, this.y + this.height);
-      ctx.arcTo(this.x, this.y + this.height, this.x, this.y + this.height - radius, radius);
-      ctx.lineTo(this.x, this.y + radius);
-      ctx.arcTo(this.x, this.y, this.x + radius, this.y, radius);
+      ctx.moveTo(this.myX + radius, this.myY);
+      ctx.lineTo(this.myX + this.width - radius, this.myY);
+      ctx.arcTo(this.myX + this.width, this.myY, this.myX + this.width, this.myY + radius, radius);
+      ctx.lineTo(this.myX + this.width, this.myY + this.height - radius);
+      ctx.arcTo(this.myX + this.width, this.myY + this.height, this.myX + this.width - radius, this.myY + this.height, radius);
+      ctx.lineTo(this.myX + radius, this.myY + this.height);
+      ctx.arcTo(this.myX, this.myY + this.height, this.myX, this.myY + this.height - radius, radius);
+      ctx.lineTo(this.myX, this.myY + radius);
+      ctx.arcTo(this.myX, this.myY, this.myX + radius, this.myY, radius);
       ctx.closePath();
 
       ctx.fillStyle = this.color;
@@ -122,7 +122,7 @@ export class LiteInfo extends BaseSmartWidget {
       ctx.font = this.font;
       ctx.textAlign = this.textAlign;
       ctx.textBaseline = this.textBaseline;
-      ctx.fillText(this.text, this.x + this.width / 2 + this.textXoffset, this.y + this.height / 2 + this.textYoffset);
+      ctx.fillText(this.text, this.myX + this.width / 2 + this.textXoffset, this.myY + this.height / 2 + this.textYoffset);
     }
   }
 
@@ -144,9 +144,9 @@ class CropWidget {
   constructor(node) {
     this.node = node;
     this.value = {};
-    this.x = 0;
-    this.y = 80 + 20 + 20;
-    this.yOffset = this.y + 30;
+    this.myX = 0;
+    this.myY = 80 + 20 + 20;
+    this.yOffset = this.myY + 30;
     this.width = 50;
     this.height = 50;
 
@@ -163,12 +163,12 @@ class CropWidget {
 
     // NODE SETTINGS
     this.nodeSize = 384;
-    node.setSize([this.nodeSize, this.nodeSize + this.y]);
+    node.setSize([this.nodeSize, this.nodeSize + this.myY]);
     node.resizable = false;
     this.resizeRatio = null;
     this.multipleFactor = 64;
 
-    this.info = new LiteInfo(this.nodeSize / 2 - 40, this.y + 5, 80, 15, node, "");
+    this.info = new LiteInfo(this.nodeSize / 2 - 40, this.myY + 5, 80, 15, node, "");
 
     this.cropping = false;
     this.isCroppingDone = false;
@@ -368,7 +368,7 @@ class CropWidget {
 
     // Center the image correctly
     this.imgOffsetX = (this.node.width - this.width) / 2;
-    this.imgOffsetY = this.y + (this.nodeSize - this.height) / 2;
+    this.imgOffsetY = this.myY + (this.nodeSize - this.height) / 2;
 
     this.node.setDirtyCanvas(true, true);
   }
@@ -388,11 +388,11 @@ class CropWidget {
     if (!this.isVisible) return;
 
     // Clear original image
-    ctx.clearRect(this.x, this.y, this.node.width, this.node.height - this.yOffset);
+    ctx.clearRect(this.myX, this.myY, this.node.width, this.node.height - this.yOffset);
 
     // Fill with background color
     ctx.fillStyle = this.node.bgcolor;
-    ctx.fillRect(this.x, this.y, this.node.width, this.node.height - this.yOffset);
+    ctx.fillRect(this.myX, this.myY, this.node.width, this.node.height - this.yOffset);
 
     // Draw loaded image
     this.adjustNewImageSize();
@@ -458,8 +458,8 @@ class CropWidget {
       }
 
       // Define the position for the cropped image in the left corner
-      const croppedImageX = this.x + 10; // 10 pixels from the left edge of the node
-      const croppedImageY = this.y + 10; // 10 pixels from the top edge of the node
+      const croppedImageX = this.myX + 10; // 10 pixels from the left edge of the node
+      const croppedImageY = this.myY + 10; // 10 pixels from the top edge of the node
 
       try {
         // Draw the cropped image
@@ -927,7 +927,7 @@ app.registerExtension({
       const nodes = app.graph.nodes;
       nodes.forEach((n) => {
         if (n.type === "iToolsCropImage") {
-          n.widgets[4]?.handleDown?.(e);
+          n.widgets[5]?.handleDown?.(e);
         }
       });
     };
@@ -935,7 +935,7 @@ app.registerExtension({
       const nodes = app.graph.nodes;
       nodes.forEach((n) => {
         if (n.type === "iToolsCropImage") {
-          n.widgets[4]?.handleMove?.(ctx);
+          n.widgets[5]?.handleMove?.(ctx);
         }
       });
     };
@@ -943,7 +943,7 @@ app.registerExtension({
       const nodes = app.graph.nodes;
       nodes.forEach((n) => {
         if (n.type === "iToolsCropImage") {
-          n.widgets[4]?.handleClick?.(e);
+          n.widgets[5]?.handleClick?.(e);
         }
       });
     };

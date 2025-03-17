@@ -1,5 +1,6 @@
 import { app } from "../../../scripts/app.js";
 import { ComfyWidgets } from "../../../scripts/widgets.js";
+import { allow_debug } from "./js_shared.js";
 
 app.registerExtension({
 	name: "iTools.previewText",
@@ -44,6 +45,7 @@ app.registerExtension({
 			nodeType.prototype.onExecuted = function (message) {
 				originalOnExecuted?.apply(this, arguments);
 				populate.call(this, message.text);
+				if(allow_debug) console.log('iToolsPreviewText executed',);
 			};
 			
 			nodeType.prototype.onConfigure = function () {

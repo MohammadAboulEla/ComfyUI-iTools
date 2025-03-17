@@ -9,6 +9,13 @@ app.registerExtension({
     if (nodeData.name !== "iToolsDomNode") {
       return;
     }
+
+    const originalOnExecuted = nodeType.prototype.onExecuted;
+    nodeType.prototype.onExecuted = function (message) {
+      originalOnExecuted?.apply(this, arguments);
+      if(allow_debug) console.log('iToolsDomNode executed',);
+    };
+
   },
 
   async nodeCreated(node) {
@@ -16,11 +23,9 @@ app.registerExtension({
       return;
     }
 
-    if(allow_debug) console.log('node',node);
-
-
     // Set initial node size if needed
     //node.size = [300, 300];
+    // if(allow_debug) console.log('node',node);
 
     // Create container div
     const container = document.createElement("div");
@@ -50,6 +55,7 @@ app.registerExtension({
 
     const minusButton = document.createElement("button");
     minusButton.textContent = "-";
+    minusButton.style.minWidth = "30px";
     minusButton.className = "comfy-button";
 
     const counterValue = document.createElement("span");
@@ -58,6 +64,7 @@ app.registerExtension({
 
     const plusButton = document.createElement("button");
     plusButton.textContent = "+";
+    plusButton.style.minWidth = "30px";
     plusButton.className = "comfy-button";
 
     // Add textarea

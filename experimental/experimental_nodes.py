@@ -194,9 +194,6 @@ class IToolsDomNode:
                 text = value["text"] or ""
         return (str(text + " " + counter),)
 
-    def IS_CHANGED(cls,):
-        return True
-
 class IToolsPaintNode:
 
     @classmethod
