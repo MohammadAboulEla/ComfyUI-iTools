@@ -7,11 +7,21 @@ The iTools are some quality of life nodes, like read a possible prompt used to c
 
 The iTools Paint node is currently in beta and functions as a standalone project. It may be the most complex node in ComfyUI, and future updates could break its functionality. However, I will strive to keep it working. All custom widget code was built from scratch specifically for ComfyUI and this node. It supports painting, compositing, remove background, text editing, and pasting images from the clipboard, making it the fastest mini Photoshop for ComfyUI.  
 
+Compositing Example
+
 [![Watch the video](https://github.com/user-attachments/assets/29781d9e-cf7e-49b1-9f7c-7c70684fdd9b)](https://github.com/user-attachments/assets/29781d9e-cf7e-49b1-9f7c-7c70684fdd9b)  
 
-[![Watch the video](https://github.com/user-attachments/assets/7961aba8-1cfb-4493-bcad-500ca49f0297)](https://github.com/user-attachments/assets/7961aba8-1cfb-4493-bcad-500ca49f0297)  
+Using shift-key to get under-cursor pixel color
 
-[![Watch the video](https://github.com/user-attachments/assets/c0515b70-48a7-4b70-b3fa-080fb877cee5)](https://github.com/user-attachments/assets/c0515b70-48a7-4b70-b3fa-080fb877cee5)  
+[![Watch the video](https://github.com/user-attachments/assets/7961aba8-1cfb-4493-bcad-500ca49f0297)](https://github.com/user-attachments/assets/7961aba8-1cfb-4493-bcad-500ca49f0297)
+
+Add text to the canvas
+
+[![Watch the video](https://github.com/user-attachments/assets/c0515b70-48a7-4b70-b3fa-080fb877cee5)](https://github.com/user-attachments/assets/c0515b70-48a7-4b70-b3fa-080fb877cee5)
+
+Reset size and rotation when double-clicking the image
+
+[![Watch the video](https://github.com/user-attachments/assets/1b21a05d-0c0d-4986-a577-5442c90cbffe)](https://github.com/user-attachments/assets/1b21a05d-0c0d-4986-a577-5442c90cbffe)  
 
 ### **Features:**  
 - **`Load image key`** – Will load an image from your desk to the canvas.
