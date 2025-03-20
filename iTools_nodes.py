@@ -109,7 +109,7 @@ class IToolsPromptLoader:
         return {"required":
             {
                 "file_path": ("STRING", {"default": 'prompts.txt', "multiline": False}),
-                "seed": ("INT", {"default": 0, "control_after_generate": 0, "min": 0, "max": 0xffff}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffff}),
             }
         }
 
