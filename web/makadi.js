@@ -16,12 +16,7 @@ export class BaseSmartWidget {
     return array.indexOf(item);
   }
 
-  init() {
-    // Object.values(this.node.widgets).forEach((widget,index) => {
-    //   if (widget instanceof BaseSmartWidget ) {
-    //   }
-    // });
-  }
+  init() {}
 
   isMouseDown() {
     return app.canvas.pointer.isDown;
@@ -142,6 +137,8 @@ export class SmartImage extends BaseSmartWidget {
     this.myY = y;
     this.width = width;
     this.height = height;
+    this.originalWidth = this.width;
+    this.originalHeight = this.height;
     this.placeholderColor = "grey";
     this.img = new Image(); // Create an image object
     this.imgLoaded = false; // Track if the image has been loaded
@@ -177,16 +174,10 @@ export class SmartImage extends BaseSmartWidget {
     };
 
     this.loader = null;
-
     this.isMasked = false;
 
     // Apply options if provided
     Object.assign(this, options);
-
-    // // Fetch the image from the API if an ID or filename prefix is provided
-    // if (this.filenamePrefix) {
-    //   this.fetchImageFromAPI();
-    // }
 
     // Add self to the node
     node.addCustomWidget(this);
@@ -331,7 +322,9 @@ export class SmartImage extends BaseSmartWidget {
         }
 
         this.img.src = `data:image/png;base64,${hexToBase64(img)}`;
-        this.img.onload = () => {};
+        this.img.onload = async () => {
+          const bounds = await this.cropVisibleArea();
+        };
         this.img.onerror = () => {
           console.error("Failed to load Masked image from API");
         };
@@ -381,6 +374,116 @@ export class SmartImage extends BaseSmartWidget {
     }
   }
 
+  async cropVisibleArea() {
+    if (!this.img || !this.img.complete) return;
+
+    // Create a temporary canvas to analyze the image
+    const tempCanvas = document.createElement("canvas");
+    const tempCtx = tempCanvas.getContext("2d");
+    tempCanvas.width = this.img.width;
+    tempCanvas.height = this.img.height;
+
+    // Draw the image on temporary canvas
+    tempCtx.drawImage(this.img, 0, 0);
+
+    // Get image data to analyze pixels
+    const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+    const data = imageData.data;
+
+    // Initialize bounds
+    let minX = tempCanvas.width;
+    let minY = tempCanvas.height;
+    let maxX = 0;
+    let maxY = 0;
+
+    // Scan through all pixels to find the bounds of non-transparent area
+    for (let y = 0; y < tempCanvas.height; y++) {
+      for (let x = 0; x < tempCanvas.width; x++) {
+        const alpha = data[(y * tempCanvas.width + x) * 4 + 3];
+        if (alpha > 0) {
+          // If pixel is not fully transparent
+          minX = Math.min(minX, x);
+          minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x);
+          maxY = Math.max(maxY, y);
+        }
+      }
+    }
+
+    // Calculate new dimensions (no padding)
+    const croppedWidth = maxX - minX;
+    const croppedHeight = maxY - minY;
+
+    // Create final canvas for cropped image
+    const cropCanvas = document.createElement("canvas");
+    const cropCtx = cropCanvas.getContext("2d");
+    cropCanvas.width = croppedWidth;
+    cropCanvas.height = croppedHeight;
+
+    // Draw cropped area
+    cropCtx.drawImage(
+      this.img,
+      minX,
+      minY,
+      croppedWidth,
+      croppedHeight, // Source coordinates
+      0,
+      0,
+      croppedWidth,
+      croppedHeight // Destination coordinates
+    );
+
+    // Calculate scaling factors to fit within original dimensions while maintaining aspect ratio
+    const scaleX = this.width / croppedWidth;
+    const scaleY = this.height / croppedHeight;
+    const scale = Math.min(scaleX, scaleY); // Use the smaller scale to fit within bounds
+
+    // Calculate new dimensions for the resized image
+    const resizedWidth = croppedWidth * scale;
+    const resizedHeight = croppedHeight * scale;
+
+    // Update this.width and this.height to match the aspect ratio of the cropped bounding box
+    this.width = resizedWidth;
+    this.height = resizedHeight;
+
+    // Create a canvas for the resized image
+    const resizeCanvas = document.createElement("canvas");
+    const resizeCtx = resizeCanvas.getContext("2d");
+    resizeCanvas.width = resizedWidth;
+    resizeCanvas.height = resizedHeight;
+
+    // Draw the cropped image onto the resized canvas, maintaining aspect ratio
+    resizeCtx.drawImage(
+      cropCanvas,
+      0,
+      0,
+      croppedWidth,
+      croppedHeight, // Source coordinates (cropped image)
+      0,
+      0,
+      resizedWidth,
+      resizedHeight // Destination coordinates (resized)
+    );
+
+    // Update the image with the resized and cropped version
+    return new Promise((resolve) => {
+      const resizedImage = new Image();
+      resizedImage.onload = () => {
+        this.img = resizedImage;
+        resolve({
+          width: this.width,
+          height: this.height,
+          x: minX,
+          y: minY,
+        });
+      };
+      resizedImage.src = resizeCanvas.toDataURL();
+      // store new originals
+      this.originalWidth = this.width;
+      this.originalHeight = this.height;
+    });
+  }
+
   handleDown() {
     if (this.isUnderCover) return;
     if (this.closeButton && this.isMouseInCloseButtonArea()) {
@@ -422,8 +525,8 @@ export class SmartImage extends BaseSmartWidget {
     }
 
     if (this.loader) {
-      this.loader.x = this.myX + this.width / 2;
-      this.loader.y = this.myY + this.height / 2;
+      this.loader.myX = this.myX + this.width / 2;
+      this.loader.myY = this.myY + this.height / 2;
     }
   }
 
@@ -2121,15 +2224,17 @@ export class SmartInfo extends BaseSmartWidget {
   handleMove() {}
 
   start() {
-    this.throttledFunction = this.throttledFunction || this.throttle(() => {
-      // start
-      this.done = false;
-      // clean
-      setTimeout(() => {
-        this.clean()
-      }, this.previewDuration);
-    }, 200);
-  
+    this.throttledFunction =
+      this.throttledFunction ||
+      this.throttle(() => {
+        // start
+        this.done = false;
+        // clean
+        setTimeout(() => {
+          this.clean();
+        }, this.previewDuration);
+      }, 200);
+
     this.throttledFunction(); // Call the throttled function
   }
 
@@ -2144,7 +2249,7 @@ export class SmartInfo extends BaseSmartWidget {
     };
   }
 
-  clean(){
+  clean() {
     this.done = true;
     this.width = this.originalWidth;
     this.height = this.originalHeight;
@@ -2159,8 +2264,8 @@ export class SmartInfo extends BaseSmartWidget {
     this.restart(msg, newWidth, 85 + 20, 20);
   }
 
-  show(msg, newWidth = 120){
-    this.restart(msg, newWidth)
+  show(msg, newWidth = 120) {
+    this.restart(msg, newWidth);
   }
 
   restart(newText, newWidth = null, newY = null, newHeight = null, newDuration = 2000) {
@@ -2173,7 +2278,7 @@ export class SmartInfo extends BaseSmartWidget {
 
     this.text = newText;
     this.previewDuration = newDuration;
-    
+
     this.start();
   }
 
@@ -2977,7 +3082,6 @@ export class SmartPaintArea extends BaseSmartWidget {
       if (this.onPress) this.onPress();
       // Save the current state before starting to paint
       this.commitChange();
-      //this.enterFreezeMode();
       this.isPainting = true;
     }
   }
@@ -2985,13 +3089,11 @@ export class SmartPaintArea extends BaseSmartWidget {
   handleClick() {
     if (this.isMouseIn()) {
       if (this.onClick) this.onClick();
-      //this.exitFreezeMode();
       this.isPainting = false;
     }
   }
 
   handleMove() {
-    //this.enterFreezeMode();
     if (this.onUpdate) this.onUpdate();
   }
 
