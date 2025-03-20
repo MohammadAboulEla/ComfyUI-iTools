@@ -1,6 +1,6 @@
-import { BaseSmartWidget } from "./BaseSmartWidget.js";
+import { BaseIWidget } from "./BaseIWidget.js";
 
-export class BaseDraggableRotatableWidget extends BaseSmartWidget {
+export class BaseDraggableRotatableIWidget extends BaseIWidget {
     constructor(node) {
         super(node);
 
