@@ -476,18 +476,10 @@ class IToolsLineLoader:
 
     @classmethod
     def INPUT_TYPES(s):
-        return {
-            "required": {
-                "lines": ("STRING", {"default": "cat\ndog\nbunny", "multiline": True}),
-                "seed": (
-                    "INT",
-                    {
-                        "default": 0,
-                        "control_after_generate": "increment",
-                        "min": 0,
-                        "max": 0xFFF,
-                    },
-                ),
+        return {"required":
+            {
+                "lines": ("STRING", {"default": 'cat\ndog\nbunny', "multiline": True}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffff}),
             }
         }
 
