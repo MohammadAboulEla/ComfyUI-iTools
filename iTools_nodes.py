@@ -198,16 +198,16 @@ class IToolsPromptStyler:
             return float("nan")  # Force re-execution if template is "random"
 
 
-    RETURN_TYPES = ('STRING', 'STRING',)
-    RETURN_NAMES = ('positive_prompt', 'negative_prompt',)
+    RETURN_TYPES = ('STRING', 'STRING', 'STRING')
+    RETURN_NAMES = ('positive_prompt', 'negative_prompt', 'used_template')
     FUNCTION = 'prompt_styler'
     CATEGORY = 'iTools'
     DESCRIPTION = "Helps you quickly populate your prompt using a template stored in YAML file."
 
     def prompt_styler(self, text_positive, text_negative, template_name, style_file):
-        positive_prompt, negative_prompt = read_replace_and_combine(template_name, text_positive,
+        positive_prompt, negative_prompt, used_template = read_replace_and_combine(template_name, text_positive,
                                                                     text_negative, style_file)
-        return positive_prompt, negative_prompt
+        return positive_prompt, negative_prompt, used_template
 
 
 class IToolsAddOverlay:

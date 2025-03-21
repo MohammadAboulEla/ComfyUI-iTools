@@ -26,9 +26,6 @@ app.registerExtension({
     nodeType.prototype.onNodeCreated = function () {
       const me = onNodeCreated?.apply(this);
       const style = this.widgets.find((w) => w.name == "style_file");
-      if (allow_debug) {
-        console.log("this", this);
-      }
       style.callback = async () => {
         // Await the response from send_style_message
         this.widgets[3]["value"] = "loading ...";

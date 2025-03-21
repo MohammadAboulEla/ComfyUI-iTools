@@ -17,7 +17,8 @@ def read_replace_and_combine(template_name, positive_prompt, negative_prompt, _f
 
 
     if template_name == "none":
-        return clean_text(positive_prompt), clean_text(negative_prompt)
+        template_name = f"({_file_name.replace('.yaml', '')}:{template_name})"
+        return clean_text(positive_prompt), clean_text(negative_prompt), template_name
     
     if template_name == "random":
         # Extract available templates, excluding "none", "random"
@@ -62,7 +63,8 @@ def read_replace_and_combine(template_name, positive_prompt, negative_prompt, _f
                 elif yaml_negative_prompt:
                     negative_prompt = yaml_negative_prompt  # Only YAML negative prompt
                 
-                return clean_text(positive_prompt), clean_text(negative_prompt)
+                template_name = f"({_file_name.replace('.yaml', '')}:{template_name})"
+                return clean_text(positive_prompt), clean_text(negative_prompt), template_name
         
         # If no matching template is found, raise an error
         raise ValueError(f"No template found with name '{template_name}'.")
