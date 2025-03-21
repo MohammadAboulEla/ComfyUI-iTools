@@ -899,6 +899,14 @@ app.registerExtension({
       if (allow_debug) console.log("idle");
     };
 
+    // Clean up on node removal
+    const origOnRemoved = node.onRemoved;
+    node.onRemoved = function() {
+      origOnRemoved?.apply(this, arguments);
+      app.canvas.zoom_speed = 1.1; // enable zoom
+      if (allow_debug) console.log("Cleaning up paint node widget");
+    };
+    
     // COMMON CLICKS EVENTS
     app.canvas.canvas.onkeydown = (event) => {
       // if (allow_debug) {
