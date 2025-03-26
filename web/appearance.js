@@ -72,6 +72,12 @@ app.registerExtension({
         node.color = LGraphCanvas.node_colors.green.color;
         node.bgcolor = LGraphCanvas.node_colors.green.bgcolor;
         break;
+      case "iToolsRegexMatch":
+        node.setSize([220, 58]);
+        if (!app.ui.settings.getSettingValue("iTools.Nodes.Auto Color")) break;
+        node.color = LGraphCanvas.node_colors.green.color;
+        node.bgcolor = LGraphCanvas.node_colors.green.bgcolor;
+        break;
       case "iToolsAddOverlay":
         //node.setSize([240, 130]);
         node.size[0] = 240;
