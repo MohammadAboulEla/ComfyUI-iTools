@@ -46,7 +46,6 @@ const RegexPatterns = {
         ends_with_xyz: String.raw`\b\w*xyz\b`,
         contains_hello: String.raw`hello`,
         cat_or_dog: String.raw`cat|dog`,
-        optional_s: String.raw`cats?`,
     },
 
     getPattern(name) {

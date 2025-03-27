@@ -550,6 +550,7 @@ class IToolsRegexNode:
     def INPUT_TYPES(s):
         patterns = [
             "custom",
+            "contains_hello", "cat_or_dog", "starts_with_abc", "ends_with_xyz", 
             "any_character", "digit", "non_digit", "whitespace", "non_whitespace",
             "word_character", "non_word_character",
             "all_caps", "all_lower",
@@ -558,7 +559,6 @@ class IToolsRegexNode:
             "double_quoted", "double_quoted_plus", "single_quoted", "single_quoted_plus",
             "in_parentheses", "in_parentheses_plus",
             "angle_brackets", "angle_brackets_plus",
-            "starts_with_abc", "ends_with_xyz", "contains_hello", "cat_or_dog", "optional_s",
         ]
 
         return {
