@@ -93,12 +93,14 @@ app.registerExtension({
     function updateCustomPatternChoice(node) {
         const rp = node.widgets[1].value;
         node.widgets[2].value = "custom"
+        node.setDirtyCanvas(true, true);
     }    
 
     function updatePatternChoice(node) {
         const rp = node.widgets[1].value;
         const picker = node.widgets[2].value;
         node.widgets[1].value = RegexPatterns.getRegex(picker)
+        node.setDirtyCanvas(true, true);
     }    
 
     function updateLocalizedName(node) {
@@ -109,6 +111,7 @@ app.registerExtension({
         else if (rm !== "" && rnm !== "") node.outputs[0].localized_name = "replace";
         else if (rm === "" && rnm !== "") node.outputs[0].localized_name = "replace_non_match";
         else node.outputs[0].localized_name = "match";
+        node.setDirtyCanvas(true, true);
     }
 
     // init update
@@ -117,7 +120,6 @@ app.registerExtension({
     }
     updateLocalizedName(node);
     updatePatternChoice(node);
-    node.setDirtyCanvas(true, true);
     if (allow_debug) console.log("nodeCreated", node);
     
     // Assign callbacks
