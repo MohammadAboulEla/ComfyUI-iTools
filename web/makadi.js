@@ -1844,7 +1844,7 @@ export class SmartWidget extends BaseSmartWidget {
 
     // Draw rounded rectangle //HAS NO DETECT YET
     if (this.shape === Shapes.ROUND) {
-      const radius = Math.min(this.width, this.height) / 5; // Adjust rounding level
+      const radius = this.roundRadius ?? Math.min(this.width, this.height) / 5; // Adjust rounding level
       ctx.beginPath();
       ctx.moveTo(this.myX + radius, this.myY);
       ctx.lineTo(this.myX + this.width - radius, this.myY);
