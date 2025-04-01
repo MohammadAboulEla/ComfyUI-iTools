@@ -198,7 +198,7 @@ class CropWidget {
 
     this.adjustNewImageSize(); // init
     this.setResizeRatio(); // init ratio
-
+    
     // ON Ratio Changed
     this.node.widgets[0].callback = () => {
       this.setResizeRatio();
@@ -470,8 +470,10 @@ class CropWidget {
   }
 
   cropNewImage() {
-    if (!this.img) return;
-
+    if (!this.img) {
+      this.adjustNewImageSize()
+    };
+    
     // Calculate the scale factors for the image
     const scaleX = this.img.naturalWidth / this.width;
     const scaleY = this.img.naturalHeight / this.height;
@@ -927,7 +929,10 @@ app.registerExtension({
       const nodes = app.graph.nodes;
       nodes.forEach((n) => {
         if (n.type === "iToolsCropImage") {
-          n.widgets[5]?.handleDown?.(e);
+          n.widgets.forEach(w=>{
+            w.handleDown?.(e);
+          })
+          //n.widgets[4]?.handleDown?.(e);
         }
       });
     };
@@ -935,7 +940,10 @@ app.registerExtension({
       const nodes = app.graph.nodes;
       nodes.forEach((n) => {
         if (n.type === "iToolsCropImage") {
-          n.widgets[5]?.handleMove?.(ctx);
+          n.widgets.forEach(w=>{
+            w.handleMove?.(ctx);
+          })
+          //n.widgets[4]?.handleMove?.(ctx);
         }
       });
     };
@@ -943,7 +951,10 @@ app.registerExtension({
       const nodes = app.graph.nodes;
       nodes.forEach((n) => {
         if (n.type === "iToolsCropImage") {
-          n.widgets[5]?.handleClick?.(e);
+          n.widgets.forEach(w=>{
+            w.handleClick?.(e);
+          })
+          //n.widgets[4]?.handleClick?.(e);
         }
       });
     };
