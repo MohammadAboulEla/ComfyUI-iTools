@@ -10,6 +10,7 @@ app.registerExtension({
       return;
     }
 
+    // must set 'OUTPUT_NODE = True' on python side
     const originalOnExecuted = nodeType.prototype.onExecuted;
     nodeType.prototype.onExecuted = function (message) {
       originalOnExecuted?.apply(this, arguments);
@@ -33,7 +34,8 @@ app.registerExtension({
     container.style.cssText = `
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: center;     /* Centers items horizontally */
+      justify-content: center; /* Centers items vertically */
       gap: 10px;
       padding: 10px;
       background-color: #2a2a2a;
@@ -118,8 +120,13 @@ app.registerExtension({
       getMinHeight: () => 200,
       getMaxHeight: () => 400,
       margin: 5,
+      onDraw: (ctx) => {
+      }
     });
-
+    
+    // Apply margin directly to the container
+    container.style.marginTop = "0px";
+    
     // Clean up on node removal
     const origOnRemoved = node.onRemoved;
     node.onRemoved = function() {

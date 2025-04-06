@@ -184,6 +184,7 @@ class IToolsDomNode:
     RETURN_NAMES = ("output",)
     FUNCTION = "dom_func"
     DESCRIPTION = "Example to create dom HTML object in nodes"
+    OUTPUT_NODE = True
 
     def dom_func(self, **kwargs):
         counter = 0
