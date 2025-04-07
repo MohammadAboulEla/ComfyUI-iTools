@@ -11,7 +11,7 @@ import numpy as np
 import torch
 from PIL import Image, ImageSequence, ImageOps
 from .backend.checker_board import ChessTensor, ChessPattern
-from nodes import common_ksampler
+from nodes import common_ksampler, SaveImage
 import json
 from .backend.file_handeler import FileHandler
 from .backend.grid_filler import (
@@ -972,7 +972,20 @@ class IToolsPreviewText:
 
         return {"ui": {"text": text}, "result": (text,)}
 
+class IToolsPreviewImage(SaveImage):
+    def __init__(self):
+        self.output_dir = folder_paths.get_temp_directory()
+        self.type = "temp"
+        self.prefix_append = "_temp_" + ''.join(random.choice("abcdefghijklmnopqrstupvxyz") for x in range(5))
+        self.compress_level = 1
 
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required":
+                    {"images": ("IMAGE", ), },
+                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+                }
+        
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -992,6 +1005,7 @@ NODE_CLASS_MAPPINGS = {
     "iToolsLoadRandomImage": IToolsLoadRandomImage,
     "iToolsPreviewText": IToolsPreviewText,
     "iToolsRegexNode": IToolsRegexNode,
+    "iToolsPreviewImage": IToolsPreviewImage,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -1012,4 +1026,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsLoadRandomImage": "iTools Load Random Image 🎲",
     "iToolsPreviewText": "iTools Text Preview",
     "iToolsRegexNode": "iTools Regex Master 🔎",
+    "iToolsPreviewImage": "iTools Image Preview",
 }
