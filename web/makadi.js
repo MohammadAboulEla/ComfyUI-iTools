@@ -18,6 +18,11 @@ export class BaseSmartWidget {
 
   init() {}
 
+  computeSize(number) {
+    // override the widget computedSize
+    return [0, 0];
+  }
+
   isMouseDown() {
     return app.canvas.pointer.isDown;
   }
