@@ -7,9 +7,9 @@ app.registerExtension({
 	async beforeRegisterNodeDef(nodeType, nodeData, app) {
 		if (nodeData.name === "iToolsPreviewText") {
 			function populate(text) {
-				if (this.widgets?.length > 1) {
-					this.widgets.slice(1).forEach(w => w.onRemove?.());
-					this.widgets.splice(1);
+				if (this.widgets?.length > 0) {
+					this.widgets.slice(0).forEach(w => w.onRemove?.());
+					this.widgets.splice(0);
 				}
 			
 				const values = Array.isArray(text) ? text.filter(Boolean) : [text];
