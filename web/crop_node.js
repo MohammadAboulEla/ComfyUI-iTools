@@ -925,36 +925,53 @@ app.registerExtension({
       return null;
     };
 
+    // Store the original onMouseDown handler
+    const originalOnMouseDown = app.canvas.onMouseDown;
     app.canvas.onMouseDown = (e) => {
+      // Call original handler if it exists
+      if (originalOnMouseDown) {
+        originalOnMouseDown.call(app.canvas, e);
+      }
       const nodes = app.graph.nodes;
       nodes.forEach((n) => {
         if (n.type === "iToolsCropImage") {
           n.widgets.forEach(w=>{
             w.handleDown?.(e);
           })
-          //n.widgets[4]?.handleDown?.(e);
         }
       });
     };
+    
+    // Store the original onDrawForeground handler
+    const originalOnDrawForeground = app.canvas.onDrawForeground;
     app.canvas.onDrawForeground = (ctx) => {
+      // Call original handler if it exists
+      if (originalOnDrawForeground) {
+        originalOnDrawForeground.call(app.canvas, ctx);
+      }
       const nodes = app.graph.nodes;
       nodes.forEach((n) => {
         if (n.type === "iToolsCropImage") {
           n.widgets.forEach(w=>{
             w.handleMove?.(ctx);
           })
-          //n.widgets[4]?.handleMove?.(ctx);
         }
       });
     };
+
+    // Store the original onclick handler
+    const originalOnClick = app.canvas.canvas.onclick;
     app.canvas.canvas.onclick = (e) => {
+      // Call original handler if it exists
+      if (originalOnClick) {
+        originalOnClick.call(app.canvas.canvas, e);
+      }
       const nodes = app.graph.nodes;
       nodes.forEach((n) => {
         if (n.type === "iToolsCropImage") {
           n.widgets.forEach(w=>{
             w.handleClick?.(e);
           })
-          //n.widgets[4]?.handleClick?.(e);
         }
       });
     };
