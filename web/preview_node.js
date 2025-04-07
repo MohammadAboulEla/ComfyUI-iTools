@@ -7,41 +7,29 @@ app.registerExtension({
   name: "iTools.previewNode",
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
     if (nodeData.name === "iToolsPreviewImage") {
-      // // Store the original computeSize method
-      // const originalComputeSize = nodeType.prototype.computeSize;
-      // // Override the computeSize method
-      // nodeType.prototype.computeSize = function () {
-      //   // Call the original method to get the default size
-      //   const storeWidgets = this.widgets;
-      //   this.widgets = []
-      //   const size = originalComputeSize?.apply(this, arguments);
-      //   setTimeout(() => {
-      //     this.widgets = storeWidgets;
-      //     if(allow_debug) console.log('this.widgets',this.widgets);
-      //   }, 300);
-      //   return size;
-      // };
     }
   },
   async nodeCreated(node) {
     if (node.comfyClass !== "iToolsPreviewImage") {
       return;
     }
-    node.size = [280,330]
-    // init update
-    while (node.graph === null) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-    
 
-    if (allow_debug) console.log("ImagePreviewNodeCreated", node);
+    // init size
+    node.size = [280, 330];
 
+    // while (node.graph === null) {
+    //   await new Promise((resolve) => setTimeout(resolve, 5000));
+    // }
+
+    // vars
+    let a = null;
+    let b = null;
     let images = [];
     const MAX_IMAGES = 8;
 
     function pushToImgs(newImage) {
       // Check if image is undefined or null
-      if (!newImage) {
+      if (!newImage || !newImage.naturalWidth) {
         if (allow_debug) console.log("Undefined or null image, skipping");
         return images;
       }
@@ -66,35 +54,38 @@ app.registerExtension({
     function showPrev() {
       // Only cycle between last two images
       if (images.length > 1) {
+        node.imageIndex = 0
+        
         // Get current image
         const currentImg = node.imgs[0];
-        
+
         // Get last two images from history
         const lastTwo = images.slice(-2);
-        
+
         // If current is last image, show second to last
         // If current is second to last, show last
         const nextImg = currentImg === lastTwo[1] ? lastTwo[0] : lastTwo[1];
         
         // Update display
         node.imgs = [nextImg];
-        node.setDirtyCanvas(true, false);
-        
-        if(allow_debug) console.log('Toggling between last two images');
+
+        // Update button text with underline using Unicode
+        const isShowingCurrent = nextImg === lastTwo[1];
+        b.text = isShowingCurrent ? "[Current] | Previous" : "Current | [Previous]";
+
+        if (allow_debug) console.log("Toggling between last two images");
       }
     }
 
-    //add A button
-    let a = null;
-    let b = null;
     function showButtons() {
       a.isVisible = true;
       b.isVisible = true;
     }
-    
-    function createButtons(params) {
-      a = new SmartButton(80, 10, 55, 15, node, "History");
+
+    function createButtons() {
+      a = new SmartButton(80, 8, 55, 20, node, "History");
       a.allowVisualHover = true;
+      a.textYoffset = -0;
       a.isVisible = false;
       a.shape = Shapes.ROUND_L;
       a.roundRadius = 5;
@@ -104,8 +95,9 @@ app.registerExtension({
       a.font = "12px Arial";
       a.onClick = () => cycleImgs();
 
-      b = new SmartButton(80+55, 10, 120, 15, node, "Current / Previous");
+      b = new SmartButton(80 + 55, 8, 120, 20, node, "[Current] | Previous");
       b.allowVisualHover = true;
+      b.textYoffset = -0;
       b.isVisible = false;
       b.shape = Shapes.ROUND_R;
       b.roundRadius = 5;
@@ -115,8 +107,9 @@ app.registerExtension({
       b.font = "12px Arial";
       b.onClick = () => showPrev();
     }
+
     createButtons();
-    
+
     node.onExecuted = async function (message) {
       if (allow_debug) console.log("node", node);
       while (!node.imgs) {
@@ -124,7 +117,7 @@ app.registerExtension({
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
       node.widgets[2].computedHeight = 26;
-      showButtons()
+      showButtons();
       node.setDirtyCanvas(true, false);
       setTimeout(() => {
         const lastImage = node.imgs?.at(-1);
@@ -135,11 +128,60 @@ app.registerExtension({
     };
 
     node.onResize = function (newSize) {
-      node.size[0] = Math.max(280,newSize[0])
-      if(allow_debug) console.log('newSize',newSize);
-    }
-      
+      node.size[0] = Math.max(280, newSize[0]);
+      if (allow_debug) console.log("newSize", newSize);
+    };
 
-    const man = new BaseSmartWidgetManager(node);
+    // Store the original onMouseDown handler
+    const originalOnMouseDown = app.canvas.onMouseDown;
+    app.canvas.onMouseDown = (e) => {
+      // Call original handler if it exists
+      if (originalOnMouseDown) {
+        originalOnMouseDown.call(app.canvas, e);
+      }
+      const nodes = app.graph.nodes;
+      nodes.forEach((n) => {
+        if (n.type === "iToolsPreviewImage") {
+          n.widgets.forEach((w) => {
+            w.handleDown?.(e);
+          });
+        }
+      });
+    };
+
+    // Store the original onDrawForeground handler
+    const originalOnDrawForeground = app.canvas.onDrawForeground;
+    app.canvas.onDrawForeground = (ctx) => {
+      // Call original handler if it exists
+      if (originalOnDrawForeground) {
+        originalOnDrawForeground.call(app.canvas, ctx);
+      }
+      const nodes = app.graph.nodes;
+      nodes.forEach((n) => {
+        if (n.type === "iToolsPreviewImage") {
+          n.widgets.forEach((w) => {
+            w.handleMove?.(ctx);
+          });
+        }
+      });
+    };
+
+    // Store the original onclick handler
+    const originalOnClick = app.canvas.canvas.onclick;
+    app.canvas.canvas.onclick = (e) => {
+      // Call original handler if it exists
+      if (originalOnClick) {
+        originalOnClick.call(app.canvas.canvas, e);
+      }
+      const nodes = app.graph.nodes;
+      nodes.forEach((n) => {
+        if (n.type === "iToolsPreviewImage") {
+          n.widgets.forEach((w) => {
+            w.handleClick?.(e);
+          });
+        }
+      });
+    };
   },
 });
+// b.text = isShowingCurrent ? "C\u0332u\u0332r\u0332r\u0332e\u0332n\u0332t\u0332 / Previous" : "Current / P\u0332r\u0332e\u0332v\u0332i\u0332o\u0332u\u0332s\u0332";

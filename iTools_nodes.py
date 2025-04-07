@@ -1028,5 +1028,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsLoadRandomImage": "iTools Load Random Image 🎲",
     "iToolsPreviewText": "iTools Text Preview",
     "iToolsRegexNode": "iTools Regex Master 🔎",
-    "iToolsPreviewImage": "iTools Image Preview",
+    "iToolsPreviewImage": "iTools Image Preview 🍿",
 }
