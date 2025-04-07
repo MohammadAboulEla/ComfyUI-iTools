@@ -980,6 +980,7 @@ class IToolsPreviewImage(SaveImage):
         self.compress_level = 1
     
     CATEGORY = "iTools"
+    DESCRIPTION = "The easiest way to preview, compare current and previous images, and track your prompt history."
     
     @classmethod
     def INPUT_TYPES(s):
