@@ -976,6 +976,6 @@ app.registerExtension({
 
     globalThis.oncopy = (...args) => {};
 
-    const manager = new BaseSmartWidgetManager(node);
+    const manager = new BaseSmartWidgetManager(node,"iToolsPaintNode");
   },
 });

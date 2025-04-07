@@ -64,8 +64,9 @@ export class BaseSmartWidget {
 }
 
 export class BaseSmartWidgetManager extends BaseSmartWidget {
-  constructor(node) {
+  constructor(node, nodeName) {
     super(node);
+    this.nodeName = nodeName;
     this.allowDebug = false;
     this.init();
     this.initEventListeners();
@@ -79,15 +80,46 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   }
 
   initEventListeners() {
-    app.canvas.onMouseDown = (e) => this.handleMouseDown(e); //works even out of node
-    app.canvas.canvas.onclick = (e) => this.handleMouseClick(e); // works after mouse down
-    app.canvas.onDrawForeground = (ctx) => this.handleMouseMove(ctx); //works every where even when dragging
-    app.canvas.canvas.onmousemove = (e) => this.handleMouseDrag(e); //works every where but not when dragging
+    //works even out of node
+    const originalMouseDown = app.canvas.onMouseDown;
+    app.canvas.onMouseDown = (e) => {
+      if (originalMouseDown) {
+        originalMouseDown.call(app.canvas, e);
+      }
+      this.handleMouseDown(e);
+    };
+    
+    // works after mouse down
+    const originalClick = app.canvas.canvas.onclick;
+    app.canvas.canvas.onclick = (e) => {
+      if (originalClick) {
+        originalClick.call(app.canvas.canvas, e);
+      }
+      this.handleMouseClick(e);
+    };
+
+    //works every where even when dragging
+    const originalHandler = app.canvas.onDrawForeground;
+    app.canvas.onDrawForeground = (ctx) => {
+      if (originalHandler) {
+        originalHandler.call(app.canvas, ctx);
+      }
+      this.handleMouseMove(ctx);
+    };
+    
+    //works every where but not when dragging
+    const originalMouseMove = app.canvas.canvas.onmousemove;
+    app.canvas.canvas.onmousemove = (e) => {
+      if (originalMouseMove) {
+        originalMouseMove.call(app.canvas.canvas, e);
+      }
+      this.handleMouseDrag(e);
+    }; 
   }
 
   handleMouseDown(e) {
     Object.values(this.node.widgets).forEach((widget) => {
-      if (widget instanceof BaseSmartWidget) {
+      if (widget instanceof BaseSmartWidget && this.node.type === this.nodeName) {
         widget.handleDown?.(e);
       }
     });
@@ -96,7 +128,7 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
 
   handleMouseMove(e) {
     Object.values(this.node.widgets).forEach((widget) => {
-      if (widget instanceof BaseSmartWidget) {
+      if (widget instanceof BaseSmartWidget && this.node.type === this.nodeName) {
         widget.handleMove?.(e);
       }
     });
@@ -105,7 +137,7 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
 
   handleMouseClick(e) {
     Object.values(this.node.widgets).forEach((widget) => {
-      if (widget instanceof BaseSmartWidget) {
+      if (widget instanceof BaseSmartWidget && this.node.type === this.nodeName) {
         widget.handleClick?.(e);
       }
     });
@@ -115,7 +147,7 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
 
   handleMouseDrag(e) {
     Object.values(this.node.widgets).forEach((widget) => {
-      if (widget instanceof BaseSmartWidget) {
+      if (widget instanceof BaseSmartWidget && this.node.type === this.nodeName) {
         widget.handleDrag?.(e);
       }
     });
