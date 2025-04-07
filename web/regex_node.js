@@ -129,15 +129,15 @@ app.registerExtension({
     node.widgets[4].callback = () => updateLocalizedName(node);
 
     // add cheat sheet button
-    const hB = new SmartButton(15, 147||8, node.width-30, 20, node,"Regex cheat sheet 📋")
-    hB.allowVisualHover = false;
-    hB.roundRadius = 10
-    hB.outlineWidth = 1
-    hB.outlineColor = "#656565"
-    hB.color = "#222222"
-    hB.font = "12px Arial";
-    hB.onClick = () => openRegexPage()
-    const man = new BaseSmartWidgetManager(node)
+    // const hB = new SmartButton(15, 147||8, node.width-30, 20, node,"Regex cheat sheet 📋")
+    // hB.allowVisualHover = false;
+    // hB.roundRadius = 10
+    // hB.outlineWidth = 1
+    // hB.outlineColor = "#656565"
+    // hB.color = "#222222"
+    // hB.font = "12px Arial";
+    // hB.onClick = () => openRegexPage()
+    // const man = new BaseSmartWidgetManager(node)
   },
 });
 
