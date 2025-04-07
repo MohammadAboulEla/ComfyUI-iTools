@@ -77,6 +77,17 @@ app.registerExtension({
       }
     }
 
+    function toggleButtonActivation() {
+      c.isActive = compare;
+      if (!compare) {
+        c.color = c.originalColor;
+        c.textColor = c.originalTextColor;
+      } else {
+        c.color = "#80a1c0";
+        c.textColor = "black";
+      }
+    }
+
     function showButtons() {
       a.isVisible = true;
       b.isVisible = true;
@@ -106,9 +117,16 @@ app.registerExtension({
       b.outlineColor = "#656565";
       b.color = "#222222";
       b.font = "12px Arial";
-      b.onClick = () => showPrev();
+      b.onClick = () => {
+        if(compare){
+        // cancel compare
+        compare = !compare;
+        toggleButtonActivation(c, compare);
+        }
+        showPrev();
+      }
 
-      c = new SmartButton(80 + 55 + 125, 8+1, 18, 20, node, "|");
+      c = new SmartButton(80 + 55 + 125, 8 + 1, 18, 20, node, "|");
       c.allowVisualHover = true;
       c.textYoffset = -0.05;
       c.isVisible = false;
@@ -119,11 +137,11 @@ app.registerExtension({
       c.color = "#222222";
       c.activeColor = c.font = "12px Arial";
       c.onClick = () => {
-        compare = !compare;
+        // reset showPrev
         if (b.text !== "[Current] | Previous") showPrev();
-        c.color === "#80a1c0" ? (c.color = c.originalColor) : (c.color = "#80a1c0");
-        c.textColor === "black" ? (c.textColor = c.originalTextColor) : (c.textColor = "black");
-        c.isActive = compare;
+        // start compare
+        compare = !compare;
+        toggleButtonActivation(c, compare);
       };
     }
 
@@ -137,7 +155,12 @@ app.registerExtension({
       showButtons();
       node.setDirtyCanvas(true, false);
       setTimeout(() => {
-        if (allow_debug) console.log("node.widgets[3].draw", node.widgets[3].draw);
+        // push last image
+        const lastImage = node.imgs?.at(-1);
+        if (!images.some((img) => img === lastImage)) {
+          pushToImgs(lastImage);
+        }
+
         // override
         const originalDraw = node.widgets[3].draw;
         node.widgets[3].draw = function (ctx, node, widget_width, y, widget_height, ...args) {
@@ -145,12 +168,7 @@ app.registerExtension({
           originalDraw.apply(this, [ctx, node, widget_width, y, widget_height, ...args]);
           drawImgOverlay(node, widget_width, y, ctx, images, compare);
         };
-        // push last image
-        const lastImage = node.imgs?.at(-1);
-        if (!images.some((img) => img === lastImage)) {
-          pushToImgs(lastImage);
-        }
-      }, 250);
+      }, 300);
     };
 
     node.onResize = function (newSize) {
@@ -210,8 +228,10 @@ app.registerExtension({
   },
 });
 
+
+
 function drawImgOverlay(node, widget_width, y, ctx, images, compareMode = false) {
-  if(!compareMode) return;
+  if (!compareMode) return;
 
   const img = node.imgs[0];
   const dw = widget_width;
@@ -240,17 +260,7 @@ function drawImgOverlay(node, widget_width, y, ctx, images, compareMode = false)
 
   if (prevImg && compareMode) {
     // Draw left part from img
-    ctx.drawImage(
-      img,
-      0,
-      0,
-      img.naturalWidth * splitRatio,
-      img.naturalHeight,
-      imgX,
-      imgY,
-      w * splitRatio,
-      h
-    );
+    ctx.drawImage(img, 0, 0, img.naturalWidth * splitRatio, img.naturalHeight, imgX, imgY, w * splitRatio, h);
     // Draw right part from prevImg
     ctx.drawImage(
       prevImg,
@@ -263,7 +273,7 @@ function drawImgOverlay(node, widget_width, y, ctx, images, compareMode = false)
       w * (1 - splitRatio),
       h
     );
-  }  
+  }
 }
 
 // b.text = isShowingCurrent ? "C\u0332u\u0332r\u0332r\u0332e\u0332n\u0332t\u0332 / Previous" : "Current / P\u0332r\u0332e\u0332v\u0332i\u0332o\u0332u\u0332s\u0332";
