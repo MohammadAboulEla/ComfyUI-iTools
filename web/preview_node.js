@@ -45,8 +45,6 @@ app.registerExtension({
     function cycleImgs() {
       // Switch to previous images if available
       if (node.imgs && images.length > 1) {
-        if (allow_debug) console.log("node.imgs", node.imgs);
-        if (allow_debug) console.log("images", images);
         node.imgs = images; // Show previous image
       }
     }
