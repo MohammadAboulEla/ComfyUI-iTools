@@ -27,11 +27,12 @@ app.registerExtension({
     if (node.comfyClass !== "iToolsPreviewImage") {
       return;
     }
-
+    node.size = [280,330]
     // init update
     while (node.graph === null) {
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
+    
 
     if (allow_debug) console.log("ImagePreviewNodeCreated", node);
 
@@ -86,6 +87,11 @@ app.registerExtension({
     //add A button
     let a = null;
     let b = null;
+    function showButtons() {
+      a.isVisible = true;
+      b.isVisible = true;
+    }
+    
     function createButtons(params) {
       a = new SmartButton(80, 10, 55, 15, node, "History");
       a.allowVisualHover = true;
@@ -111,9 +117,6 @@ app.registerExtension({
     }
     createButtons();
     
-    node.onResize = () => {
-    };
-
     node.onExecuted = async function (message) {
       if (allow_debug) console.log("node", node);
       while (!node.imgs) {
@@ -121,8 +124,7 @@ app.registerExtension({
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
       node.widgets[2].computedHeight = 26;
-      a.isVisible = true;
-      b.isVisible = true;
+      showButtons()
       node.setDirtyCanvas(true, false);
       setTimeout(() => {
         const lastImage = node.imgs?.at(-1);
@@ -131,6 +133,12 @@ app.registerExtension({
         }
       }, 300);
     };
+
+    node.onResize = function (newSize) {
+      node.size[0] = Math.max(280,newSize[0])
+      if(allow_debug) console.log('newSize',newSize);
+    }
+      
 
     const man = new BaseSmartWidgetManager(node);
   },

@@ -978,7 +978,9 @@ class IToolsPreviewImage(SaveImage):
         self.type = "temp"
         self.prefix_append = "_temp_" + ''.join(random.choice("abcdefghijklmnopqrstupvxyz") for x in range(5))
         self.compress_level = 1
-
+    
+    CATEGORY = "iTools"
+    
     @classmethod
     def INPUT_TYPES(s):
         return {"required":
