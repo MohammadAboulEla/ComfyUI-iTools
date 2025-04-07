@@ -26,9 +26,6 @@ app.registerExtension({
     nodeType.prototype.onNodeCreated = function () {
       const me = onNodeCreated?.apply(this);
       const style = this.widgets.find((w) => w.name == "style_file");
-      if (allow_debug) {
-        console.log("this", this);
-      }
       style.callback = async () => {
         // Await the response from send_style_message
         this.widgets[3]["value"] = "loading ...";
@@ -65,14 +62,4 @@ async function waitForInitialization(node, style) {
   ) {
     await new Promise((resolve) => setTimeout(resolve, 100)); // Wait 100ms before checking again
   }
-}
-
-// not used
-function executeAfterDelay(func, delay) {
-  if (allow_debug) {
-    console.log(my_node, my_file);
-  }
-  setTimeout(() => {
-    func();
-  }, delay);
 }
