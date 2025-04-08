@@ -33,6 +33,32 @@ app.registerExtension({
         if (allow_debug) console.log("Undefined or null image, skipping");
         return images;
       }
+
+      // Check if image already exists in the array
+      if (allow_debug) {
+        // console.log('New image src:', newImage.src);
+        // console.log('Existing images src:', images.map(img => img.src));
+      }
+
+      const imageExists = images.some((img) => {
+        // Extract filename from URLs by removing the random parameter
+        const getFilename = (url) => {
+          const match = url.match(/filename=([^&]+)/);
+          return match ? match[1] : "";
+        };
+
+        const newImageFilename = getFilename(newImage.src);
+        const existingImageFilename = getFilename(img.src);
+
+        return newImageFilename === existingImageFilename;
+      });
+
+      if (imageExists) {
+        if (allow_debug) console.log("Image already exists, skipping");
+        return images;
+      }
+      if (allow_debug) console.log("imageExists", imageExists);
+
       images.push(newImage);
       // If array exceeds MAX_IMAGES, remove oldest image(s)
       if (images.length > MAX_IMAGES) {
@@ -43,15 +69,13 @@ app.registerExtension({
     }
 
     function cycleImgs() {
-      compare = false;
-      if (allow_debug) console.log("compare", compare);
       // Switch to previous images if available
       if (node.imgs && images.length > 1) {
         node.imgs = images; // Show previous image
       }
     }
 
-    function showPrev() {
+    function togglingLastTwoImages() {
       // Only cycle between last two images
       if (images.length > 1) {
         node.imageIndex = 0;
@@ -105,7 +129,18 @@ app.registerExtension({
       a.outlineColor = "#656565";
       a.color = "#222222";
       a.font = "12px Arial";
-      a.onClick = () => cycleImgs();
+      a.onClick = () => {
+        if (compare) {
+          // cancel compare
+          compare = !compare;
+          toggleButtonActivation(c, compare);
+        }
+        if (node.imgs.length > 1) {
+          togglingLastTwoImages();
+        } else {
+          cycleImgs();
+        }
+      };
 
       b = new SmartButton(80 + 55, 8, 120, 20, node, "[Current] | Previous");
       b.allowVisualHover = true;
@@ -118,13 +153,13 @@ app.registerExtension({
       b.color = "#222222";
       b.font = "12px Arial";
       b.onClick = () => {
-        if(compare){
-        // cancel compare
-        compare = !compare;
-        toggleButtonActivation(c, compare);
+        if (compare) {
+          // cancel compare
+          compare = !compare;
+          toggleButtonActivation(c, compare);
         }
-        showPrev();
-      }
+        togglingLastTwoImages();
+      };
 
       c = new SmartButton(80 + 55 + 125, 8 + 1, 18, 20, node, "|");
       c.allowVisualHover = true;
@@ -137,8 +172,8 @@ app.registerExtension({
       c.color = "#222222";
       c.activeColor = c.font = "12px Arial";
       c.onClick = () => {
-        // reset showPrev
-        if (b.text !== "[Current] | Previous") showPrev();
+        // reset togglingLastTwoImages
+        if (b.text !== "[Current] | Previous") togglingLastTwoImages();
         // start compare
         compare = !compare;
         toggleButtonActivation(c, compare);
@@ -153,6 +188,10 @@ app.registerExtension({
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
       showButtons();
+
+      // reset togglingLastTwoImages
+      if (b.text !== "[Current] | Previous") togglingLastTwoImages();
+
       node.setDirtyCanvas(true, false);
       setTimeout(() => {
         // push last image
@@ -227,8 +266,6 @@ app.registerExtension({
     };
   },
 });
-
-
 
 function drawImgOverlay(node, widget_width, y, ctx, images, compareMode = false) {
   if (!compareMode) return;
