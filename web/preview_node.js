@@ -174,7 +174,9 @@ app.registerExtension({
       c.onClick = () => {
         // reset togglingLastTwoImages
         if (b.text !== "[Current] | Previous") togglingLastTwoImages();
+        
         // start compare
+        if (images.length <= 1) return;
         compare = !compare;
         toggleButtonActivation(c, compare);
       };
@@ -211,7 +213,7 @@ app.registerExtension({
     };
 
     node.onResize = function (newSize) {
-      node.size[0] = Math.max(280, newSize[0]);
+      node.size[0] = Math.max(285, newSize[0]);
     };
 
     // Store the original onMouseDown handler
