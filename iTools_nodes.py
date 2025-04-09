@@ -11,7 +11,7 @@ import numpy as np
 import torch
 from PIL import Image, ImageSequence, ImageOps
 from .backend.checker_board import ChessTensor, ChessPattern
-from nodes import common_ksampler, SaveImage
+from nodes import common_ksampler, SaveImage, PreviewImage
 import json
 from .backend.file_handeler import FileHandler
 from .backend.grid_filler import (
@@ -988,6 +988,33 @@ class IToolsPreviewImage(SaveImage):
                     {"images": ("IMAGE", ), },
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
                 }
+
+class IToolsCompareImage(PreviewImage):
+
+    CATEGORY = "iTools"
+    DESCRIPTION = "Compare A and B images"
+    FUNCTION = "compare_images"
+    OUTPUT_NODE = True
+    
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+        "required": {
+            "a": ("IMAGE",),
+            "b": ("IMAGE",),
+        },
+        "hidden": {
+            "prompt": "PROMPT",
+            "extra_pnginfo": "EXTRA_PNGINFO"
+        },
+        }
+
+    def compare_images(self,a,b,filename_prefix=None,prompt=None,extra_pnginfo=None):
+        _a = self.save_images(a,)['ui']['images'] 
+        _b = self.save_images(b,)['ui']['images']
+        
+        return {'ui': {'images': _a+_b }} # {'ui': {'images': [{'filename': 'ComfyUI_temp_00001_.png', 'subfolder': '', 'type': 'temp'}]}}
+
         
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -1009,6 +1036,7 @@ NODE_CLASS_MAPPINGS = {
     "iToolsPreviewText": IToolsPreviewText,
     "iToolsRegexNode": IToolsRegexNode,
     "iToolsPreviewImage": IToolsPreviewImage,
+    "iToolsCompareImage": IToolsCompareImage,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -1030,4 +1058,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsPreviewText": "iTools Text Preview",
     "iToolsRegexNode": "iTools Regex Master 🔎",
     "iToolsPreviewImage": "iTools Image Preview 🍿",
+    "iToolsCompareImage": "iTools Image Compare",
 }
