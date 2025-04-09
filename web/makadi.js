@@ -2172,16 +2172,27 @@ export class SmartWidget extends BaseSmartWidget {
   }
 
   visualClick() {
+    if (this.visualClickLocked) return; // prevent re-entry
+    this.visualClickLocked = true;
+  
     const originalPosX = this.myX;
     const originalPosY = this.myY;
-    setTimeout(() => {
-      if (!this.allowVisualHover && this.resetColor) this.color = this.originalColor;
-      this.myX = originalPosX;
-      this.myY = originalPosY;
-    }, 100);
-    if (!this.allowVisualHover && this.resetColor) this.color = lightenColor(this.originalColor, 20);
+  
+    if (!this.allowVisualHover && this.resetColor)
+      this.color = lightenColor(this.originalColor, 20);
+  
     this.myX = originalPosX + 0.5;
     this.myY = originalPosY + 0.5;
+  
+    setTimeout(() => {
+      if (!this.allowVisualHover && this.resetColor)
+        this.color = this.originalColor;
+  
+      this.myX = originalPosX;
+      this.myY = originalPosY;
+  
+      this.visualClickLocked = false; // release lock
+    }, 100);
   }
 
   visualHover() {

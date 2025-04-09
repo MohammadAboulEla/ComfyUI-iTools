@@ -185,10 +185,11 @@ app.registerExtension({
     createButtons();
 
     node.onExecuted = async function (message) {
-      while (!node.imgs) {
-        if (allow_debug) console.log("wait..");
+      for (let i = 0; i < 20 && !node.imgs; i++) {
+        if (allow_debug) console.log("wait..", i);
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
+      if (!node.imgs) return;
       showButtons();
 
       // reset togglingLastTwoImages
@@ -299,7 +300,7 @@ function drawImgOverlay(node, widget_width, y, ctx, images, compareMode = false)
 
   if (prevImg && compareMode) {
     // Draw left part from img
-    ctx.drawImage(img, 0, 0, img.naturalWidth * splitRatio, img.naturalHeight, imgX, imgY, w * splitRatio, h);
+    // ctx.drawImage(img, 0, 0, img.naturalWidth * splitRatio, img.naturalHeight, imgX, imgY, w * splitRatio, h);
     // Draw right part from prevImg
     ctx.drawImage(
       prevImg,

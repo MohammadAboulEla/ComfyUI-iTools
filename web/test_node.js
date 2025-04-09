@@ -80,8 +80,8 @@ app.registerExtension({
 });
 
 async function waitForInitialization(node) {
-  // Poll until both node and style are initialized
-  while (!node || !node.widgets || node.widgets.length < 2) {
-    await new Promise((resolve) => setTimeout(resolve, 100)); // Wait 100ms before checking again
+  for (let i = 0; i < 20 && (!node || !node.widgets || node.widgets.length < 2); i++) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
+  return !(!node || !node.widgets || node.widgets.length < 2);
 }

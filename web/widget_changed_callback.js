@@ -41,25 +41,32 @@ app.registerExtension({
 });
 
 async function fix_start_up_init(node, style) {
-  // Wait until node and style are fully initialized
-  await waitForInitialization(node, style);
-  if ((node.size[0] <= 300) | (node.size[1] <= 230)) {
-    node.setSize([300, 230]);
+  try {
+    // Wait until node and style are fully initialized
+    if (!await waitForInitialization(node, style)) {
+      if (allow_debug) console.log("Initialization timeout");
+      return;
+    }
+
+    if ((node.size[0] <= 300) | (node.size[1] <= 230)) {
+      node.setSize([300, 230]);
+    }
+
+    // Proceed with sending the style message and updating node widgets
+    const options = await send_style_message(style.value);
+    if (!options?.new_templates) {
+      if (allow_debug) console.log("Invalid options response");
+      return;
+    }
+    node.widgets[3]["options"]["values"] = options.new_templates;
+  } catch (error) {
+    if (allow_debug) console.log("Error in fix_start_up_init:", error);
   }
-  // Proceed with sending the style message and updating node widgets
-  const options = await send_style_message(style.value);
-  node.widgets[3]["options"]["values"] = options.new_templates;
 }
 
 async function waitForInitialization(node, style) {
-  // Poll until both node and style are initialized
-  while (
-    !node ||
-    !node.widgets ||
-    node.widgets.length < 4 ||
-    !style ||
-    !style.value
-  ) {
-    await new Promise((resolve) => setTimeout(resolve, 100)); // Wait 100ms before checking again
+  for (let i = 0; i < 30 && (!node || !node.widgets || node.widgets.length < 4 || !style || !style.value); i++) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
+  return !(!node || !node.widgets || node.widgets.length < 4 || !style || !style.value);
 }

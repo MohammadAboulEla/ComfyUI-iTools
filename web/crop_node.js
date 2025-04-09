@@ -215,8 +215,12 @@ class CropWidget {
       originalOnChanged.apply(this);
       this.img = null;
       //this.resetCroppingData(); // disabled
-      while (this.img !== this.node.imgs[0]) {
+      for (let i = 0; i < 30 && this.img !== this.node.imgs[0]; i++) {
         await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      if (this.img !== this.node.imgs[0]) {
+        if (allow_debug) console.log("Timeout waiting for image sync");
+        return;
       }
       this.cropNewImage();
     };
@@ -896,17 +900,13 @@ app.registerExtension({
       return;
     }
 
-    // if (allow_debug) console.log("node.widgets_values", node.widgets_values);
     // wait for init
-    const timeout = 3000; // 3 seconds
-    const startTime = Date.now();
-    while (!node.graph) {
-      if (Date.now() - startTime > timeout) {
-        if (allow_debug) console.error("Timeout: Failed to load graph.");
-        break;
-      }
-      if (allow_debug) console.log("loading ...");
-      await new Promise((resolve) => setTimeout(resolve, 200));
+    for (let i = 0; i < 30 && node.graph === null; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    if (node.graph === null) {
+      if (allow_debug) console.log("Timeout waiting for graph initialization");
+      return;
     }
 
     //START POINT

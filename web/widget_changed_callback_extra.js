@@ -110,40 +110,38 @@ async function reset_func(node, fourth_file) {
 }
 
 async function fix_start_up_init(node, base, s1, s2, s3) {
-  // Wait until node and style are fully initialized
-  await waitForInitialization(node, s3);
-  if ((node.size[0] <= 300) | (node.size[1] <= 420)) {
-    node.setSize([300, 420]);
-  }
-  const options = await send_request_templates_for_file(base.value);
-  if (options) {
-    node.widgets[3]["options"]["values"] = options.templates;
-  }
-  const options2 = await send_request_templates_for_file(s1.value);
-  if (options2) {
-    node.widgets[5]["options"]["values"] = options2.templates;
-  }
-  const options3 = await send_request_templates_for_file(s2.value);
-  if (options3) {
-    node.widgets[7]["options"]["values"] = options3.templates;
-  }
-  const options4 = await send_request_templates_for_file(s3.value);
-  if (options4) {
-    node.widgets[9]["options"]["values"] = options4.templates;
+  try {
+    // Wait until node and style are fully initialized
+    if (!await waitForInitialization(node, s3)) {
+      if (allow_debug) console.log("Initialization timeout");
+      return;
+    }
+
+    if ((node.size[0] <= 300) | (node.size[1] <= 420)) {
+      node.setSize([300, 420]);
+    }
+
+    const options = await send_request_templates_for_file(base.value);
+    node.widgets[3]["options"]["values"] = options?.templates ?? [];
+
+    const options2 = await send_request_templates_for_file(s1.value);
+    node.widgets[5]["options"]["values"] = options2?.templates ?? [];
+
+    const options3 = await send_request_templates_for_file(s2.value);
+    node.widgets[7]["options"]["values"] = options3?.templates ?? [];
+
+    const options4 = await send_request_templates_for_file(s3.value);
+    node.widgets[9]["options"]["values"] = options4?.templates ?? [];
+  } catch (error) {
+    if (allow_debug) console.log("Error in fix_start_up_init:", error);
   }
 }
 
 async function waitForInitialization(node, style) {
-  // Poll until both node and style are initialized
-  while (
-    !node ||
-    !node.widgets ||
-    node.widgets.length < 4 ||
-    !style ||
-    !style.value
-  ) {
-    await new Promise((resolve) => setTimeout(resolve, 100)); // Wait 100ms before checking again
+  for (let i = 0; i < 30 && (!node || !node.widgets || node.widgets.length < 4 || !style || !style.value); i++) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
+  return !(!node || !node.widgets || node.widgets.length < 4 || !style || !style.value);
 }
 
 // not used yet functions
@@ -165,16 +163,6 @@ function injectBackgroundColor(me, nodeData, app) {
       element.style.backgroundColor = "rgba(255, 0, 0, 0.07)";
     }
   });
-}
-
-// not used
-function executeAfterDelay(func, delay) {
-  if (allow_debug) {
-    console.log(my_node, my_file);
-  }
-  setTimeout(() => {
-    func();
-  }, delay);
 }
 
 // not used

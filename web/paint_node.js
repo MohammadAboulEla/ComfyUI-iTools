@@ -46,9 +46,13 @@ app.registerExtension({
       return;
     }
 
-    while (node.graph === null) {
-      if (allow_debug) console.log("loading ...");
+    // wait fo init
+    for (let i = 0; i < 30 && node.graph === null; i++) {
       await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    if (node.graph === null) {
+      if (allow_debug) console.log("Timeout waiting for graph initialization");
+      return;
     }
 
     // NODE SETTINGS
