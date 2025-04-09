@@ -20,27 +20,27 @@ app.registerExtension({
     if (allow_debug) console.log("node", node);
 
     // vars
-    node.a = null;
-    node.b = null;
-    node.c = null;
-    node.compare = false;
-    node.imagesTracked = [];
+    let a = null;
+    let b = null;
+    let c = null;
+    let compare = false;
+    let imagesTracked = [];
     const MAX_IMAGES = 8;
 
     function pushToImgs(newImage) {
       // Check if image is undefined or null
       if (!newImage || !newImage.naturalWidth) {
         if (allow_debug) console.log("Undefined or null image, skipping");
-        return node.imagesTracked;
+        return imagesTracked;
       }
 
       // Check if image already exists in the array
       // if (allow_debug) {
       //   console.log('New image src:', newImage.src);
-      //   console.log('Existing node.imagesTracked src:', node.imagesTracked.map(img => img.src));
+      //   console.log('Existing imagesTracked src:', imagesTracked.map(img => img.src));
       // }
 
-      const imageExists = node.imagesTracked.some((img) => {
+      const imageExists = imagesTracked.some((img) => {
         // Extract filename from URLs by removing the random parameter
         const getFilename = (url) => {
           if (!url) return "";
@@ -56,44 +56,46 @@ app.registerExtension({
 
       if (imageExists) {
         if (allow_debug) console.log("Image already exists, skipping");
-        return node.imagesTracked;
+        return imagesTracked;
       }
 
-      node.imagesTracked.push(newImage);
+      imagesTracked.push(newImage);
       // If array exceeds MAX_IMAGES, remove oldest image(s)
-      if (node.imagesTracked.length > MAX_IMAGES) {
-        node.imagesTracked.shift(); // removes first (oldest) element
+      if (imagesTracked.length > MAX_IMAGES) {
+        imagesTracked.shift(); // removes first (oldest) element
       }
-      if (allow_debug) console.log("node.imagesTracked list updated, length:", node.imagesTracked.length);
-      if(allow_debug) console.log('node.imagesTracked',node.imagesTracked);
-      return node.imagesTracked;
+      if (allow_debug) console.log("imagesTracked list updated, length:", imagesTracked.length);
+      return imagesTracked;
     }
 
     function cycleImgs() {
-      // Switch to previous node.imagesTracked if available
-      if (node.imgs && node.imagesTracked.length > 1) {
-        node.imgs = node.imagesTracked; // Show previous image
-      }else{
+      if (imagesTracked.length === 1) {
         app.extensionManager.toast.add({
           severity: "info",
           summary: "iTools!",
-          detail: "No images in this node history",
+          detail: "Only this image exist in this node history",
           life: 2000,
         });
+        return;
+      }
+
+      // Switch to previous imagesTracked if available
+      if (node.imgs && imagesTracked.length > 1) {
+        node.imgs = imagesTracked; // Show previous image
       }
     }
 
     function togglingLastTwoImages() {
-      if(allow_debug) console.log('node.imagesTracked',node.imagesTracked);
-      // Only cycle between last two node.imagesTracked
-      if (node.imagesTracked.length > 1) {
+      if (allow_debug) console.log("imagesTracked", imagesTracked);
+      // Only cycle between last two imagesTracked
+      if (imagesTracked.length > 1) {
         node.imageIndex = 0;
 
         // Get current image
         const currentImg = node.imgs[0];
 
-        // Get last two node.imagesTracked from history
-        const lastTwo = node.imagesTracked.slice(-2);
+        // Get last two imagesTracked from history
+        const lastTwo = imagesTracked.slice(-2);
 
         // If current is last image, show second to last
         // If current is second to last, show last
@@ -104,9 +106,9 @@ app.registerExtension({
 
         // Update button text with underline using Unicode
         const isShowingCurrent = nextImg === lastTwo[1];
-        node.b.text = isShowingCurrent ? "[Current] | Previous" : "Current | [Previous]";
+        b.text = isShowingCurrent ? "[Current] | Previous" : "Current | [Previous]";
 
-        if (allow_debug) console.log("Toggling between last two node.imagesTracked");
+        if (allow_debug) console.log("Toggling between last two imagesTracked");
       } else {
         app.extensionManager.toast.add({
           severity: "info",
@@ -118,38 +120,47 @@ app.registerExtension({
     }
 
     function toggleButtonActivation() {
-      node.c.isActive = node.compare;
-      if (!node.compare) {
-        node.c.color = node.c.originalColor;
-        node.c.textColor = node.c.originalTextColor;
+      c.isActive = compare;
+      if (!compare) {
+        c.color = c.originalColor;
+        c.textColor = c.originalTextColor;
       } else {
-        node.c.color = "#80a1c0";
-        node.c.textColor = "black";
+        c.color = "#80a1c0";
+        c.textColor = "black";
       }
     }
 
     function showButtons() {
-      node.a.isVisible = true;
-      node.b.isVisible = true;
-      node.c.isVisible = true;
+      a.isVisible = true;
+      b.isVisible = true;
+      c.isVisible = true;
     }
 
-    function createButtons(startVisible= false) {
-      node.a = new SmartButton(80, 8, 55, 20, node, "History");
-      node.a.allowVisualHover = true;
-      node.a.textYoffset = -0;
-      node.a.isVisible = startVisible;
-      node.a.shape = Shapes.ROUND_L;
-      node.a.roundRadius = 5;
-      node.a.outlineWidth = 1;
-      node.a.outlineColor = "#656565";
-      node.a.color = "#222222";
-      node.a.font = "12px Arial";
-      node.a.onClick = () => {
-        if (node.compare) {
-          // cancel node.compare
-          node.compare = !node.compare;
-          toggleButtonActivation(node.c, node.compare);
+    function createButtons(startVisible = true) {
+      a = new SmartButton(80, 8, 55, 20, node, "History");
+      a.allowVisualHover = true;
+      a.textYoffset = -0;
+      a.isVisible = startVisible;
+      a.shape = Shapes.ROUND_L;
+      a.roundRadius = 5;
+      a.outlineWidth = 1;
+      a.outlineColor = "#656565";
+      a.color = "#222222";
+      a.font = "12px Arial";
+      a.onClick = () => {
+        if (compare) {
+          // cancel compare
+          compare = !compare;
+          toggleButtonActivation(c, compare);
+        }
+        if (!node.imgs) {
+          app.extensionManager.toast.add({
+            severity: "info",
+            summary: "iTools!",
+            detail: "No images in this node history",
+            life: 2000,
+          });
+          return;
         }
         if (node.imgs.length > 1) {
           togglingLastTwoImages();
@@ -158,41 +169,41 @@ app.registerExtension({
         }
       };
 
-      node.b = new SmartButton(80 + 55, 8, 120, 20, node, "[Current] | Previous");
-      node.b.allowVisualHover = true;
-      node.b.textYoffset = -0;
-      node.b.isVisible = startVisible;
-      node.b.shape = Shapes.ROUND_R;
-      node.b.roundRadius = 5;
-      node.b.outlineWidth = 1;
-      node.b.outlineColor = "#656565";
-      node.b.color = "#222222";
-      node.b.font = "12px Arial";
-      node.b.onClick = () => {
-        if (node.compare) {
-          // cancel node.compare
-          node.compare = !node.compare;
-          toggleButtonActivation(node.c, node.compare);
+      b = new SmartButton(80 + 55, 8, 120, 20, node, "[Current] | Previous");
+      b.allowVisualHover = true;
+      b.textYoffset = -0;
+      b.isVisible = startVisible;
+      b.shape = Shapes.ROUND_R;
+      b.roundRadius = 5;
+      b.outlineWidth = 1;
+      b.outlineColor = "#656565";
+      b.color = "#222222";
+      b.font = "12px Arial";
+      b.onClick = () => {
+        if (compare) {
+          // cancel compare
+          compare = !compare;
+          toggleButtonActivation(c, compare);
         }
         togglingLastTwoImages();
       };
 
-      node.c = new SmartButton(80 + 55 + 125, 8 + 1, 18, 20, node, "|");
-      node.c.allowVisualHover = true;
-      node.c.textYoffset = -0.05;
-      node.c.isVisible = startVisible;
-      node.c.shape = Shapes.CIRCLE;
-      //node.c.roundRadius = 5;
-      node.c.outlineWidth = 1;
-      node.c.outlineColor = "#656565";
-      node.c.color = "#222222";
-      node.c.activeColor = node.c.font = "12px Arial";
-      node.c.onClick = () => {
+      c = new SmartButton(80 + 55 + 125, 8 + 1, 18, 20, node, "|");
+      c.allowVisualHover = true;
+      c.textYoffset = -0.05;
+      c.isVisible = startVisible;
+      c.shape = Shapes.CIRCLE;
+      //c.roundRadius = 5;
+      c.outlineWidth = 1;
+      c.outlineColor = "#656565";
+      c.color = "#222222";
+      c.activeColor = c.font = "12px Arial";
+      c.onClick = () => {
         // reset togglingLastTwoImages
-        if (node.b.text !== "[Current] | Previous") togglingLastTwoImages();
+        if (b.text !== "[Current] | Previous") togglingLastTwoImages();
 
-        // start node.compare
-        if (node.imagesTracked.length <= 1) {
+        // start compare
+        if (imagesTracked.length <= 1) {
           app.extensionManager.toast.add({
             severity: "info",
             summary: "iTools!",
@@ -201,37 +212,36 @@ app.registerExtension({
           });
           return;
         }
-        node.compare = !node.compare;
-        toggleButtonActivation(node.c, node.compare);
+        compare = !compare;
+        toggleButtonActivation(c, compare);
       };
     }
 
     createButtons();
 
     node.onExecuted = async function (message) {
-      
       // Wait for image to be loaded
       for (let i = 0; i < 20 && !node.imgs; i++) {
         if (allow_debug) console.log("wait..", i);
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
       if (!node.imgs) return;
-      
+
       showButtons();
 
       // Reset togglingLastTwoImages
-      if (node.b.text !== "[Current] | Previous") togglingLastTwoImages();
+      if (b.text !== "[Current] | Previous") togglingLastTwoImages();
       node.setDirtyCanvas(true, false);
 
       setTimeout(() => {
         // push last image
         const lastImage = node.imgs?.at(-1);
-        if (!node.imagesTracked.some((img) => img === lastImage)) {
+        if (!imagesTracked.some((img) => img === lastImage)) {
           pushToImgs(lastImage);
         }
 
         // Override draw function in ImagePreviewWidget
-        const previewWidget = node.widgets.find(widget => !(widget instanceof BaseSmartWidget));
+        const previewWidget = node.widgets.find((widget) => !(widget instanceof BaseSmartWidget));
         if (!previewWidget) {
           if (allow_debug) console.log("ImagePreviewWidget not found");
           return;
@@ -240,7 +250,7 @@ app.registerExtension({
         previewWidget.draw = function (ctx, node, widget_width, y, widget_height, ...args) {
           // Call the original draw function first
           originalDraw.apply(this, [ctx, node, widget_width, y, widget_height, ...args]);
-          drawImgOverlay(node, widget_width, y, ctx, node.imagesTracked, node.compare);
+          drawImgOverlay(node, widget_width, y, ctx, imagesTracked, compare);
         };
       }, 300);
     };
@@ -251,7 +261,6 @@ app.registerExtension({
     };
 
     const m = new BaseSmartWidgetManager(node, "iToolsPreviewImage");
-
   },
 });
 
@@ -301,4 +310,4 @@ function drawImgOverlay(node, widget_width, y, ctx, _imagesRef, compareMode = fa
   }
 }
 
-// node.b.text = isShowingCurrent ? "node.c\u0332u\u0332r\u0332r\u0332e\u0332n\u0332t\u0332 / Previous" : "Current / P\u0332r\u0332e\u0332v\u0332i\u0332o\u0332u\u0332s\u0332";
+// b.text = isShowingCurrent ? "c\u0332u\u0332r\u0332r\u0332e\u0332n\u0332t\u0332 / Previous" : "Current / P\u0332r\u0332e\u0332v\u0332i\u0332o\u0332u\u0332s\u0332";
