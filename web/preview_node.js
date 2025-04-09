@@ -15,7 +15,7 @@ app.registerExtension({
     }
 
     // init size
-    node.size = [280, 330];
+    node.size = [285, 330];
 
     if (allow_debug) console.log("node", node);
 
@@ -137,7 +137,7 @@ app.registerExtension({
     }
 
     function createButtons(startVisible = true) {
-      a = new SmartButton(80, 8, 55, 20, node, "History");
+      a = new SmartButton(75, 8, 55, 20, node, "History");
       a.allowVisualHover = true;
       a.textYoffset = -0;
       a.isVisible = startVisible;
@@ -169,7 +169,7 @@ app.registerExtension({
         }
       };
 
-      b = new SmartButton(80 + 55, 8, 120, 20, node, "[Current] | Previous");
+      b = new SmartButton(75 + 55, 8, 120, 20, node, "[Current] | Previous");
       b.allowVisualHover = true;
       b.textYoffset = -0;
       b.isVisible = startVisible;
@@ -188,7 +188,7 @@ app.registerExtension({
         togglingLastTwoImages();
       };
 
-      c = new SmartButton(80 + 55 + 125, 8 + 1, 18, 20, node, "|");
+      c = new SmartButton(75 + 55 + 125, 8 + 1, 18, 20, node, "|");
       c.allowVisualHover = true;
       c.textYoffset = -0.05;
       c.isVisible = startVisible;
