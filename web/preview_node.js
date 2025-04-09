@@ -27,7 +27,6 @@ app.registerExtension({
     node.imagesTracked = [];
     const MAX_IMAGES = 8;
 
-    if(allow_debug) console.log('node.imagesTracked',node.imagesTracked);
     function pushToImgs(newImage) {
       // Check if image is undefined or null
       if (!newImage || !newImage.naturalWidth) {
@@ -78,7 +77,7 @@ app.registerExtension({
         app.extensionManager.toast.add({
           severity: "info",
           summary: "iTools!",
-          detail: "No node.imagesTracked in history",
+          detail: "No images in this node history",
           life: 2000,
         });
       }
