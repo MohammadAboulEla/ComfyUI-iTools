@@ -2347,7 +2347,7 @@ export class SmartInfo extends BaseSmartWidget {
     }
 
     // Draw circle
-    if (this.shape === Shapes.CIRCLE) {
+    else if (this.shape === Shapes.CIRCLE) {
       ctx.beginPath();
       ctx.arc(this.myX + this.radius, this.myY + this.radius, this.radius, 0, Math.PI * 2);
       ctx.fillStyle = this.color;
@@ -2362,7 +2362,7 @@ export class SmartInfo extends BaseSmartWidget {
     }
 
     // Draw rounded rectangle
-    if (this.shape === Shapes.ROUND) {
+    else if (this.shape === Shapes.ROUND) {
       const radius = Math.min(this.width, this.height) / 5; // Adjust rounding level
       ctx.beginPath();
       ctx.moveTo(this.myX + radius, this.myY);
@@ -2394,7 +2394,7 @@ export class SmartInfo extends BaseSmartWidget {
     }
 
     // Draw triangle
-    if (this.shape === Shapes.TRIANGLE) {
+    else if (this.shape === Shapes.TRIANGLE) {
       ctx.beginPath();
       ctx.moveTo(this.myX + this.width / 2, this.myY);
       ctx.lineTo(this.myX, this.myY + this.height);
@@ -2413,7 +2413,7 @@ export class SmartInfo extends BaseSmartWidget {
     }
 
     // Draw star
-    if (this.shape === Shapes.STAR) {
+    else if (this.shape === Shapes.STAR) {
       const centerX = this.myX + this.width / 2;
       const centerY = this.myY + this.height / 2;
       const radius = Math.min(this.width, this.height) / 2;
@@ -2442,7 +2442,7 @@ export class SmartInfo extends BaseSmartWidget {
     }
 
     // Draw ellipse
-    if (this.shape === Shapes.ELLIPSE) {
+    else if (this.shape === Shapes.ELLIPSE) {
       ctx.beginPath();
       ctx.ellipse(
         this.myX + this.width / 2,

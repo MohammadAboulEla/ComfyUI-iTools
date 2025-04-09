@@ -1,6 +1,6 @@
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
-import { SmartButton } from "./makadi.js";
+import { BaseSmartWidget, BaseSmartWidgetManager, SmartButton, SmartInfo } from "./makadi.js";
 import { Shapes } from "./utils.js";
 
 app.registerExtension({
@@ -20,29 +20,31 @@ app.registerExtension({
     if (allow_debug) console.log("node", node);
 
     // vars
-    let a = null;
-    let b = null;
-    let c = null;
-    let compare = false;
-    let images = [];
+    node.a = null;
+    node.b = null;
+    node.c = null;
+    node.compare = false;
+    node.imagesTracked = [];
     const MAX_IMAGES = 8;
 
+    if(allow_debug) console.log('node.imagesTracked',node.imagesTracked);
     function pushToImgs(newImage) {
       // Check if image is undefined or null
       if (!newImage || !newImage.naturalWidth) {
         if (allow_debug) console.log("Undefined or null image, skipping");
-        return images;
+        return node.imagesTracked;
       }
 
       // Check if image already exists in the array
-      if (allow_debug) {
-        // console.log('New image src:', newImage.src);
-        // console.log('Existing images src:', images.map(img => img.src));
-      }
+      // if (allow_debug) {
+      //   console.log('New image src:', newImage.src);
+      //   console.log('Existing node.imagesTracked src:', node.imagesTracked.map(img => img.src));
+      // }
 
-      const imageExists = images.some((img) => {
+      const imageExists = node.imagesTracked.some((img) => {
         // Extract filename from URLs by removing the random parameter
         const getFilename = (url) => {
+          if (!url) return "";
           const match = url.match(/filename=([^&]+)/);
           return match ? match[1] : "";
         };
@@ -55,36 +57,44 @@ app.registerExtension({
 
       if (imageExists) {
         if (allow_debug) console.log("Image already exists, skipping");
-        return images;
+        return node.imagesTracked;
       }
-      if (allow_debug) console.log("imageExists", imageExists);
 
-      images.push(newImage);
+      node.imagesTracked.push(newImage);
       // If array exceeds MAX_IMAGES, remove oldest image(s)
-      if (images.length > MAX_IMAGES) {
-        images.shift(); // removes first (oldest) element
+      if (node.imagesTracked.length > MAX_IMAGES) {
+        node.imagesTracked.shift(); // removes first (oldest) element
       }
-      if (allow_debug) console.log("Images list updated, length:", images.length);
-      return images;
+      if (allow_debug) console.log("node.imagesTracked list updated, length:", node.imagesTracked.length);
+      if(allow_debug) console.log('node.imagesTracked',node.imagesTracked);
+      return node.imagesTracked;
     }
 
     function cycleImgs() {
-      // Switch to previous images if available
-      if (node.imgs && images.length > 1) {
-        node.imgs = images; // Show previous image
+      // Switch to previous node.imagesTracked if available
+      if (node.imgs && node.imagesTracked.length > 1) {
+        node.imgs = node.imagesTracked; // Show previous image
+      }else{
+        app.extensionManager.toast.add({
+          severity: "info",
+          summary: "iTools!",
+          detail: "No node.imagesTracked in history",
+          life: 2000,
+        });
       }
     }
 
     function togglingLastTwoImages() {
-      // Only cycle between last two images
-      if (images.length > 1) {
+      if(allow_debug) console.log('node.imagesTracked',node.imagesTracked);
+      // Only cycle between last two node.imagesTracked
+      if (node.imagesTracked.length > 1) {
         node.imageIndex = 0;
 
         // Get current image
         const currentImg = node.imgs[0];
 
-        // Get last two images from history
-        const lastTwo = images.slice(-2);
+        // Get last two node.imagesTracked from history
+        const lastTwo = node.imagesTracked.slice(-2);
 
         // If current is last image, show second to last
         // If current is second to last, show last
@@ -95,45 +105,52 @@ app.registerExtension({
 
         // Update button text with underline using Unicode
         const isShowingCurrent = nextImg === lastTwo[1];
-        b.text = isShowingCurrent ? "[Current] | Previous" : "Current | [Previous]";
+        node.b.text = isShowingCurrent ? "[Current] | Previous" : "Current | [Previous]";
 
-        if (allow_debug) console.log("Toggling between last two images");
+        if (allow_debug) console.log("Toggling between last two node.imagesTracked");
+      } else {
+        app.extensionManager.toast.add({
+          severity: "info",
+          summary: "iTools!",
+          detail: "You must execute this node at least twice",
+          life: 2000,
+        });
       }
     }
 
     function toggleButtonActivation() {
-      c.isActive = compare;
-      if (!compare) {
-        c.color = c.originalColor;
-        c.textColor = c.originalTextColor;
+      node.c.isActive = node.compare;
+      if (!node.compare) {
+        node.c.color = node.c.originalColor;
+        node.c.textColor = node.c.originalTextColor;
       } else {
-        c.color = "#80a1c0";
-        c.textColor = "black";
+        node.c.color = "#80a1c0";
+        node.c.textColor = "black";
       }
     }
 
     function showButtons() {
-      a.isVisible = true;
-      b.isVisible = true;
-      c.isVisible = true;
+      node.a.isVisible = true;
+      node.b.isVisible = true;
+      node.c.isVisible = true;
     }
 
-    function createButtons() {
-      a = new SmartButton(80, 8, 55, 20, node, "History");
-      a.allowVisualHover = true;
-      a.textYoffset = -0;
-      a.isVisible = false;
-      a.shape = Shapes.ROUND_L;
-      a.roundRadius = 5;
-      a.outlineWidth = 1;
-      a.outlineColor = "#656565";
-      a.color = "#222222";
-      a.font = "12px Arial";
-      a.onClick = () => {
-        if (compare) {
-          // cancel compare
-          compare = !compare;
-          toggleButtonActivation(c, compare);
+    function createButtons(startVisible= false) {
+      node.a = new SmartButton(80, 8, 55, 20, node, "History");
+      node.a.allowVisualHover = true;
+      node.a.textYoffset = -0;
+      node.a.isVisible = startVisible;
+      node.a.shape = Shapes.ROUND_L;
+      node.a.roundRadius = 5;
+      node.a.outlineWidth = 1;
+      node.a.outlineColor = "#656565";
+      node.a.color = "#222222";
+      node.a.font = "12px Arial";
+      node.a.onClick = () => {
+        if (node.compare) {
+          // cancel node.compare
+          node.compare = !node.compare;
+          toggleButtonActivation(node.c, node.compare);
         }
         if (node.imgs.length > 1) {
           togglingLastTwoImages();
@@ -142,135 +159,104 @@ app.registerExtension({
         }
       };
 
-      b = new SmartButton(80 + 55, 8, 120, 20, node, "[Current] | Previous");
-      b.allowVisualHover = true;
-      b.textYoffset = -0;
-      b.isVisible = false;
-      b.shape = Shapes.ROUND_R;
-      b.roundRadius = 5;
-      b.outlineWidth = 1;
-      b.outlineColor = "#656565";
-      b.color = "#222222";
-      b.font = "12px Arial";
-      b.onClick = () => {
-        if (compare) {
-          // cancel compare
-          compare = !compare;
-          toggleButtonActivation(c, compare);
+      node.b = new SmartButton(80 + 55, 8, 120, 20, node, "[Current] | Previous");
+      node.b.allowVisualHover = true;
+      node.b.textYoffset = -0;
+      node.b.isVisible = startVisible;
+      node.b.shape = Shapes.ROUND_R;
+      node.b.roundRadius = 5;
+      node.b.outlineWidth = 1;
+      node.b.outlineColor = "#656565";
+      node.b.color = "#222222";
+      node.b.font = "12px Arial";
+      node.b.onClick = () => {
+        if (node.compare) {
+          // cancel node.compare
+          node.compare = !node.compare;
+          toggleButtonActivation(node.c, node.compare);
         }
         togglingLastTwoImages();
       };
 
-      c = new SmartButton(80 + 55 + 125, 8 + 1, 18, 20, node, "|");
-      c.allowVisualHover = true;
-      c.textYoffset = -0.05;
-      c.isVisible = false;
-      c.shape = Shapes.CIRCLE;
-      //c.roundRadius = 5;
-      c.outlineWidth = 1;
-      c.outlineColor = "#656565";
-      c.color = "#222222";
-      c.activeColor = c.font = "12px Arial";
-      c.onClick = () => {
+      node.c = new SmartButton(80 + 55 + 125, 8 + 1, 18, 20, node, "|");
+      node.c.allowVisualHover = true;
+      node.c.textYoffset = -0.05;
+      node.c.isVisible = startVisible;
+      node.c.shape = Shapes.CIRCLE;
+      //node.c.roundRadius = 5;
+      node.c.outlineWidth = 1;
+      node.c.outlineColor = "#656565";
+      node.c.color = "#222222";
+      node.c.activeColor = node.c.font = "12px Arial";
+      node.c.onClick = () => {
         // reset togglingLastTwoImages
-        if (b.text !== "[Current] | Previous") togglingLastTwoImages();
-        
-        // start compare
-        if (images.length <= 1) return;
-        compare = !compare;
-        toggleButtonActivation(c, compare);
+        if (node.b.text !== "[Current] | Previous") togglingLastTwoImages();
+
+        // start node.compare
+        if (node.imagesTracked.length <= 1) {
+          app.extensionManager.toast.add({
+            severity: "info",
+            summary: "iTools!",
+            detail: "You must execute this node at least twice",
+            life: 2000,
+          });
+          return;
+        }
+        node.compare = !node.compare;
+        toggleButtonActivation(node.c, node.compare);
       };
     }
 
     createButtons();
 
     node.onExecuted = async function (message) {
+      
+      // Wait for image to be loaded
       for (let i = 0; i < 20 && !node.imgs; i++) {
         if (allow_debug) console.log("wait..", i);
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
       if (!node.imgs) return;
+      
       showButtons();
 
-      // reset togglingLastTwoImages
-      if (b.text !== "[Current] | Previous") togglingLastTwoImages();
-
+      // Reset togglingLastTwoImages
+      if (node.b.text !== "[Current] | Previous") togglingLastTwoImages();
       node.setDirtyCanvas(true, false);
+
       setTimeout(() => {
         // push last image
         const lastImage = node.imgs?.at(-1);
-        if (!images.some((img) => img === lastImage)) {
+        if (!node.imagesTracked.some((img) => img === lastImage)) {
           pushToImgs(lastImage);
         }
 
-        // override
-        const originalDraw = node.widgets[3].draw;
-        node.widgets[3].draw = function (ctx, node, widget_width, y, widget_height, ...args) {
+        // Override draw function in ImagePreviewWidget
+        const previewWidget = node.widgets.find(widget => !(widget instanceof BaseSmartWidget));
+        if (!previewWidget) {
+          if (allow_debug) console.log("ImagePreviewWidget not found");
+          return;
+        }
+        const originalDraw = previewWidget.draw;
+        previewWidget.draw = function (ctx, node, widget_width, y, widget_height, ...args) {
           // Call the original draw function first
           originalDraw.apply(this, [ctx, node, widget_width, y, widget_height, ...args]);
-          drawImgOverlay(node, widget_width, y, ctx, images, compare);
+          drawImgOverlay(node, widget_width, y, ctx, node.imagesTracked, node.compare);
         };
       }, 300);
     };
 
     node.onResize = function (newSize) {
+      // limit width size while resizing
       node.size[0] = Math.max(285, newSize[0]);
     };
 
-    // Store the original onMouseDown handler
-    const originalOnMouseDown = app.canvas.onMouseDown;
-    app.canvas.onMouseDown = (e) => {
-      // Call original handler if it exists
-      if (originalOnMouseDown) {
-        originalOnMouseDown.call(app.canvas, e);
-      }
-      const nodes = app.graph.nodes;
-      nodes.forEach((n) => {
-        if (n.type === "iToolsPreviewImage") {
-          n.widgets.forEach((w) => {
-            w.handleDown?.(e);
-          });
-        }
-      });
-    };
+    const m = new BaseSmartWidgetManager(node, "iToolsPreviewImage");
 
-    // Store the original onDrawForeground handler
-    const originalOnDrawForeground = app.canvas.onDrawForeground;
-    app.canvas.onDrawForeground = (ctx) => {
-      // Call original handler if it exists
-      if (originalOnDrawForeground) {
-        originalOnDrawForeground.call(app.canvas, ctx);
-      }
-      const nodes = app.graph.nodes;
-      nodes.forEach((n) => {
-        if (n.type === "iToolsPreviewImage") {
-          n.widgets.forEach((w) => {
-            w.handleMove?.(ctx);
-          });
-        }
-      });
-    };
-
-    // Store the original onclick handler
-    const originalOnClick = app.canvas.canvas.onclick;
-    app.canvas.canvas.onclick = (e) => {
-      // Call original handler if it exists
-      if (originalOnClick) {
-        originalOnClick.call(app.canvas.canvas, e);
-      }
-      const nodes = app.graph.nodes;
-      nodes.forEach((n) => {
-        if (n.type === "iToolsPreviewImage") {
-          n.widgets.forEach((w) => {
-            w.handleClick?.(e);
-          });
-        }
-      });
-    };
   },
 });
 
-function drawImgOverlay(node, widget_width, y, ctx, images, compareMode = false) {
+function drawImgOverlay(node, widget_width, y, ctx, _imagesRef, compareMode = false) {
   if (!compareMode) return;
 
   const img = node.imgs[0];
@@ -296,11 +282,11 @@ function drawImgOverlay(node, widget_width, y, ctx, images, compareMode = false)
   const splitRatio = (splitX - imgX) / w;
 
   // Get previous image if available
-  const prevImg = images.length > 1 ? images[images.length - 2] : null;
+  const prevImg = _imagesRef.length > 1 ? _imagesRef[_imagesRef.length - 2] : null;
 
   if (prevImg && compareMode) {
     // Draw left part from img
-    // ctx.drawImage(img, 0, 0, img.naturalWidth * splitRatio, img.naturalHeight, imgX, imgY, w * splitRatio, h);
+    // Not needed use original draw instead ===>// ctx.drawImage(img, 0, 0, img.naturalWidth * splitRatio, img.naturalHeight, imgX, imgY, w * splitRatio, h);
     // Draw right part from prevImg
     ctx.drawImage(
       prevImg,
@@ -316,4 +302,4 @@ function drawImgOverlay(node, widget_width, y, ctx, images, compareMode = false)
   }
 }
 
-// b.text = isShowingCurrent ? "C\u0332u\u0332r\u0332r\u0332e\u0332n\u0332t\u0332 / Previous" : "Current / P\u0332r\u0332e\u0332v\u0332i\u0332o\u0332u\u0332s\u0332";
+// node.b.text = isShowingCurrent ? "node.c\u0332u\u0332r\u0332r\u0332e\u0332n\u0332t\u0332 / Previous" : "Current / P\u0332r\u0332e\u0332v\u0332i\u0332o\u0332u\u0332s\u0332";
