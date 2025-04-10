@@ -18,7 +18,7 @@ app.registerExtension({
     node.size = [285, 330];
 
     let compare = null;
-    
+
     function turnAllButtonsOff() {
       const buttons = node.widgets.filter((widget) => widget instanceof SmartButton);
       buttons.forEach((b) => {
@@ -152,7 +152,6 @@ app.registerExtension({
         const cB = node.widgets.find((widget) => widget.text === "|");
         toggleButtonActivation(cB);
       }
-
     };
 
     node.onResize = function (newSize) {
@@ -168,17 +167,17 @@ app.registerExtension({
     };
 
     // not ready yet
-    function swapO (){
+    function swapO() {
       if (compare && compare.mode === "O" && node.imgs && node.imgs.length > 1) {
         // Swap the first two images
         [node.imgs[0], node.imgs[1]] = [node.imgs[1], node.imgs[0]];
         // Force canvas redraw
         node.setDirtyCanvas(true, false);
       }
-    };
+    }
 
     // not ready yet
-    function cycleZoom (){
+    function cycleZoom() {
       if (compare.mode === "|" && node.imgs && node.imgs.length > 1) {
         // cycle through all zooming steps
         node.setDirtyCanvas(true, false);
@@ -190,45 +189,42 @@ app.registerExtension({
     node.getExtraMenuOptions = function (_, options) {
       if (node.imgs) {
         // If node node has images then we add an open in new tab item
-        let img = null
+        let img = null;
 
-        if(compare.mode === "A"){
-          img = node.imgs[0]
-        }else if(compare.mode === "B"){
-          img = node.imgs[1]
+        if (compare.mode === "A") {
+          img = node.imgs[0];
+        } else if (compare.mode === "B") {
+          img = node.imgs[1];
         }
 
         if (img) {
           options.unshift(
             {
-              content: 'Open Image',
+              content: "Open Image",
               callback: () => {
-                const url = new URL(img.src)
-                url.searchParams.delete('preview')
-                window.open(url, '_blank')
-              }
+                const url = new URL(img.src);
+                url.searchParams.delete("preview");
+                window.open(url, "_blank");
+              },
             },
             ...getCopyImageOption(img),
             {
-              content: 'Save Image',
+              content: "Save Image",
               callback: () => {
-                const a = document.createElement('a')
-                const url = new URL(img.src)
-                url.searchParams.delete('preview')
-                a.href = url.toString()
-                a.setAttribute(
-                  'download',
-                  new URLSearchParams(url.search).get('filename')
-                )
-                document.body.append(a)
-                a.click()
-                requestAnimationFrame(() => a.remove())
-              }
+                const a = document.createElement("a");
+                const url = new URL(img.src);
+                url.searchParams.delete("preview");
+                a.href = url.toString();
+                a.setAttribute("download", new URLSearchParams(url.search).get("filename"));
+                document.body.append(a);
+                a.click();
+                requestAnimationFrame(() => a.remove());
+              },
             }
-          )
+          );
         }
       }
-    }
+    };
 
     const m = new BaseSmartWidgetManager(node, "iToolsCompareImage");
   },
@@ -273,6 +269,7 @@ function overrideDraw(node, widget_width, y, ctx, compare) {
     // Split mode
     const splitX = Math.max(imgX, Math.min(mouseX, imgX + w));
     const splitRatio = (splitX - imgX) / w;
+
     // Draw left part from img
     ctx.drawImage(img1, 0, 0, img1.naturalWidth * splitRatio, img1.naturalHeight, imgX, imgY, w * splitRatio, h);
     // Draw right part from img2
@@ -287,6 +284,32 @@ function overrideDraw(node, widget_width, y, ctx, compare) {
       w * (1 - splitRatio),
       h
     );
+
+    // Draw labels
+    ctx.save();
+    ctx.font = "bold 18px Arial";
+    ctx.textBaseline = "top";
+    ctx.shadowColor = "black";
+    ctx.shadowBlur = 4;
+
+    // Label A
+    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.fillText("A", imgX + 10, imgY + 10);
+
+    // Label B - position depends on split
+    const labelB = "B";
+    const labelWidth = ctx.measureText(labelB).width;
+    ctx.fillText(labelB, imgX + w - labelWidth - 10, imgY + 10);
+
+    // // Optional: draw split line
+    // ctx.beginPath();
+    // ctx.moveTo(splitX, imgY);
+    // ctx.lineTo(splitX, imgY + h);
+    // ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+    // ctx.lineWidth = 1;
+    // ctx.stroke();
+
+    ctx.restore();
   } else if (compare.mode === "O") {
     // Circle mode
     const radius = Math.min(w, h) * 0.15; // 30% of image size
@@ -309,9 +332,19 @@ function overrideDraw(node, widget_width, y, ctx, compare) {
 
     // Draw the image B inside the circle
     ctx.drawImage(img2, 0, 0, img2.naturalWidth, img2.naturalHeight, imgX, imgY, w, h);
+    ctx.restore();
+
+    ctx.save();
+    ctx.font = "bold 18px Arial";
+    ctx.textBaseline = "top";
+    ctx.shadowColor = "black";
+    ctx.shadowBlur = 4;
+
+    // Label A
+    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.fillText("A", imgX + 10, imgY + 10);
 
     // Restore the context to remove the clip
-    ctx.restore();
 
     // Optional: Draw circle border
     // ctx.beginPath();
@@ -319,6 +352,8 @@ function overrideDraw(node, widget_width, y, ctx, compare) {
     // ctx.strokeStyle = "#ffffff";
     // ctx.lineWidth = 1;
     // ctx.stroke();
+
+    ctx.restore();
   } else if (compare.mode === "A") {
     // draw img 1 only
     ctx.drawImage(img1, 0, 0, img1.naturalWidth, img1.naturalHeight, imgX, imgY, w, h);
@@ -328,71 +363,71 @@ function overrideDraw(node, widget_width, y, ctx, compare) {
   }
 }
 
-function getCopyImageOption(img){
-  if (typeof window.ClipboardItem === 'undefined') return []
+function getCopyImageOption(img) {
+  if (typeof window.ClipboardItem === "undefined") return [];
   return [
     {
-      content: 'Copy Image',
+      content: "Copy Image",
       callback: async () => {
-        const url = new URL(img.src)
-        url.searchParams.delete('preview')
+        const url = new URL(img.src);
+        url.searchParams.delete("preview");
 
         const writeImage = async (blob) => {
           await navigator.clipboard.write([
             new ClipboardItem({
-              [blob.type]: blob
-            })
-          ])
-        }
+              [blob.type]: blob,
+            }),
+          ]);
+        };
 
         try {
-          const data = await fetch(url)
-          const blob = await data.blob()
+          const data = await fetch(url);
+          const blob = await data.blob();
           try {
-            await writeImage(blob)
+            await writeImage(blob);
           } catch (error) {
             // Chrome seems to only support PNG on write, convert and try again
-            if (blob.type !== 'image/png') {
-              const canvas = $el('canvas', {
+            if (blob.type !== "image/png") {
+              const canvas = $el("canvas", {
                 width: img.naturalWidth,
-                height: img.naturalHeight
-              }) 
-              const ctx = canvas.getContext('2d')
-              let image
-              if (typeof window.createImageBitmap === 'undefined') {
-                image = new Image()
+                height: img.naturalHeight,
+              });
+              const ctx = canvas.getContext("2d");
+              let image;
+              if (typeof window.createImageBitmap === "undefined") {
+                image = new Image();
                 const p = new Promise((resolve, reject) => {
-                  image.onload = resolve
-                  image.onerror = reject
+                  image.onload = resolve;
+                  image.onerror = reject;
                 }).finally(() => {
-                  URL.revokeObjectURL(image.src)
-                })
-                image.src = URL.createObjectURL(blob)
-                await p
+                  URL.revokeObjectURL(image.src);
+                });
+                image.src = URL.createObjectURL(blob);
+                await p;
               } else {
-                image = await createImageBitmap(blob)
+                image = await createImageBitmap(blob);
               }
               try {
-                ctx.drawImage(image, 0, 0)
-                canvas.toBlob(writeImage, 'image/png')
+                ctx.drawImage(image, 0, 0);
+                canvas.toBlob(writeImage, "image/png");
               } finally {
-                if (typeof image.close === 'function') {
-                  image.close()
+                if (typeof image.close === "function") {
+                  image.close();
                 }
               }
 
-              return
+              return;
             }
-            throw error
+            throw error;
           }
         } catch (error) {
           toastStore.addAlert(
-            t('toastMessages.errorCopyImage', {
-              error: error.message ?? error
+            t("toastMessages.errorCopyImage", {
+              error: error.message ?? error,
             })
-          )
+          );
         }
-      }
-    }
-  ]
+      },
+    },
+  ];
 }
