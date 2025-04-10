@@ -142,6 +142,7 @@ app.registerExtension({
       // Override draw function in ImagePreviewWidget
       const originalDraw = previewWidget.draw;
       previewWidget.draw = function (ctx, node, widget_width, y, widget_height, ...args) {
+        // originalDraw.apply(this, [ctx, node, widget_width, y, widget_height, ...args]);
         overrideDraw(node, widget_width, y, ctx, compare);
       };
 
@@ -168,7 +169,7 @@ app.registerExtension({
     };
 
     function swapO (){
-      if (compare.mode === "O" && node.imgs && node.imgs.length > 1) {
+      if (compare && compare.mode === "O" && node.imgs && node.imgs.length > 1) {
         // Swap the first two images
         [node.imgs[0], node.imgs[1]] = [node.imgs[1], node.imgs[0]];
         // Force canvas redraw
@@ -185,6 +186,52 @@ app.registerExtension({
     }
 
     node.onMouseEnter = (e) => {};
+
+    node.getExtraMenuOptions = function (_, options) {
+      if(allow_debug) console.log('ok',);
+      if (node.imgs) {
+        // If node node has images then we add an open in new tab item
+        let img = null
+
+        if(compare.mode === "A"){
+          img = node.imgs[0]
+        }else if(compare.mode === "B"){
+          img = node.imgs[1]
+        }
+
+
+        if (img) {
+          options.unshift(
+            {
+              content: 'Open Image',
+              callback: () => {
+                const url = new URL(img.src)
+                url.searchParams.delete('preview')
+                window.open(url, '_blank')
+              }
+            },
+            ...getCopyImageOption(img),
+            {
+              content: 'Save Image',
+              callback: () => {
+                const a = document.createElement('a')
+                const url = new URL(img.src)
+                url.searchParams.delete('preview')
+                a.href = url.toString()
+                a.setAttribute(
+                  'download',
+                  new URLSearchParams(url.search).get('filename')
+                )
+                document.body.append(a)
+                a.click()
+                requestAnimationFrame(() => a.remove())
+              }
+            }
+          )
+        }
+      }
+      // ...
+    }
 
     const m = new BaseSmartWidgetManager(node, "iToolsCompareImage");
   },
@@ -282,4 +329,73 @@ function overrideDraw(node, widget_width, y, ctx, compare) {
     // draw img 2 only
     ctx.drawImage(img2, 0, 0, img2.naturalWidth, img2.naturalHeight, imgX, imgY, w, h);
   }
+}
+
+function getCopyImageOption(img){
+  if (typeof window.ClipboardItem === 'undefined') return []
+  return [
+    {
+      content: 'Copy Image',
+      callback: async () => {
+        const url = new URL(img.src)
+        url.searchParams.delete('preview')
+
+        const writeImage = async (blob) => {
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              [blob.type]: blob
+            })
+          ])
+        }
+
+        try {
+          const data = await fetch(url)
+          const blob = await data.blob()
+          try {
+            await writeImage(blob)
+          } catch (error) {
+            // Chrome seems to only support PNG on write, convert and try again
+            if (blob.type !== 'image/png') {
+              const canvas = $el('canvas', {
+                width: img.naturalWidth,
+                height: img.naturalHeight
+              }) 
+              const ctx = canvas.getContext('2d')
+              let image
+              if (typeof window.createImageBitmap === 'undefined') {
+                image = new Image()
+                const p = new Promise((resolve, reject) => {
+                  image.onload = resolve
+                  image.onerror = reject
+                }).finally(() => {
+                  URL.revokeObjectURL(image.src)
+                })
+                image.src = URL.createObjectURL(blob)
+                await p
+              } else {
+                image = await createImageBitmap(blob)
+              }
+              try {
+                ctx.drawImage(image, 0, 0)
+                canvas.toBlob(writeImage, 'image/png')
+              } finally {
+                if (typeof image.close === 'function') {
+                  image.close()
+                }
+              }
+
+              return
+            }
+            throw error
+          }
+        } catch (error) {
+          toastStore.addAlert(
+            t('toastMessages.errorCopyImage', {
+              error: error.message ?? error
+            })
+          )
+        }
+      }
+    }
+  ]
 }
