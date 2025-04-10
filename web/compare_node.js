@@ -20,6 +20,7 @@ app.registerExtension({
     // vars
     let a = null;
     let b = null;
+    let h = null;
     let c = null;
     let o = null;
     let compare = false;
@@ -27,17 +28,16 @@ app.registerExtension({
     let imagesTracked = [];
 
     async function analyzeImages() {
-      if(imagesOriginal === node.imgs) return;
-      
-      // Wait up to 2s for node.imgs to be defined
-      for (let i = 0; i < 20 && !node.imgs; i++) {
-        if (allow_debug) console.log("wait..", i);
-        await new Promise((r) => setTimeout(r, 100));
-      }
-      if (!node.imgs) return;
+      if (imagesOriginal === node.imgs) return;
 
-      // Store original
-      imagesOriginal = node.imgs;
+      // Wait up to 2s for node.imgs to be defined
+      for (let i = 0; i < 20 && (!node.imgs); i++) {
+        if (allow_debug) console.log("wait..", i);
+        await new Promise((r) => setTimeout(r, 200));
+      } if (!node.imgs) return;
+      
+      // store original 
+      if(node.imgs.length > 1) imagesOriginal = node.imgs;
 
       let img1 = null;
       let img2 = null;
@@ -67,15 +67,18 @@ app.registerExtension({
       }
     }
 
-    function toggleButtonActivation(button) {
-      // turn them all off
+    function turnAllButtonsOff() {
       const buttons = node.widgets.filter((widget) => widget instanceof SmartButton);
       buttons.forEach((b) => {
         b.isActive = false;
         b.color = b.originalColor;
         b.textColor = b.originalTextColor;
       });
+    }
 
+    function toggleButtonActivation(button) {
+      // turn them all off
+      turnAllButtonsOff()
       // activate this one
       if (button.isActive) {
         button.color = button.originalColor;
@@ -126,7 +129,22 @@ app.registerExtension({
         togglingImages("B");
       };
 
-      c = new SmartButton(bx + offset + offset, by, r, 20, node, "|");
+      h = new SmartButton(bx + 2 * offset, by, r, 20, node, "H");
+      h.allowVisualHover = true;
+      h.textYoffset = 1.1;
+      h.isVisible = startVisible;
+      h.shape = Shapes.CIRCLE;
+      h.outlineWidth = 1;
+      h.outlineColor = "#656565";
+      h.color = "#222222";
+      h.font = buttonFont;
+      h.onClick = async () => {
+        if (imagesTracked.length === 0) return;
+        compare = false;
+        swapHistory();
+      };
+
+      c = new SmartButton(bx + 3 * offset, by, r, 20, node, "|");
       c.allowVisualHover = true;
       c.textYoffset = -0.05;
       c.isVisible = startVisible;
@@ -141,7 +159,7 @@ app.registerExtension({
         initCompare("|");
       };
 
-      o = new SmartButton(bx + offset + offset + offset, by, r, 20, node, "O");
+      o = new SmartButton(bx + 4 * offset, by, r, 20, node, "O");
       o.allowVisualHover = true;
       o.textYoffset = 1.1;
       o.isVisible = startVisible;
@@ -171,23 +189,25 @@ app.registerExtension({
     }
 
     // need thinking 🤔
-    function swapHistory() {
-      // await analyzeImages();
-      node.imageIndex = 0;
-      // node.imgs = [imagesTracked[1]];
-      // node.setDirtyCanvas(true,false)
-    }  
+    async function swapHistory() {
+      if(node.imgs.length > 1) imagesOriginal = node.imgs;
+
+      // Flip-flop between 0 and null
+      node.imageIndex = node.imageIndex === 0 ? null : 0;
+      if (node.imageIndex === 0) {
+        toggleButtonActivation(h);
+      } else {
+        node.imgs = imagesOriginal
+        turnAllButtonsOff()
+      }
+      node.setDirtyCanvas(true, false);
+    }
 
     node.onExecuted = async function (message) {
       // turn compare off
       compare = null;
       // turn all buttons off
-      const buttons = node.widgets.filter((widget) => widget instanceof SmartButton);
-      buttons.forEach((b) => {
-        b.isActive = false;
-        b.color = b.originalColor;
-        b.textColor = b.originalTextColor;
-      });
+      turnAllButtonsOff()
 
       await analyzeImages();
 
@@ -210,8 +230,7 @@ app.registerExtension({
       node.size[0] = Math.max(285, newSize[0]);
     };
 
-    node.onMouseEnter = (e) => {
-    };
+    node.onMouseEnter = (e) => {};
 
     const m = new BaseSmartWidgetManager(node, "iToolsCompareImage");
   },
