@@ -96,6 +96,10 @@ app.registerExtension({
         if (!app.ui.settings.getSettingValue("iTools.Nodes.Auto Color")) break;
         node.color = LGraphCanvas.node_colors.pale_blue.color;
         break;
+      case "iToolsCompareImage":
+        if (!app.ui.settings.getSettingValue("iTools.Nodes.Auto Color")) break;
+        node.color = LGraphCanvas.node_colors.pale_blue.color;
+        break;
       case "iToolsCheckerBoard":
         //node.setSize([270, 250]);
         node.size[0] = 270;

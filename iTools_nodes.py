@@ -1000,18 +1000,18 @@ class IToolsCompareImage(PreviewImage):
     def INPUT_TYPES(cls):
         return {
         "required": {
-            "a": ("IMAGE",),
-            "b": ("IMAGE",),
+            "A": ("IMAGE",),
+            "B": ("IMAGE",),
         },
         "hidden": {
             "prompt": "PROMPT",
             "extra_pnginfo": "EXTRA_PNGINFO"
         },
         }
-
-    def compare_images(self,a,b,filename_prefix=None,prompt=None,extra_pnginfo=None):
-        _a = self.save_images(a,)['ui']['images'] 
-        _b = self.save_images(b,)['ui']['images']
+    
+    def compare_images(self,A,B,filename_prefix=None,prompt=None,extra_pnginfo=None):
+        _a = self.save_images(A,)['ui']['images'] 
+        _b = self.save_images(B,)['ui']['images']
         
         return {'ui': {'images': _a+_b }} # {'ui': {'images': [{'filename': 'ComfyUI_temp_00001_.png', 'subfolder': '', 'type': 'temp'}]}}
 
@@ -1056,7 +1056,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsCheckerBoard": "iTools Checkerboard 🏁",
     "iToolsLoadRandomImage": "iTools Load Random Image 🎲",
     "iToolsPreviewText": "iTools Text Preview",
-    "iToolsRegexNode": "iTools Regex Master 🔎",
+    "iToolsRegexNode": "iTools Regex Editor",
     "iToolsPreviewImage": "iTools Image Preview 🍿",
-    "iToolsCompareImage": "iTools Image Compare",
+    "iToolsCompareImage": "iTools Image Compare 🔍",
 }
