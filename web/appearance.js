@@ -97,6 +97,7 @@ app.registerExtension({
         node.color = LGraphCanvas.node_colors.pale_blue.color;
         break;
       case "iToolsCompareImage":
+      case "iToolsPreviewImage":
         if (!app.ui.settings.getSettingValue("iTools.Nodes.Auto Color")) break;
         node.color = LGraphCanvas.node_colors.pale_blue.color;
         break;
