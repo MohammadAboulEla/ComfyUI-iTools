@@ -165,9 +165,9 @@ app.registerExtension({
       if (originalClick) {
         originalClick.call(app.canvas.canvas, e);
       }
-      swapO()
     };
 
+    // not ready yet
     function swapO (){
       if (compare && compare.mode === "O" && node.imgs && node.imgs.length > 1) {
         // Swap the first two images
@@ -188,7 +188,6 @@ app.registerExtension({
     node.onMouseEnter = (e) => {};
 
     node.getExtraMenuOptions = function (_, options) {
-      if(allow_debug) console.log('ok',);
       if (node.imgs) {
         // If node node has images then we add an open in new tab item
         let img = null
@@ -198,7 +197,6 @@ app.registerExtension({
         }else if(compare.mode === "B"){
           img = node.imgs[1]
         }
-
 
         if (img) {
           options.unshift(
@@ -230,7 +228,6 @@ app.registerExtension({
           )
         }
       }
-      // ...
     }
 
     const m = new BaseSmartWidgetManager(node, "iToolsCompareImage");
@@ -254,8 +251,8 @@ function overrideDraw(node, widget_width, y, ctx, compare) {
 
   const dw = widget_width;
   const dh = node.size[1] - y;
-  let w = img1.naturalWidth;
-  let h = img1.naturalHeight;
+  let w = Math.max(img1.naturalWidth, img2.naturalWidth);
+  let h = Math.max(img1.naturalHeight, img2.naturalHeight);
 
   const scaleX = dw / w;
   const scaleY = dh / h;
