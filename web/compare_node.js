@@ -186,7 +186,11 @@ app.registerExtension({
 
     node.onMouseEnter = (e) => {};
 
+    const originalMenuOptions = node.getExtraMenuOptions;
     node.getExtraMenuOptions = function (_, options) {
+      if (originalMenuOptions) {
+        originalMenuOptions.call(node, _, options);
+      }
       if (node.imgs) {
         // If node node has images then we add an open in new tab item
         let img = null;
