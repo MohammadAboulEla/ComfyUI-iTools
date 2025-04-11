@@ -266,12 +266,20 @@ app.registerExtension({
 
 function drawImgOverlay(node, widget_width, y, ctx, _imagesRef, compareMode = false) {
   if (!compareMode) return;
-
+  
+  const allowImageSizeDraw = app.extensionManager.setting.get('Comfy.Node.AllowImageSizeDraw', true);
+  const IMAGE_TEXT_SIZE_TEXT_HEIGHT = allowImageSizeDraw ? 15 : 0;
+  
   const img = node.imgs[0];
   const dw = widget_width;
-  const dh = node.size[1] - y;
-  let w = img.naturalWidth;
-  let h = img.naturalHeight;
+  const dh = node.size[1] - y - IMAGE_TEXT_SIZE_TEXT_HEIGHT;
+  
+  // Use max dimensions from both images
+  const prevImg = _imagesRef.length > 1 ? _imagesRef[_imagesRef.length - 2] : null;
+  if (!prevImg) return;
+  
+  let w = Math.max(img.naturalWidth, prevImg.naturalWidth);
+  let h = Math.max(img.naturalHeight, prevImg.naturalHeight);
 
   const scaleX = dw / w;
   const scaleY = dh / h;
@@ -281,29 +289,23 @@ function drawImgOverlay(node, widget_width, y, ctx, _imagesRef, compareMode = fa
   h *= scale;
 
   // Centered position within the widget
-  const imgX = (dw - w) / 2;
-  const imgY = (dh - h) / 2 + y; // +y to offset within canvas
+  const x = (dw - w) / 2;
+  const y_pos = (dh - h) / 2 + y;
 
   const graphMouse = app.canvas.graph_mouse;
   const mouseX = graphMouse[0] - node.pos[0];
-  const splitX = Math.max(imgX, Math.min(mouseX, imgX + w));
-  const splitRatio = (splitX - imgX) / w;
-
-  // Get previous image if available
-  const prevImg = _imagesRef.length > 1 ? _imagesRef[_imagesRef.length - 2] : null;
+  const splitX = Math.max(x, Math.min(mouseX, x + w));
+  const splitRatio = (splitX - x) / w;
 
   if (prevImg && compareMode) {
-    // Draw left part from img
-    // Not needed use original draw instead ===>// ctx.drawImage(img, 0, 0, img.naturalWidth * splitRatio, img.naturalHeight, imgX, imgY, w * splitRatio, h);
-    // Draw right part from prevImg
     ctx.drawImage(
       prevImg,
       prevImg.naturalWidth * splitRatio,
       0,
       prevImg.naturalWidth * (1 - splitRatio),
       prevImg.naturalHeight,
-      imgX + w * splitRatio,
-      imgY,
+      x + w * splitRatio,
+      y_pos,
       w * (1 - splitRatio),
       h
     );
