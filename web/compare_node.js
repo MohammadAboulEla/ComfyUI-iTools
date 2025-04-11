@@ -18,6 +18,11 @@ app.registerExtension({
     node.size = [285, 330];
 
     let compare = null;
+    let mouse = {
+      mouseInNode: false,
+      x: 0,
+      y: 0,
+    };
 
     function turnAllButtonsOff() {
       const buttons = node.widgets.filter((widget) => widget instanceof SmartButton);
@@ -143,7 +148,7 @@ app.registerExtension({
       const originalDraw = previewWidget.draw;
       previewWidget.draw = function (ctx, node, widget_width, y, widget_height, ...args) {
         // originalDraw.apply(this, [ctx, node, widget_width, y, widget_height, ...args]);
-        overrideDraw(node, widget_width, y, ctx, compare);
+        overrideDraw(node, widget_width, y, ctx, compare, mouse);
       };
 
       // if no compare mode use default
@@ -166,12 +171,17 @@ app.registerExtension({
       }
     };
 
-    // not ready yet
-    function swapO() {
+    // not ready yet 🤔
+    async function swapO(originalOrder) {
+      // await new Promise((resolve) => setTimeout(resolve, 200));
       if (compare && compare.mode === "O" && node.imgs && node.imgs.length > 1) {
         // Swap the first two images
         [node.imgs[0], node.imgs[1]] = [node.imgs[1], node.imgs[0]];
         // Force canvas redraw
+        node.setDirtyCanvas(true, false);
+      } else {
+        // Restore original order
+        node.imgs = originalOrder;
         node.setDirtyCanvas(true, false);
       }
     }
@@ -184,7 +194,21 @@ app.registerExtension({
       }
     }
 
-    node.onMouseEnter = (e) => {};
+    node.onMouseEnter = (e) => {
+      mouse.mouseInNode = true;
+    };
+
+    node.onMouseLeave = (e) => {
+      mouse.mouseInNode = false;
+    };
+
+    node.onMouseMove = (e, pos) => {
+      if (mouse.mouseInNode) {
+        const graphMouse = app.canvas.graph_mouse;
+        mouse.x = graphMouse[0] - node.pos[0];
+        mouse.y = graphMouse[1] - node.pos[1];
+      }
+    };
 
     const originalMenuOptions = node.getExtraMenuOptions;
     node.getExtraMenuOptions = function (_, options) {
@@ -234,7 +258,7 @@ app.registerExtension({
   },
 });
 
-function overrideDraw(node, widget_width, y, ctx, compare) {
+function overrideDraw(node, widget_width, y, ctx, compare, mouse) {
   if (!compare || !compare.mode) return;
 
   let img1 = null;
@@ -265,9 +289,8 @@ function overrideDraw(node, widget_width, y, ctx, compare) {
   const imgX = (dw - w) / 2;
   const imgY = (dh - h) / 2 + y; // +y to offset within canvas
 
-  const graphMouse = app.canvas.graph_mouse;
-  const mouseX = graphMouse[0] - node.pos[0];
-  const mouseY = graphMouse[1] - node.pos[1];
+  const mouseX = mouse.mouseInNode ? mouse.x : imgX; // default to center when mouse is outside
+  const mouseY = mouse.mouseInNode ? mouse.y : imgY + h / 2;
 
   if (compare.mode === "|") {
     // Split mode
@@ -290,20 +313,20 @@ function overrideDraw(node, widget_width, y, ctx, compare) {
     );
 
     // Draw labels
-    ctx.save();
-    ctx.font = "bold 18px Arial";
-    ctx.textBaseline = "top";
-    ctx.shadowColor = "black";
-    ctx.shadowBlur = 4;
+    // ctx.save();
+    // ctx.font = "bold 18px Arial";
+    // ctx.textBaseline = "top";
+    // ctx.shadowColor = "black";
+    // ctx.shadowBlur = 4;
 
     // Label A
-    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-    ctx.fillText("A", imgX + 10, imgY + 10);
+    // ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    // if(mouseX  > imgX + 23) ctx.fillText("A", imgX + 10, imgY + 10);
 
     // Label B - position depends on split
-    const labelB = "B";
-    const labelWidth = ctx.measureText(labelB).width;
-    ctx.fillText(labelB, imgX + w - labelWidth - 10, imgY + 10);
+    // const labelB = "B";
+    // const labelWidth = ctx.measureText(labelB).width;
+    // if(mouseX  < imgX + w - labelWidth - 10) ctx.fillText(labelB, imgX + w - labelWidth - 10, imgY + 10);
 
     // // Optional: draw split line
     // ctx.beginPath();
@@ -313,7 +336,7 @@ function overrideDraw(node, widget_width, y, ctx, compare) {
     // ctx.lineWidth = 1;
     // ctx.stroke();
 
-    ctx.restore();
+    // ctx.restore();
   } else if (compare.mode === "O") {
     // Circle mode
     const radius = Math.min(w, h) * 0.15; // 30% of image size
@@ -321,7 +344,7 @@ function overrideDraw(node, widget_width, y, ctx, compare) {
     const centerY = Math.max(imgY + radius, Math.min(mouseY, imgY + h - radius));
 
     // First draw img A (background)
-    ctx.drawImage(img1, 0, 0, img1.naturalWidth, img1.naturalHeight, imgX, imgY, w, h);
+    ctx.drawImage(img2, 0, 0, img2.naturalWidth, img2.naturalHeight, imgX, imgY, w, h);
 
     // Save the current context
     ctx.save();
@@ -335,18 +358,18 @@ function overrideDraw(node, widget_width, y, ctx, compare) {
     ctx.clip();
 
     // Draw the image B inside the circle
-    ctx.drawImage(img2, 0, 0, img2.naturalWidth, img2.naturalHeight, imgX, imgY, w, h);
+    ctx.drawImage(img1, 0, 0, img1.naturalWidth, img1.naturalHeight, imgX, imgY, w, h);
     ctx.restore();
 
-    ctx.save();
-    ctx.font = "bold 18px Arial";
-    ctx.textBaseline = "top";
-    ctx.shadowColor = "black";
-    ctx.shadowBlur = 4;
+    // ctx.save();
+    // ctx.font = "bold 18px Arial";
+    // ctx.textBaseline = "top";
+    // ctx.shadowColor = "black";
+    // ctx.shadowBlur = 4;
 
     // Label A
-    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-    ctx.fillText("A", imgX + 10, imgY + 10);
+    // ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    // if(!(mouseX < imgX + 55 && mouseY < imgY + 55)) ctx.fillText("A", imgX + 10, imgY + 10);
 
     // Restore the context to remove the clip
 
@@ -357,13 +380,13 @@ function overrideDraw(node, widget_width, y, ctx, compare) {
     // ctx.lineWidth = 1;
     // ctx.stroke();
 
-    ctx.restore();
+    // ctx.restore();
   } else if (compare.mode === "A") {
     // draw img 1 only
-    ctx.drawImage(img1, 0, 0, img1.naturalWidth, img1.naturalHeight, imgX, imgY, w, h);
+    ctx.drawImage(img2, 0, 0, img2.naturalWidth, img2.naturalHeight, imgX, imgY, w, h);
   } else if (compare.mode === "B") {
     // draw img 2 only
-    ctx.drawImage(img2, 0, 0, img2.naturalWidth, img2.naturalHeight, imgX, imgY, w, h);
+    ctx.drawImage(img1, 0, 0, img1.naturalWidth, img1.naturalHeight, imgX, imgY, w, h);
   }
 }
 

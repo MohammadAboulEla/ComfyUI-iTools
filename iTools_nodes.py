@@ -1013,7 +1013,7 @@ class IToolsCompareImage(PreviewImage):
         _a = self.save_images(A,)['ui']['images'] 
         _b = self.save_images(B,)['ui']['images']
         
-        return {'ui': {'images': _a+_b }} # {'ui': {'images': [{'filename': 'ComfyUI_temp_00001_.png', 'subfolder': '', 'type': 'temp'}]}}
+        return {'ui': {'images': _b + _a }} # {'ui': {'images': [{'filename': 'ComfyUI_temp_00001_.png', 'subfolder': '', 'type': 'temp'}]}}
 
         
 # A dictionary that contains all nodes you want to export with their names
