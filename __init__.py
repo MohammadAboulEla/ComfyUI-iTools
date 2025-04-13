@@ -38,6 +38,9 @@ if allow_beta_nodes:
         
         NODE_CLASS_MAPPINGS["iToolsCropImage"] = IToolsCropImage
         NODE_DISPLAY_NAME_MAPPINGS["iToolsCropImage"] = "iTools Crop Image (Beta)"
+        
+        NODE_CLASS_MAPPINGS["iToolsImageMixer"] = IToolsImageMixer
+        NODE_DISPLAY_NAME_MAPPINGS["iToolsImageMixer"] = "iTools Image Mixer 🍜 (Beta)"
 
     except ModuleNotFoundError as e:
         pass

@@ -11,6 +11,7 @@ import node_helpers
 import numpy as np
 import torch
 import hashlib
+from nodes import PreviewImage
 
 
 def install_package(package):
@@ -326,6 +327,36 @@ class IToolsCropImage:
             return "Invalid image file: {}".format(image)
 
         return True
+
+class IToolsImageMixer(PreviewImage):
+    CATEGORY = "iTools"
+    DESCRIPTION = "A tool that combines multiple images into one by layering, blending, or compositing them together."
+    FUNCTION = "mix_images"
+    OUTPUT_NODE = True
+    
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "A": ("IMAGE",),
+                "B": ("IMAGE",),
+            },
+            "optional": {
+                "C": ("IMAGE", {"default": None}),
+            },
+            "hidden": {
+                "prompt": "PROMPT",
+                "extra_pnginfo": "EXTRA_PNGINFO"
+            }
+        }
+    
+    def mix_images(self, A, B, C=None, filename_prefix=None, prompt=None, extra_pnginfo=None):
+        _a = self.save_images(A,)['ui']['images'] 
+        _b = self.save_images(B,)['ui']['images']
+        if C is not None:
+            _c = self.save_images(C,)['ui']['images']
+            return {'ui': {'images': _a + _b + _c }}
+        return {'ui': {'images': _a + _b }}        
 
 
 @PromptServer.instance.routes.post("/itools/request_save_paint")
