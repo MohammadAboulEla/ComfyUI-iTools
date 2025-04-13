@@ -68,6 +68,75 @@ export function trackMouseColor(event, canvas) {
   }
 }
 
+export function getCopyImageOption(img) {
+  if (typeof window.ClipboardItem === "undefined") return [];
+  return [
+    {
+      content: "Copy Image",
+      callback: async () => {
+        const url = new URL(img.src);
+        url.searchParams.delete("preview");
+
+        const writeImage = async (blob) => {
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              [blob.type]: blob,
+            }),
+          ]);
+        };
+
+        try {
+          const data = await fetch(url);
+          const blob = await data.blob();
+          try {
+            await writeImage(blob);
+          } catch (error) {
+            // Chrome seems to only support PNG on write, convert and try again
+            if (blob.type !== "image/png") {
+              const canvas = $el("canvas", {
+                width: img.naturalWidth,
+                height: img.naturalHeight,
+              });
+              const ctx = canvas.getContext("2d");
+              let image;
+              if (typeof window.createImageBitmap === "undefined") {
+                image = new Image();
+                const p = new Promise((resolve, reject) => {
+                  image.onload = resolve;
+                  image.onerror = reject;
+                }).finally(() => {
+                  URL.revokeObjectURL(image.src);
+                });
+                image.src = URL.createObjectURL(blob);
+                await p;
+              } else {
+                image = await createImageBitmap(blob);
+              }
+              try {
+                ctx.drawImage(image, 0, 0);
+                canvas.toBlob(writeImage, "image/png");
+              } finally {
+                if (typeof image.close === "function") {
+                  image.close();
+                }
+              }
+
+              return;
+            }
+            throw error;
+          }
+        } catch (error) {
+          toastStore.addAlert(
+            t("toastMessages.errorCopyImage", {
+              error: error.message ?? error,
+            })
+          );
+        }
+      },
+    },
+  ];
+}
+
 // Function to convert hex data to a Blob
 export function hexToBlob(hex) {
   const byteArray = new Uint8Array(hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
