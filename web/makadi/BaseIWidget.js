@@ -176,33 +176,3 @@ export class TestIWidget extends BaseIWidget {
   }
 
 }
-
-import { IContainer } from "./IContainer.js";
-export async function iWidgetExample(node){
-  async function nodeCreated(node) {
-    if (node.comfyClass !== "iToolsPaintNode") {
-      return;
-    }
-
-    while (node.graph === null) {
-      if (allow_debug) console.log("loading ...");
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-
-    // NODE SETTINGS
-    node.setSize([512, 592]);
-    node.resizable = true;
-    node.setDirtyCanvas(true, true);
-    node.shape = "box"
-    node.title = "You're using ComfyUI incorrectly"
-
-    if (allow_debug) console.log("node", node);
-
-    // START POINT
-    const ic = new IContainer(node)
-    node.addCustomWidget(ic)
-
-    const mm = new BaseIWidgetManager(node);
-  }
-  return nodeCreated(node)
-}
