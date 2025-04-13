@@ -1,6 +1,7 @@
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
-import { BaseSmartWidget, BaseSmartWidgetManager, SmartButton, SmartInfo } from "./makadi.js";
+import { BaseSmartWidget, BaseSmartWidgetManager,} from "./makadi/BaseSmartWidget.js";
+import { SmartButton } from "./makadi/SmartButton.js";
 import { Shapes } from "./utils.js";
 
 app.registerExtension({

@@ -1,5 +1,6 @@
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
+
 // Register a new setting
 app.registerExtension({
   name: "makadi_iTools_more_styles",
@@ -17,6 +18,33 @@ app.registerExtension({
             severity: "warn",
             summary: "Alert!",
             detail: "Restart ComfyUI and refresh your browser",
+            life: 3000,
+          });
+        }
+      },
+    },
+  ],
+});
+
+// Register a new setting
+app.registerExtension({
+  name: "makadi_iTools_compare_mode",
+  settings: [
+    {
+      id: "iTools.Nodes.Compare Mode",
+      name: "iTools Image Compare mode",
+      type: "combo",
+      defaultValue: "makadi",
+      options: ["rgthree", "makadi"],
+      tooltip:
+        "Choose how to compare images. The 'rgthree' option will behave exactly like the rgthree image compare node.",
+      onChange: (value) => {
+        const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.Compare Mode");
+        if (prevValue !== undefined && prevValue !== value) {
+          app.extensionManager.toast.add({
+            severity: "warn",
+            summary: "Alert!",
+            detail: "Refresh your browser",
             life: 3000,
           });
         }
@@ -110,7 +138,6 @@ app.registerExtension({
   },
 });
 
-
 // Register TogetherApi setting
 app.registerExtension({
   name: "makadi_iTools_together_api",
@@ -120,11 +147,11 @@ app.registerExtension({
       name: "Together Api Key (needed for free schnell node)",
       type: "text",
       defaultValue: "None",
-      tooltip: "Get your free key from together.ai put it here or add it as TOGETHER_API_KEY in your system environment.",
+      tooltip:
+        "Get your free key from together.ai put it here or add it as TOGETHER_API_KEY in your system environment.",
     },
   ],
 });
-
 
 // Register a new setting
 app.registerExtension({
@@ -135,7 +162,8 @@ app.registerExtension({
       name: "Allow Masking in iTools Paint Node",
       type: "boolean",
       defaultValue: false,
-      tooltip: "Give a permission to download 209mb models needed for removing background from images.\n\n As for this Beta version models are saved in the user home folder in the .u2net directory.",
+      tooltip:
+        "Give a permission to download 209mb models needed for removing background from images.\n\n As for this Beta version models are saved in the user home folder in the .u2net directory.",
     },
   ],
 });
@@ -174,7 +202,8 @@ app.registerExtension({
       name: "Enable beta nodes",
       type: "boolean",
       defaultValue: true,
-      tooltip: "Will show or hide some experimental nodes, Restart ComfyUI and refresh your browser after changing this value.",
+      tooltip:
+        "Will show or hide some experimental nodes, Restart ComfyUI and refresh your browser after changing this value.",
       onChange: (value) => {
         const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.Dev Mode");
         if (prevValue !== undefined && prevValue !== value) {
@@ -189,4 +218,3 @@ app.registerExtension({
     },
   ],
 });
-

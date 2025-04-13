@@ -1,4 +1,130 @@
-function print(...args) {
+export const Shapes = Object.freeze({
+  SQUARE: "square",
+  CIRCLE: "circle",
+  ROUND: "round",
+  ROUND_L: "round_left",
+  ROUND_R: "round_right",
+  TRIANGLE: "triangle",
+  STAR: "star",
+  ELLIPSE: "ellipse",
+  HHL_CIRCLE: "half horizontal left circle",
+  HVL_CIRCLE: "half vertical left circle",
+  HHR_CIRCLE: "half horizontal right circle",
+  HVR_CIRCLE: "half vertical right circle",
+});
+
+export const AppColors = Object.freeze({
+  WIDGET_BGCOLOR: LiteGraph.WIDGET_BGCOLOR,
+  WIDGET_OUTLINE_COLOR: LiteGraph.WIDGET_OUTLINE_COLOR,
+  WIDGET_TEXT_COLOR: LiteGraph.WIDGET_TEXT_COLOR,
+  WIDGET_SECONDARY_TEXT_COLOR: LiteGraph.WIDGET_SECONDARY_TEXT_COLOR,
+
+  NODE_TITLE_COLOR: LiteGraph.NODE_TITLE_COLOR,
+  NODE_SELECTED_TITLE_COLOR: LiteGraph.NODE_SELECTED_TITLE_COLOR,
+  NODE_TEXT_COLOR: LiteGraph.NODE_TEXT_COLOR,
+  NODE_DEFAULT_COLOR: LiteGraph.NODE_DEFAULT_COLOR,
+  NODE_DEFAULT_BGCOLOR: LiteGraph.NODE_DEFAULT_BGCOLOR,
+  NODE_DEFAULT_BOXCOLOR: LiteGraph.NODE_DEFAULT_BOXCOLOR,
+  NODE_DEFAULT_SHAPE: LiteGraph.NODE_DEFAULT_SHAPE,
+  NODE_BOX_OUTLINE_COLOR: LiteGraph.NODE_BOX_OUTLINE_COLOR,
+  DEFAULT_SHADOW_COLOR: LiteGraph.DEFAULT_SHADOW_COLOR,
+
+  LINK_COLOR: LiteGraph.LINK_COLOR,
+  EVENT_LINK_COLOR: LiteGraph.EVENT_LINK_COLOR,
+  CONNECTING_LINK_COLOR: LiteGraph.CONNECTING_LINK_COLOR,
+});
+
+export const Colors = [
+  "#ffffff", // White
+  "#000000", // Black
+  "#ff0000", // Red
+  "#00ff00", // Green
+  "#0000ff", // Blue
+  "#ffff00", // Yellow
+
+  "#ff00ff", // Magenta
+  "#00ffff", // Cyan
+  "#ffa500", // Orange
+  "#800080", // Purple
+  "#008000", // Dark Green
+  "#800000", // Maroon
+
+  "#808000", // Olive
+  "#008080", // Teal
+  "#d3d3d3", // Light Gray
+  "#000080", // Navy
+  "#ffc0cb", // Pink
+  "#a52a2a", // Brown
+
+  "#add8e6", // Light Blue
+  "#ff4500", // Orange Red
+  "#90ee90", // Light Green
+  "#4b0082", // Indigo
+  "#ffb6c1", // Light Pink
+  "#ffd700", // Gold
+
+  "#f0e68c", // Khaki
+  "#c0c0c0", // Silver
+  "#696969", // Dim Gray
+  "#1e90ff", // Dodger Blue
+  "#32cd32", // Lime Green
+  "#ff6347", // Tomato
+
+  "#dc143c", // Crimson
+  "#4682b4", // Steel Blue
+  "#8b4513", // Saddle Brown
+  "#ffdab9", // Peach Puff
+  "#b22222", // Firebrick
+  "#228b22", // Forest Green
+
+  "#f5deb3", // Wheat
+  "#2f4f4f", // Dark Slate Gray
+  "#6a5acd", // Slate Blue
+  "#e9967a", // Dark Salmon
+  "#ff69b4", // Hot Pink
+  "#bc8f8f", // Rosy Brown
+
+  "#deb887", // Burlywood
+  "#7fffd4", // Aquamarine
+  "#ff8c00", // Dark Orange
+];
+
+export const canvasRatios = new Map([
+  ["1:1", { width: 512, height: 512 }],
+
+  ["2:3", { width: 341, height: 512 }], // Rounded to 341x512 (divisible by 64)
+  ["3:4", { width: 384, height: 512 }], // Rounded to 384x512 (divisible by 64)
+  ["9:16", { width: 288, height: 512 }], // Rounded to 288x512 (divisible by 64)
+  ["9:21", { width: 192, height: 512 }], // Rounded to 192x512 (divisible by 64)
+
+  ["3:2", { width: 512, height: 341 }], // Rounded to 512x341 (divisible by 64)
+  ["4:3", { width: 512, height: 384 }], // Rounded to 512x384 (divisible by 64)
+  ["16:9", { width: 512, height: 288 }], // Rounded to 512x288 (divisible by 64)
+  ["21:9", { width: 512, height: 219 }], // Rounded to 512x219 (divisible by 64)
+]);
+
+export const canvasScales = new Map([
+  ["0.5x", 1],
+  ["1x", 2],
+  ["2x", 4],
+]);
+
+export const commonColors = [
+  "#000000", // Black
+  "#FFFFFF", // White
+  "#FF0000", // Red
+  "#0000FF", // Blue
+  "#008000", // Green
+  "#FFFF00", // Yellow
+  "#FFA500", // Orange
+  "#800080", // Purple
+  "#A52A2A", // Brown
+  "rgba(255, 255, 255, 0.0)", // Transparent
+  //"#808080", // Gray
+];
+
+
+export function log(...args) {
   if (allow_debug) {
     console.log(...args); // Spread args to log them properly
   }
@@ -137,6 +263,10 @@ export function getCopyImageOption(img) {
   ];
 }
 
+export function getIndex(array, item) {
+  return array.indexOf(item);
+}
+
 // Function to convert hex data to a Blob
 export function hexToBlob(hex) {
   const byteArray = new Uint8Array(hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
@@ -153,131 +283,6 @@ export function hexDataToImage(hexData) {
 
   return img; // Return the image object
 }
-
-export const Shapes = Object.freeze({
-  SQUARE: "square",
-  CIRCLE: "circle",
-  ROUND: "round",
-  ROUND_L: "round_left",
-  ROUND_R: "round_right",
-  TRIANGLE: "triangle",
-  STAR: "star",
-  ELLIPSE: "ellipse",
-  HHL_CIRCLE: "half horizontal left circle",
-  HVL_CIRCLE: "half vertical left circle",
-  HHR_CIRCLE: "half horizontal right circle",
-  HVR_CIRCLE: "half vertical right circle",
-});
-
-export const AppColors = Object.freeze({
-  WIDGET_BGCOLOR: LiteGraph.WIDGET_BGCOLOR,
-  WIDGET_OUTLINE_COLOR: LiteGraph.WIDGET_OUTLINE_COLOR,
-  WIDGET_TEXT_COLOR: LiteGraph.WIDGET_TEXT_COLOR,
-  WIDGET_SECONDARY_TEXT_COLOR: LiteGraph.WIDGET_SECONDARY_TEXT_COLOR,
-
-  NODE_TITLE_COLOR: LiteGraph.NODE_TITLE_COLOR,
-  NODE_SELECTED_TITLE_COLOR: LiteGraph.NODE_SELECTED_TITLE_COLOR,
-  NODE_TEXT_COLOR: LiteGraph.NODE_TEXT_COLOR,
-  NODE_DEFAULT_COLOR: LiteGraph.NODE_DEFAULT_COLOR,
-  NODE_DEFAULT_BGCOLOR: LiteGraph.NODE_DEFAULT_BGCOLOR,
-  NODE_DEFAULT_BOXCOLOR: LiteGraph.NODE_DEFAULT_BOXCOLOR,
-  NODE_DEFAULT_SHAPE: LiteGraph.NODE_DEFAULT_SHAPE,
-  NODE_BOX_OUTLINE_COLOR: LiteGraph.NODE_BOX_OUTLINE_COLOR,
-  DEFAULT_SHADOW_COLOR: LiteGraph.DEFAULT_SHADOW_COLOR,
-
-  LINK_COLOR: LiteGraph.LINK_COLOR,
-  EVENT_LINK_COLOR: LiteGraph.EVENT_LINK_COLOR,
-  CONNECTING_LINK_COLOR: LiteGraph.CONNECTING_LINK_COLOR,
-});
-
-export const Colors = [
-  "#ffffff", // White
-  "#000000", // Black
-  "#ff0000", // Red
-  "#00ff00", // Green
-  "#0000ff", // Blue
-  "#ffff00", // Yellow
-
-  "#ff00ff", // Magenta
-  "#00ffff", // Cyan
-  "#ffa500", // Orange
-  "#800080", // Purple
-  "#008000", // Dark Green
-  "#800000", // Maroon
-
-  "#808000", // Olive
-  "#008080", // Teal
-  "#d3d3d3", // Light Gray
-  "#000080", // Navy
-  "#ffc0cb", // Pink
-  "#a52a2a", // Brown
-
-  "#add8e6", // Light Blue
-  "#ff4500", // Orange Red
-  "#90ee90", // Light Green
-  "#4b0082", // Indigo
-  "#ffb6c1", // Light Pink
-  "#ffd700", // Gold
-
-  "#f0e68c", // Khaki
-  "#c0c0c0", // Silver
-  "#696969", // Dim Gray
-  "#1e90ff", // Dodger Blue
-  "#32cd32", // Lime Green
-  "#ff6347", // Tomato
-
-  "#dc143c", // Crimson
-  "#4682b4", // Steel Blue
-  "#8b4513", // Saddle Brown
-  "#ffdab9", // Peach Puff
-  "#b22222", // Firebrick
-  "#228b22", // Forest Green
-
-  "#f5deb3", // Wheat
-  "#2f4f4f", // Dark Slate Gray
-  "#6a5acd", // Slate Blue
-  "#e9967a", // Dark Salmon
-  "#ff69b4", // Hot Pink
-  "#bc8f8f", // Rosy Brown
-
-  "#deb887", // Burlywood
-  "#7fffd4", // Aquamarine
-  "#ff8c00", // Dark Orange
-];
-
-export const canvasRatios = new Map([
-  ["1:1", { width: 512, height: 512 }],
-
-  ["2:3", { width: 341, height: 512 }], // Rounded to 341x512 (divisible by 64)
-  ["3:4", { width: 384, height: 512 }], // Rounded to 384x512 (divisible by 64)
-  ["9:16", { width: 288, height: 512 }], // Rounded to 288x512 (divisible by 64)
-  ["9:21", { width: 192, height: 512 }], // Rounded to 192x512 (divisible by 64)
-
-  ["3:2", { width: 512, height: 341 }], // Rounded to 512x341 (divisible by 64)
-  ["4:3", { width: 512, height: 384 }], // Rounded to 512x384 (divisible by 64)
-  ["16:9", { width: 512, height: 288 }], // Rounded to 512x288 (divisible by 64)
-  ["21:9", { width: 512, height: 219 }], // Rounded to 512x219 (divisible by 64)
-]);
-
-export const canvasScales = new Map([
-  ["0.5x", 1],
-  ["1x", 2],
-  ["2x", 4],
-]);
-
-export const commonColors = [
-  "#000000", // Black
-  "#FFFFFF", // White
-  "#FF0000", // Red
-  "#0000FF", // Blue
-  "#008000", // Green
-  "#FFFF00", // Yellow
-  "#FFA500", // Orange
-  "#800080", // Purple
-  "#A52A2A", // Brown
-  "rgba(255, 255, 255, 0.0)", // Transparent
-  //"#808080", // Gray
-];
 
 export async function getColorUnderMouseScreen(event) {
   // Create a hidden canvas
@@ -316,13 +321,13 @@ export function fakeMouseDown(canvas, node) {
   canvas.dispatchEvent(mouseDownEvent);
 }
 
-function enterFreezeMode() {
+export function enterFreezeMode() {
   this.node.allow_interaction = false;
   this.node.allow_dragcanvas = false;
   this.node.allow_dragnodes = false;
 }
 
-function exitFreezeMode() {
+export function exitFreezeMode() {
   this.node.allow_interaction = true;
   this.node.allow_dragcanvas = true;
   this.node.allow_dragnodes = true;
@@ -445,7 +450,7 @@ export function drawAngledStrips(ctx, width, height, scaleFactor = 1.0, stripeWi
 }
 
 // Helper function to check if the color is transparent
-function isTransparent(color) {
+export function isTransparent(color) {
   // Convert hex to RGBA (if needed)
   function hexToRgba(hex) {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -478,6 +483,7 @@ export function getIndexByDimensions(width, height) {
   }
   return -1; // Return -1 if no matching dimensions are found
 }
+
 // const processMouseDown = LGraphCanvas.prototype.processMouseDown;
 // LGraphCanvas.prototype.processMouseDown = function(e) {
 //   if (this.allowDebug) console.log('MouseDown',e);

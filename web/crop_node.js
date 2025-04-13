@@ -2,41 +2,9 @@ import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
 
-import {
-  Shapes,
-  Colors,
-  lightenColor,
-  canvasRatios,
-  canvasScales,
-  commonColors,
-  trackMouseColor,
-  fakeMouseDown,
-  getIndexByDimensions,
-} from "./utils.js";
-import { BaseSmartWidget, SmartInfo } from "./makadi.js";
+import {Shapes,} from "./utils.js";
+import { BaseSmartWidget, BaseSmartWidgetManager,} from "./makadi/BaseSmartWidget.js";
 
-function fakeGraphClick(graph, x, y) {
-  const canvas = graph.canvas;
-  if (!canvas) return;
-
-  const eventProps = {
-    bubbles: true,
-    cancelable: true,
-    clientX: x,
-    clientY: y,
-    pointerId: 1,
-    pointerType: "mouse",
-  };
-
-  // const pointerDownEvent = new PointerEvent("pointerdown", eventProps);
-  // canvas.dispatchEvent(pointerDownEvent);
-  setTimeout(() => {
-    // const upEvent = new MouseEvent("pointerup", eventProps);
-    // canvas.dispatchEvent(upEvent);
-    const clickEvent = new MouseEvent("click", eventProps);
-    canvas.dispatchEvent(clickEvent);
-  }, 50);
-}
 
 export class LiteInfo extends BaseSmartWidget {
   constructor(x, y, width, height, node, text, options = {}) {

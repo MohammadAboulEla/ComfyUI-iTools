@@ -1,7 +1,8 @@
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
-import { BaseSmartWidget, BaseSmartWidgetManager, SmartButton, SmartInfo } from "./makadi.js";
 import { Shapes } from "./utils.js";
+import { BaseSmartWidget, BaseSmartWidgetManager,} from "./makadi/BaseSmartWidget.js";
+import { SmartButton } from "./makadi/SmartButton.js";
 
 app.registerExtension({
   name: "iTools.compareNode",
@@ -23,6 +24,7 @@ app.registerExtension({
       x: 0,
       y: 0,
     };
+    
 
     function turnAllButtonsOff() {
       const buttons = node.widgets.filter((widget) => widget instanceof SmartButton);
@@ -258,9 +260,10 @@ app.registerExtension({
   },
 });
 
+const compareWay = app.extensionManager.setting.get("iTools.Nodes.Compare Mode", "makadi");
 function overrideDraw(node, widget_width, y, ctx, compare, mouse) {
   if (!compare || !compare.mode) return;
-
+  
   let img1 = null;
   let img2 = null;
 
@@ -288,15 +291,28 @@ function overrideDraw(node, widget_width, y, ctx, compare, mouse) {
   // Centered position within the widget
   const imgX = (dw - w) / 2;
   const imgY = (dh - h) / 2 + y; // +y to offset within canvas
-
-  const mouseX = mouse.mouseInNode ? mouse.x : imgX; // default to center when mouse is outside
-  const mouseY = mouse.mouseInNode ? mouse.y : imgY + h / 2;
+  let mouseX = 0;
+  let mouseY = 0;
+  
+  if(compareWay == "makadi") {
+    // true mouse any where
+    const graphMouse = app.canvas.graph_mouse;
+    mouseX = graphMouse[0] - node.pos[0];
+    mouseY = graphMouse[1] - node.pos[1];
+    //mouseX = mouse.mouseInNode ? mouseX : imgX + w / 2; 
+  }
+  else
+  {
+    mouseX = mouse.mouseInNode ? mouse.x : imgX; // default to center when mouse is outside
+    mouseY = mouse.mouseInNode ? mouse.y : imgY + h / 2;
+  }
 
   if (compare.mode === "|") {
     // Split mode
     const splitX = Math.max(imgX, Math.min(mouseX, imgX + w));
     const splitRatio = (splitX - imgX) / w;
 
+    if(compareWay == "makadi") {
     // Draw left part from img
     ctx.drawImage(img1, 0, 0, img1.naturalWidth * splitRatio, img1.naturalHeight, imgX, imgY, w * splitRatio, h);
     // Draw right part from img2
@@ -311,6 +327,24 @@ function overrideDraw(node, widget_width, y, ctx, compare, mouse) {
       w * (1 - splitRatio),
       h
     );
+    }else{
+    // Draw left part from img
+    ctx.drawImage(img2, 0, 0, img2.naturalWidth * splitRatio, img2.naturalHeight, imgX, imgY, w * splitRatio, h);
+    // Draw right part from img2
+    ctx.drawImage(
+      img1,
+      img1.naturalWidth * splitRatio,
+      0,
+      img1.naturalWidth * (1 - splitRatio),
+      img1.naturalHeight,
+      imgX + w * splitRatio,
+      imgY,
+      w * (1 - splitRatio),
+      h
+    );
+    }
+
+
 
     // Draw labels
     // ctx.save();
@@ -344,7 +378,7 @@ function overrideDraw(node, widget_width, y, ctx, compare, mouse) {
     const centerY = Math.max(imgY + radius, Math.min(mouseY, imgY + h - radius));
 
     // First draw img A (background)
-    ctx.drawImage(img2, 0, 0, img2.naturalWidth, img2.naturalHeight, imgX, imgY, w, h);
+    ctx.drawImage(img1, 0, 0, img1.naturalWidth, img1.naturalHeight, imgX, imgY, w, h);
 
     // Save the current context
     ctx.save();
@@ -358,7 +392,7 @@ function overrideDraw(node, widget_width, y, ctx, compare, mouse) {
     ctx.clip();
 
     // Draw the image B inside the circle
-    ctx.drawImage(img1, 0, 0, img1.naturalWidth, img1.naturalHeight, imgX, imgY, w, h);
+    ctx.drawImage(img2, 0, 0, img2.naturalWidth, img2.naturalHeight, imgX, imgY, w, h);
     ctx.restore();
 
     // ctx.save();
@@ -382,11 +416,16 @@ function overrideDraw(node, widget_width, y, ctx, compare, mouse) {
 
     // ctx.restore();
   } else if (compare.mode === "A") {
+    if(compareWay == "makadi") {
+
+    }else{
+      
+    }
     // draw img 1 only
-    ctx.drawImage(img2, 0, 0, img2.naturalWidth, img2.naturalHeight, imgX, imgY, w, h);
+    ctx.drawImage(img1, 0, 0, img2.naturalWidth, img2.naturalHeight, imgX, imgY, w, h);
   } else if (compare.mode === "B") {
     // draw img 2 only
-    ctx.drawImage(img1, 0, 0, img1.naturalWidth, img1.naturalHeight, imgX, imgY, w, h);
+    ctx.drawImage(img2, 0, 0, img1.naturalWidth, img1.naturalHeight, imgX, imgY, w, h);
   }
 }
 

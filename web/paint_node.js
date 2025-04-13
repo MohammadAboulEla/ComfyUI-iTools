@@ -9,29 +9,21 @@ import {
   canvasScales,
   commonColors,
   trackMouseColor,
-  fakeMouseDown,
   getIndexByDimensions,
 } from "./utils.js";
-import {
-  BaseSmartWidgetManager,
-  SmartButton,
-  SmartWidget,
-  SmartSlider,
-  SmartLabel,
-  SmartSwitch,
-  SmartCheckBox,
-  SmartPaintArea,
-  SmartPreview,
-  SmartColorPicker,
-  SmartDropdownMenu,
-  TextObject,
-  AdvancedLabel,
-  SmartInfo,
-  SmartImage,
-  CanvasButtonManager,
-  SmartLoading,
-  SmartText,
-} from "./makadi.js";
+
+import { BaseSmartWidgetManager } from "./makadi/BaseSmartWidget.js";
+import { SmartButton } from "./makadi/SmartButton.js";
+import { SmartWidget } from "./makadi/SmartWidget.js";
+import { SmartSlider } from "./makadi/SmartSlider.js";
+import { SmartSwitch } from "./makadi/SmartSwitch.js";
+import { SmartPaintArea } from "./makadi/SmartPaintArea.js";
+import { SmartPreview } from "./makadi/SmartPreview.js";
+import { SmartColorPicker } from "./makadi/SmartColorPicker.js";
+import { SmartDropdownMenu } from "./makadi/SmartDropdownMenu.js";
+import { SmartImage } from "./makadi/SmartImage.js";
+import { SmartInfo } from "./makadi/SmartInfo.js";
+import { SmartText } from "./makadi/SmartText.js";
 
 app.registerExtension({
   name: "iTools.paintNode",
@@ -905,12 +897,12 @@ app.registerExtension({
 
     // Clean up on node removal
     const origOnRemoved = node.onRemoved;
-    node.onRemoved = function() {
+    node.onRemoved = function () {
       origOnRemoved?.apply(this, arguments);
       app.canvas.zoom_speed = 1.1; // enable zoom
       if (allow_debug) console.log("Cleaning up paint node widget");
     };
-    
+
     // COMMON CLICKS EVENTS
     app.canvas.canvas.onkeydown = (event) => {
       // if (allow_debug) {
@@ -946,8 +938,8 @@ app.registerExtension({
       // reset image rotation
       canvasImgs.forEach((item) => {
         item.rotationAngle = 0;
-        item.width = item.originalWidth
-        item.height = item.originalHeight
+        item.width = item.originalWidth;
+        item.height = item.originalHeight;
       });
     };
 
@@ -980,6 +972,6 @@ app.registerExtension({
 
     globalThis.oncopy = (...args) => {};
 
-    const manager = new BaseSmartWidgetManager(node,"iToolsPaintNode");
+    const manager = new BaseSmartWidgetManager(node, "iToolsPaintNode");
   },
 });
