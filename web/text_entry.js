@@ -188,7 +188,7 @@ function inputsHistoryShow(inputs) {
         background: #1a1a1a;
         border: 1px solid #333;
         border-radius: 8px;
-        padding: 20px;
+        padding: 10px;
         width: 500px;
         max-height: 80vh;
         z-index: 10000;
@@ -232,12 +232,58 @@ function inputsHistoryShow(inputs) {
   header.appendChild(title);
   header.appendChild(closeButton);
 
+  // Create search input
+  const searchContainer = document.createElement("div");
+  searchContainer.style.cssText = `
+        margin-bottom: 10px;
+        position: relative;
+    `;
+
+  const searchInput = document.createElement("input");
+  searchInput.type = "text";
+  searchInput.placeholder = "Search history...";
+  searchInput.style.cssText = `
+        width: 100%;
+        padding: 8px 30px 8px 10px;
+        background: #252525;
+        border: 1px solid #333;
+        border-radius: 4px;
+        color: #fff;
+        font-size: 14px;
+        box-sizing: border-box;
+    `;
+
+  const searchIcon = document.createElement("div");
+  searchIcon.innerHTML = "🔍︎";
+  searchIcon.style.cssText = `
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+        pointer-events: none;
+    `;
+
+  searchContainer.appendChild(searchInput);
+  searchContainer.appendChild(searchIcon);
+
   // Create content container
   const content = document.createElement("div");
   content.style.cssText = `
         overflow-y: auto;
-        max-height: calc(80vh - 80px);
+        padding-right: ${content.scrollHeight > content.clientHeight ? '10px' : '0'};
+        max-height: calc(80vh - 140px);
     `;
+
+  // Add resize observer to update padding when content changes
+  const resizeObserver = new ResizeObserver(entries => {
+    for (let entry of entries) {
+      const hasScrollbar = entry.target.scrollHeight > entry.target.clientHeight;
+      entry.target.style.paddingRight = hasScrollbar ? '10px' : '0';
+    }
+  });
+
+  resizeObserver.observe(content);
 
   // Create list of inputs
   const list = document.createElement("div");
@@ -247,13 +293,16 @@ function inputsHistoryShow(inputs) {
         gap: 10px;
     `;
 
-  // Add inputs in reverse order (newest first)
-  inputs
-    .slice()
-    .reverse()
-    .forEach((text, index) => {
-      const item = document.createElement("div");
-      item.style.cssText = `
+  function renderList(filterText = "") {
+    // Clear existing items
+    list.innerHTML = "";
+    
+    // Filter and render items
+    inputs.slice().reverse()
+      .filter(text => text.toLowerCase().includes(filterText.toLowerCase()))
+      .forEach((text, index) => {
+        const item = document.createElement("div");
+        item.style.cssText = `
             background: #252525;
             border: 1px solid #333;
             border-radius: 4px;
@@ -261,9 +310,9 @@ function inputsHistoryShow(inputs) {
             position: relative;
         `;
 
-      const copyButton = document.createElement("button");
-      copyButton.textContent = "Copy";
-      copyButton.style.cssText = `
+        const copyButton = document.createElement("button");
+        copyButton.textContent = "Copy";
+        copyButton.style.cssText = `
             position: absolute;
             top: 8px;
             right: 8px;
@@ -274,41 +323,66 @@ function inputsHistoryShow(inputs) {
             padding: 4px 8px;
             font-size: 12px;
             cursor: pointer;
+            transition: background 0.2s;
         `;
-      copyButton.onclick = async () => {
-        try {
-          await navigator.clipboard.writeText(text);
-          modal.remove();
-          overlay.remove();
-          app.extensionManager.toast.add({
-            severity: "success",
-            summary: "Success",
-            detail: "Text copied to clipboard!",
-            life: 2000,
-          });
-        } catch (error) {
-          app.extensionManager.toast.add({
-            severity: "error",
-            summary: "Error",
-            detail: "Failed to copy text to clipboard",
-            life: 3000,
-          });
-        }
-      };
+        copyButton.onmouseover = () => copyButton.style.background = "#444";
+        copyButton.onmouseout = () => copyButton.style.background = "#333";
+        copyButton.onclick = async () => {
+          try {
+            await navigator.clipboard.writeText(text);
+            modal.remove();
+            overlay.remove();
+            app.extensionManager.toast.add({
+              severity: "success",
+              summary: "Success",
+              detail: "Text copied to clipboard!",
+              life: 2000
+            });
+          } catch (error) {
+            app.extensionManager.toast.add({
+              severity: "error",
+              summary: "Error",
+              detail: "Failed to copy text to clipboard",
+              life: 3000
+            });
+          }
+        };
 
-      const textContent = document.createElement("div");
-      textContent.style.cssText = `
+        const textContent = document.createElement("div");
+        textContent.style.cssText = `
             color: #fff;
             font-size: 14px;
             margin-right: 60px;
             word-break: break-word;
         `;
-      textContent.textContent = text || "(empty)";
+        textContent.textContent = text || "(empty)";
 
-      item.appendChild(textContent);
-      item.appendChild(copyButton);
-      list.appendChild(item);
-    });
+        item.appendChild(textContent);
+        item.appendChild(copyButton);
+        list.appendChild(item);
+      });
+
+    // Show "no results" message if needed
+    if (list.children.length === 0) {
+      const noResults = document.createElement("div");
+      noResults.style.cssText = `
+            color: #666;
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+        `;
+      noResults.textContent = "No matching items found";
+      list.appendChild(noResults);
+    }
+  }
+
+  // Initial render
+  renderList();
+
+  // Add search handler
+  searchInput.addEventListener("input", (e) => {
+    renderList(e.target.value);
+  });
 
   content.appendChild(list);
 
@@ -330,7 +404,11 @@ function inputsHistoryShow(inputs) {
 
   // Assemble and show modal
   modal.appendChild(header);
+  modal.appendChild(searchContainer);
   modal.appendChild(content);
   document.body.appendChild(overlay);
   document.body.appendChild(modal);
+
+  // Focus search input
+  searchInput.focus();
 }
