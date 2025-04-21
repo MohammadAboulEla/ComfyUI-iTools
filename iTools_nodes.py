@@ -972,6 +972,7 @@ class IToolsPreviewText:
 
         return {"ui": {"text": text}, "result": (text,)}
 
+
 class IToolsPreviewImage(SaveImage):
     def __init__(self):
         self.output_dir = folder_paths.get_temp_directory()
@@ -988,6 +989,7 @@ class IToolsPreviewImage(SaveImage):
                     {"images": ("IMAGE", ), },
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
                 }
+
 
 class IToolsCompareImage(PreviewImage):
 
@@ -1015,6 +1017,23 @@ class IToolsCompareImage(PreviewImage):
         
         return {'ui': {'images': _a + _b }} # {'ui': {'images': [{'filename': 'ComfyUI_temp_00001_.png', 'subfolder': '', 'type': 'temp'}]}}
 
+class IToolsTextEntry:
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {
+            "text": ("STRING", {"default": "", "multiline": True, "placeholder": "text"}),}
+        }
+
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("text",)
+    FUNCTION = "text_entry"
+    OUTPUT_NODE = True
+    CATEGORY = "iTools"
+
+    @staticmethod
+    def text_entry(text):
+        return text,
         
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -1037,6 +1056,7 @@ NODE_CLASS_MAPPINGS = {
     "iToolsRegexNode": IToolsRegexNode,
     "iToolsPreviewImage": IToolsPreviewImage,
     "iToolsCompareImage": IToolsCompareImage,
+    "iToolsTextEntry": IToolsTextEntry,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -1059,4 +1079,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsRegexNode": "iTools Regex Editor",
     "iToolsPreviewImage": "iTools Image Preview 🍿",
     "iToolsCompareImage": "iTools Image Compare 🔍",
+    "iToolsTextEntry": "iTools Text Entry ✍🏻",
 }
