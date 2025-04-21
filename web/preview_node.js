@@ -27,6 +27,12 @@ app.registerExtension({
     let compare = false;
     let imagesTracked = [];
     const MAX_IMAGES = 8;
+    
+    // other vars
+    let toastShownCountH = 0;
+    let toastShownCountPC = 0;
+    let toastShownCountI = 0;
+    const MAX_TOAST_SHOWS = 2;
 
     function pushToImgs(newImage) {
       // Check if image is undefined or null
@@ -111,12 +117,15 @@ app.registerExtension({
 
         if (allow_debug) console.log("Toggling between last two imagesTracked");
       } else {
-        app.extensionManager.toast.add({
-          severity: "info",
-          summary: "iTools!",
-          detail: "You must execute this node at least twice",
-          life: 2000,
-        });
+        if (toastShownCountPC < MAX_TOAST_SHOWS) {
+          app.extensionManager.toast.add({
+            severity: "info",
+            summary: "iTools!",
+            detail: "You must execute this node at least twice",
+            life: 2000,
+          });
+          toastShownCountPC++;
+        }
       }
     }
 
@@ -155,12 +164,15 @@ app.registerExtension({
           toggleButtonActivation(c, compare);
         }
         if (!node.imgs) {
-          app.extensionManager.toast.add({
-            severity: "info",
-            summary: "iTools!",
-            detail: "No images in this node history",
-            life: 2000,
-          });
+          if(toastShownCountH < MAX_TOAST_SHOWS){
+            app.extensionManager.toast.add({
+              severity: "info",
+              summary: "iTools!",
+              detail: "No images in this node history",
+              life: 2000,
+            });
+            toastShownCountH++;
+          }
           return;
         }
         if (node.imgs.length > 1) {
@@ -205,12 +217,15 @@ app.registerExtension({
 
         // start compare
         if (imagesTracked.length <= 1) {
-          app.extensionManager.toast.add({
-            severity: "info",
-            summary: "iTools!",
-            detail: "You must execute this node at least twice",
-            life: 2000,
-          });
+          if(toastShownCountI < MAX_TOAST_SHOWS){
+            app.extensionManager.toast.add({
+              severity: "info",
+              summary: "iTools!",
+              detail: "You must execute this node at least twice",
+              life: 2000,
+            });
+            toastShownCountI++;
+          }
           return;
         }
         compare = !compare;
