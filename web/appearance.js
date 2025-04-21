@@ -37,7 +37,7 @@ app.registerExtension({
       defaultValue: "makadi",
       options: ["rgthree", "makadi"],
       tooltip:
-        "Choose how to compare images. The 'rgthree' option will behave exactly like the rgthree image compare node.",
+        "makadi: is how iTools developer like this node to work.\n\n rgthree: will behave exactly like the rgthree image compare node.",
       onChange: (value) => {
         const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.Compare Mode");
         if (prevValue !== undefined && prevValue !== value) {
@@ -144,11 +144,11 @@ app.registerExtension({
   settings: [
     {
       id: "iTools.Nodes. together.ai Api Key",
-      name: "Together Api Key (needed for free schnell node)",
+      name: "Together Api Key",
       type: "text",
       defaultValue: "None",
       tooltip:
-        "Get your free key from together.ai put it here or add it as TOGETHER_API_KEY in your system environment.",
+        "(needed for free schnell node)\nGet your free key from together.ai put it here or add it as TOGETHER_API_KEY in your system environment.",
     },
   ],
 });
