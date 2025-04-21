@@ -2,9 +2,8 @@ import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
 
-import {Shapes,} from "./utils.js";
-import { BaseSmartWidget, BaseSmartWidgetManager,} from "./makadi/BaseSmartWidget.js";
-
+import { Shapes } from "./utils.js";
+import { BaseSmartWidget, BaseSmartWidgetManager } from "./makadi/BaseSmartWidget.js";
 
 export class LiteInfo extends BaseSmartWidget {
   constructor(x, y, width, height, node, text, options = {}) {
@@ -66,7 +65,13 @@ export class LiteInfo extends BaseSmartWidget {
       ctx.lineTo(this.myX + this.width - radius, this.myY);
       ctx.arcTo(this.myX + this.width, this.myY, this.myX + this.width, this.myY + radius, radius);
       ctx.lineTo(this.myX + this.width, this.myY + this.height - radius);
-      ctx.arcTo(this.myX + this.width, this.myY + this.height, this.myX + this.width - radius, this.myY + this.height, radius);
+      ctx.arcTo(
+        this.myX + this.width,
+        this.myY + this.height,
+        this.myX + this.width - radius,
+        this.myY + this.height,
+        radius
+      );
       ctx.lineTo(this.myX + radius, this.myY + this.height);
       ctx.arcTo(this.myX, this.myY + this.height, this.myX, this.myY + this.height - radius, radius);
       ctx.lineTo(this.myX, this.myY + radius);
@@ -90,7 +95,11 @@ export class LiteInfo extends BaseSmartWidget {
       ctx.font = this.font;
       ctx.textAlign = this.textAlign;
       ctx.textBaseline = this.textBaseline;
-      ctx.fillText(this.text, this.myX + this.width / 2 + this.textXoffset, this.myY + this.height / 2 + this.textYoffset);
+      ctx.fillText(
+        this.text,
+        this.myX + this.width / 2 + this.textXoffset,
+        this.myY + this.height / 2 + this.textYoffset
+      );
     }
   }
 
@@ -166,7 +175,7 @@ class CropWidget {
 
     this.adjustNewImageSize(); // init
     this.setResizeRatio(); // init ratio
-    
+
     // ON Ratio Changed
     this.node.widgets[0].callback = () => {
       this.setResizeRatio();
@@ -359,12 +368,12 @@ class CropWidget {
   draw(ctx) {
     if (!this.isVisible) return;
 
-    // Clear original image
-    ctx.clearRect(this.myX, this.myY, this.node.width, this.node.height - this.yOffset);
+    // // Clear original image
+    // ctx.clearRect(this.myX, this.myY, this.node.width, this.node.height - this.yOffset);
 
-    // Fill with background color
-    ctx.fillStyle = this.node.bgcolor;
-    ctx.fillRect(this.myX, this.myY, this.node.width, this.node.height - this.yOffset);
+    // // Fill with background color
+    // ctx.fillStyle = this.node.bgcolor;
+    // ctx.fillRect(this.myX, this.myY, this.node.width, this.node.height - this.yOffset);
 
     // Draw loaded image
     this.adjustNewImageSize();
@@ -443,9 +452,9 @@ class CropWidget {
 
   cropNewImage() {
     if (!this.img) {
-      this.adjustNewImageSize()
-    };
-    
+      this.adjustNewImageSize();
+    }
+
     // Calculate the scale factors for the image
     const scaleX = this.img.naturalWidth / this.width;
     const scaleY = this.img.naturalHeight / this.height;
@@ -868,7 +877,7 @@ app.registerExtension({
       return;
     }
 
-    // wait for init
+    // Wait for init
     for (let i = 0; i < 30 && node.graph === null; i++) {
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
@@ -877,10 +886,28 @@ app.registerExtension({
       return;
     }
 
+    // Await for ImagePreviewWidget
+    const previewWidget = node.widgets.find((widget) => (widget.type == "custom"));
+    for (let i = 0; i < 30 && !previewWidget; i++) {
+      if (allow_debug) console.log("wait...", i);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+
+    if (!previewWidget) {
+      if (allow_debug) console.log("ImagePreviewWidget not found");
+    }
+    if(allow_debug) console.log('previewWidget',previewWidget);
+
+    // Override draw function in ImagePreviewWidget
+    const originalDraw = previewWidget.draw;
+    if(allow_debug) console.log('originalDraw',originalDraw);
+    previewWidget.draw = function (ctx, node, widget_width, y, widget_height, ...args) {};
+    node.setDirtyCanvas(true, true);
+
     //START POINT
     const cropPreview = new CropWidget(node);
     node.addCustomWidget(cropPreview);
-    if (allow_debug) console.log("node", node);
+    // if (allow_debug) console.log("cropPreviewNode", node);
 
     const originalOnExecuted = node.onExecuted;
     node.onExecuted = async function (message) {
@@ -903,13 +930,13 @@ app.registerExtension({
       const nodes = app.graph.nodes;
       nodes.forEach((n) => {
         if (n.type === "iToolsCropImage") {
-          n.widgets.forEach(w=>{
+          n.widgets.forEach((w) => {
             w.handleDown?.(e);
-          })
+          });
         }
       });
     };
-    
+
     // Store the original onDrawForeground handler
     const originalOnDrawForeground = app.canvas.onDrawForeground;
     app.canvas.onDrawForeground = (ctx) => {
@@ -920,9 +947,9 @@ app.registerExtension({
       const nodes = app.graph.nodes;
       nodes.forEach((n) => {
         if (n.type === "iToolsCropImage") {
-          n.widgets.forEach(w=>{
+          n.widgets.forEach((w) => {
             w.handleMove?.(ctx);
-          })
+          });
         }
       });
     };
@@ -937,9 +964,9 @@ app.registerExtension({
       const nodes = app.graph.nodes;
       nodes.forEach((n) => {
         if (n.type === "iToolsCropImage") {
-          n.widgets.forEach(w=>{
+          n.widgets.forEach((w) => {
             w.handleClick?.(e);
-          })
+          });
         }
       });
     };
