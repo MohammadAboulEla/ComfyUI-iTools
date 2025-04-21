@@ -103,7 +103,7 @@ app.registerExtension({
       his.color = "#222222";
       his.font = buttonFont;
       his.onClick = () => {
-        inputsHistoryShow(inputsHistory);
+        inputsHistoryShow(inputsHistory, inputWidget);
       }; currentX += 104;
 
       // const u = new SmartButton(currentX, by, r - 20, h, node, "↺");
@@ -215,7 +215,7 @@ function importHistoryFromFile(callback) {
   input.click();
 }
 
-function inputsHistoryShow(inputs) {
+function inputsHistoryShow(inputs, inputWidget) {
   // Create modal container
   const modal = document.createElement("div");
   modal.style.cssText = `
@@ -295,6 +295,10 @@ function inputsHistoryShow(inputs) {
   importButton.onmouseout = () => (importButton.style.background = "#333");
   importButton.onclick = () => {
     importHistoryFromFile((newItems) => {
+      
+      // Clear old items first
+      inputs.length = 0;
+      
       // Add new items to the history
       newItems.forEach((item) => {
         if (!inputs.includes(item)) {
@@ -468,6 +472,7 @@ function inputsHistoryShow(inputs) {
               border-radius: 4px;
               padding: 10px;
               position: relative;
+              min-height: 70px;
           `;
 
         const copyButton = document.createElement("button");
@@ -481,6 +486,7 @@ function inputsHistoryShow(inputs) {
               border-radius: 4px;
               color: #fff;
               padding: 4px 8px;
+              min-width: 50px;
               font-size: 12px;
               cursor: pointer;
               transition: background 0.2s;
@@ -508,17 +514,58 @@ function inputsHistoryShow(inputs) {
           }
         };
 
+        const insertButton = document.createElement("button");
+        insertButton.textContent = "Use";
+        insertButton.style.cssText = `
+              position: absolute;
+              top: 36px;
+              right: 8px;
+              background: #333;
+              border: none;
+              border-radius: 4px;
+              color: #fff;
+              min-width: 50px;
+              padding: 4px 8px;
+              font-size: 12px;
+              cursor: pointer;
+              transition: background 0.2s;
+          `;
+        insertButton.onmouseover = () => (insertButton.style.background = "#444");
+        insertButton.onmouseout = () => (insertButton.style.background = "#333");
+        insertButton.onclick = async () => {
+          try {
+            await navigator.clipboard.writeText(text);
+            modal.remove();
+            overlay.remove();
+            inputWidget[0].options.setValue(text);
+            app.extensionManager.toast.add({
+              severity: "success",
+              summary: "Success",
+              detail: "Text inserted from history",
+              life: 2000,
+            });
+          } catch (error) {
+            app.extensionManager.toast.add({
+              severity: "error",
+              summary: "Error",
+              detail: "Failed to insert text from history",
+              life: 3000,
+            });
+          }
+        };
+
         const textContent = document.createElement("div");
         textContent.style.cssText = `
               color: #fff;
               font-size: 14px;
-              margin-right: 60px;
+              margin-right: 65px;
               word-break: break-word;
           `;
         textContent.textContent = text || "(empty)";
 
         item.appendChild(textContent);
         item.appendChild(copyButton);
+        item.appendChild(insertButton);
         list.appendChild(item);
       });
 
