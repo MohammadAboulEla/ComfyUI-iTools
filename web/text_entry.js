@@ -177,10 +177,36 @@ app.registerExtension({
   },
 });
 
+function exportHistoryToFile(history) {
+    // Create text content
+    const content = history.join('\n\n');
+    
+    // Create temporary link element
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+    
+    // Get current date for filename
+    const date = new Date();
+    const dateStr = date.toISOString().split('T')[0];
+    
+    // Set suggested filename
+    element.setAttribute('download', `prompts_history_${dateStr}.txt`);
+    
+    // Hide element
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    
+    // Show native save dialog
+    element.click();
+    
+    // Cleanup
+    document.body.removeChild(element);
+}
+
 function inputsHistoryShow(inputs) {
-  // Create modal container
-  const modal = document.createElement("div");
-  modal.style.cssText = `
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.style.cssText = `
         position: fixed;
         top: 50%;
         left: 50%;
@@ -188,16 +214,16 @@ function inputsHistoryShow(inputs) {
         background: #1a1a1a;
         border: 1px solid #333;
         border-radius: 8px;
-        padding: 10px;
+        padding: 20px;
         width: 500px;
         max-height: 80vh;
         z-index: 10000;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     `;
 
-  // Create header
-  const header = document.createElement("div");
-  header.style.cssText = `
+    // Create header
+    const header = document.createElement('div');
+    header.style.cssText = `
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -206,17 +232,45 @@ function inputsHistoryShow(inputs) {
         border-bottom: 1px solid #333;
     `;
 
-  const title = document.createElement("h3");
-  title.textContent = "Execution History";
-  title.style.cssText = `
+    // Create title container for title and export button
+    const titleContainer = document.createElement('div');
+    titleContainer.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    `;
+
+    const title = document.createElement('h3');
+    title.textContent = 'Execution History';
+    title.style.cssText = `
         margin: 0;
         color: #fff;
         font-size: 16px;
     `;
 
-  const closeButton = document.createElement("button");
-  closeButton.textContent = "×";
-  closeButton.style.cssText = `
+    // Create export button
+    const exportButton = document.createElement('button');
+    exportButton.textContent = 'Export';
+    exportButton.style.cssText = `
+        background: #333;
+        border: none;
+        border-radius: 4px;
+        color: #fff;
+        padding: 4px 8px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background 0.2s;
+    `;
+    exportButton.onmouseover = () => exportButton.style.background = '#444';
+    exportButton.onmouseout = () => exportButton.style.background = '#333';
+    exportButton.onclick = () => exportHistoryToFile(inputs);
+
+    titleContainer.appendChild(title);
+    titleContainer.appendChild(exportButton);
+
+    const closeButton = document.createElement('button');
+    closeButton.textContent = '×';
+    closeButton.style.cssText = `
         background: none;
         border: none;
         color: #666;
@@ -224,25 +278,25 @@ function inputsHistoryShow(inputs) {
         cursor: pointer;
         padding: 0 5px;
     `;
-  closeButton.onclick = () => {
-    modal.remove();
-    overlay.remove();
-  };
+    closeButton.onclick = () => {
+        modal.remove();
+        overlay.remove();
+    };
 
-  header.appendChild(title);
-  header.appendChild(closeButton);
+    header.appendChild(titleContainer);
+    header.appendChild(closeButton);
 
-  // Create search input
-  const searchContainer = document.createElement("div");
-  searchContainer.style.cssText = `
+    // Create search input
+    const searchContainer = document.createElement("div");
+    searchContainer.style.cssText = `
         margin-bottom: 10px;
         position: relative;
     `;
 
-  const searchInput = document.createElement("input");
-  searchInput.type = "text";
-  searchInput.placeholder = "Search history...";
-  searchInput.style.cssText = `
+    const searchInput = document.createElement("input");
+    searchInput.type = "text";
+    searchInput.placeholder = "Search history...";
+    searchInput.style.cssText = `
         width: 100%;
         padding: 8px 30px 8px 10px;
         background: #252525;
@@ -253,9 +307,9 @@ function inputsHistoryShow(inputs) {
         box-sizing: border-box;
     `;
 
-  const searchIcon = document.createElement("div");
-  searchIcon.innerHTML = "🔍︎";
-  searchIcon.style.cssText = `
+    const searchIcon = document.createElement("div");
+    searchIcon.innerHTML = "🔍︎";
+    searchIcon.style.cssText = `
         position: absolute;
         right: 10px;
         top: 50%;
@@ -264,151 +318,151 @@ function inputsHistoryShow(inputs) {
         pointer-events: none;
     `;
 
-  searchContainer.appendChild(searchInput);
-  searchContainer.appendChild(searchIcon);
+    searchContainer.appendChild(searchInput);
+    searchContainer.appendChild(searchIcon);
 
-  // Create content container
-  const content = document.createElement("div");
-  content.style.cssText = `
+    // Create content container
+    const content = document.createElement("div");
+    content.style.cssText = `
         overflow-y: auto;
         padding-right: ${content.scrollHeight > content.clientHeight ? '10px' : '0'};
         max-height: calc(80vh - 140px);
     `;
 
-  // Add resize observer to update padding when content changes
-  const resizeObserver = new ResizeObserver(entries => {
-    for (let entry of entries) {
-      const hasScrollbar = entry.target.scrollHeight > entry.target.clientHeight;
-      entry.target.style.paddingRight = hasScrollbar ? '10px' : '0';
-    }
-  });
+    // Add resize observer to update padding when content changes
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        const hasScrollbar = entry.target.scrollHeight > entry.target.clientHeight;
+        entry.target.style.paddingRight = hasScrollbar ? '10px' : '0';
+      }
+    });
 
-  resizeObserver.observe(content);
+    resizeObserver.observe(content);
 
-  // Create list of inputs
-  const list = document.createElement("div");
-  list.style.cssText = `
+    // Create list of inputs
+    const list = document.createElement("div");
+    list.style.cssText = `
         display: flex;
         flex-direction: column;
         gap: 10px;
     `;
 
-  function renderList(filterText = "") {
-    // Clear existing items
-    list.innerHTML = "";
-    
-    // Filter and render items
-    inputs.slice().reverse()
-      .filter(text => text.toLowerCase().includes(filterText.toLowerCase()))
-      .forEach((text, index) => {
-        const item = document.createElement("div");
-        item.style.cssText = `
-            background: #252525;
-            border: 1px solid #333;
-            border-radius: 4px;
-            padding: 10px;
-            position: relative;
-        `;
+    function renderList(filterText = "") {
+      // Clear existing items
+      list.innerHTML = "";
+      
+      // Filter and render items
+      inputs.slice().reverse()
+        .filter(text => text.toLowerCase().includes(filterText.toLowerCase()))
+        .forEach((text, index) => {
+          const item = document.createElement("div");
+          item.style.cssText = `
+              background: #252525;
+              border: 1px solid #333;
+              border-radius: 4px;
+              padding: 10px;
+              position: relative;
+          `;
 
-        const copyButton = document.createElement("button");
-        copyButton.textContent = "Copy";
-        copyButton.style.cssText = `
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: #333;
-            border: none;
-            border-radius: 4px;
-            color: #fff;
-            padding: 4px 8px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: background 0.2s;
-        `;
-        copyButton.onmouseover = () => copyButton.style.background = "#444";
-        copyButton.onmouseout = () => copyButton.style.background = "#333";
-        copyButton.onclick = async () => {
-          try {
-            await navigator.clipboard.writeText(text);
-            modal.remove();
-            overlay.remove();
-            app.extensionManager.toast.add({
-              severity: "success",
-              summary: "Success",
-              detail: "Text copied to clipboard!",
-              life: 2000
-            });
-          } catch (error) {
-            app.extensionManager.toast.add({
-              severity: "error",
-              summary: "Error",
-              detail: "Failed to copy text to clipboard",
-              life: 3000
-            });
-          }
-        };
+          const copyButton = document.createElement("button");
+          copyButton.textContent = "Copy";
+          copyButton.style.cssText = `
+              position: absolute;
+              top: 8px;
+              right: 8px;
+              background: #333;
+              border: none;
+              border-radius: 4px;
+              color: #fff;
+              padding: 4px 8px;
+              font-size: 12px;
+              cursor: pointer;
+              transition: background 0.2s;
+          `;
+          copyButton.onmouseover = () => copyButton.style.background = "#444";
+          copyButton.onmouseout = () => copyButton.style.background = "#333";
+          copyButton.onclick = async () => {
+            try {
+              await navigator.clipboard.writeText(text);
+              modal.remove();
+              overlay.remove();
+              app.extensionManager.toast.add({
+                severity: "success",
+                summary: "Success",
+                detail: "Text copied to clipboard!",
+                life: 2000
+              });
+            } catch (error) {
+              app.extensionManager.toast.add({
+                severity: "error",
+                summary: "Error",
+                detail: "Failed to copy text to clipboard",
+                life: 3000
+              });
+            }
+          };
 
-        const textContent = document.createElement("div");
-        textContent.style.cssText = `
-            color: #fff;
-            font-size: 14px;
-            margin-right: 60px;
-            word-break: break-word;
-        `;
-        textContent.textContent = text || "(empty)";
+          const textContent = document.createElement("div");
+          textContent.style.cssText = `
+              color: #fff;
+              font-size: 14px;
+              margin-right: 60px;
+              word-break: break-word;
+          `;
+          textContent.textContent = text || "(empty)";
 
-        item.appendChild(textContent);
-        item.appendChild(copyButton);
-        list.appendChild(item);
-      });
+          item.appendChild(textContent);
+          item.appendChild(copyButton);
+          list.appendChild(item);
+        });
 
-    // Show "no results" message if needed
-    if (list.children.length === 0) {
-      const noResults = document.createElement("div");
-      noResults.style.cssText = `
-            color: #666;
-            text-align: center;
-            padding: 20px;
-            font-style: italic;
-        `;
-      noResults.textContent = "No matching items found";
-      list.appendChild(noResults);
+      // Show "no results" message if needed
+      if (list.children.length === 0) {
+        const noResults = document.createElement("div");
+        noResults.style.cssText = `
+              color: #666;
+              text-align: center;
+              padding: 20px;
+              font-style: italic;
+          `;
+        noResults.textContent = "No matching items found";
+        list.appendChild(noResults);
+      }
     }
-  }
 
-  // Initial render
-  renderList();
+    // Initial render
+    renderList();
 
-  // Add search handler
-  searchInput.addEventListener("input", (e) => {
-    renderList(e.target.value);
-  });
+    // Add search handler
+    searchInput.addEventListener("input", (e) => {
+      renderList(e.target.value);
+    });
 
-  content.appendChild(list);
+    content.appendChild(list);
 
-  // Add overlay
-  const overlay = document.createElement("div");
-  overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 9999;
-    `;
-  overlay.onclick = () => {
-    modal.remove();
-    overlay.remove();
-  };
+    // Add overlay
+    const overlay = document.createElement("div");
+    overlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 9999;
+      `;
+    overlay.onclick = () => {
+      modal.remove();
+      overlay.remove();
+    };
 
-  // Assemble and show modal
-  modal.appendChild(header);
-  modal.appendChild(searchContainer);
-  modal.appendChild(content);
-  document.body.appendChild(overlay);
-  document.body.appendChild(modal);
+    // Assemble and show modal
+    modal.appendChild(header);
+    modal.appendChild(searchContainer);
+    modal.appendChild(content);
+    document.body.appendChild(overlay);
+    document.body.appendChild(modal);
 
-  // Focus search input
-  searchInput.focus();
+    // Focus search input
+    searchInput.focus();
 }
