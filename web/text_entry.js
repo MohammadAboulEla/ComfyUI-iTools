@@ -4,6 +4,20 @@ import { Shapes } from "./utils.js";
 import { BaseSmartWidget, BaseSmartWidgetManager } from "./makadi/BaseSmartWidget.js";
 import { SmartButton } from "./makadi/SmartButton.js";
 
+// First, let's define the defaults as a constant at the top level
+const DEFAULT_HISTORY = [
+    "A playful kitten wearing a colorful bow tie, sitting on a fluffy cloud, with a bright rainbow in the background",
+    "A cheerful bunny in a pink dress holding a basket of flowers, standing in a sunny meadow with butterflies around",
+    "A small dragon with big eyes and tiny wings, blowing gentle puffs of fire while sitting on top of a cupcake",
+    "A happy, round penguin wearing a scarf and hat, sliding down a snowy hill with sparkles and snowflakes in the air",
+    "A friendly octopus with heart-shaped eyes, holding balloons in each tentacle, floating in an underwater scene with smiling fish",
+    "A chubby unicorn with pastel-colored mane and tail, flying through the sky with stars and sparkles surrounding it",
+    "A joyful panda riding a bicycle through a bamboo forest, with colorful flowers and birds flying alongside",
+    "A tiny robot with a big smile, watering a garden of glowing flowers under a starry sky",
+    "A group of cute woodland animals having a tea party, with tiny teacups and plates of sweets on a tree stump",
+    "A happy little fox wearing a superhero cape, flying above a vibrant cityscape at sunset",
+];
+
 app.registerExtension({
   name: "iTools.textEntry",
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
@@ -22,18 +36,18 @@ app.registerExtension({
     let inputWidget = node.widgets.filter((w) => w.type == "customtext");
     let inputsHistory = [];
 
-    inputsHistory = [
-      "A playful kitten wearing a colorful bow tie, sitting on a fluffy cloud, with a bright rainbow in the background",
-      "A cheerful bunny in a pink dress holding a basket of flowers, standing in a sunny meadow with butterflies around",
-      "A small dragon with big eyes and tiny wings, blowing gentle puffs of fire while sitting on top of a cupcake",
-      "A happy, round penguin wearing a scarf and hat, sliding down a snowy hill with sparkles and snowflakes in the air",
-      "A friendly octopus with heart-shaped eyes, holding balloons in each tentacle, floating in an underwater scene with smiling fish",
-      "A chubby unicorn with pastel-colored mane and tail, flying through the sky with stars and sparkles surrounding it",
-      "A joyful panda riding a bicycle through a bamboo forest, with colorful flowers and birds flying alongside",
-      "A tiny robot with a big smile, watering a garden of glowing flowers under a starry sky",
-      "A group of cute woodland animals having a tea party, with tiny teacups and plates of sweets on a tree stump",
-      "A happy little fox wearing a superhero cape, flying above a vibrant cityscape at sunset",
-    ];
+    // inputsHistory = [
+    //   "A playful kitten wearing a colorful bow tie, sitting on a fluffy cloud, with a bright rainbow in the background",
+    //   "A cheerful bunny in a pink dress holding a basket of flowers, standing in a sunny meadow with butterflies around",
+    //   "A small dragon with big eyes and tiny wings, blowing gentle puffs of fire while sitting on top of a cupcake",
+    //   "A happy, round penguin wearing a scarf and hat, sliding down a snowy hill with sparkles and snowflakes in the air",
+    //   "A friendly octopus with heart-shaped eyes, holding balloons in each tentacle, floating in an underwater scene with smiling fish",
+    //   "A chubby unicorn with pastel-colored mane and tail, flying through the sky with stars and sparkles surrounding it",
+    //   "A joyful panda riding a bicycle through a bamboo forest, with colorful flowers and birds flying alongside",
+    //   "A tiny robot with a big smile, watering a garden of glowing flowers under a starry sky",
+    //   "A group of cute woodland animals having a tea party, with tiny teacups and plates of sweets on a tree stump",
+    //   "A happy little fox wearing a superhero cape, flying above a vibrant cityscape at sunset",
+    // ];
 
     let mouse = {
       mouseInNode: false,
@@ -203,6 +217,27 @@ function exportHistoryToFile(history) {
     document.body.removeChild(element);
 }
 
+function importHistoryFromFile(callback) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.txt';
+    
+    input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = event => {
+            const content = event.target.result;
+            const items = content.split('\n\n').filter(item => item.trim());
+            callback(items);
+        };
+        
+        reader.readAsText(file);
+    };
+    
+    input.click();
+}
+
 function inputsHistoryShow(inputs) {
     // Create modal container
     const modal = document.createElement('div');
@@ -232,7 +267,7 @@ function inputsHistoryShow(inputs) {
         border-bottom: 1px solid #333;
     `;
 
-    // Create title container for title and export button
+    // Create title container for title and buttons
     const titleContainer = document.createElement('div');
     titleContainer.style.cssText = `
         display: flex;
@@ -248,10 +283,15 @@ function inputsHistoryShow(inputs) {
         font-size: 16px;
     `;
 
-    // Create export button
-    const exportButton = document.createElement('button');
-    exportButton.textContent = 'Export';
-    exportButton.style.cssText = `
+    // Create button container
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.cssText = `
+        display: flex;
+        gap: 8px;
+    `;
+
+    // Shared button styles
+    const buttonStyle = `
         background: #333;
         border: none;
         border-radius: 4px;
@@ -261,12 +301,69 @@ function inputsHistoryShow(inputs) {
         cursor: pointer;
         transition: background 0.2s;
     `;
+
+    // Create export button
+    const exportButton = document.createElement('button');
+    exportButton.textContent = 'Export';
+    exportButton.style.cssText = buttonStyle;
     exportButton.onmouseover = () => exportButton.style.background = '#444';
     exportButton.onmouseout = () => exportButton.style.background = '#333';
     exportButton.onclick = () => exportHistoryToFile(inputs);
 
+    // Create import button
+    const importButton = document.createElement('button');
+    importButton.textContent = 'Import';
+    importButton.style.cssText = buttonStyle;
+    importButton.onmouseover = () => importButton.style.background = '#444';
+    importButton.onmouseout = () => importButton.style.background = '#333';
+    importButton.onclick = () => {
+        importHistoryFromFile(newItems => {
+            // Add new items to the history
+            newItems.forEach(item => {
+                if (!inputs.includes(item)) {
+                    inputs.push(item);
+                }
+            });
+            // Re-render the list
+            renderList(searchInput.value);
+            // Show success message
+            app.extensionManager.toast.add({
+                severity: "success",
+                summary: "Success",
+                detail: "History imported successfully!",
+                life: 2000
+            });
+        });
+    };
+
+    // Create defaults button
+    const defaultsButton = document.createElement('button');
+    defaultsButton.textContent = 'Use Defaults';
+    defaultsButton.style.cssText = buttonStyle;
+    defaultsButton.onmouseover = () => defaultsButton.style.background = '#444';
+    defaultsButton.onmouseout = () => defaultsButton.style.background = '#333';
+    defaultsButton.onclick = () => {
+        // Replace current history with defaults
+        inputs.length = 0;
+        DEFAULT_HISTORY.forEach(item => inputs.push(item));
+        // Re-render the list
+        renderList(searchInput.value);
+        // Show success message
+        app.extensionManager.toast.add({
+            severity: "success",
+            summary: "Success",
+            detail: "Default history restored!",
+            life: 2000
+        });
+    };
+
+    // Add all buttons to container
+    buttonContainer.appendChild(exportButton);
+    buttonContainer.appendChild(importButton);
+    buttonContainer.appendChild(defaultsButton);
+
     titleContainer.appendChild(title);
-    titleContainer.appendChild(exportButton);
+    titleContainer.appendChild(buttonContainer);
 
     const closeButton = document.createElement('button');
     closeButton.textContent = '×';
