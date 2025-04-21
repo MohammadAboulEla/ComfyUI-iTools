@@ -472,21 +472,21 @@ function inputsHistoryShow(inputs, inputWidget) {
               border-radius: 4px;
               padding: 10px;
               position: relative;
-              min-height: 70px;
+              min-height: 99px;
           `;
 
         const copyButton = document.createElement("button");
         copyButton.textContent = "Copy";
         copyButton.style.cssText = `
               position: absolute;
-              top: 8px;
+              top: 36px;
               right: 8px;
               background: #333;
               border: none;
               border-radius: 4px;
               color: #fff;
-              padding: 4px 8px;
               min-width: 50px;
+              padding: 4px 8px;
               font-size: 12px;
               cursor: pointer;
               transition: background 0.2s;
@@ -518,14 +518,14 @@ function inputsHistoryShow(inputs, inputWidget) {
         insertButton.textContent = "Use";
         insertButton.style.cssText = `
               position: absolute;
-              top: 36px;
+              top: 8px;
               right: 8px;
               background: #333;
               border: none;
               border-radius: 4px;
               color: #fff;
-              min-width: 50px;
               padding: 4px 8px;
+              min-width: 50px;
               font-size: 12px;
               cursor: pointer;
               transition: background 0.2s;
@@ -554,6 +554,38 @@ function inputsHistoryShow(inputs, inputWidget) {
           }
         };
 
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "🗑️";
+        deleteButton.style.cssText = `
+              position: absolute;
+              top: 64px;
+              right: 8px;
+              background: #662222;
+              border: none;
+              border-radius: 4px;
+              color: #fff;
+              min-width: 50px;
+              padding: 4px 8px;
+              font-size: 12px;
+              cursor: pointer;
+              transition: background 0.2s;
+          `;
+        deleteButton.onmouseover = () => (deleteButton.style.background = "#882222");
+        deleteButton.onmouseout = () => (deleteButton.style.background = "#662222");
+        deleteButton.onclick = () => {
+          const index = inputs.indexOf(text);
+          if (index > -1) {
+            inputs.splice(index, 1);
+            renderList(searchInput.value);
+            app.extensionManager.toast.add({
+              severity: "success",
+              summary: "Success",
+              detail: "Entry deleted from history",
+              life: 2000,
+            });
+          }
+        };
+
         const textContent = document.createElement("div");
         textContent.style.cssText = `
               color: #fff;
@@ -564,8 +596,9 @@ function inputsHistoryShow(inputs, inputWidget) {
         textContent.textContent = text || "(empty)";
 
         item.appendChild(textContent);
-        item.appendChild(copyButton);
         item.appendChild(insertButton);
+        item.appendChild(copyButton);
+        item.appendChild(deleteButton);
         list.appendChild(item);
       });
 
