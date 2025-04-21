@@ -35,6 +35,10 @@ app.registerExtension({
     // init size
     node.size = [300, 150];
 
+    setTimeout(() => {
+      node.setDirtyCanvas(true,true)
+    }, 100);
+
     // vars
     let inputWidget = node.widgets.filter((w) => w.type == "customtext");
     let inputsHistory = [];
@@ -42,12 +46,11 @@ app.registerExtension({
     function createButtons(startVisible = true) {
       const bx = 10;
       const by = 10;
-      const r = 40;
-      const h = 16;
-      const offset = 40;
+      const h = 17;
       const buttonFont = "12px Arial";
+      let currentX = bx;
 
-      const a = new SmartButton(bx, by, r, h, node, "Clear");
+      const a = new SmartButton(bx, by, 20, h, node, "🧹");
       a.allowVisualHover = true;
       a.textYoffset = 1;
       a.isVisible = startVisible;
@@ -59,9 +62,9 @@ app.registerExtension({
       a.computeSize = () => [-16, -16];
       a.onClick = async () => {
         inputWidget[0].options.setValue("");
-      };
+      }; currentX += 20;
 
-      const b = new SmartButton(bx + offset, by, r, h, node, "Copy");
+      const b = new SmartButton(currentX, by, 40, h, node, "Copy");
       b.allowVisualHover = true;
       b.textYoffset = 1;
       b.isVisible = startVisible;
@@ -73,9 +76,9 @@ app.registerExtension({
       b.onClick = async () => {
         const t = inputWidget[0].options.getValue();
         await navigator.clipboard.writeText(t);
-      };
+      }; currentX += 40;
 
-      const c = new SmartButton(bx + 2 * offset, by, r, h, node, "Paste");
+      const c = new SmartButton(currentX, by, 40, h, node, "Paste");
       c.allowVisualHover = true;
       c.textYoffset = 1;
       c.isVisible = startVisible;
@@ -88,9 +91,9 @@ app.registerExtension({
         // get value from clipboard
         const t = await navigator.clipboard.readText();
         inputWidget[0].options.setValue(t);
-      };
+      }; currentX += 40;
 
-      const his = new SmartButton(bx + 3 * offset, by, r * 2.6, h, node, "Execution History");
+      const his = new SmartButton(currentX, by, 104, h, node, "Execution History");
       his.allowVisualHover = true;
       his.textYoffset = 1;
       his.isVisible = startVisible;
@@ -101,9 +104,9 @@ app.registerExtension({
       his.font = buttonFont;
       his.onClick = () => {
         inputsHistoryShow(inputsHistory);
-      };
+      }; currentX += 104;
 
-      // const u = new SmartButton(bx + 3 * offset, by, r - 20, h, node, "↺");
+      // const u = new SmartButton(currentX, by, r - 20, h, node, "↺");
       // u.allowVisualHover = true;
       // u.textYoffset = 1;
       // u.isVisible = startVisible;
@@ -114,7 +117,7 @@ app.registerExtension({
       // u.font = buttonFont;
       // u.onClick = () => {};
 
-      // const n = new SmartButton(bx + 4 * offset - 20, by, r - 20, h, node, "↻");
+      // const n = new SmartButton(currentX, by, r - 20, h, node, "↻");
       // n.allowVisualHover = true;
       // n.textYoffset = 1;
       // n.isVisible = startVisible;
@@ -154,6 +157,18 @@ app.registerExtension({
 });
 
 function exportHistoryToFile(history) {
+  // if list is empty return
+  if (!history || history.length === 0) {
+    // Show warning message
+    app.extensionManager.toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "No history to export!",
+      life: 2000,
+    });
+    return;
+  }
+
   // Create text content
   const content = history.join("\n\n");
 
@@ -300,7 +315,7 @@ function inputsHistoryShow(inputs) {
 
   // Create defaults button
   const defaultsButton = document.createElement("button");
-  defaultsButton.textContent = "Use Defaults";
+  defaultsButton.textContent = "Load Defaults";
   defaultsButton.style.cssText = buttonStyle;
   defaultsButton.onmouseover = () => (defaultsButton.style.background = "#444");
   defaultsButton.onmouseout = () => (defaultsButton.style.background = "#333");
@@ -326,6 +341,9 @@ function inputsHistoryShow(inputs) {
   clearButton.onmouseover = () => (clearButton.style.background = "#882222");
   clearButton.onmouseout = () => (clearButton.style.background = "#662222");
   clearButton.onclick = async () => {
+    // if list is empty return
+    if (!inputs || inputs.length === 0) return;
+
     const confirmed = await app.extensionManager.dialog.confirm({
       title: "Clear History",
       message: "Are you sure you want to clear all history entries?",
@@ -348,7 +366,7 @@ function inputsHistoryShow(inputs) {
   // Add all buttons to container
   buttonContainer.appendChild(exportButton);
   buttonContainer.appendChild(importButton);
-  // buttonContainer.appendChild(defaultsButton);
+  buttonContainer.appendChild(defaultsButton);
   buttonContainer.appendChild(clearButton);
 
   titleContainer.appendChild(title);
