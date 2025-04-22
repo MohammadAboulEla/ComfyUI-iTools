@@ -93,7 +93,7 @@ If your prompt is within any of these nodes, you will be able to retrieve it. Th
 
 Helps you quickly populate your {prompt} using a template name stored in a yaml file. I chose yaml over json because it will be easier for the user to read, edit it or to add his own templates, it will load all yaml files in the styles folder, so you may add your unlimited files there and easily add your own templates.
 
-![iTools Prompt Styler](examples/prompt_styler.jpg)
+![iTools Prompt Styler](examples/Screenshot21.jpg)
 ---
 ### **iTools Prompt Styler Extra 🖌️🖌️:**
 
@@ -114,8 +114,6 @@ will try to load a prompt from a txt file, you need to provide a full path to a 
 
 will append the given prompt as a new line to the given file, provide a full path to a .txt file or try to use the default prompt.txt one.
 
-[![Watch the video](https://github.com/user-attachments/assets/22af7830-066f-498e-a90f-0513b56fa343)](https://github.com/user-attachments/assets/22af7830-066f-498e-a90f-0513b56fa343)
-
 ---
 ### **iTools Add Text Overlay:**
 
@@ -130,7 +128,7 @@ will add an overlay bottom bar to show a given text, you may change the backgrou
 **Edit:** iTools Add Text Overlay has been updated, and now you can add the text over or under the image
 
 `Example:` Add text if overlay off: 
-![iTools Add Text Overlay](examples/overlay_preview.jpg)
+![iTools Add Text Overlay](examples/Screenshot22.jpg)
 
 ---
 ### **iTools Load Images:**
