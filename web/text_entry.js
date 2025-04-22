@@ -36,7 +36,7 @@ app.registerExtension({
     node.size = [300, 150];
 
     setTimeout(() => {
-      node.setDirtyCanvas(true,true)
+      node.setDirtyCanvas(true, true);
     }, 100);
 
     // vars
@@ -45,8 +45,8 @@ app.registerExtension({
 
     function createButtons(startVisible = true) {
       const bx = 10;
-      const by = 10;
-      const h = 17;
+      const by = 9;
+      const h = 19;
       const buttonFont = "12px Arial";
       let currentX = bx;
 
@@ -62,7 +62,8 @@ app.registerExtension({
       a.computeSize = () => [-16, -16];
       a.onClick = async () => {
         inputWidget[0].options.setValue("");
-      }; currentX += 20;
+      };
+      currentX += 20;
 
       const b = new SmartButton(currentX, by, 40, h, node, "Copy");
       b.allowVisualHover = true;
@@ -76,7 +77,8 @@ app.registerExtension({
       b.onClick = async () => {
         const t = inputWidget[0].options.getValue();
         await navigator.clipboard.writeText(t);
-      }; currentX += 40;
+      };
+      currentX += 40;
 
       const c = new SmartButton(currentX, by, 40, h, node, "Paste");
       c.allowVisualHover = true;
@@ -91,7 +93,8 @@ app.registerExtension({
         // get value from clipboard
         const t = await navigator.clipboard.readText();
         inputWidget[0].options.setValue(t);
-      }; currentX += 40;
+      };
+      currentX += 40;
 
       const his = new SmartButton(currentX, by, 104, h, node, "Execution History");
       his.allowVisualHover = true;
@@ -104,7 +107,8 @@ app.registerExtension({
       his.font = buttonFont;
       his.onClick = () => {
         inputsHistoryShow(inputsHistory, inputWidget);
-      }; currentX += 104;
+      };
+      currentX += 104;
 
       // const u = new SmartButton(currentX, by, r - 20, h, node, "↺");
       // u.allowVisualHover = true;
@@ -164,7 +168,7 @@ function exportHistoryToFile(history) {
       severity: "error",
       summary: "Error",
       detail: "No history to export!",
-      life: 2000,
+      life: 1000,
     });
     return;
   }
@@ -239,7 +243,7 @@ function inputsHistoryShow(inputs, inputWidget) {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         padding-bottom: 10px;
         border-bottom: 1px solid #333;
     `;
@@ -295,10 +299,9 @@ function inputsHistoryShow(inputs, inputWidget) {
   importButton.onmouseout = () => (importButton.style.background = "#333");
   importButton.onclick = () => {
     importHistoryFromFile((newItems) => {
-      
       // Clear old items first
       inputs.length = 0;
-      
+
       // Add new items to the history
       newItems.forEach((item) => {
         if (!inputs.includes(item)) {
@@ -312,7 +315,7 @@ function inputsHistoryShow(inputs, inputWidget) {
       //   severity: "success",
       //   summary: "Success",
       //   detail: "History imported successfully!",
-      //   life: 2000,
+      //   life: 1000,
       // });
     });
   };
@@ -323,18 +326,39 @@ function inputsHistoryShow(inputs, inputWidget) {
   defaultsButton.style.cssText = buttonStyle;
   defaultsButton.onmouseover = () => (defaultsButton.style.background = "#444");
   defaultsButton.onmouseout = () => (defaultsButton.style.background = "#333");
-  defaultsButton.onclick = () => {
-    // Replace current history with defaults
-    inputs.length = 0;
-    DEFAULT_HISTORY.forEach((item) => inputs.push(item));
-    // Re-render the list
-    renderList(searchInput.value);
+  defaultsButton.onclick = async () => {
+    // if list is empty
+    if (!inputs || inputs.length === 0) {
+      // Replace current history with defaults
+      inputs.length = 0;
+      DEFAULT_HISTORY.forEach((item) => inputs.push(item));
+      // Re-render the list
+      renderList(searchInput.value);
+      return;
+    }
+
+    const confirmed = await app.extensionManager.dialog.confirm({
+      title: "Load Defaults",
+      message: "This will clear all current entries?",
+      okText: "Ok",
+      cancelText: "Cancel",
+    });
+
+    if (confirmed) {
+      // Replace current history with defaults
+      inputs.length = 0;
+      DEFAULT_HISTORY.forEach((item) => inputs.push(item));
+      // Re-render the list
+      renderList(searchInput.value);
+      return;
+    }
+
     // Show success message
     // app.extensionManager.toast.add({
     //   severity: "success",
     //   summary: "Success",
     //   detail: "Default history restored!",
-    //   life: 2000,
+    //   life: 1000,
     // });
   };
 
@@ -362,7 +386,7 @@ function inputsHistoryShow(inputs, inputWidget) {
       //   severity: "success",
       //   summary: "Success",
       //   detail: "History cleared successfully!",
-      //   life: 2000,
+      //   life: 1000,
       // });
     }
   };
@@ -502,7 +526,7 @@ function inputsHistoryShow(inputs, inputWidget) {
               severity: "success",
               summary: "Success",
               detail: "Text copied to clipboard!",
-              life: 2000,
+              life: 1000,
             });
           } catch (error) {
             app.extensionManager.toast.add({
@@ -542,7 +566,7 @@ function inputsHistoryShow(inputs, inputWidget) {
               severity: "success",
               summary: "Success",
               detail: "Text inserted from history",
-              life: 2000,
+              life: 1000,
             });
           } catch (error) {
             app.extensionManager.toast.add({
@@ -581,7 +605,7 @@ function inputsHistoryShow(inputs, inputWidget) {
               severity: "success",
               summary: "Success",
               detail: "Entry deleted from history",
-              life: 2000,
+              life: 1000,
             });
           }
         };
@@ -611,7 +635,10 @@ function inputsHistoryShow(inputs, inputWidget) {
               padding: 20px;
               font-style: italic;
           `;
-      noResults.textContent = "No matching items found";
+      // Different message based on whether we're filtering or just have no history
+      noResults.textContent = filterText 
+        ? "No matching items found" 
+        : "No history items";
       list.appendChild(noResults);
     }
   }
