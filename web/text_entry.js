@@ -70,7 +70,7 @@ app.registerExtension({
       };
       currentX += 20;
 
-      const b = new SmartButton(currentX, by, 40, h, node, "Copy");
+      const b = new SmartButton(currentX, by, 38, h, node, "Copy");
       b.allowVisualHover = true;
       b.textYoffset = 1;
       b.isVisible = startVisible;
@@ -86,7 +86,7 @@ app.registerExtension({
           await navigator.clipboard.writeText(t);
         }
       };
-      currentX += 40;
+      currentX += 38;
 
       const c = new SmartButton(currentX, by, 40, h, node, "Paste");
       c.allowVisualHover = true;
@@ -104,7 +104,27 @@ app.registerExtension({
       };
       currentX += 40;
 
-      const his = new SmartButton(currentX, by, 104, h, node, "Execution History");
+      const add = new SmartButton(currentX, by, 44, h, node, "Add to");
+      add.allowVisualHover = true;
+      add.textYoffset = 1;
+      add.isVisible = startVisible;
+      add.shape = Shapes.SQUARE;
+      add.outlineWidth = 1;
+      add.outlineColor = "#656565";
+      add.color = "#222222";
+      add.font = buttonFont;
+      add.onClick = () => {
+        const t = inputWidget[0].options.getValue();
+        if (t && t.trim() !== "") {
+          if (!inputsHistory.includes(t)) {
+            inputsHistory.push(t);
+            if (allow_debug) console.log("Text added to history");
+          }
+        }
+      };
+      currentX += 44;
+
+      const his = new SmartButton(currentX, by, 70, h, node, "Run History");
       his.allowVisualHover = true;
       his.textYoffset = 1;
       his.isVisible = startVisible;
@@ -116,7 +136,7 @@ app.registerExtension({
       his.onClick = () => {
         inputsHistoryShow(inputsHistory, inputWidget);
       };
-      currentX += 104;
+      currentX += 70;
 
       // const u = new SmartButton(currentX, by, r - 20, h, node, "↺");
       // u.allowVisualHover = true;
@@ -269,7 +289,7 @@ function inputsHistoryShow(inputs, inputWidget) {
     `;
 
   const title = document.createElement("h3");
-  title.textContent = "Execution History";
+  title.textContent = "Run History";
   title.style.cssText = `
         margin: 0;
         padding-bottom: 4px;
@@ -349,7 +369,7 @@ function inputsHistoryShow(inputs, inputWidget) {
     if (needsConfirmation) {
       shouldProceed = await app.extensionManager.dialog.confirm({
         title: "Load History",
-        message: "This will overwrite the current season with the saved history.\nDo you want to continue?",
+        message: "This will replace current season items with those from your saved history.\nDo you want to continue?",
         okText: "Load",
         cancelText: "Cancel",
       });
@@ -407,13 +427,22 @@ function inputsHistoryShow(inputs, inputWidget) {
       return;
     };
     try {
-      localStorage.setItem("iTools_userHistory", JSON.stringify(historyData));
-      app.extensionManager.toast.add({
-        severity: "success",
-        summary: "Success",
-        detail: "History saved to storage",
-        life: 1000,
+      const confirmed = await app.extensionManager.dialog.confirm({
+        title: "Save History",
+        message: "This will overwrite your saved history with current season items.\nDo you want to continue?",
+        okText: "Save",
+        cancelText: "Cancel",
       });
+
+      if (confirmed) {
+        localStorage.setItem("iTools_userHistory", JSON.stringify(historyData));
+        app.extensionManager.toast.add({
+          severity: "success",
+          summary: "Success",
+          detail: "History saved to storage",
+          life: 1000,
+        });
+      }
     } catch (error) {
       app.extensionManager.toast.add({
         severity: "error",
