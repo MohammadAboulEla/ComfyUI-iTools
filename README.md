@@ -1,5 +1,7 @@
 ## iTools
 
+<img src="examples/iTools_a.webp" align="right" width="300" style="margin-left: 20px"/>
+
 Welcome to iTools - a comprehensive suite of productivity-enhancing nodes for ComfyUI! This collection transforms your workflow with powerful features including:
 
 - **Smart Prompt Management**: Advanced tools for reading, saving, and organizing your prompts
@@ -11,7 +13,6 @@ Welcome to iTools - a comprehensive suite of productivity-enhancing nodes for Co
 
 Whether you're a casual user or a power user, iTools provides the quality-of-life improvements you need to make your ComfyUI experience more efficient and enjoyable.
 
-![iTools Welcome](examples/iTools_a.webp)
 ## Nodes:
 ### **iTools Prompt Record 🪶:**
 
