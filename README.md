@@ -1,9 +1,40 @@
 ## iTools
-The iTools are some quality of life nodes, like read a possible prompt used to create an image, save a prompt to file as a new line, read prompts from a multiline file. and the newly amazing prompt styler node that will help you quickly populate your {prompt} using a template name stored in an easily editable yaml file.
+
+Welcome to iTools - a comprehensive suite of productivity-enhancing nodes for ComfyUI! This collection transforms your workflow with powerful features including:
+
+- **Smart Prompt Management**: Advanced tools for reading, saving, and organizing your prompts
+- **Intelligent Image Analysis**: Extract prompts from generated images and analyze their metadata
+- **Visual Comparison Tools**: Compare and analyze your generations with precision
+- **Template System**: Streamline your workflow with the Prompt Styler, featuring customizable YAML templates
+- **Real-time History Tracking**: Never lose your creative progress with built-in prompt and image history
+- **Enhanced Preview Features**: Better visualization and comparison of your generations
+
+Whether you're a casual user or a power user, iTools provides the quality-of-life improvements you need to make your ComfyUI experience more efficient and enjoyable.
 
 ![iTools Welcome](examples/iTools_a.webp)
 ## Nodes:
-### **iTools Paint Node**  
+### **iTools Prompt Record 🪶:**
+
+Tracks and records your prompts during workflow execution. Features a Timeline system that saves your prompt history between sessions, allowing you to quickly access and reuse previously successful prompts. Includes favorites management and prompt organization tools.
+
+[![Watch the video](https://github.com/user-attachments/assets/99c55c91-f71d-4f5c-9067-cd5966cc9a75)](https://github.com/user-attachments/assets/99c55c91-f71d-4f5c-9067-cd5966cc9a75)
+
+---
+### **iTools Image Preview 🍿:**
+
+Enhanced image preview node with built-in history tracking. Allows you to cycle through previously generated images and compare them side by side. Features quick access buttons for history navigation and image comparison.
+
+[![Watch the video](https://github.com/user-attachments/assets/07acb50c-afca-4668-9073-75ea2c11895d)](https://github.com/user-attachments/assets/07acb50c-afca-4668-9073-75ea2c11895d)
+
+---
+### **iTools Image Compare 🔍:**
+
+Advanced image comparison node that helps you analyze differences between images. Supports side-by-side comparison, overlay mode, and difference highlighting to easily spot changes between generations.
+
+[![Watch the video](https://github.com/user-attachments/assets/f979194e-9ae1-4805-bb2f-67c22a216499)](https://github.com/user-attachments/assets/f979194e-9ae1-4805-bb2f-67c22a216499)
+
+---
+### **iTools Paint Node:**  
 
 The iTools Paint node is currently in beta and functions as a standalone project. It may be the most complex node in ComfyUI, and future updates could break its functionality. However, I will strive to keep it working. All custom widget code was built from scratch specifically for ComfyUI and this node. It supports painting, compositing, remove background, text editing, and pasting images from the clipboard, making it the fastest mini Photoshop for ComfyUI.  
 
@@ -164,8 +195,17 @@ Generates chessboard-like patterns, either in black and white or with random col
 `Example2:`
 ![iTools Checkerboard](examples/Screenshot19.jpg)
 
-_Wait for more..._
 ---
+### **iTools Regex Editor:**
+
+A powerful regex pattern and text manipulation node. Helps you create, or quickly apply regular expressions to your prompts or any text input in real-time.
+
+![iTools Regex Editor](examples/Screenshot20.jpg)
+
+---
+
+_Wait for more..._
+
 Support me on PayPal
 
 [![Donate](https://img.shields.io/badge/Support-PayPal-blue.svg)](https://paypal.me/mohammadmoustafa1)
