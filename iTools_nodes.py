@@ -288,9 +288,10 @@ class IToolsAddOverlay:
 class IToolsLoadImages:
     @classmethod
     def INPUT_TYPES(s):
+        default_dir = folder_paths.output_directory
         return {
             "required": {
-                "images_directory": ("STRING", {"multiline": False}),
+                "images_directory": ("STRING", {"default": default_dir,"multiline": False}),
                 "start_index": ("INT", {"default": 0, "min": 0, "max": 200}),
                 "load_limit": ("INT", {"default": 4, "min": 2, "max": 200}),
             }

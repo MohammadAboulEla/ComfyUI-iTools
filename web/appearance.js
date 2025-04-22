@@ -95,7 +95,7 @@ app.registerExtension({
         node.bgcolor = LGraphCanvas.node_colors.green.bgcolor;
         break;
       case "iToolsTextReplacer":
-        node.setSize([200, 58]);
+        node.setSize([200, 80]);
         if (!app.ui.settings.getSettingValue("iTools.Nodes.Auto Color")) break;
         node.color = LGraphCanvas.node_colors.green.color;
         node.bgcolor = LGraphCanvas.node_colors.green.bgcolor;
