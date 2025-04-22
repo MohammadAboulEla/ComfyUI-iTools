@@ -1,25 +1,28 @@
 ## iTools
 
-<table>
-  <tr>
-    <td style="border: none; vertical-align: top; padding-right: 20px;">
-      <p><strong>Welcome to iTools</strong> – a comprehensive suite of productivity-enhancing nodes for ComfyUI! This collection transforms your workflow with powerful features including:</p>
-      <ul>
-        <li><strong>Smart Prompt Management</strong>: Advanced tools for reading, saving, and organizing your prompts</li>
-        <li><strong>Intelligent Image Analysis</strong>: Extract prompts from generated images and analyze their metadata</li>
-        <li><strong>Visual Comparison Tools</strong>: Compare and analyze your generations with precision</li>
-        <li><strong>Template System</strong>: Streamline your workflow with the Prompt Styler, featuring customizable YAML templates</li>
-        <li><strong>Real-time History Tracking</strong>: Never lose your creative progress with built-in prompt and image history</li>
-        <li><strong>Enhanced Preview Features</strong>: Better visualization and comparison of your generations</li>
-      </ul>
-      <p>Whether you're a casual user or a power user, iTools provides the quality-of-life improvements you need to make your ComfyUI experience more efficient and enjoyable.</p>
-    </td>
-    <td style="border: none; vertical-align: top;">
-      <img src="examples/iTools_a.webp" width="300" alt="iTools Preview" />
-    </td>
-  </tr>
-</table>
+<table style="border:none;border-collapse:collapse;">
+<tr style="border:none;">
+<td style="border:none;">
 
+Welcome to **iTools** – a comprehensive suite of productivity-enhancing nodes for ComfyUI! This collection transforms your workflow with powerful features including:
+
+- **Smart Prompt Management**: Advanced tools for reading, saving, and organizing your prompts  
+- **Intelligent Image Analysis**: Extract prompts from generated images and analyze their metadata  
+- **Visual Comparison Tools**: Compare and analyze your generations with precision  
+- **Template System**: Streamline your workflow with the Prompt Styler, featuring customizable YAML templates  
+- **Real-time History Tracking**: Never lose your creative progress with built-in prompt and image history  
+- **Enhanced Preview Features**: Better visualization and comparison of your generations  
+
+Whether you're a casual user or a power user, iTools brings quality-of-life improvements that make your ComfyUI experience smoother and more efficient.
+
+</td>
+<td style="border:none;" align="right" width="300">
+
+<img src="examples/iTools_a.webp" width="300"/>
+
+</td>
+</tr>
+</table>
 
 ## Nodes:
 ### **iTools Prompt Record 🪶:**
