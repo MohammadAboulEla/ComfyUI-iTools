@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-itools"
-description = "The iTools are some quality of life nodes, like read a possible prompt used to create an image, save a prompt to file as a new line, read prompts from a multiline file."
-version = "0.5.9"
+description = "Whether you're a casual user or a power user, iTools provides the quality-of-life improvements you need to make your ComfyUI experience more efficient and enjoyable."
+version = "0.6.0"
 license = {file = "LICENSE"}
 
 [project.urls]
