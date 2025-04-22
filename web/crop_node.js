@@ -920,6 +920,10 @@ app.registerExtension({
       return null;
     };
 
+    node.onRemoved = () => {
+      node.widgets = []
+    };
+
     // Store the original onMouseDown handler
     const originalOnMouseDown = app.canvas.onMouseDown;
     app.canvas.onMouseDown = (e) => {
