@@ -59,7 +59,7 @@ app.registerExtension({
       a.outlineColor = "#656565";
       a.color = "#222222";
       a.font = buttonFont;
-      a.computeSize = () => [-16, -16];
+      a.computeSize = () => [-20, -20]; // number of buttons * 4
       a.onClick = async () => {
         // Copy content of inputWidget
         // const t = inputWidget[0].options.getValue();
