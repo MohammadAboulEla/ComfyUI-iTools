@@ -1,17 +1,28 @@
 ## iTools
 
-<img src="examples/iTools_a.webp" align="right" width="300" style="margin-left: 20px"/>
+<table>
+<tr>
+<td>
 
-Welcome to iTools - a comprehensive suite of productivity-enhancing nodes for ComfyUI! This collection transforms your workflow with powerful features including:
+Welcome to **iTools** – a comprehensive suite of productivity-enhancing nodes for ComfyUI! This collection transforms your workflow with powerful features including:
 
-- **Smart Prompt Management**: Advanced tools for reading, saving, and organizing your prompts
-- **Intelligent Image Analysis**: Extract prompts from generated images and analyze their metadata
-- **Visual Comparison Tools**: Compare and analyze your generations with precision
-- **Template System**: Streamline your workflow with the Prompt Styler, featuring customizable YAML templates
-- **Real-time History Tracking**: Never lose your creative progress with built-in prompt and image history
-- **Enhanced Preview Features**: Better visualization and comparison of your generations
+- **Smart Prompt Management**: Advanced tools for reading, saving, and organizing your prompts.  
+- **Intelligent Image Analysis**: Extract prompts from generated images and analyze their metadata.  
+- **Visual Comparison Tools**: Compare and analyze your generations with precision.  
+- **Template System**: Streamline your workflow with the Prompt Styler, featuring customizable YAML templates.  
+- **Real-time History Tracking**: Never lose your creative progress with built-in prompt and image history.  
+- **Enhanced Preview Features**: Better visualization and comparison of your generations.  
 
-Whether you're a casual user or a power user, iTools provides the quality-of-life improvements you need to make your ComfyUI experience more efficient and enjoyable.
+Whether you're a casual user or a power user, iTools brings quality-of-life improvements that make your ComfyUI experience smoother and more efficient.
+
+</td>
+<td align="right" width="300">
+
+<img src="examples/iTools_a.webp" width="300"/>
+
+</td>
+</tr>
+</table>
 
 ## Nodes:
 ### **iTools Prompt Record 🪶:**
