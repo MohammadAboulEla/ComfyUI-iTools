@@ -50,7 +50,7 @@ app.registerExtension({
       const buttonFont = "12px Arial";
       let currentX = bx;
 
-      const a = new SmartButton(bx, by, 20, h, node, "🧹");
+      const a = new SmartButton(bx, by, 20, h, node, "✖" || "✂" || "✘" || "🧹");
       a.allowVisualHover = true;
       a.textYoffset = 1;
       a.isVisible = startVisible;
@@ -61,6 +61,11 @@ app.registerExtension({
       a.font = buttonFont;
       a.computeSize = () => [-16, -16];
       a.onClick = async () => {
+        // Copy content of inputWidget
+        // const t = inputWidget[0].options.getValue();
+        // const t2 = await navigator.clipboard.writeText(t);
+        
+        // Clear inputWidget
         inputWidget[0].options.setValue("");
       };
       currentX += 20;
@@ -76,7 +81,10 @@ app.registerExtension({
       b.font = buttonFont;
       b.onClick = async () => {
         const t = inputWidget[0].options.getValue();
-        await navigator.clipboard.writeText(t);
+        // copy if t is not empty
+        if (t && t.trim() !== "") {
+          await navigator.clipboard.writeText(t);
+        }
       };
       currentX += 40;
 
@@ -140,7 +148,6 @@ app.registerExtension({
     // Override the queuePrompt method
     app.queuePrompt = function () {
       const t = inputWidget[0].options.getValue();
-      if (allow_debug) console.log("t", t);
       // push of not empty or already exist
       if (t && t.trim() !== "" && !inputsHistory.includes(t)) {
         inputsHistory.push(t);
@@ -260,6 +267,7 @@ function inputsHistoryShow(inputs, inputWidget) {
   title.textContent = "Execution History";
   title.style.cssText = `
         margin: 0;
+        padding-bottom: 4px;
         color: #fff;
         font-size: 16px;
     `;
@@ -401,7 +409,7 @@ function inputsHistoryShow(inputs, inputWidget) {
   titleContainer.appendChild(buttonContainer);
 
   const closeButton = document.createElement("button");
-  closeButton.textContent = "×";
+  closeButton.textContent = "✖" || "✖" || "×";
   closeButton.style.cssText = `
         background: none;
         border: none;

@@ -1079,5 +1079,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsRegexNode": "iTools Regex Editor",
     "iToolsPreviewImage": "iTools Image Preview 🍿",
     "iToolsCompareImage": "iTools Image Compare 🔍",
-    "iToolsTextEntry": "iTools Text Entry ✍🏻",
+    "iToolsTextEntry": "iTools Text Entry 🪶",
 }
