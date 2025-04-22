@@ -484,6 +484,13 @@ export function getIndexByDimensions(width, height) {
   return -1; // Return -1 if no matching dimensions are found
 }
 
+// get connected node via input
+// const inputIndex = 0
+// const inputLink = node.inputs[inputIndex].link;
+// const linkInfo = graph.links[inputLink];
+// const sourceNode = graph.getNodeById(linkInfo.origin_id);
+// const sourceSlot = linkInfo.origin_slot;
+
 // const processMouseDown = LGraphCanvas.prototype.processMouseDown;
 // LGraphCanvas.prototype.processMouseDown = function(e) {
 //   if (this.allowDebug) console.log('MouseDown',e);

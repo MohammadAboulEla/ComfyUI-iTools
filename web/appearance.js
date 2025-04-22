@@ -129,7 +129,7 @@ app.registerExtension({
         if (!app.ui.settings.getSettingValue("iTools.Nodes.Auto Color")) break;
         node.color = LGraphCanvas.node_colors.pale_blue.color;
         break;
-      case "iToolsTextEntry":
+      case "iToolsPromptRecord":
         if (!app.ui.settings.getSettingValue("iTools.Nodes.Auto Color")) break;
         node.color = LGraphCanvas.node_colors.green.color;
         // node.bgcolor = LGraphCanvas.node_colors.green.bgcolor;

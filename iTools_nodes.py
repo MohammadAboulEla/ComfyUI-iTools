@@ -291,7 +291,10 @@ class IToolsLoadImages:
         default_dir = folder_paths.output_directory
         return {
             "required": {
-                "images_directory": ("STRING", {"default": default_dir,"multiline": False}),
+                "images_directory": (
+                    "STRING",
+                    {"default": default_dir, "multiline": False},
+                ),
                 "start_index": ("INT", {"default": 0, "min": 0, "max": 200}),
                 "load_limit": ("INT", {"default": 4, "min": 2, "max": 200}),
             }
@@ -551,15 +554,32 @@ class IToolsRegexNode:
     def INPUT_TYPES(s):
         patterns = [
             "custom",
-            "contains_hello", "cat_or_dog", "starts_with_abc", "ends_with_xyz", 
-            "any_character", "digit", "non_digit", "whitespace", "non_whitespace",
-            "word_character", "non_word_character",
-            "all_caps", "all_lower",
-            "integer", "floating_point", "no_numbers",
-            "email", "phone_number",
-            "double_quoted", "double_quoted_plus", "single_quoted", "single_quoted_plus",
-            "in_parentheses", "in_parentheses_plus",
-            "angle_brackets", "angle_brackets_plus",
+            "contains_hello",
+            "cat_or_dog",
+            "starts_with_abc",
+            "ends_with_xyz",
+            "any_character",
+            "digit",
+            "non_digit",
+            "whitespace",
+            "non_whitespace",
+            "word_character",
+            "non_word_character",
+            "all_caps",
+            "all_lower",
+            "integer",
+            "floating_point",
+            "no_numbers",
+            "email",
+            "phone_number",
+            "double_quoted",
+            "double_quoted_plus",
+            "single_quoted",
+            "single_quoted_plus",
+            "in_parentheses",
+            "in_parentheses_plus",
+            "angle_brackets",
+            "angle_brackets_plus",
         ]
 
         return {
@@ -978,18 +998,22 @@ class IToolsPreviewImage(SaveImage):
     def __init__(self):
         self.output_dir = folder_paths.get_temp_directory()
         self.type = "temp"
-        self.prefix_append = "_temp_" + ''.join(random.choice("abcdefghijklmnopqrstupvxyz") for x in range(5))
+        self.prefix_append = "_temp_" + "".join(
+            random.choice("abcdefghijklmnopqrstupvxyz") for x in range(5)
+        )
         self.compress_level = 1
-    
+
     CATEGORY = "iTools"
     DESCRIPTION = "The easiest way to preview, compare current and previous images, and track your prompt history."
-    
+
     @classmethod
     def INPUT_TYPES(s):
-        return {"required":
-                    {"images": ("IMAGE", ), },
-                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
-                }
+        return {
+            "required": {
+                "images": ("IMAGE",),
+            },
+            "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+        }
 
 
 class IToolsCompareImage(PreviewImage):
@@ -998,32 +1022,46 @@ class IToolsCompareImage(PreviewImage):
     DESCRIPTION = "Compare A and B images"
     FUNCTION = "compare_images"
     OUTPUT_NODE = True
-    
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
-        "required": {
-            "A": ("IMAGE",),
-            "B": ("IMAGE",),
-        },
-        "hidden": {
-            "prompt": "PROMPT",
-            "extra_pnginfo": "EXTRA_PNGINFO"
-        },
+            "required": {
+                "A": ("IMAGE",),
+                "B": ("IMAGE",),
+            },
+            "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
         }
-    
-    def compare_images(self,A,B,filename_prefix=None,prompt=None,extra_pnginfo=None):
-        _a = self.save_images(A,)['ui']['images'] 
-        _b = self.save_images(B,)['ui']['images']
-        
-        return {'ui': {'images': _a + _b }} # {'ui': {'images': [{'filename': 'ComfyUI_temp_00001_.png', 'subfolder': '', 'type': 'temp'}]}}
 
-class IToolsTextEntry:
+    def compare_images(
+        self, A, B, filename_prefix=None, prompt=None, extra_pnginfo=None
+    ):
+        _a = self.save_images(
+            A,
+        )[
+            "ui"
+        ]["images"]
+        _b = self.save_images(
+            B,
+        )[
+            "ui"
+        ]["images"]
 
+        return {
+            "ui": {"images": _a + _b}
+        }  # {'ui': {'images': [{'filename': 'ComfyUI_temp_00001_.png', 'subfolder': '', 'type': 'temp'}]}}
+
+
+class IToolsPromptRecord:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": {
-            "text": ("STRING", {"default": "", "multiline": True, "placeholder": "text"}),}
+        return {
+            "required": {
+                "text": (
+                    "STRING",
+                    {"default": "", "multiline": True, "placeholder": "text"},
+                ),
+            }
         }
 
     RETURN_TYPES = ("STRING",)
@@ -1031,11 +1069,16 @@ class IToolsTextEntry:
     FUNCTION = "text_entry"
     OUTPUT_NODE = True
     CATEGORY = "iTools"
+    DESCRIPTION = (
+        "Allows you to manage prompts."
+        "Includes a history system that saves your prompts between sessions"
+        "and allows quick access to previously used prompts through the Timeline button."
+    )
 
-    @staticmethod
-    def text_entry(text):
-        return text,
-        
+    def text_entry(self, text):
+        return {"ui": {"text": text}, "result": (text,)}
+
+
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -1057,7 +1100,7 @@ NODE_CLASS_MAPPINGS = {
     "iToolsRegexNode": IToolsRegexNode,
     "iToolsPreviewImage": IToolsPreviewImage,
     "iToolsCompareImage": IToolsCompareImage,
-    "iToolsTextEntry": IToolsTextEntry,
+    "iToolsPromptRecord": IToolsPromptRecord,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -1080,5 +1123,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsRegexNode": "iTools Regex Editor",
     "iToolsPreviewImage": "iTools Image Preview 🍿",
     "iToolsCompareImage": "iTools Image Compare 🔍",
-    "iToolsTextEntry": "iTools Text Entry 🪶",
+    "iToolsPromptRecord": "iTools Prompt Record 🪶",
 }
