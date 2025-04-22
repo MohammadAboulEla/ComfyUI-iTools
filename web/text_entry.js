@@ -34,7 +34,7 @@ app.registerExtension({
 
     // init size
     node.size = [300, 150];
-
+    
     setTimeout(() => {
       node.setDirtyCanvas(true, true);
     }, 100);
@@ -114,7 +114,6 @@ app.registerExtension({
       his.color = "#222222";
       his.font = buttonFont;
       his.onClick = () => {
-        if(allow_debug) console.log('clicked',);
         inputsHistoryShow(inputsHistory, inputWidget);
       };
       currentX += 104;
@@ -163,7 +162,6 @@ app.registerExtension({
       node.size[0] = Math.max(300, newSize[0]);
       node.size[1] = Math.max(150, newSize[1]);
     };
-
 
     const m = new BaseSmartWidgetManager(node, "iToolsTextEntry");
     const origOnRemoved = node.onRemoved;
@@ -280,8 +278,8 @@ function inputsHistoryShow(inputs, inputWidget) {
     `;
 
   // Create button container
-  const buttonContainer = document.createElement("div");
-  buttonContainer.style.cssText = `
+  const buttonsContainer = document.createElement("div");
+  buttonsContainer.style.cssText = `
         display: flex;
         gap: 8px;
     `;
@@ -335,46 +333,95 @@ function inputsHistoryShow(inputs, inputWidget) {
     });
   };
 
-  // Create defaults button
-  const defaultsButton = document.createElement("button");
-  defaultsButton.textContent = "Load Defaults";
-  defaultsButton.style.cssText = buttonStyle;
-  defaultsButton.onmouseover = () => (defaultsButton.style.background = "#444");
-  defaultsButton.onmouseout = () => (defaultsButton.style.background = "#333");
-  defaultsButton.onclick = async () => {
-    // if list is empty
-    if (!inputs || inputs.length === 0) {
-      // Replace current history with defaults
-      inputs.length = 0;
-      DEFAULT_HISTORY.forEach((item) => inputs.push(item));
-      // Re-render the list
-      renderList(searchInput.value);
-      return;
+  // Create load button
+  const loadButton = document.createElement("button");
+  loadButton.textContent = "Load";
+  loadButton.style.cssText = buttonStyle;
+  loadButton.onmouseover = () => (loadButton.style.background = "#444");
+  loadButton.onmouseout = () => (loadButton.style.background = "#333");
+  loadButton.onclick = async () => loadSeasonedHistory();
+
+  async function loadSeasonedHistory(){
+    // Only show confirmation if current season has items
+    const needsConfirmation = inputs.length > 0;
+    let shouldProceed = true;
+
+    if (needsConfirmation) {
+      shouldProceed = await app.extensionManager.dialog.confirm({
+        title: "Load History",
+        message: "This will overwrite the current season with the saved history.\nDo you want to continue?",
+        okText: "Load",
+        cancelText: "Cancel",
+      });
     }
 
-    const confirmed = await app.extensionManager.dialog.confirm({
-      title: "Load Defaults",
-      message: "This will clear all current entries?",
-      okText: "Ok",
-      cancelText: "Cancel",
-    });
-
-    if (confirmed) {
-      // Replace current history with defaults
-      inputs.length = 0;
-      DEFAULT_HISTORY.forEach((item) => inputs.push(item));
-      // Re-render the list
-      renderList(searchInput.value);
-      return;
+    if (shouldProceed) {
+      try {
+        const savedHistory = getUserHistoryFile();
+        if (savedHistory && savedHistory.prompts) {
+          inputs.length = 0;
+          savedHistory.prompts.forEach(item => inputs.push(item));
+          renderList(searchInput.value);
+          // app.extensionManager.toast.add({
+          //   severity: "success",
+          //   summary: "Success",
+          //   detail: "History loaded from storage",
+          //   life: 1000,
+          // });
+        } else {
+          app.extensionManager.toast.add({
+            severity: "info",
+            summary: "Info",
+            detail: "No saved history found",
+            life: 1000,
+          });
+        }
+      } catch (error) {
+        app.extensionManager.toast.add({
+          severity: "error",
+          summary: "Error",
+          detail: "Failed to load history",
+          life: 3000,
+        });
+      }
     }
+  };
 
-    // Show success message
-    // app.extensionManager.toast.add({
-    //   severity: "success",
-    //   summary: "Success",
-    //   detail: "Default history restored!",
-    //   life: 1000,
-    // });
+  // Create save button
+  const saveButton = document.createElement("button");
+  saveButton.textContent = "Save";
+  saveButton.style.cssText = buttonStyle;
+  saveButton.onmouseover = () => (saveButton.style.background = "#444");
+  saveButton.onmouseout = () => (saveButton.style.background = "#333");
+  saveButton.onclick = async () => {
+    const historyData = {
+      prompts: inputs
+    };
+    if(historyData.prompts.length === 0) {
+      app.extensionManager.toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Saving empty data, is not allowed",
+        life: 3000,
+      });
+      return;
+    };
+    try {
+      localStorage.setItem("iTools_userHistory", JSON.stringify(historyData));
+      app.extensionManager.toast.add({
+        severity: "success",
+        summary: "Success",
+        detail: "History saved to storage",
+        life: 1000,
+      });
+    } catch (error) {
+      app.extensionManager.toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Failed to save history",
+        life: 3000,
+      });
+    }
   };
 
   // Create clear button
@@ -388,8 +435,8 @@ function inputsHistoryShow(inputs, inputWidget) {
     if (!inputs || inputs.length === 0) return;
 
     const confirmed = await app.extensionManager.dialog.confirm({
-      title: "Clear History",
-      message: "Are you sure you want to clear all history entries?",
+      title: "Clear Current Season",
+      message: "This will remove all current season items.\nSaved history will not be affected.",
       okText: "Yes, clear all",
       cancelText: "Cancel",
     });
@@ -406,14 +453,15 @@ function inputsHistoryShow(inputs, inputWidget) {
     }
   };
 
-  // Add all buttons to container
-  buttonContainer.appendChild(exportButton);
-  buttonContainer.appendChild(importButton);
-  buttonContainer.appendChild(defaultsButton);
-  buttonContainer.appendChild(clearButton);
+  // Add buttons to header
+  buttonsContainer.appendChild(exportButton);
+  buttonsContainer.appendChild(importButton);
+  buttonsContainer.appendChild(loadButton);
+  buttonsContainer.appendChild(saveButton);
+  buttonsContainer.appendChild(clearButton);
 
   titleContainer.appendChild(title);
-  titleContainer.appendChild(buttonContainer);
+  titleContainer.appendChild(buttonsContainer);
 
   const closeButton = document.createElement("button");
   closeButton.textContent = "✖" || "✖" || "×";
@@ -442,7 +490,7 @@ function inputsHistoryShow(inputs, inputWidget) {
 
   const searchInput = document.createElement("input");
   searchInput.type = "text";
-  searchInput.placeholder = "Search history...";
+  searchInput.placeholder = "Search current season...";
   searchInput.style.cssText = `
         width: 100%;
         padding: 8px 30px 8px 10px;
@@ -616,12 +664,12 @@ function inputsHistoryShow(inputs, inputWidget) {
           if (index > -1) {
             inputs.splice(index, 1);
             renderList(searchInput.value);
-            app.extensionManager.toast.add({
-              severity: "success",
-              summary: "Success",
-              detail: "Entry deleted from history",
-              life: 1000,
-            });
+            // app.extensionManager.toast.add({
+            //   severity: "success",
+            //   summary: "Success",
+            //   detail: "Entry deleted from history",
+            //   life: 1000,
+            // });
           }
         };
 
@@ -653,7 +701,7 @@ function inputsHistoryShow(inputs, inputWidget) {
       // Different message based on whether we're filtering or just have no history
       noResults.textContent = filterText 
         ? "No matching items found" 
-        : "No history items";
+        : "No items in current season";
       list.appendChild(noResults);
     }
   }
@@ -693,4 +741,70 @@ function inputsHistoryShow(inputs, inputWidget) {
 
   // Focus search input
   searchInput.focus();
+
+  // load user History - called once on initialization BUGGED
+  
+  // (function initializeHistory() {
+  //   if (historyInitialized) return;
+  //   if(allow_debug) console.log('here',);
+  //   try {
+  //     const savedHistory = getUserHistoryFile();
+  //     if (savedHistory && savedHistory.prompts) {
+  //       inputs.length = 0;
+  //       savedHistory.prompts.forEach(item => inputs.push(item));
+  //       renderList(searchInput.value);
+  //       historyInitialized = true;
+  //     } else {
+  //       app.extensionManager.toast.add({
+  //         severity: "info",
+  //         summary: "Info",
+  //         detail: "No saved history found",
+  //         life: 1000,
+  //       });
+  //     }
+  //   } catch (error) {
+  //     app.extensionManager.toast.add({
+  //       severity: "error",
+  //       summary: "Error",
+  //       detail: "Failed to load history",
+  //       life: 3000,
+  //     });
+  //   }
+  // })(); // Immediately invoke the function
+}
+
+function createUserHistoryFile() {
+  // Get existing history if any
+  const existingHistory = localStorage.getItem("iTools_userHistory");
+  
+  if (!existingHistory) {
+    // Create new history with defaults if none exists
+    const defaults = {
+      prompts: DEFAULT_HISTORY,
+    };
+    if (allow_debug) console.log("iTools_userHistory created");
+    localStorage.setItem("iTools_userHistory", JSON.stringify(defaults));
+  } else {
+    // Check if existing history has items
+    const history = JSON.parse(existingHistory);
+    if (!history.prompts || history.prompts.length === 0) {
+      // If empty, initialize with defaults
+      const defaults = {
+        prompts: DEFAULT_HISTORY,
+      };
+      if (allow_debug) console.log("iTools_userHistory reset with defaults");
+      localStorage.setItem("iTools_userHistory", JSON.stringify(defaults));
+    }
+  }
+}
+
+function removeUserHistoryFile() {
+  localStorage.removeItem("iTools_userHistory");
+   if (allow_debug) console.log("iTools_userHistory removed");
+}
+
+function getUserHistoryFile() {
+  createUserHistoryFile() 
+  const userHistory = JSON.parse(localStorage.getItem("iTools_userHistory"));
+  return userHistory;
 }

@@ -41,9 +41,7 @@ app.registerExtension({
       const second_file = this.widgets.find((w) => w.name == "second_file");
       second_file.callback = async () => {
         this.widgets[5]["value"] = "loading ...";
-        const options = await send_request_templates_for_file(
-          second_file.value
-        );
+        const options = await send_request_templates_for_file(second_file.value);
         this.widgets[5]["options"]["values"] = options.templates;
         this.widgets[5]["value"] = options.templates[0];
         this.setDirtyCanvas(true, true);
@@ -61,9 +59,7 @@ app.registerExtension({
       const fourth_file = this.widgets.find((w) => w.name == "fourth_file");
       fourth_file.callback = async () => {
         this.widgets[9]["value"] = "loading ...";
-        const options = await send_request_templates_for_file(
-          fourth_file.value
-        );
+        const options = await send_request_templates_for_file(fourth_file.value);
         this.widgets[9]["options"]["values"] = options.templates;
         this.widgets[9]["value"] = options.templates[0];
         this.setDirtyCanvas(true, true);
@@ -112,7 +108,7 @@ async function reset_func(node, fourth_file) {
 async function fix_start_up_init(node, base, s1, s2, s3) {
   try {
     // Wait until node and style are fully initialized
-    if (!await waitForInitialization(node, s3)) {
+    if (!(await waitForInitialization(node, s3))) {
       if (allow_debug) console.log("Initialization timeout");
       return;
     }
