@@ -1,6 +1,6 @@
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
-import { BaseSmartWidget, BaseSmartWidgetManager,} from "./makadi/BaseSmartWidget.js";
+import { BaseSmartWidget, BaseSmartWidgetManager } from "./makadi/BaseSmartWidget.js";
 import { SmartButton } from "./makadi/SmartButton.js";
 import { Shapes } from "./utils.js";
 
@@ -27,7 +27,7 @@ app.registerExtension({
     let compare = false;
     let imagesTracked = [];
     const MAX_IMAGES = 8;
-    
+
     // other vars
     let toastShownCountH = 0;
     let toastShownCountPC = 0;
@@ -40,12 +40,6 @@ app.registerExtension({
         if (allow_debug) console.log("Undefined or null image, skipping");
         return imagesTracked;
       }
-
-      // Check if image already exists in the array
-      // if (allow_debug) {
-      //   console.log('New image src:', newImage.src);
-      //   console.log('Existing imagesTracked src:', imagesTracked.map(img => img.src));
-      // }
 
       const imageExists = imagesTracked.some((img) => {
         // Extract filename from URLs by removing the random parameter
@@ -164,7 +158,7 @@ app.registerExtension({
           toggleButtonActivation(c, compare);
         }
         if (!node.imgs) {
-          if(toastShownCountH < MAX_TOAST_SHOWS){
+          if (toastShownCountH < MAX_TOAST_SHOWS) {
             app.extensionManager.toast.add({
               severity: "info",
               summary: "iTools!",
@@ -215,9 +209,17 @@ app.registerExtension({
         // reset togglingLastTwoImages
         if (b.text !== "[Current] | Previous") togglingLastTwoImages();
 
+        // reset from history state
+        if (node.imageIndex === null) {
+          if (imagesTracked.length > 1) {
+            node.imageIndex = 0; // reset to single view
+            node.imgs = node.imgs = [node.imgs[node.imgs.length - 1]]; // show last image in node.imgs list;
+          }
+        }
+
         // start compare
         if (imagesTracked.length <= 1) {
-          if(toastShownCountI < MAX_TOAST_SHOWS){
+          if (toastShownCountI < MAX_TOAST_SHOWS) {
             app.extensionManager.toast.add({
               severity: "info",
               summary: "iTools!",
@@ -280,25 +282,25 @@ app.registerExtension({
     const origOnRemoved = node.onRemoved;
     node.onRemoved = function () {
       origOnRemoved?.apply(this, arguments);
-      m.destroy()
-    }
+      m.destroy();
+    };
   },
 });
 
 function drawImgOverlay(node, widget_width, y, ctx, _imagesRef, compareMode = false) {
   if (!compareMode) return;
-  
-  const allowImageSizeDraw = app.extensionManager.setting.get('Comfy.Node.AllowImageSizeDraw', true);
+
+  const allowImageSizeDraw = app.extensionManager.setting.get("Comfy.Node.AllowImageSizeDraw", true);
   const IMAGE_TEXT_SIZE_TEXT_HEIGHT = allowImageSizeDraw ? 15 : 0;
-  
+
   const img = node.imgs[0];
   const dw = widget_width;
   const dh = node.size[1] - y - IMAGE_TEXT_SIZE_TEXT_HEIGHT;
-  
+
   // Use max dimensions from both images
   const prevImg = _imagesRef.length > 1 ? _imagesRef[_imagesRef.length - 2] : null;
   if (!prevImg) return;
-  
+
   let w = Math.max(img.naturalWidth, prevImg.naturalWidth);
   let h = Math.max(img.naturalHeight, prevImg.naturalHeight);
 
