@@ -47,7 +47,8 @@ app.registerExtension({
       a.textYoffset = 1;
       a.isVisible = startVisible;
       a.shape = Shapes.ROUND_L;
-      a.outlineWidth = 1;
+      a.outline = true;
+      a.outlineWidth = 0.9;
       a.outlineColor = "#656565";
       a.color = "#222222";
       a.font = buttonFont;
@@ -67,7 +68,8 @@ app.registerExtension({
       b.textYoffset = 1;
       b.isVisible = startVisible;
       b.shape = Shapes.SQUARE;
-      b.outlineWidth = 1;
+      b.outline = true;
+      b.outlineWidth = 0.9;
       b.outlineColor = "#656565";
       b.color = "#222222";
       b.font = buttonFont;
@@ -85,7 +87,8 @@ app.registerExtension({
       c.textYoffset = 1;
       c.isVisible = startVisible;
       c.shape = Shapes.SQUARE;
-      c.outlineWidth = 1;
+      c.outlineWidth = 0.9;
+      c.outline = true;
       c.outlineColor = "#656565";
       c.color = "#222222";
       c.font = buttonFont;
@@ -101,7 +104,8 @@ app.registerExtension({
       add.textYoffset = 1;
       add.isVisible = startVisible;
       add.shape = Shapes.SQUARE;
-      add.outlineWidth = 1;
+      add.outline = true;
+      add.outlineWidth = 0.9;
       add.outlineColor = "#656565";
       add.color = "#222222";
       add.font = buttonFont;
@@ -136,7 +140,8 @@ app.registerExtension({
       his.textYoffset = 1;
       his.isVisible = startVisible;
       his.shape = Shapes.ROUND_R;
-      his.outlineWidth = 1;
+      his.outline = true;
+      his.outlineWidth = 0.9;
       his.outlineColor = "#656565";
       his.color = "#222222";
       his.font = buttonFont;
@@ -150,7 +155,7 @@ app.registerExtension({
       // u.textYoffset = 1;
       // u.isVisible = startVisible;
       // u.shape = Shapes.CIRCLE;
-      // u.outlineWidth = 1;
+      // u.outlineWidth = 0.9;
       // u.outlineColor = "#656565";
       // u.color = "#222222";
       // u.font = buttonFont;
@@ -161,7 +166,7 @@ app.registerExtension({
       // n.textYoffset = 1;
       // n.isVisible = startVisible;
       // n.shape = Shapes.CIRCLE;
-      // n.outlineWidth = 1;
+      // n.outlineWidth = 0.9;
       // n.outlineColor = "#656565";
       // n.color = "#222222";
       // n.font = buttonFont;

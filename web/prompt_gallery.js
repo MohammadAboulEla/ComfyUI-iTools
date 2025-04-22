@@ -21,7 +21,7 @@ export function exportHistoryToFile(history) {
     app.extensionManager.toast.add({
       severity: "error",
       summary: "Error",
-      detail: "No history to export!",
+      detail: "No prompts to export!",
       life: 1000,
     });
     return;
@@ -135,6 +135,7 @@ export function inputsHistoryShow(inputs, inputWidget) {
           padding: 4px 8px;
           font-size: 12px;
           cursor: pointer;
+          min-width: 35px;
           transition: background 0.2s;
       `;
 
@@ -177,7 +178,7 @@ export function inputsHistoryShow(inputs, inputWidget) {
 
   // Create load button
   const loadButton = document.createElement("button");
-  loadButton.textContent = "Load";
+  loadButton.textContent = "🪶" || "Favorites ⭐" || "Load";
   loadButton.style.cssText = buttonStyle;
   loadButton.onmouseover = () => (loadButton.style.background = "#444");
   loadButton.onmouseout = () => (loadButton.style.background = "#333");
@@ -190,8 +191,9 @@ export function inputsHistoryShow(inputs, inputWidget) {
 
     if (needsConfirmation) {
       shouldProceed = await app.extensionManager.dialog.confirm({
-        title: "Load History",
-        message: "This will replace current season items with those from your saved history.\nDo you want to continue?",
+        title: "Load Favorites 🪶",
+        message:
+          "This will load your saved favorites, current prompts here will be lost.\nDo you want to continue?",
       });
     }
 
@@ -212,7 +214,7 @@ export function inputsHistoryShow(inputs, inputWidget) {
           app.extensionManager.toast.add({
             severity: "info",
             summary: "Info",
-            detail: "No saved history found",
+            detail: "No saved favorites found",
             life: 1000,
           });
         }
@@ -229,10 +231,16 @@ export function inputsHistoryShow(inputs, inputWidget) {
 
   // Create save button
   const saveButton = document.createElement("button");
-  saveButton.textContent = "Save";
-  saveButton.style.cssText = buttonStyle;
-  saveButton.onmouseover = () => (saveButton.style.background = "#444");
-  saveButton.onmouseout = () => (saveButton.style.background = "#333");
+  saveButton.textContent = "Save" || "Save";
+  // saveButton.style.cssText = buttonStyle;
+  // saveButton.onmouseover = () => (saveButton.style.background = "#444");
+  // saveButton.onmouseout = () => (saveButton.style.background = "#333");
+  // saveButton.style.cssText = buttonStyle + "background: #e67e22;"; // Darker orange background
+  // saveButton.onmouseover = () => (saveButton.style.background = "#f39c12"); // Slightly lighter on hover
+  // saveButton.onmouseout = () => (saveButton.style.background = "#e67e22"); // Back to original
+  saveButton.style.cssText = buttonStyle + "background: #A85B28"; // Muted burnt orange
+  saveButton.onmouseover = () => (saveButton.style.background = "#C96D30"); // Warmer hover
+  saveButton.onmouseout = () => (saveButton.style.background = "#A85B28"); // Revert
   saveButton.onclick = async () => {
     const historyData = {
       prompts: inputs,
@@ -248,8 +256,8 @@ export function inputsHistoryShow(inputs, inputWidget) {
     }
     try {
       const confirmed = await app.extensionManager.dialog.confirm({
-        title: "Save History",
-        message: "This will overwrite your saved history with current season items.\nDo you want to continue?",
+        title: "Save As New Favorites 🪶",
+        message: "This will overwrite your saved favorites with current season prompts.\nDo you want to continue?",
         type: "overwrite",
       });
 
@@ -272,6 +280,53 @@ export function inputsHistoryShow(inputs, inputWidget) {
     }
   };
 
+  // Create add button
+  const addButton = document.createElement("button");
+  addButton.textContent = "↩" || "Add";
+  addButton.style.cssText = buttonStyle;
+  addButton.onmouseover = () => (addButton.style.background = "#444");
+  addButton.onmouseout = () => (addButton.style.background = "#333");
+  addButton.onclick = async () => {
+    if (inputs.length === 0) {
+      app.extensionManager.toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Current season is empty",
+        life: 3000,
+      });
+      return;
+    }
+    try {
+      const confirmed = await app.extensionManager.dialog.confirm({
+        title: "Add New Prompts To Favorites 🪶",
+        message: "This will append only new prompts here to your saved favorites.\nDo you want to continue?",
+      });
+
+      if (confirmed) {
+        const savedHistory = getUserHistoryFile();
+        const mergedPrompts =
+          savedHistory && savedHistory.prompts
+            ? [...new Set([...savedHistory.prompts, ...inputs])] // Merge and remove duplicates
+            : inputs;
+
+        localStorage.setItem("iTools_userHistory", JSON.stringify({ prompts: mergedPrompts }));
+        app.extensionManager.toast.add({
+          severity: "success",
+          summary: "Success",
+          detail: "New prompts from current season added to saved favorites",
+          life: 1000,
+        });
+      }
+    } catch (error) {
+      app.extensionManager.toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Failed to add to history",
+        life: 3000,
+      });
+    }
+  };
+
   // Create clear button
   const clearButton = document.createElement("button");
   clearButton.textContent = "Clear";
@@ -284,7 +339,7 @@ export function inputsHistoryShow(inputs, inputWidget) {
 
     const confirmed = await app.extensionManager.dialog.confirm({
       title: "Clear Current Season",
-      message: "This will remove all current season items.\nSaved history will not be affected.",
+      message: "This will remove all current season prompts.\nSaved favorites will not be affected.",
       type: "delete",
     });
 
@@ -304,6 +359,7 @@ export function inputsHistoryShow(inputs, inputWidget) {
   buttonsContainer.appendChild(exportButton);
   buttonsContainer.appendChild(importButton);
   buttonsContainer.appendChild(loadButton);
+  buttonsContainer.appendChild(addButton);
   buttonsContainer.appendChild(saveButton);
   buttonsContainer.appendChild(clearButton);
 
@@ -546,7 +602,7 @@ export function inputsHistoryShow(inputs, inputWidget) {
                 font-style: italic;
             `;
       // Different message based on whether we're filtering or just have no history
-      noResults.textContent = filterText ? "No matching items found" : "No items in current season";
+      noResults.textContent = filterText ? "No matching prompts found" : "No prompts in current season";
       list.appendChild(noResults);
     }
   }
@@ -603,7 +659,7 @@ export function inputsHistoryShow(inputs, inputWidget) {
   //       app.extensionManager.toast.add({
   //         severity: "info",
   //         summary: "Info",
-  //         detail: "No saved history found",
+  //         detail: "No saved favorites found",
   //         life: 1000,
   //       });
   //     }

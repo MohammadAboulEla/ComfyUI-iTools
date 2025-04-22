@@ -1070,9 +1070,9 @@ class IToolsPromptRecord:
     OUTPUT_NODE = True
     CATEGORY = "iTools"
     DESCRIPTION = (
-        "Allows you to manage prompts."
-        "Includes a history system that saves your prompts between sessions"
-        "and allows quick access to previously used prompts through the Timeline button."
+        "Tracks your prompts during node execution or when using ▶ button.\n"
+        "Provides quick access to previously used prompts. "
+        "Includes a history system that saves your favorite prompts."
     )
 
     def text_entry(self, text):
