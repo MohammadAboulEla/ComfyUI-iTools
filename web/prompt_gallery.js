@@ -192,8 +192,6 @@ export function inputsHistoryShow(inputs, inputWidget) {
       shouldProceed = await app.extensionManager.dialog.confirm({
         title: "Load History",
         message: "This will replace current season items with those from your saved history.\nDo you want to continue?",
-        okText: "Load",
-        cancelText: "Cancel",
       });
     }
 
@@ -252,8 +250,7 @@ export function inputsHistoryShow(inputs, inputWidget) {
       const confirmed = await app.extensionManager.dialog.confirm({
         title: "Save History",
         message: "This will overwrite your saved history with current season items.\nDo you want to continue?",
-        okText: "Save",
-        cancelText: "Cancel",
+        type: "overwrite",
       });
 
       if (confirmed) {
@@ -288,8 +285,7 @@ export function inputsHistoryShow(inputs, inputWidget) {
     const confirmed = await app.extensionManager.dialog.confirm({
       title: "Clear Current Season",
       message: "This will remove all current season items.\nSaved history will not be affected.",
-      okText: "Yes, clear all",
-      cancelText: "Cancel",
+      type: "delete",
     });
 
     if (confirmed) {
