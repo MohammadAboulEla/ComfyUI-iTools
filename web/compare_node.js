@@ -257,6 +257,11 @@ app.registerExtension({
     };
 
     const m = new BaseSmartWidgetManager(node, "iToolsCompareImage");
+    const origOnRemoved = node.onRemoved;
+    node.onRemoved = function () {
+      origOnRemoved?.apply(this, arguments);
+      m.destroy()
+    }
   },
 });
 

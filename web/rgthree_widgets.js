@@ -1,6 +1,10 @@
 import { app } from "../../scripts/app.js";
 
-// This code was written by Rgthree and is currently used for educational and reference purposes.
+/* 
+THIS CODE WAS WRITTEN BY RGTHREE  
+AND IS CURRENTLY USED FOR EDUCATIONAL  
+AND REFERENCE PURPOSES.
+*/
 
 function binarySearch(max, getValue, match) {
     let min = 0;
@@ -198,7 +202,11 @@ export function drawWidgetButton(drawCtx, text, isMouseDownedAndOver = false) {
     }
 }
 
-// This code was written by Rgthree and is currently used for educational and reference purposes.
+/* 
+THIS CODE WAS WRITTEN BY RGTHREE  
+AND IS CURRENTLY USED FOR EDUCATIONAL  
+AND REFERENCE PURPOSES.
+*/
 
 export class RgthreeBaseWidget {
     constructor(name) {

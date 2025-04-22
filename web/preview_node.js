@@ -277,6 +277,11 @@ app.registerExtension({
     };
 
     const m = new BaseSmartWidgetManager(node, "iToolsPreviewImage");
+    const origOnRemoved = node.onRemoved;
+    node.onRemoved = function () {
+      origOnRemoved?.apply(this, arguments);
+      m.destroy()
+    }
   },
 });
 

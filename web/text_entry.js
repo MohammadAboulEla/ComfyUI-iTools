@@ -114,6 +114,7 @@ app.registerExtension({
       his.color = "#222222";
       his.font = buttonFont;
       his.onClick = () => {
+        if(allow_debug) console.log('clicked',);
         inputsHistoryShow(inputsHistory, inputWidget);
       };
       currentX += 104;
@@ -163,7 +164,13 @@ app.registerExtension({
       node.size[1] = Math.max(150, newSize[1]);
     };
 
+
     const m = new BaseSmartWidgetManager(node, "iToolsTextEntry");
+    const origOnRemoved = node.onRemoved;
+    node.onRemoved = function () {
+      origOnRemoved?.apply(this, arguments);
+      m.destroy()
+    }
   },
 });
 

@@ -159,4 +159,8 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
     // console.log('node.widgets',this.node.widgets.length)
     // console.log('node.widgets',this.node.widgets)
   }
+
+  destroy() {
+    this.node.widgets = []
+  }
 }
