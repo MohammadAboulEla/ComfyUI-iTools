@@ -192,8 +192,7 @@ export function inputsHistoryShow(inputs, inputWidget) {
     if (needsConfirmation) {
       shouldProceed = await app.extensionManager.dialog.confirm({
         title: "Load Favorites 🪶",
-        message:
-          "This will load your saved favorites, current prompts here will be lost.\nDo you want to continue?",
+        message: "This will load your saved favorites, current prompts here will be lost.\nDo you want to continue?",
       });
     }
 
@@ -709,3 +708,91 @@ export function getUserHistoryFile() {
   const userHistory = JSON.parse(localStorage.getItem("iTools_userHistory"));
   return userHistory;
 }
+
+// Register a new sidebar tab
+app.extensionManager.registerSidebarTab({
+  id: "iToolsFavorite",
+  icon: "pi pi-star-fill",
+  title: "favorite",
+  tooltip: "favorite prompts",
+  type: "custom",
+  render: (el) => {
+    el.innerHTML = `
+  <div style="height: 100%; display: flex; flex-direction: column; padding: 8px; box-sizing: border-box; font-family: sans-serif; color: #fff;">
+    <h2 style="margin: 0 0 10px 0; font-size: 16px;">iTools Prompt Record</h2>
+    <input id="promptSearch" type="text" placeholder="Search Prompts..." style="
+      width: 100%;
+      padding: 6px 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      border: none;
+      background: #1e1e1e;
+      color: #fff;
+      font-size: 14px;
+    "/>
+    <div id="promptList" style="flex: 1; overflow-y: auto;"></div>
+  </div>
+    `;
+
+    const listEl = el.querySelector("#promptList");
+    const searchEl = el.querySelector("#promptSearch");
+
+    function copyPrompt(text) {
+      navigator.clipboard.writeText(text);
+      console.log("app.extensionManager", app.extensionManager);
+      app.extensionManager.sidebarTab.toggleSidebarTab("iToolsFavorite");
+    }
+
+    function renderList(filter = "") {
+      // const filtered = DEFAULT_HISTORY.filter((p) => p.toLowerCase().includes(filter.toLowerCase()));
+
+      const stored = localStorage.getItem("iTools_userHistory");
+      const prompts = stored ? JSON.parse(stored) : DEFAULT_PROMPTS;
+      console.log('prompts',prompts);
+      const filtered = prompts.prompts.filter((p) => p.toLowerCase().includes(filter.toLowerCase()));
+
+      listEl.innerHTML = filtered
+        .map(
+          (prompt, index) => `
+        <div style="
+          background: #2b2b2b;
+          padding: 8px;
+          margin-bottom: 8px;
+          border-radius: 4px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          min-height: 100px;
+        ">
+          <div style="
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: wrap;
+          " title="${prompt}">
+            ${prompt}
+          </div>
+          <button style="
+            margin-left: 8px;
+            background: #444;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+          " onclick="copyPromptFromList(${index})">
+            Copy
+          </button>
+        </div>
+      `
+        )
+        .join("");
+
+      // Bind global handler
+      window.copyPromptFromList = (i) => copyPrompt(filtered[i]);
+    }
+
+    searchEl.addEventListener("input", () => renderList(searchEl.value));
+    renderList();
+  },
+});
