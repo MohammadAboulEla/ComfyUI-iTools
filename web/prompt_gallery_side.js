@@ -346,8 +346,8 @@ export function addSideTab() {
 
       // Button event handlers
       exportBtn.addEventListener("click", () => {
-        const prompts = getUserHistoryFile();
-        exportHistoryToFile(prompts);
+        const history = getUserHistoryFile();
+        exportHistoryToFile(history.prompts);
       });
 
       importBtn.addEventListener("click", async () => {
@@ -359,7 +359,7 @@ export function addSideTab() {
 
         if (confirmed) {
           importHistoryFromFile((newItems) => {
-            localStorage.setItem("iTools_userHistorySideSide", JSON.stringify({ prompts: newItems }));
+            localStorage.setItem("iTools_userHistorySide", JSON.stringify({ prompts: newItems }));
             renderList(searchEl.value);
             app.extensionManager.toast.add({
               severity: "success",
@@ -429,7 +429,7 @@ export function addSideTab() {
           });
 
           if (confirmed) {
-            localStorage.setItem("iTools_userHistorySideSide", JSON.stringify({ prompts }));
+            localStorage.setItem("iTools_userHistorySide", JSON.stringify({ prompts }));
             app.extensionManager.toast.add({
               severity: "success",
               summary: "Success",
