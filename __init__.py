@@ -1,6 +1,6 @@
 import json
 import os
-import folder_paths
+import folder_paths # type: ignore
 from .iTools_nodes import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
 
 def get_user_dev_mode():
@@ -25,6 +25,7 @@ def get_user_dev_mode2():
 
 allow_beta_nodes = get_user_dev_mode()
 allow_dev_nodes = get_user_dev_mode2()
+allow_experimental_nodes = True
 
 if allow_beta_nodes:
     try:
@@ -32,10 +33,7 @@ if allow_beta_nodes:
         
         NODE_CLASS_MAPPINGS["iToolsPaintNode"] = IToolsPaintNode
         NODE_DISPLAY_NAME_MAPPINGS["iToolsPaintNode"] = "iTools Paint Node (Beta)"
-        
-        NODE_CLASS_MAPPINGS["iToolsFreeSchnell"] = IToolsFreeSchnell
-        NODE_DISPLAY_NAME_MAPPINGS["iToolsFreeSchnell"] = "iTools Free Schnell (Beta)"
-        
+
         NODE_CLASS_MAPPINGS["iToolsCropImage"] = IToolsCropImage
         NODE_DISPLAY_NAME_MAPPINGS["iToolsCropImage"] = "iTools Crop Image (Beta)"
 
@@ -55,8 +53,19 @@ if allow_dev_nodes:
 
     except ModuleNotFoundError as e:
         pass
-        #print(e)
 
+if allow_experimental_nodes:
+    try:
+        from .experimental.experimental_nodes import *
+                
+        NODE_CLASS_MAPPINGS["iToolsFreeChat"] = IToolsFreeChat
+        NODE_DISPLAY_NAME_MAPPINGS["iToolsFreeChat"] = "iTools Free Chat (API)"
+        
+        NODE_CLASS_MAPPINGS["iToolsFreeSchnell"] = IToolsFreeSchnell
+        NODE_DISPLAY_NAME_MAPPINGS["iToolsFreeSchnell"] = "iTools Free Schnell (API)"
+        
+    except ModuleNotFoundError as e:
+        pass
 
 WEB_DIRECTORY = "./web"
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']

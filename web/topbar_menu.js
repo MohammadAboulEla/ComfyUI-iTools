@@ -1,32 +1,7 @@
 import { app } from "../../../scripts/app.js";
 
-// Register a new setting
-app.registerExtension({
-  name: "makadi_iTools_tab",
-  settings: [
-    {
-      id: "iTools.iTools Tab",
-      name: "Enable iTools tab on menubar",
-      type: "boolean",
-      defaultValue: false,
-      tooltip: "Refresh your browser after changing this value.",
-      onChange: (value) => {
-        const prevValue = app.ui.settings.getSettingValue("iTools.iTools Tab");
-        if (prevValue !== undefined && prevValue !== value) {
-          app.extensionManager.toast.add({
-            severity: "warn",
-            summary: "Alert!",
-            detail: "Refresh your browser",
-            life: 3000,
-          });
-        }
-      },
-    },
-  ],
-});
-
 export function addMenuTab() {
-  if (!app.ui.settings.getSettingValue("iTools.iTools Tab")) return;
+  if (!app.ui.settings.getSettingValue("iTools.Tabs.menuTab")) return;
   app.registerExtension({
     name: "makadi_iTools",
     commands: [

@@ -1,3 +1,16 @@
+export const DEFAULT_HISTORY = [
+  "A playful kitten wearing a colorful bow tie, sitting on a fluffy cloud, with a bright rainbow in the background",
+  "A cheerful bunny in a pink dress holding a basket of flowers, standing in a sunny meadow with butterflies around",
+  "A small dragon with big eyes and tiny wings, blowing gentle puffs of fire while sitting on top of a cupcake",
+  "A happy, round penguin wearing a scarf and hat, sliding down a snowy hill with sparkles and snowflakes in the air",
+  "A friendly octopus with heart-shaped eyes, holding balloons in each tentacle, floating in an underwater scene with smiling fish",
+  "A chubby unicorn with pastel-colored mane and tail, flying through the sky with stars and sparkles surrounding it",
+  "A joyful panda riding a bicycle through a bamboo forest, with colorful flowers and birds flying alongside",
+  "A tiny robot with a big smile, watering a garden of glowing flowers under a starry sky",
+  "A group of cute woodland animals having a tea party, with tiny teacups and plates of sweets on a tree stump",
+  "A happy little fox wearing a superhero cape, flying above a vibrant cityscape at sunset",
+];
+
 export const Shapes = Object.freeze({
   SQUARE: "square",
   CIRCLE: "circle",
@@ -123,11 +136,27 @@ export const commonColors = [
   //"#808080", // Gray
 ];
 
-
 export function log(...args) {
   if (allow_debug) {
     console.log(...args); // Spread args to log them properly
   }
+}
+
+export const Severity = Object.freeze({
+  WARN: "warn",
+  ERROR: "error",
+  INFO: "info",
+  DEBUG: "debug",
+  SUCCESS: "success",
+});
+
+export function toast(severity, summary, detail, life = 3000) {
+  app.extensionManager.toast.add({
+    severity,
+    summary,
+    detail,
+    life,
+  });
 }
 
 export function lightenColor(color, percent) {

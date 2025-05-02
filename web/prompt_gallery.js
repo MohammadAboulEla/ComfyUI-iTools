@@ -1,18 +1,6 @@
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
-
-export const DEFAULT_HISTORY = [
-  "A playful kitten wearing a colorful bow tie, sitting on a fluffy cloud, with a bright rainbow in the background",
-  "A cheerful bunny in a pink dress holding a basket of flowers, standing in a sunny meadow with butterflies around",
-  "A small dragon with big eyes and tiny wings, blowing gentle puffs of fire while sitting on top of a cupcake",
-  "A happy, round penguin wearing a scarf and hat, sliding down a snowy hill with sparkles and snowflakes in the air",
-  "A friendly octopus with heart-shaped eyes, holding balloons in each tentacle, floating in an underwater scene with smiling fish",
-  "A chubby unicorn with pastel-colored mane and tail, flying through the sky with stars and sparkles surrounding it",
-  "A joyful panda riding a bicycle through a bamboo forest, with colorful flowers and birds flying alongside",
-  "A tiny robot with a big smile, watering a garden of glowing flowers under a starry sky",
-  "A group of cute woodland animals having a tea party, with tiny teacups and plates of sweets on a tree stump",
-  "A happy little fox wearing a superhero cape, flying above a vibrant cityscape at sunset",
-];
+import { DEFAULT_HISTORY } from "./utils.js";
 
 export function exportHistoryToFile(history) {
   // if list is empty return
@@ -73,6 +61,43 @@ export function importHistoryFromFile(callback) {
   input.click();
 }
 
+export function createUserHistoryFile() {
+  // Get existing history if any
+  const existingHistory = localStorage.getItem("iTools_userHistory");
+
+  if (!existingHistory) {
+    // Create new history with defaults if none exists
+    const defaults = {
+      prompts: DEFAULT_HISTORY,
+    };
+    if (allow_debug) console.log("iTools_userHistory created");
+    localStorage.setItem("iTools_userHistory", JSON.stringify(defaults));
+  } else {
+    // Check if existing history has items
+    const history = JSON.parse(existingHistory);
+    if (!history.prompts || history.prompts.length === 0) {
+      // If empty, initialize with defaults
+      const defaults = {
+        prompts: DEFAULT_HISTORY,
+      };
+      if (allow_debug) console.log("iTools_userHistory reset with defaults");
+      localStorage.setItem("iTools_userHistory", JSON.stringify(defaults));
+    }
+  }
+}
+
+export function removeUserHistoryFile() {
+  localStorage.removeItem("iTools_userHistory");
+  if (allow_debug) console.log("iTools_userHistory removed");
+}
+
+export function getUserHistoryFile() {
+  createUserHistoryFile();
+  const userHistory = JSON.parse(localStorage.getItem("iTools_userHistory"));
+  return userHistory;
+}
+
+// MAIN FUNCTION
 export function inputsHistoryShow(inputs, inputWidget) {
   // Create modal container
   const modal = document.createElement("div");
@@ -641,70 +666,4 @@ export function inputsHistoryShow(inputs, inputWidget) {
 
   // Focus search input
   searchInput.focus();
-
-  // load user History - called once on initialization BUGGED
-
-  // (function initializeHistory() {
-  //   if (historyInitialized) return;
-  //   if(allow_debug) console.log('here',);
-  //   try {
-  //     const savedHistory = getUserHistoryFile();
-  //     if (savedHistory && savedHistory.prompts) {
-  //       inputs.length = 0;
-  //       savedHistory.prompts.forEach(item => inputs.push(item));
-  //       renderList(searchInput.value);
-  //       historyInitialized = true;
-  //     } else {
-  //       app.extensionManager.toast.add({
-  //         severity: "info",
-  //         summary: "Info",
-  //         detail: "No saved favorites found",
-  //         life: 1000,
-  //       });
-  //     }
-  //   } catch (error) {
-  //     app.extensionManager.toast.add({
-  //       severity: "error",
-  //       summary: "Error",
-  //       detail: "Failed to load history",
-  //       life: 3000,
-  //     });
-  //   }
-  // })(); // Immediately invoke the function
-}
-
-export function createUserHistoryFile() {
-  // Get existing history if any
-  const existingHistory = localStorage.getItem("iTools_userHistory");
-
-  if (!existingHistory) {
-    // Create new history with defaults if none exists
-    const defaults = {
-      prompts: DEFAULT_HISTORY,
-    };
-    if (allow_debug) console.log("iTools_userHistory created");
-    localStorage.setItem("iTools_userHistory", JSON.stringify(defaults));
-  } else {
-    // Check if existing history has items
-    const history = JSON.parse(existingHistory);
-    if (!history.prompts || history.prompts.length === 0) {
-      // If empty, initialize with defaults
-      const defaults = {
-        prompts: DEFAULT_HISTORY,
-      };
-      if (allow_debug) console.log("iTools_userHistory reset with defaults");
-      localStorage.setItem("iTools_userHistory", JSON.stringify(defaults));
-    }
-  }
-}
-
-export function removeUserHistoryFile() {
-  localStorage.removeItem("iTools_userHistory");
-  if (allow_debug) console.log("iTools_userHistory removed");
-}
-
-export function getUserHistoryFile() {
-  createUserHistoryFile();
-  const userHistory = JSON.parse(localStorage.getItem("iTools_userHistory"));
-  return userHistory;
 }

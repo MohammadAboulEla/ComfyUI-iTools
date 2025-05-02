@@ -1,67 +1,27 @@
 import base64
-from PIL import Image, ImageSequence, ImageOps
+from PIL import Image, ImageSequence, ImageOps  # type: ignore
 import io
-from ..backend.shared import pil2tensor, project_dir
+from ..backend.shared import (
+    pil2tensor,
+    project_dir,
+    install_package,
+    base64_to_pil,
+    any_type,
+    FlexibleOptionalInputType,
+    get_together_client,
+)
 import os
-from server import PromptServer
-from aiohttp import web
+from server import PromptServer  # type: ignore
+from aiohttp import web  # type: ignore
 import json
-import folder_paths
-import node_helpers
-import numpy as np
-import torch
+import folder_paths  # type: ignore
+import node_helpers  # type: ignore
+import numpy as np  # type: ignore
+import torch  # type: ignore
 import hashlib
 
 
-def install_package(package):
-    import subprocess
-    import sys
-
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
-
-def base64_to_pil(base64_string):
-    header, encoded = base64_string.split(",", 1)  # Remove the data URL header
-    image_data = base64.b64decode(encoded)
-    return Image.open(io.BytesIO(image_data))
-
-
-class MyCustomError(Exception):
-    def __init__(self, message="Something went wrong"):
-        super().__init__(message)
-
-
-class AnyType(str):
-    def __ne__(self, __value: object) -> bool:
-        return False
-
-
-any_type = AnyType("*")
-
-
-class FlexibleOptionalInputType(dict):
-    def __init__(self, type):
-        self.type = type
-
-    def __getitem__(self, key):
-        return (self.type,)
-
-    def __contains__(self, key):
-        return True
-
-
 class IToolsFreeSchnell:
-
-    def __init__(self):
-        ud_dir = os.path.join(folder_paths.base_path, "user", "default")
-        settings_file = os.path.join(ud_dir, "comfy.settings.json")
-
-        with open(settings_file, "r") as file:
-            settings = json.load(file)
-
-        self.together_api = settings.get("iTools.Nodes. together.ai Api Key", "None")
-
     @classmethod
     def INPUT_TYPES(s):
         return {
@@ -82,51 +42,7 @@ class IToolsFreeSchnell:
     DESCRIPTION = "Will return free Flux-Schnell image from a together.ai free API"
 
     def generate_image(self, prompt, width, height, seed):
-        # check if together is available
-        try:
-            from together import Together  # type: ignore
-        except ImportError:
-            install_package("together")
-
-        api_key = (
-            self.together_api
-            if self.together_api and self.together_api != "None"
-            else os.environ.get("TOGETHER_API_KEY")
-        )
-
-        try:
-            client = Together(api_key=api_key)
-        except Exception as e:
-            # If the first key fails, try the environment variable
-            api_key = (
-                os.environ.get("TOGETHER_API_KEY")
-                if api_key != os.environ.get("TOGETHER_API_KEY")
-                else None
-            )
-            if not api_key:
-                raise MyCustomError(
-                    "Invalid or missing API key.\n"
-                    "Get a free key from together.ai and add it to iTools settings,\n"
-                    "or set it in your environment as TOGETHER_API_KEY.\n"
-                    "Don't forget to restart ComfyUI after adding your key."
-                ) from e
-            try:
-                client = Together(api_key=api_key)
-            except Exception as e:
-                raise MyCustomError(
-                    "Failed to initialize Together client with the fallback key."
-                ) from e
-
-        #   if not self.together_api or self.together_api == "None":
-        #     if not os.environ.get('TOGETHER_API_KEY'):
-        #         raise MyCustomError(
-        #         "API key not found in iTools settings or in your environment.\n"
-        #         "Get a free key from together.ai, then add it to iTools settings."
-        #         )
-
-        #     api_key = self.together_api if self.together_api != "None" else os.environ.get('TOGETHER_API_KEY')
-        #     client = Together(api_key=api_key)
-
+        client = get_together_client()
         response = client.images.generate(
             prompt=prompt,
             model="black-forest-labs/FLUX.1-schnell-Free",
@@ -145,8 +61,49 @@ class IToolsFreeSchnell:
         return images
 
 
-class IToolsTestNode:
+class IToolsFreeChat:
+    @classmethod
+    def INPUT_TYPES(s):
+        models = [
+            "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
+            "meta-llama/Llama-Vision-Free",
+            "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
+        ]
+        return {
+            "required": {
+                "model": (
+                    models,
+                    {"default": "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"},
+                ),
+                "chat": (
+                    "STRING",
+                    {
+                        "default": "",
+                        "placeholder": "Chat in supported languages",
+                        "multiline": True,
+                    },
+                ),
+            }
+        }
 
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("answer",)
+    FUNCTION = "chat"
+    OUTPUT_NODE = True
+    CATEGORY = "iTools"
+    DESCRIPTION = "Chat with free Together.ai language models"
+
+    def chat(self, model, chat):
+        client = get_together_client()
+        response = client.chat.completions.create(
+            model=model, messages=[{"role": "user", "content": chat}], stream=False
+        )
+        answer = response.choices[0].message.content
+        print(answer)
+        return (answer,)
+
+
+class IToolsTestNode:
     @classmethod
     def INPUT_TYPES(self):
         return {
@@ -170,7 +127,6 @@ class IToolsTestNode:
 
 
 class IToolsDomNode:
-
     @classmethod
     def INPUT_TYPES(self):
         return {
@@ -194,6 +150,7 @@ class IToolsDomNode:
                 counter = str(value["count"]) or "0"
                 text = value["text"] or ""
         return (str(text + " " + counter),)
+
 
 class IToolsPaintNode:
 
@@ -493,29 +450,3 @@ async def respond_to_request_mask_img(request):
             "status": "success",
         }
     )
-
-
-# DEPRECATED
-# @PromptServer.instance.routes.post("/itools/request_mask_img")
-# async def respond_to_request_mask_img(request):
-#     post = await request.post()
-
-#     img_path = post.get("img_path")
-
-#     # Define the directory where the images are saved
-#     save_directory = os.path.join(project_dir, "backend")
-
-#     # Define file paths
-#     img_out = os.path.join(save_directory, "iToolsMaskedImg.png")
-
-
-#     # # Check if both files exist
-#     # if not os.path.exists(img_path):
-#     #     return web.json_response({"status": "error", "message": "File not found"}, status=404)
-
-#     # save image to desk
-#     removeBackground(img_path,img_out)
-
-#     return web.json_response({
-#         "status": "success",
-#     })

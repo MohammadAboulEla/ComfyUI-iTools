@@ -1,18 +1,6 @@
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
-
-export const DEFAULT_HISTORY = [
-  "A playful kitten wearing a colorful bow tie, sitting on a fluffy cloud, with a bright rainbow in the background",
-  "A cheerful bunny in a pink dress holding a basket of flowers, standing in a sunny meadow with butterflies around",
-  "A small dragon with big eyes and tiny wings, blowing gentle puffs of fire while sitting on top of a cupcake",
-  "A happy, round penguin wearing a scarf and hat, sliding down a snowy hill with sparkles and snowflakes in the air",
-  "A friendly octopus with heart-shaped eyes, holding balloons in each tentacle, floating in an underwater scene with smiling fish",
-  "A chubby unicorn with pastel-colored mane and tail, flying through the sky with stars and sparkles surrounding it",
-  "A joyful panda riding a bicycle through a bamboo forest, with colorful flowers and birds flying alongside",
-  "A tiny robot with a big smile, watering a garden of glowing flowers under a starry sky",
-  "A group of cute woodland animals having a tea party, with tiny teacups and plates of sweets on a tree stump",
-  "A happy little fox wearing a superhero cape, flying above a vibrant cityscape at sunset",
-];
+import { DEFAULT_HISTORY } from "./utils.js";
 
 export function exportHistoryToFile(history) {
   // if list is empty return
@@ -22,7 +10,7 @@ export function exportHistoryToFile(history) {
       severity: "error",
       summary: "Error",
       detail: "No prompts to export!",
-      life: 1000,
+      life: 2000,
     });
     return;
   }
@@ -110,15 +98,17 @@ export function getUserHistoryFile() {
   return userHistory;
 }
 
-// Register a new sidebar tab
-app.extensionManager.registerSidebarTab({
-  id: "iToolsFavorite",
-  icon: "pi pi-star-fill",
-  title: "favorite",
-  tooltip: "Prompt Library",
-  type: "custom",
-  render: (el) => {
-    el.innerHTML = `
+// MAIN FUNCTION Register a new sidebar tab
+export function addSideTab() {
+  if (!app.ui.settings.getSettingValue("iTools.Tabs.Side Tab")) return;
+  app.extensionManager.registerSidebarTab({
+    id: "iToolsFavorite",
+    icon: "pi pi-star-fill",
+    title: "favorite",
+    tooltip: "Prompt Library",
+    type: "custom",
+    render: (el) => {
+      el.innerHTML = `
 <div style="height: 100%; display: flex; flex-direction: column; padding: 8px; box-sizing: border-box; font-family: sans-serif; color: #fff;">
   <h2 style="margin: 0 0 10px 0; font-size: 16px;">iTools Prompt Library</h2>
   
@@ -193,69 +183,69 @@ app.extensionManager.registerSidebarTab({
 </div>
     `;
 
-    const listEl = el.querySelector("#promptList");
-    const searchEl = el.querySelector("#promptSearch");
-    const exportBtn = el.querySelector("#exportBtn");
-    const importBtn = el.querySelector("#importBtn");
-    const appendBtn = el.querySelector("#appendBtn");
-    const saveBtn = el.querySelector("#saveBtn");
+      const listEl = el.querySelector("#promptList");
+      const searchEl = el.querySelector("#promptSearch");
+      const exportBtn = el.querySelector("#exportBtn");
+      const importBtn = el.querySelector("#importBtn");
+      const appendBtn = el.querySelector("#appendBtn");
+      const saveBtn = el.querySelector("#saveBtn");
 
-    const selected = app.canvas.selectedItems;
-    const firstNode = Array.from(selected).find((node) => node.constructor.name === "ComfyNode");
-    let hasSelectedNode = null
-    
-    if (firstNode && firstNode.widgets) {
-      const hasCustomText = firstNode.widgets.filter((widget) => widget.type === "customtext");
-      if(hasCustomText.length > 0){
-        if(allow_debug) console.log('hasCustomText',hasCustomText);
-        hasSelectedNode = hasCustomText
+      const selected = app.canvas.selectedItems;
+      const firstNode = Array.from(selected).find((node) => node.constructor.name === "ComfyNode");
+      let hasSelectedNode = null;
+
+      if (firstNode && firstNode.widgets) {
+        const hasCustomText = firstNode.widgets.filter((widget) => widget.type === "customtext");
+        if (hasCustomText.length > 0) {
+          if (allow_debug) console.log("hasCustomText", hasCustomText);
+          hasSelectedNode = hasCustomText;
+        }
       }
-    }
-    
-    // Add hover effects to buttons
-    const buttons = [exportBtn, importBtn, appendBtn, saveBtn];
-    buttons.forEach((btn) => {
-      btn.addEventListener("mouseover", () => {
-        if (btn.id !== "saveBtn") {
-          btn.style.background = "#444";
-        } else {
-          btn.style.background = "#C96D30";
-        }
-      });
-      btn.addEventListener("mouseout", () => {
-        if (btn.id !== "saveBtn") {
-          btn.style.background = "#333";
-        } else {
-          btn.style.background = "#A85B28";
-        }
-      });
-    });
 
-    function copyPrompt(text) {
-      if (hasSelectedNode){
-        hasSelectedNode[0].value = text;
-        hasSelectedNode = null
-      }else{
-        navigator.clipboard.writeText(text);
-        app.extensionManager.toast.add({
-          severity: "success",
-          summary: "Success",
-          detail: "Text copied to clipboard!",
-          life: 1000,
+      // Add hover effects to buttons
+      const buttons = [exportBtn, importBtn, appendBtn, saveBtn];
+      buttons.forEach((btn) => {
+        btn.addEventListener("mouseover", () => {
+          if (btn.id !== "saveBtn") {
+            btn.style.background = "#444";
+          } else {
+            btn.style.background = "#C96D30";
+          }
         });
+        btn.addEventListener("mouseout", () => {
+          if (btn.id !== "saveBtn") {
+            btn.style.background = "#333";
+          } else {
+            btn.style.background = "#A85B28";
+          }
+        });
+      });
+
+      function copyPrompt(text) {
+        if (hasSelectedNode) {
+          hasSelectedNode[0].value = text;
+          hasSelectedNode = null;
+        } else {
+          navigator.clipboard.writeText(text);
+          app.extensionManager.toast.add({
+            severity: "success",
+            summary: "Success",
+            detail: "Text copied to clipboard!",
+            life: 2000,
+          });
+        }
+
+        // toggle side bar
+        app.extensionManager.sidebarTab.toggleSidebarTab("iToolsFavorite");
       }
 
-      // toggle side bar
-      app.extensionManager.sidebarTab.toggleSidebarTab("iToolsFavorite");
-    }
+      function renderList(filter = "") {
+        const prompts = getUserHistoryFile();
+        const filtered = prompts.prompts.filter((p) => p.toLowerCase().includes(filter.toLowerCase()));
 
-    function renderList(filter = "") {
-      const prompts = getUserHistoryFile();
-      const filtered = prompts.prompts.filter((p) => p.toLowerCase().includes(filter.toLowerCase()));
-
-      listEl.innerHTML = filtered
-        .map(
-          (prompt, index) => `
+        listEl.innerHTML = filtered
+          .map(
+            (prompt, index) => `
         <div style="
           background: #2b2b2b;
           padding: 8px;
@@ -306,11 +296,11 @@ app.extensionManager.registerSidebarTab({
           </button>
         </div>
       `
-        )
-        .join("");
+          )
+          .join("");
 
-      if (filtered.length === 0) {
-        listEl.innerHTML = `
+        if (filtered.length === 0) {
+          listEl.innerHTML = `
           <div style="
             color: #666;
             text-align: center;
@@ -320,144 +310,146 @@ app.extensionManager.registerSidebarTab({
             ${filter ? "No matching prompts found" : "No prompts in favorites"}
           </div>
         `;
-      }
+        }
 
-      // Bind global handlers
-      window.copyPromptFromList = (i) => copyPrompt(filtered[i]);
-      window.deletePromptFromList = async (i) => {
-        const confirmed = await app.extensionManager.dialog.confirm({
-          title: "Delete Prompt",
-          message: "Are you sure you want to delete this prompt from favorites?",
-          type: "delete",
-        });
+        // Bind global handlers
+        window.copyPromptFromList = (i) => copyPrompt(filtered[i]);
+        window.deletePromptFromList = async (i) => {
+          const confirmed = await app.extensionManager.dialog.confirm({
+            title: "Delete Prompt",
+            message: "Are you sure you want to delete this prompt from favorites?",
+            type: "delete",
+          });
 
-        if (confirmed) {
-          const history = getUserHistoryFile();
-          const filtered = history.prompts.filter((p) => p.toLowerCase().includes(searchEl.value.toLowerCase()));
+          if (confirmed) {
+            const history = getUserHistoryFile();
+            const filtered = history.prompts.filter((p) => p.toLowerCase().includes(searchEl.value.toLowerCase()));
 
-          const deletedPrompt = filtered[i];
-          const index = history.prompts.indexOf(deletedPrompt);
+            const deletedPrompt = filtered[i];
+            const index = history.prompts.indexOf(deletedPrompt);
 
-          if (index > -1) {
-            history.prompts.splice(index, 1);
-            localStorage.setItem("iTools_userHistorySide", JSON.stringify(history));
-            renderList(searchEl.value);
+            if (index > -1) {
+              history.prompts.splice(index, 1);
+              localStorage.setItem("iTools_userHistorySide", JSON.stringify(history));
+              renderList(searchEl.value);
 
-            app.extensionManager.toast.add({
-              severity: "success",
-              summary: "Success",
-              detail: "Prompt deleted",
-              life: 1000,
-            });
+              app.extensionManager.toast.add({
+                severity: "success",
+                summary: "Success",
+                detail: "Prompt deleted",
+                life: 2000,
+              });
+            }
           }
-        }
-      };
-    }
-
-    // Button event handlers
-    exportBtn.addEventListener("click", () => {
-      const prompts = getUserHistoryFile();
-      exportHistoryToFile(prompts);
-    });
-
-    importBtn.addEventListener("click", async () => {
-      const confirmed = await app.extensionManager.dialog.confirm({
-        title: "Import Favorites",
-        message: "This will replace your current favorites with imported ones.\nDo you want to continue?",
-        type: "overwrite",
-      });
-
-      if (confirmed) {
-        importHistoryFromFile((newItems) => {
-          localStorage.setItem("iTools_userHistorySideSide", JSON.stringify({ prompts: newItems }));
-          renderList(searchEl.value);
-          app.extensionManager.toast.add({
-            severity: "success",
-            summary: "Success",
-            detail: "Prompts imported (replaced) successfully!",
-            life: 1000,
-          });
-        });
-      }
-    });
-
-    appendBtn.addEventListener("click", () => {
-      importHistoryFromFile((newItems) => {
-        if (!newItems || newItems.length === 0) return;
-
-        // Get current prompts
-        const currentHistory = getUserHistoryFile();
-        const currentPrompts = currentHistory?.prompts || [];
-
-        // Filter out duplicates and empty items
-        const uniqueNewItems = newItems.filter((item) => item.trim() && !currentPrompts.includes(item));
-
-        if (uniqueNewItems.length === 0) {
-          app.extensionManager.toast.add({
-            severity: "info",
-            summary: "Info",
-            detail: "No new prompts to merge (all duplicates)",
-            life: 2000,
-          });
-          return;
-        }
-
-        // Merge and save
-        const mergedPrompts = [...currentPrompts, ...uniqueNewItems];
-        localStorage.setItem("iTools_userHistorySide", JSON.stringify({ prompts: mergedPrompts }));
-
-        // Update UI
-        renderList(searchEl.value);
-
-        // Show success message
-        app.extensionManager.toast.add({
-          severity: "success",
-          summary: "Success",
-          detail: `Merged ${uniqueNewItems.length} new prompts`,
-          life: 2000,
-        });
-      });
-    });
-
-    saveBtn.addEventListener("click", async () => {
-      const prompts = getUserHistoryFile();
-      if (prompts.length === 0) {
-        app.extensionManager.toast.add({
-          severity: "error",
-          summary: "Error",
-          detail: "Saving empty favorites is not allowed",
-          life: 3000,
-        });
-        return;
+        };
       }
 
-      try {
+      // Button event handlers
+      exportBtn.addEventListener("click", () => {
+        const prompts = getUserHistoryFile();
+        exportHistoryToFile(prompts);
+      });
+
+      importBtn.addEventListener("click", async () => {
         const confirmed = await app.extensionManager.dialog.confirm({
-          title: "Save Favorites 🪶",
-          message: "This will save your current favorites.\nDo you want to continue?",
+          title: "Import Favorites",
+          message: "This will replace your current favorites with imported ones.\nDo you want to continue?",
           type: "overwrite",
         });
 
         if (confirmed) {
-          localStorage.setItem("iTools_userHistorySideSide", JSON.stringify({ prompts }));
+          importHistoryFromFile((newItems) => {
+            localStorage.setItem("iTools_userHistorySideSide", JSON.stringify({ prompts: newItems }));
+            renderList(searchEl.value);
+            app.extensionManager.toast.add({
+              severity: "success",
+              summary: "Success",
+              detail: "Prompts imported (replaced) successfully!",
+              life: 2000,
+            });
+          });
+        }
+      });
+
+      appendBtn.addEventListener("click", () => {
+        importHistoryFromFile((newItems) => {
+          if (!newItems || newItems.length === 0) return;
+
+          // Get current prompts
+          const currentHistory = getUserHistoryFile();
+          const currentPrompts = currentHistory?.prompts || [];
+
+          // Filter out duplicates and empty items
+          const uniqueNewItems = newItems.filter((item) => item.trim() && !currentPrompts.includes(item));
+
+          if (uniqueNewItems.length === 0) {
+            app.extensionManager.toast.add({
+              severity: "info",
+              summary: "Info",
+              detail: "No new prompts to merge (all duplicates)",
+              life: 2000,
+            });
+            return;
+          }
+
+          // Merge and save
+          const mergedPrompts = [...currentPrompts, ...uniqueNewItems];
+          localStorage.setItem("iTools_userHistorySide", JSON.stringify({ prompts: mergedPrompts }));
+
+          // Update UI
+          renderList(searchEl.value);
+
+          // Show success message
           app.extensionManager.toast.add({
             severity: "success",
             summary: "Success",
-            detail: "Favorites saved successfully!",
-            life: 1000,
+            detail: `Merged ${uniqueNewItems.length} new prompts`,
+            life: 2000,
+          });
+        });
+      });
+
+      saveBtn.addEventListener("click", async () => {
+        const prompts = getUserHistoryFile();
+        if (prompts.length === 0) {
+          app.extensionManager.toast.add({
+            severity: "error",
+            summary: "Error",
+            detail: "Saving empty favorites is not allowed",
+            life: 3000,
+          });
+          return;
+        }
+
+        try {
+          const confirmed = await app.extensionManager.dialog.confirm({
+            title: "Save Favorites 🪶",
+            message: "This will save your current favorites.\nDo you want to continue?",
+            type: "overwrite",
+          });
+
+          if (confirmed) {
+            localStorage.setItem("iTools_userHistorySideSide", JSON.stringify({ prompts }));
+            app.extensionManager.toast.add({
+              severity: "success",
+              summary: "Success",
+              detail: "Favorites saved successfully!",
+              life: 2000,
+            });
+          }
+        } catch (error) {
+          app.extensionManager.toast.add({
+            severity: "error",
+            summary: "Error",
+            detail: "Failed to save favorites",
+            life: 3000,
           });
         }
-      } catch (error) {
-        app.extensionManager.toast.add({
-          severity: "error",
-          summary: "Error",
-          detail: "Failed to save favorites",
-          life: 3000,
-        });
-      }
-    });
+      });
 
-    searchEl.addEventListener("input", () => renderList(searchEl.value));
-    renderList();
-  },
-});
+      searchEl.addEventListener("input", () => renderList(searchEl.value));
+      renderList();
+    },
+  });
+}
+addSideTab();
