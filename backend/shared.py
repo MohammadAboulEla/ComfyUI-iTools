@@ -212,7 +212,7 @@ def get_together_client():
         from together import Together  # type: ignore
     except ImportError:
         install_package("together")
-        from together import Together  # re-import after installation
+        from together import Together  # type: ignore # re-import after installation
 
     api_key = together_api
     if not api_key or api_key == "None":

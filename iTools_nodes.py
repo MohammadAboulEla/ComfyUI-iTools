@@ -3,15 +3,15 @@ import os
 import time
 from pathlib import Path
 import random
-from PIL.PngImagePlugin import PngInfo
-import comfy.samplers
-import folder_paths
-import node_helpers
-import numpy as np
-import torch
-from PIL import Image, ImageSequence, ImageOps
+from PIL.PngImagePlugin import PngInfo # type: ignore
+import comfy.samplers # type: ignore
+import folder_paths # type: ignore
+import node_helpers # type: ignore
+import numpy as np # type: ignore
+import torch # type: ignore
+from PIL import Image, ImageSequence, ImageOps # type: ignore
 from .backend.checker_board import ChessTensor, ChessPattern
-from nodes import common_ksampler, SaveImage, PreviewImage
+from nodes import common_ksampler, SaveImage, PreviewImage # type: ignore
 import json
 from .backend.file_handeler import FileHandler
 from .backend.grid_filler import (
@@ -30,7 +30,7 @@ from .backend.prompter_multi import (
     templates_extra3,
 )
 from .backend.shared import styles, tensor2pil, pil2tensor, project_dir
-from comfy.cli_args import args
+from comfy.cli_args import args  # type: ignore
 import re
 
 

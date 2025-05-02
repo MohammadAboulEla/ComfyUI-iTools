@@ -402,10 +402,10 @@ async def respond_to_request_load_img(request):
 def removeBackground(input_path, output_path):
     # Try importing rembg
     try:
-        from rembg import remove
+        from rembg import remove # type: ignore
     except ImportError:
         install_package("rembg[gpu]")
-        from rembg import remove  # Retry the import after installation
+        from rembg import remove  # type: ignore # Retry the import after installation
 
     input_img = Image.open(input_path)
     output_img = remove(input_img)
