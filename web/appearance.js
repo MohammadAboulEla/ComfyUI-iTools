@@ -164,7 +164,7 @@ app.registerExtension({
   settings: [
     {
       id: "iTools.Tabs.menuTab",
-      name: "Enable the iTools tab on the menu bar.",
+      name: "Enable iTools tab on the menu bar.",
       type: "boolean",
       defaultValue: false,
       tooltip: "Refresh your browser after changing this value.",
@@ -189,7 +189,7 @@ app.registerExtension({
   settings: [
     {
       id: "iTools.Tabs.Side Tab",
-      name: "Enable the Prompt Library in the sidebar.",
+      name: "Enable Prompt Library in the sidebar.",
       type: "boolean",
       defaultValue: true,
       tooltip: "Refresh your browser after changing this value.",
