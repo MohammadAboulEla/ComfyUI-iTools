@@ -349,8 +349,6 @@ function overrideDraw(node, widget_width, y, ctx, compare, mouse) {
     );
     }
 
-
-
     // Draw labels
     // ctx.save();
     // ctx.font = "bold 18px Arial";
@@ -421,16 +419,12 @@ function overrideDraw(node, widget_width, y, ctx, compare, mouse) {
 
     // ctx.restore();
   } else if (compare.mode === "A") {
-    if(compareWay == "makadi") {
-
-    }else{
-      
-    }
     // draw img 1 only
-    ctx.drawImage(img1, 0, 0, img2.naturalWidth, img2.naturalHeight, imgX, imgY, w, h);
+    ctx.drawImage(img1, 0, 0, img1.naturalWidth, img1.naturalHeight, imgX, imgY, w, h);
+    
   } else if (compare.mode === "B") {
     // draw img 2 only
-    ctx.drawImage(img2, 0, 0, img1.naturalWidth, img1.naturalHeight, imgX, imgY, w, h);
+    ctx.drawImage(img2, 0, 0, img2.naturalWidth, img2.naturalHeight, imgX, imgY, w, h);
   }
 }
 

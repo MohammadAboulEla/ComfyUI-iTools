@@ -99,7 +99,7 @@ class IToolsFreeChat:
             model=model, messages=[{"role": "user", "content": chat}], stream=False
         )
         answer = response.choices[0].message.content
-        print(answer)
+        # print(answer)
         return (answer,)
 
 
