@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-itools"
 description = "Whether you're a casual user or a power user, iTools provides the quality-of-life improvements you need to make your ComfyUI experience more efficient and enjoyable."
-version = "0.6.1"
+version = "0.6.2"
 license = {file = "LICENSE"}
 
 [project.urls]

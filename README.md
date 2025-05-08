@@ -213,6 +213,21 @@ A powerful regex pattern and text manipulation node. Helps you create, or quickl
 ![iTools Regex Editor](examples/Screenshot20.jpg)
 
 ---
+### **iTools Prompt Library ⭐:**
+
+A convenient sidebar tab that serves as your personal prompt library. Store, organize, and quickly access your favorite prompts. Features include:
+
+- **Import/Export**: Save your prompt collection to a file or import prompts from external sources
+- **Merge**: Combine new prompts with your existing library without duplicates
+- **Search**: Quickly find specific prompts with the built-in search functionality
+- **One-Click Usage**: Apply prompts directly to selected text nodes or copy to clipboard
+- **Organization**: Delete unwanted prompts to keep your library clean and relevant
+
+The Prompt Library provides a persistent storage solution that maintains your prompt collection between sessions, making it easy to build and maintain your personal prompt database over time.
+
+[![Watch the video](https://github.com/user-attachments/assets/685a5987-259d-4d6a-9977-3728e8a16aae)](https://github.com/user-attachments/assets/685a5987-259d-4d6a-9977-3728e8a16aae)
+
+---
 
 _Wait for more..._
 
