@@ -137,7 +137,7 @@ app.registerExtension({
     function showButtons() {
       a.isVisible = true;
       b.isVisible = true;
-      c.isVisible = true;
+      // c.isVisible = true;
     }
 
     function createButtons(startVisible = true) {
@@ -195,44 +195,44 @@ app.registerExtension({
         togglingLastTwoImages();
       };
 
-      c = new SmartButton(75 + 55 + 125, 8 + 1, 18, 20, node, "|");
-      c.allowVisualHover = true;
-      c.textYoffset = -0.05;
-      c.isVisible = startVisible;
-      c.shape = Shapes.CIRCLE;
-      //c.roundRadius = 5;
-      c.outlineWidth = 1;
-      c.outlineColor = "#656565";
-      c.color = "#222222";
-      c.activeColor = c.font = "12px Arial";
-      c.onClick = () => {
-        // reset togglingLastTwoImages
-        if (b.text !== "[Current] | Previous") togglingLastTwoImages();
+      // c = new SmartButton(75 + 55 + 125, 8 + 1, 18, 20, node, "|");
+      // c.allowVisualHover = true;
+      // c.textYoffset = -0.05;
+      // c.isVisible = startVisible;
+      // c.shape = Shapes.CIRCLE;
+      // //c.roundRadius = 5;
+      // c.outlineWidth = 1;
+      // c.outlineColor = "#656565";
+      // c.color = "#222222";
+      // c.activeColor = c.font = "12px Arial";
+      // c.onClick = () => {
+      //   // reset togglingLastTwoImages
+      //   if (b.text !== "[Current] | Previous") togglingLastTwoImages();
 
-        // reset from history state
-        if (node.imageIndex === null) {
-          if (imagesTracked.length > 1) {
-            node.imageIndex = 0; // reset to single view
-            node.imgs = node.imgs = [node.imgs[node.imgs.length - 1]]; // show last image in node.imgs list;
-          }
-        }
+      //   // reset from history state
+      //   if (node.imageIndex === null) {
+      //     if (imagesTracked.length > 1) {
+      //       node.imageIndex = 0; // reset to single view
+      //       node.imgs = node.imgs = [node.imgs[node.imgs.length - 1]]; // show last image in node.imgs list;
+      //     }
+      //   }
 
-        // start compare
-        if (imagesTracked.length <= 1) {
-          if (toastShownCountI < MAX_TOAST_SHOWS) {
-            app.extensionManager.toast.add({
-              severity: "info",
-              summary: "iTools!",
-              detail: "You must execute this node at least twice",
-              life: 2000,
-            });
-            toastShownCountI++;
-          }
-          return;
-        }
-        compare = !compare;
-        toggleButtonActivation(c, compare);
-      };
+      //   // start compare
+      //   if (imagesTracked.length <= 1) {
+      //     if (toastShownCountI < MAX_TOAST_SHOWS) {
+      //       app.extensionManager.toast.add({
+      //         severity: "info",
+      //         summary: "iTools!",
+      //         detail: "You must execute this node at least twice",
+      //         life: 2000,
+      //       });
+      //       toastShownCountI++;
+      //     }
+      //     return;
+      //   }
+      //   compare = !compare;
+      //   toggleButtonActivation(c, compare);
+      // };
     }
 
     createButtons();
@@ -264,18 +264,22 @@ app.registerExtension({
           if (allow_debug) console.log("ImagePreviewWidget not found");
           return;
         }
-        const originalDraw = previewWidget.draw;
-        previewWidget.draw = function (ctx, node, widget_width, y, widget_height, ...args) {
-          // Call the original draw function first
-          originalDraw.apply(this, [ctx, node, widget_width, y, widget_height, ...args]);
-          drawImgOverlay(node, widget_width, y, ctx, imagesTracked, compare);
-        };
+    
+        const originalDraw = previewWidget.drawWidget;
+        if (originalDraw) {
+          previewWidget.drawWidget = function (ctx, node, widget_width, y, widget_height, ...args) {
+            // Call the original draw function first
+            originalDraw.apply(this, [ctx, node, widget_width, y, widget_height, ...args]);
+            drawImgOverlay(node, widget_width, y, ctx, imagesTracked, compare);
+          };
+        }
       }, 300);
     };
 
     node.onResize = function (newSize) {
       // limit width size while resizing
       node.size[0] = Math.max(285, newSize[0]);
+      // if (allow_debug) console.log("Node", node);
     };
 
     const m = new BaseSmartWidgetManager(node, "iToolsPreviewImage");
@@ -289,6 +293,12 @@ app.registerExtension({
 
 function drawImgOverlay(node, widget_width, y, ctx, _imagesRef, compareMode = false) {
   if (!compareMode) return;
+
+  if (!node.imgs || node.imgs.length === 0) {
+  if (allow_debug) console.log("Node", node);
+    // if (allow_debug) console.log("No images to draw");
+    return;
+  }
 
   const allowImageSizeDraw = app.extensionManager.setting.get("Comfy.Node.AllowImageSizeDraw", true);
   const IMAGE_TEXT_SIZE_TEXT_HEIGHT = allowImageSizeDraw ? 15 : 0;
