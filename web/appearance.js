@@ -53,6 +53,30 @@ app.registerExtension({
   ],
 });
 
+// Register a new setting auto resize
+app.registerExtension({
+  name: "makadi_iTools_resize",
+  settings: [
+    {
+      id: "iTools.Nodes.Auto Resize",
+      name: "Auto resize nodes when created",
+      type: "boolean",
+      defaultValue: false,
+      onChange: (value) => {
+        const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.Auto Resize");
+        if (prevValue !== undefined && prevValue !== value) {
+          app.extensionManager.toast.add({
+            severity: "warn",
+            summary: "Alert!",
+            detail: "Refresh your browser",
+            life: 3000,
+          });
+        }
+      },
+    },
+  ],
+});
+
 // Register a new setting auto color
 app.registerExtension({
   name: "makadi_iTools_color",
@@ -213,6 +237,7 @@ app.registerExtension({
   name: "makadi.appearance",
   nodeCreated(node) {
     const allow_auto_color = app.ui.settings.getSettingValue("iTools.Nodes.Auto Color");
+    const allow_auto_resize = app.ui.settings.getSettingValue("iTools.Nodes.Auto Resize");
     switch (node.comfyClass) {
       case "iToolsPromptStyler":
         if (!allow_auto_color) break;
@@ -225,28 +250,28 @@ app.registerExtension({
         node.bgcolor = LGraphCanvas.node_colors.green.bgcolor;
         break;
       case "iToolsTextReplacer":
-        node.setSize([200, 80]);
+        if (allow_auto_resize) node.setSize([200, 80]);
         if (!allow_auto_color) break;
         node.color = LGraphCanvas.node_colors.green.color;
         node.bgcolor = LGraphCanvas.node_colors.green.bgcolor;
         break;
       case "iToolsRegexNode":
-        node.setSize([280, 130]);
+        if (allow_auto_resize) node.setSize([280, 130]);
         if (!allow_auto_color) break;
         node.color = LGraphCanvas.node_colors.green.color;
         node.bgcolor = LGraphCanvas.node_colors.green.bgcolor;
         break;
       case "iToolsAddOverlay":
-        node.size[0] = 240;
+        if (allow_auto_resize) node.size[0] = 240;
         break;
       case "iToolsLineLoader":
-        node.size[0] = 200;
+        if (allow_auto_resize) node.size[0] = 200;
         break;
       case "iToolsGridFiller":
-        node.size[0] = 240;
+        if (allow_auto_resize) node.size[0] = 240;
         break;
       case "iToolsLoadImagePlus":
-        node.size[0] = 210;
+        if (allow_auto_resize) node.size[0] = 210;
         if (!allow_auto_color) break;
         node.color = LGraphCanvas.node_colors.pale_blue.color;
         break;
@@ -261,7 +286,7 @@ app.registerExtension({
         // node.bgcolor = LGraphCanvas.node_colors.green.bgcolor;
         break;
       case "iToolsCheckerBoard":
-        node.size[0] = 270;
+        if (allow_auto_resize) node.size[0] = 270;
         break;
     }
   },
