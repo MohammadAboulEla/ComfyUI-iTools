@@ -28,6 +28,12 @@ app.registerExtension({
     let imagesTracked = [];
     const MAX_IMAGES = 8;
 
+    let mouse = {
+      mouseInNode: false,
+      x: 0,
+      y: 0,
+    };
+
     // other vars
     let toastShownCountH = 0;
     let toastShownCountPC = 0;
@@ -195,44 +201,44 @@ app.registerExtension({
         togglingLastTwoImages();
       };
 
-      // c = new SmartButton(75 + 55 + 125, 8 + 1, 18, 20, node, "|");
-      // c.allowVisualHover = true;
-      // c.textYoffset = -0.05;
-      // c.isVisible = startVisible;
-      // c.shape = Shapes.CIRCLE;
-      // //c.roundRadius = 5;
-      // c.outlineWidth = 1;
-      // c.outlineColor = "#656565";
-      // c.color = "#222222";
-      // c.activeColor = c.font = "12px Arial";
-      // c.onClick = () => {
-      //   // reset togglingLastTwoImages
-      //   if (b.text !== "[Current] | Previous") togglingLastTwoImages();
+      c = new SmartButton(75 + 55 + 125, 8 + 1, 18, 20, node, "|");
+      c.allowVisualHover = true;
+      c.textYoffset = -0.05;
+      c.isVisible = startVisible;
+      c.shape = Shapes.CIRCLE;
+      //c.roundRadius = 5;
+      c.outlineWidth = 1;
+      c.outlineColor = "#656565";
+      c.color = "#222222";
+      c.activeColor = c.font = "12px Arial";
+      c.onClick = () => {
+        // reset togglingLastTwoImages
+        if (b.text !== "[Current] | Previous") togglingLastTwoImages();
 
-      //   // reset from history state
-      //   if (node.imageIndex === null) {
-      //     if (imagesTracked.length > 1) {
-      //       node.imageIndex = 0; // reset to single view
-      //       node.imgs = node.imgs = [node.imgs[node.imgs.length - 1]]; // show last image in node.imgs list;
-      //     }
-      //   }
+        // reset from history state
+        if (node.imageIndex === null) {
+          if (imagesTracked.length > 1) {
+            node.imageIndex = 0; // reset to single view
+            node.imgs = node.imgs = [node.imgs[node.imgs.length - 1]]; // show last image in node.imgs list;
+          }
+        }
 
-      //   // start compare
-      //   if (imagesTracked.length <= 1) {
-      //     if (toastShownCountI < MAX_TOAST_SHOWS) {
-      //       app.extensionManager.toast.add({
-      //         severity: "info",
-      //         summary: "iTools!",
-      //         detail: "You must execute this node at least twice",
-      //         life: 2000,
-      //       });
-      //       toastShownCountI++;
-      //     }
-      //     return;
-      //   }
-      //   compare = !compare;
-      //   toggleButtonActivation(c, compare);
-      // };
+        // start compare
+        if (imagesTracked.length <= 1) {
+          if (toastShownCountI < MAX_TOAST_SHOWS) {
+            app.extensionManager.toast.add({
+              severity: "info",
+              summary: "iTools!",
+              detail: "You must execute this node at least twice",
+              life: 2000,
+            });
+            toastShownCountI++;
+          }
+          return;
+        }
+        compare = !compare;
+        toggleButtonActivation(c, compare);
+      };
     }
 
     createButtons();
@@ -267,10 +273,11 @@ app.registerExtension({
     
         const originalDraw = previewWidget.drawWidget;
         if (originalDraw) {
-          previewWidget.drawWidget = function (ctx, node, widget_width, y, widget_height, ...args) {
+          previewWidget.draw = function (ctx, node, widget_width, y, widget_height, ...args) {
             // Call the original draw function first
             originalDraw.apply(this, [ctx, node, widget_width, y, widget_height, ...args]);
-            drawImgOverlay(node, widget_width, y, ctx, imagesTracked, compare);
+            
+            drawImgOverlay(mouse, node, widget_width, y, ctx, imagesTracked, compare);
           };
         }
       }, 300);
@@ -288,31 +295,46 @@ app.registerExtension({
       origOnRemoved?.apply(this, arguments);
       m.destroy();
     };
+
+    node.onMouseEnter = (e) => {
+      if(allow_debug) console.log('node.y',node.y);
+      mouse.mouseInNode = true;
+    };
+
+    node.onMouseLeave = (e) => {
+
+      mouse.mouseInNode = false;
+    };
+
+    node.onMouseMove = (e, pos) => {
+      if (mouse.mouseInNode) {
+        const graphMouse = app.canvas.graph_mouse;
+        mouse.x = graphMouse[0] - node.pos[0];
+        mouse.y = graphMouse[1] - node.pos[1];
+      }
+    };
   },
+  
 });
 
-function drawImgOverlay(node, widget_width, y, ctx, _imagesRef, compareMode = false) {
+function drawImgOverlay(mouse, node, widget_width, y, ctx, _imagesRef, compareMode = false) {
   if (!compareMode) return;
-
-  if (!node.imgs || node.imgs.length === 0) {
-  if (allow_debug) console.log("Node", node);
-    // if (allow_debug) console.log("No images to draw");
-    return;
-  }
+  y = y ? y : 0; // Ensure y is defined
 
   const allowImageSizeDraw = app.extensionManager.setting.get("Comfy.Node.AllowImageSizeDraw", true);
   const IMAGE_TEXT_SIZE_TEXT_HEIGHT = allowImageSizeDraw ? 15 : 0;
 
-  const img = node.imgs[0];
+  const img2 = _imagesRef[0];
+  const img1 = _imagesRef.length > 1 ? _imagesRef[_imagesRef.length - 2] : null;
+  if (!img2) {
+    if (allow_debug) console.log("No previous image to compare with");
+    return;
+  };
+
   const dw = widget_width;
   const dh = node.size[1] - y - IMAGE_TEXT_SIZE_TEXT_HEIGHT;
-
-  // Use max dimensions from both images
-  const prevImg = _imagesRef.length > 1 ? _imagesRef[_imagesRef.length - 2] : null;
-  if (!prevImg) return;
-
-  let w = Math.max(img.naturalWidth, prevImg.naturalWidth);
-  let h = Math.max(img.naturalHeight, prevImg.naturalHeight);
+  let w = Math.max(img1.naturalWidth, img2.naturalWidth);
+  let h = Math.max(img1.naturalHeight, img2.naturalHeight);
 
   const scaleX = dw / w;
   const scaleY = dh / h;
@@ -322,27 +344,14 @@ function drawImgOverlay(node, widget_width, y, ctx, _imagesRef, compareMode = fa
   h *= scale;
 
   // Centered position within the widget
-  const x = (dw - w) / 2;
-  const y_pos = (dh - h) / 2 + y;
+  const imgX = (dw - w) / 2;
+  const imgY = (dh - h) / 2 + y; // +y to offset within canvas
 
-  const graphMouse = app.canvas.graph_mouse;
-  const mouseX = graphMouse[0] - node.pos[0];
-  const splitX = Math.max(x, Math.min(mouseX, x + w));
-  const splitRatio = (splitX - x) / w;
+  const mouseX = mouse.x
+  const splitX = Math.max(imgX, Math.min(mouseX, imgX + w));
+  const splitRatio = (splitX - imgX) / w;
 
-  if (prevImg && compareMode) {
-    ctx.drawImage(
-      prevImg,
-      prevImg.naturalWidth * splitRatio,
-      0,
-      prevImg.naturalWidth * (1 - splitRatio),
-      prevImg.naturalHeight,
-      x + w * splitRatio,
-      y_pos,
-      w * (1 - splitRatio),
-      h
-    );
+  if (img1 && compareMode) {
+   ctx.drawImage(img1, 0, 0, img1.naturalWidth * splitRatio, img1.naturalHeight, imgX, imgY, w * splitRatio, h);
   }
 }
-
-// b.text = isShowingCurrent ? "c\u0332u\u0332r\u0332r\u0332e\u0332n\u0332t\u0332 / Previous" : "Current / P\u0332r\u0332e\u0332v\u0332i\u0332o\u0332u\u0332s\u0332";
