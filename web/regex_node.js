@@ -65,9 +65,17 @@ const RegexPatterns = {
 app.registerExtension({
   name: "iTools.regexNode",
   async nodeCreated(node) {
+    
     if (node.comfyClass !== "iToolsRegexNode") {
       return;
     }
+
+    // if (node.widgets[1].value == "custom"){
+    //     node.widgets[0].value = "new";
+    //     if(allow_debug) console.log('yes',);
+    //     node.setDirtyCanvas(true, true);
+    // }
+    
     if(allow_debug) console.log('node.widgets',node.widgets);
     function updateCustomPatternChoice(node) {
         const rp = node.widgets[0].value;
@@ -77,6 +85,7 @@ app.registerExtension({
 
     function updatePatternChoice(node) {
         const rp = node.widgets[0].value;
+        if (node.widgets[1].value == "custom") return;
         const picker = node.widgets[1].value;
         node.widgets[0].value = RegexPatterns.getRegex(picker)
         node.setDirtyCanvas(true, true);
