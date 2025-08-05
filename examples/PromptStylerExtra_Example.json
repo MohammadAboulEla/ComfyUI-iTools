@@ -1,20 +1,22 @@
 {
-  "last_node_id": 28,
-  "last_link_id": 33,
+  "id": "1e63ee35-da06-4920-8971-9fee38a6d90c",
+  "revision": 0,
+  "last_node_id": 30,
+  "last_link_id": 36,
   "nodes": [
     {
       "id": 7,
       "type": "CLIPTextEncode",
-      "pos": {
-        "0": 620,
-        "1": 305
-      },
-      "size": {
-        "0": 210,
-        "1": 55
-      },
+      "pos": [
+        620,
+        305
+      ],
+      "size": [
+        210.29940795898438,
+        88
+      ],
       "flags": {},
-      "order": 5,
+      "order": 4,
       "mode": 0,
       "inputs": [
         {
@@ -25,23 +27,25 @@
         {
           "name": "text",
           "type": "STRING",
-          "link": 32,
           "widget": {
             "name": "text"
-          }
+          },
+          "link": 35
         }
       ],
       "outputs": [
         {
           "name": "CONDITIONING",
           "type": "CONDITIONING",
+          "slot_index": 0,
           "links": [
             6
-          ],
-          "slot_index": 0
+          ]
         }
       ],
       "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.49",
         "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
@@ -54,14 +58,14 @@
     {
       "id": 5,
       "type": "EmptyLatentImage",
-      "pos": {
-        "0": 995,
-        "1": 265
-      },
-      "size": {
-        "0": 210,
-        "1": 105
-      },
+      "pos": [
+        995,
+        265
+      ],
+      "size": [
+        210,
+        106
+      ],
       "flags": {},
       "order": 0,
       "mode": 0,
@@ -70,13 +74,15 @@
         {
           "name": "LATENT",
           "type": "LATENT",
+          "slot_index": 0,
           "links": [
             2
-          ],
-          "slot_index": 0
+          ]
         }
       ],
       "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.49",
         "Node name for S&R": "EmptyLatentImage"
       },
       "widgets_values": [
@@ -91,14 +97,14 @@
     {
       "id": 6,
       "type": "CLIPTextEncode",
-      "pos": {
-        "0": 615,
-        "1": 210
-      },
-      "size": {
-        "0": 210,
-        "1": 55
-      },
+      "pos": [
+        615,
+        210
+      ],
+      "size": [
+        210.29940795898438,
+        88
+      ],
       "flags": {},
       "order": 3,
       "mode": 0,
@@ -111,23 +117,25 @@
         {
           "name": "text",
           "type": "STRING",
-          "link": 31,
           "widget": {
             "name": "text"
-          }
+          },
+          "link": 34
         }
       ],
       "outputs": [
         {
           "name": "CONDITIONING",
           "type": "CONDITIONING",
+          "slot_index": 0,
           "links": [
             4
-          ],
-          "slot_index": 0
+          ]
         }
       ],
       "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.49",
         "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
@@ -140,14 +148,14 @@
     {
       "id": 18,
       "type": "PreviewImage",
-      "pos": {
-        "0": 570,
-        "1": 445
-      },
-      "size": {
-        "0": 325,
-        "1": 355
-      },
+      "pos": [
+        570,
+        445
+      ],
+      "size": [
+        325,
+        355
+      ],
       "flags": {},
       "order": 8,
       "mode": 0,
@@ -160,21 +168,24 @@
       ],
       "outputs": [],
       "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.49",
         "Node name for S&R": "PreviewImage"
       },
+      "widgets_values": [],
       "shape": 1
     },
     {
       "id": 4,
       "type": "CheckpointLoaderSimple",
-      "pos": {
-        "0": 240,
-        "1": 200
-      },
-      "size": {
-        "0": 305,
-        "1": 100
-      },
+      "pos": [
+        240,
+        200
+      ],
+      "size": [
+        305,
+        100
+      ],
       "flags": {},
       "order": 1,
       "mode": 0,
@@ -183,30 +194,32 @@
         {
           "name": "MODEL",
           "type": "MODEL",
+          "slot_index": 0,
           "links": [
             1
-          ],
-          "slot_index": 0
+          ]
         },
         {
           "name": "CLIP",
           "type": "CLIP",
+          "slot_index": 1,
           "links": [
             3,
             5
-          ],
-          "slot_index": 1
+          ]
         },
         {
           "name": "VAE",
           "type": "VAE",
+          "slot_index": 2,
           "links": [
             8
-          ],
-          "slot_index": 2
+          ]
         }
       ],
       "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.49",
         "Node name for S&R": "CheckpointLoaderSimple"
       },
       "widgets_values": [
@@ -215,44 +228,12 @@
       "shape": 1
     },
     {
-      "id": 17,
-      "type": "easy showAnything",
-      "pos": {
-        "0": 910,
-        "1": 445
-      },
-      "size": {
-        "0": 300,
-        "1": 355
-      },
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "anything",
-          "type": "*",
-          "link": 33
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "easy showAnything"
-      },
-      "widgets_values": [
-        "cubist artwork of cute cat. cubism, geometric shapes, abstract, innovative, revolutionary, picasso"
-      ],
-      "color": "#232",
-      "bgcolor": "#353",
-      "shape": 1
-    },
-    {
       "id": 3,
       "type": "KSampler",
-      "pos": {
-        "0": 1220,
-        "1": 195
-      },
+      "pos": [
+        1220,
+        195
+      ],
       "size": [
         345,
         605
@@ -286,13 +267,15 @@
         {
           "name": "LATENT",
           "type": "LATENT",
+          "slot_index": 0,
           "links": [
             7
-          ],
-          "slot_index": 0
+          ]
         }
       ],
       "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.49",
         "Node name for S&R": "KSampler"
       },
       "widgets_values": [
@@ -309,14 +292,14 @@
     {
       "id": 8,
       "type": "VAEDecode",
-      "pos": {
-        "0": 1590,
-        "1": 195
-      },
-      "size": {
-        "0": 210,
-        "1": 45
-      },
+      "pos": [
+        1590,
+        195
+      ],
+      "size": [
+        210,
+        46
+      ],
       "flags": {},
       "order": 7,
       "mode": 0,
@@ -336,27 +319,30 @@
         {
           "name": "IMAGE",
           "type": "IMAGE",
+          "slot_index": 0,
           "links": [
             24
-          ],
-          "slot_index": 0
+          ]
         }
       ],
       "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.49",
         "Node name for S&R": "VAEDecode"
       },
+      "widgets_values": [],
       "shape": 1
     },
     {
-      "id": 26,
-      "type": "iToolsPromptStyler",
-      "pos": {
-        "0": 240,
-        "1": 440
-      },
+      "id": 29,
+      "type": "iToolsPromptStylerExtra",
+      "pos": [
+        200,
+        405
+      ],
       "size": [
         300,
-        245
+        420
       ],
       "flags": {},
       "order": 2,
@@ -366,32 +352,84 @@
         {
           "name": "positive_prompt",
           "type": "STRING",
-          "links": [
-            31,
-            33
-          ],
           "slot_index": 0,
-          "shape": 3
+          "links": [
+            34
+          ]
         },
         {
           "name": "negative_prompt",
           "type": "STRING",
-          "links": [
-            32
-          ],
           "slot_index": 1,
-          "shape": 3
+          "links": [
+            35
+          ]
+        },
+        {
+          "name": "used_templates",
+          "type": "STRING",
+          "links": [
+            36
+          ]
         }
       ],
       "properties": {
-        "Node name for S&R": "iToolsPromptStyler"
+        "cnr_id": "comfyui-itools",
+        "ver": "49879eaf7a477b4497201661dfd4c66d7297e15f",
+        "Node name for S&R": "iToolsPromptStylerExtra"
       },
       "widgets_values": [
-        "cute cat",
+        "Viking man in epic war",
         "",
         "basic.yaml",
-        "Cubist"
+        "Cinematic",
+        "camera.yaml",
+        "Nikon Z6",
+        "mood.yaml",
+        "Energetic",
+        "original.yaml",
+        "photo-long exposure",
+        null
       ],
+      "color": "#232",
+      "bgcolor": "#353",
+      "shape": 1
+    },
+    {
+      "id": 30,
+      "type": "iToolsPreviewText",
+      "pos": [
+        904.4398193359375,
+        445.6993713378906
+      ],
+      "size": [
+        304.1409912109375,
+        354.239990234375
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 36
+        }
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "shape": 6,
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-itools",
+        "ver": "49879eaf7a477b4497201661dfd4c66d7297e15f",
+        "Node name for S&R": "iToolsPreviewText"
+      },
+      "widgets_values": [],
       "shape": 1
     }
   ],
@@ -469,40 +507,41 @@
       "IMAGE"
     ],
     [
-      31,
-      26,
+      34,
+      29,
       0,
       6,
       1,
       "STRING"
     ],
     [
-      32,
-      26,
+      35,
+      29,
       1,
       7,
       1,
       "STRING"
     ],
     [
-      33,
-      26,
+      36,
+      29,
+      2,
+      30,
       0,
-      17,
-      0,
-      "*"
+      "STRING"
     ]
   ],
   "groups": [],
   "config": {},
   "extra": {
     "ds": {
-      "scale": 1,
+      "scale": 0.9090909090909091,
       "offset": [
-        -171.41664605651738,
-        -124.06642523209385
+        -158.19997832938134,
+        -140.999312232543
       ]
-    }
+    },
+    "frontendVersion": "1.25.4"
   },
   "version": 0.4
 }
