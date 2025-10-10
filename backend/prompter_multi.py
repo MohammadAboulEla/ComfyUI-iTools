@@ -75,42 +75,51 @@ def combine_multi(text_positive, text_negative,
                   base_file, base_style,
                   second_file, second_style,
                   third_file, third_style,
-                  fourth_file, fourth_style, ):
+                  fourth_file, fourth_style):
     base_p, base_n, base_t = get_template_value_from_yaml_file(base_file, base_style)
     if "{prompt}" in base_p:
-        base_p = base_p.replace("{prompt}", f"{text_positive}")
+        base_p = base_p.replace("{prompt}", text_positive)
     else:
-        base_p = f"{text_positive}. {base_p}"
+        base_p = f"{text_positive}. {base_p}" if base_p else text_positive
 
-    if base_p == "":
-        base_p = text_positive
-    if base_n == "":
+    # Negative
+    base_n = base_n.strip()
+    if not base_n:
         base_n = text_negative
+        prepend_neg = False
+    else:
+        prepend_neg = True
 
-    s2_p, s2_n, s2_t = get_template_value_from_yaml_file(second_file, second_style, )
-    s2_p = s2_p.replace("of {prompt}", "").replace("{prompt}", "")
-    s3_p, s3_n, s3_t = get_template_value_from_yaml_file(third_file, third_style, )
-    s3_p = s3_p.replace("of {prompt}", "").replace("{prompt}", "")
-    s4_p, s4_n, s4_t = get_template_value_from_yaml_file(fourth_file, fourth_style, )
-    s4_p = s4_p.replace("of {prompt}", "").replace("{prompt}", "")
+    # Secondary templates
+    s2_p, s2_n, s2_t = get_template_value_from_yaml_file(second_file, second_style)
+    s3_p, s3_n, s3_t = get_template_value_from_yaml_file(third_file, third_style)
+    s4_p, s4_n, s4_t = get_template_value_from_yaml_file(fourth_file, fourth_style)
+
+    # Clean placeholders
+    for p in (s2_p, s3_p, s4_p):
+        p.replace("of {prompt}", "").replace("{prompt}", "")
 
     total_p = f"{base_p},{s2_p},{s3_p},{s4_p}"
-    total_n = f"{text_negative},{base_n},{s2_n},{s3_n},{s4_n}"
 
-    def get_template_format(f, t, i):
-        i = str(i)  # may use later for other formats
+    if prepend_neg:
+        total_n = f"{text_negative},{base_n},{s2_n},{s3_n},{s4_n}"
+    else:
+        total_n = f"{base_n},{s2_n},{s3_n},{s4_n}"
+
+    def get_template_format(f, t):
         if t != "none":
             return f"({f[:-5]}:{t})".replace(" | ", "|").replace(" > ", ">")
-        else:
-            return ""
+        return ""
 
-    t1 = get_template_format(base_file, base_t, 1)
-    t2 = get_template_format(second_file, s2_t, 2)
-    t3 = get_template_format(third_file, s3_t, 3)
-    t4 = get_template_format(fourth_file, s4_t, 4)
-    _templates = f"{t1}{t2}{t3}{t4}"  # [:-1]
-    
+    _templates = (
+        get_template_format(base_file, base_t)
+        + get_template_format(second_file, s2_t)
+        + get_template_format(third_file, s3_t)
+        + get_template_format(fourth_file, s4_t)
+    )
+
     return clean_text(total_p), clean_text(total_n), _templates
+
 
 
 @PromptServer.instance.routes.post('/itools/request_templates_for_file')
