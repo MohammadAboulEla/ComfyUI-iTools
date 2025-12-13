@@ -814,7 +814,14 @@ class IToolsVaePreview:
         prompt=None,
         extra_pnginfo=None,
     ):
-        return_options = (vae.decode(samples["samples"]),)
+
+        def decode(vae, samples):
+            images = vae.decode(samples["samples"])
+            if len(images.shape) == 5: #Combine batches
+                images = images.reshape(-1, images.shape[-3], images.shape[-2], images.shape[-1])
+            return (images, )
+
+        return_options = decode(vae, samples)
         images = return_options[0]
         filename_prefix += self.prefix_append
         full_output_folder, filename, counter, subfolder, filename_prefix = (
@@ -1116,7 +1123,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsLineLoader": "iTools Line Loader",
     "iToolsTextReplacer": "iTools Text Replacer",
     "iToolsKSampler": "iTools KSampler",
-    "iToolsVaePreview": "iTools Vae Preview ⛳",
+    "iToolsVaePreview": "iTools Preview Bridge ⛳",
     "iToolsCheckerBoard": "iTools Checkerboard 🏁",
     "iToolsLoadRandomImage": "iTools Load Random Image 🎲",
     "iToolsPreviewText": "iTools Text Preview",

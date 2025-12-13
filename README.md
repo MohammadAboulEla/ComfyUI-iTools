@@ -187,10 +187,10 @@ A text replacer tool that might also be useful.
 ![iTools Text Replacer](examples/Screenshot12.jpg)
 
 ---
-### **iTools Vae Preview:**
+### **iTools Preview Bridge:**
 
-Merges VAE decoding and image preview into one node, The goal of `iTools Vae Preview`  is to Decode & Preview the image at same node, so you do not have to use the `VAEDecod` node every time before preview an image.
-![iTools Vae Preview](examples/Screenshot16.jpg)
+Merges VAE decoding and image preview into one node, The goal of `iTools Preview Bridge`  is to Decode & Preview the image at same node, so you do not have to use the `VAEDecod` node every time before preview an image.
+![iTools Preview Bridge](examples/Screenshot16.jpg)
 
 ---
 ### **iTools Checkerboard:**
