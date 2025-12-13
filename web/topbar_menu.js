@@ -20,7 +20,7 @@ export function addMenuTab() {
             input.onchange = (event) => {
               file = event.target.files[0];
               if (file) {
-                console.log("Selected file:", file);
+                // console.log("Selected file:", file);
                 processFile(file);
               }
             };

@@ -102,19 +102,19 @@ app.registerExtension({
 });
 
 // Register TogetherApi setting
-app.registerExtension({
-  name: "makadi_iTools_together_api",
-  settings: [
-    {
-      id: "iTools.Nodes. together.ai Api Key",
-      name: "Together Api Key",
-      type: "text",
-      defaultValue: "None",
-      tooltip:
-        "(needed for API nodes)\nGet your free key from together.ai put it here or add it as TOGETHER_API_KEY in your system environment.",
-    },
-  ],
-});
+// app.registerExtension({
+//   name: "makadi_iTools_together_api",
+//   settings: [
+//     {
+//       id: "iTools.Nodes. together.ai Api Key",
+//       name: "Together Api Key",
+//       type: "text",
+//       defaultValue: "None",
+//       tooltip:
+//         "(needed for API nodes)\nGet your free key from together.ai put it here or add it as TOGETHER_API_KEY in your system environment.",
+//     },
+//   ],
+// });
 
 // Register a new setting mask tool
 app.registerExtension({

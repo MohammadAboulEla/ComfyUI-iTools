@@ -25,7 +25,7 @@ def get_user_dev_mode2():
 
 allow_beta_nodes = get_user_dev_mode()
 allow_dev_nodes = get_user_dev_mode2()
-allow_experimental_nodes = True
+allow_experimental_nodes = False
 
 if allow_beta_nodes:
     try:
