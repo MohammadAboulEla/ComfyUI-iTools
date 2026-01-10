@@ -9,7 +9,7 @@ app.registerExtension({
       id: "iTools.Nodes.More Styles",
       name: "Load extra styles",
       type: "boolean",
-      defaultValue: false,
+      defaultValue: true,
       tooltip: "Yaml files in the 'styles/more examples' folder will also be loaded for prompt styler nodes.",
       onChange: (value) => {
         const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.More Styles");
