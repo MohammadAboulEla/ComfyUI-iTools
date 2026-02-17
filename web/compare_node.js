@@ -267,164 +267,103 @@ app.registerExtension({
 
 const compareWay = app.extensionManager.setting.get("iTools.Nodes.Compare Mode", "makadi");
 function overrideDraw(node, widget_width, y, ctx, compare, mouse) {
-  if (!compare || !compare.mode) return;
-  
-  let img1 = null;
-  let img2 = null;
+  if (!compare || !compare.mode || !node.imgs || node.imgs.length < 2) return;
 
-  if (node.imgs.length > 2) {
-    const half = Math.floor(node.imgs.length / 2);
-    img1 = node.imgs[0];
-    img2 = node.imgs[half];
-  } else {
-    img1 = node.imgs[0];
-    img2 = node.imgs[1];
-  }
+  let img1 = node.imgs[0];
+  let img2 = node.imgs[node.imgs.length > 2 ? Math.floor(node.imgs.length / 2) : 1];
 
   const dw = widget_width;
   const dh = node.size[1] - y;
-  let w = Math.max(img1.naturalWidth, img2.naturalWidth);
-  let h = Math.max(img1.naturalHeight, img2.naturalHeight);
 
-  const scaleX = dw / w;
-  const scaleY = dh / h;
-  const scale = Math.min(scaleX, scaleY, 1);
+  // 1. Calculate parameters to force both images to the same height (dh)
+  const getParams = (img) => {
+    const scale = dh / img.naturalHeight;
+    const w = img.naturalWidth * scale;
+    // If the resulting width is wider than the widget, scale down further
+    const finalScale = w > dw ? dw / w : 1; 
+    
+    const finalW = w * finalScale;
+    const finalH = dh * finalScale;
 
-  w *= scale;
-  h *= scale;
+    return {
+      x: (dw - finalW) / 2,
+      y: y + (dh - finalH) / 2,
+      w: finalW,
+      h: finalH
+    };
+  };
 
-  // Centered position within the widget
-  const imgX = (dw - w) / 2;
-  const imgY = (dh - h) / 2 + y; // +y to offset within canvas
-  let mouseX = 0;
-  let mouseY = 0;
-  
-  if(compareWay == "makadi") {
-    // true mouse any where
+  const p1 = getParams(img1);
+  const p2 = getParams(img2);
+
+  // 2. Determine the shared interaction bounds (the container area)
+  const viewW = Math.max(p1.w, p2.w);
+  const viewH = Math.max(p1.h, p2.h);
+  const imgX = (dw - viewW) / 2;
+  const imgY = y + (dh - viewH) / 2;
+
+  // 3. Mouse Logic
+  let mouseX, mouseY;
+  if (compareWay === "makadi") {
     const graphMouse = app.canvas.graph_mouse;
     mouseX = graphMouse[0] - node.pos[0];
     mouseY = graphMouse[1] - node.pos[1];
-    //mouseX = mouse.mouseInNode ? mouseX : imgX + w / 2; 
-  }
-  else
-  {
-    mouseX = mouse.mouseInNode ? mouse.x : imgX; // default to center when mouse is outside
-    mouseY = mouse.mouseInNode ? mouse.y : imgY + h / 2;
+  } else {
+    mouseX = mouse.mouseInNode ? mouse.x : dw / 2;
+    mouseY = mouse.mouseInNode ? mouse.y : y + dh / 2;
   }
 
+  // 4. Drawing
   if (compare.mode === "|") {
-    // Split mode
-    const splitX = Math.max(imgX, Math.min(mouseX, imgX + w));
-    const splitRatio = (splitX - imgX) / w;
+    const splitX = Math.max(imgX, Math.min(mouseX, imgX + viewW));
+    
+    const left = (compareWay === "makadi") ? {img: img1, p: p1} : {img: img2, p: p2};
+    const right = (compareWay === "makadi") ? {img: img2, p: p2} : {img: img1, p: p1};
 
-    if(compareWay == "makadi") {
-    // Draw left part from img
-    ctx.drawImage(img1, 0, 0, img1.naturalWidth * splitRatio, img1.naturalHeight, imgX, imgY, w * splitRatio, h);
-    // Draw right part from img2
-    ctx.drawImage(
-      img2,
-      img2.naturalWidth * splitRatio,
-      0,
-      img2.naturalWidth * (1 - splitRatio),
-      img2.naturalHeight,
-      imgX + w * splitRatio,
-      imgY,
-      w * (1 - splitRatio),
-      h
-    );
-    }else{
-    // Draw left part from img
-    ctx.drawImage(img2, 0, 0, img2.naturalWidth * splitRatio, img2.naturalHeight, imgX, imgY, w * splitRatio, h);
-    // Draw right part from img2
-    ctx.drawImage(
-      img1,
-      img1.naturalWidth * splitRatio,
-      0,
-      img1.naturalWidth * (1 - splitRatio),
-      img1.naturalHeight,
-      imgX + w * splitRatio,
-      imgY,
-      w * (1 - splitRatio),
-      h
-    );
-    }
-
-    // Draw labels
-    // ctx.save();
-    // ctx.font = "bold 18px Arial";
-    // ctx.textBaseline = "top";
-    // ctx.shadowColor = "black";
-    // ctx.shadowBlur = 4;
-
-    // Label A
-    // ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-    // if(mouseX  > imgX + 23) ctx.fillText("A", imgX + 10, imgY + 10);
-
-    // Label B - position depends on split
-    // const labelB = "B";
-    // const labelWidth = ctx.measureText(labelB).width;
-    // if(mouseX  < imgX + w - labelWidth - 10) ctx.fillText(labelB, imgX + w - labelWidth - 10, imgY + 10);
-
-    // // Optional: draw split line
-    // ctx.beginPath();
-    // ctx.moveTo(splitX, imgY);
-    // ctx.lineTo(splitX, imgY + h);
-    // ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
-    // ctx.lineWidth = 1;
-    // ctx.stroke();
-
-    // ctx.restore();
-  } else if (compare.mode === "O") {
-    // Circle mode
-    const radius = Math.min(w, h) * 0.15; // 30% of image size
-    const centerX = Math.max(imgX + radius, Math.min(mouseX, imgX + w - radius));
-    const centerY = Math.max(imgY + radius, Math.min(mouseY, imgY + h - radius));
-
-    // First draw img A (background)
-    ctx.drawImage(img1, 0, 0, img1.naturalWidth, img1.naturalHeight, imgX, imgY, w, h);
-
-    // Save the current context
+    // Draw Left Side
     ctx.save();
-
-    // Create a circular path
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    ctx.closePath();
-
-    // Clip to the circle
+    ctx.rect(0, y, splitX, dh); // Clip left side of the widget
     ctx.clip();
-
-    // Draw the image B inside the circle
-    ctx.drawImage(img2, 0, 0, img2.naturalWidth, img2.naturalHeight, imgX, imgY, w, h);
+    ctx.drawImage(left.img, left.p.x, left.p.y, left.p.w, left.p.h);
     ctx.restore();
 
-    // ctx.save();
-    // ctx.font = "bold 18px Arial";
-    // ctx.textBaseline = "top";
-    // ctx.shadowColor = "black";
-    // ctx.shadowBlur = 4;
+    // Draw Right Side
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(splitX, y, dw - splitX, dh); // Clip right side of the widget
+    ctx.clip();
+    ctx.drawImage(right.img, right.p.x, right.p.y, right.p.w, right.p.h);
+    ctx.restore();
 
-    // Label A
-    // ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-    // if(!(mouseX < imgX + 55 && mouseY < imgY + 55)) ctx.fillText("A", imgX + 10, imgY + 10);
+} else if (compare.mode === "O") {
+    const radius = Math.min(dw, dh) * 0.15;
 
-    // Restore the context to remove the clip
+    // Determine background vs overlay based on compareWay
+    const bg = (compareWay === "makadi") ? {img: img1, p: p1} : {img: img2, p: p2};
+    const overlay = (compareWay === "makadi") ? {img: img2, p: p2} : {img: img1, p: p1};
 
-    // Optional: Draw circle border
-    // ctx.beginPath();
-    // ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    // ctx.strokeStyle = "#ffffff";
-    // ctx.lineWidth = 1;
-    // ctx.stroke();
+    // 1. Draw the background image
+    ctx.drawImage(bg.img, bg.p.x, bg.p.y, bg.p.w, bg.p.h);
 
-    // ctx.restore();
-  } else if (compare.mode === "A") {
-    // draw img 1 only
-    ctx.drawImage(img1, 0, 0, img1.naturalWidth, img1.naturalHeight, imgX, imgY, w, h);
+    // 2. Draw the circular clip for the second image
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(mouseX, mouseY, radius, 0, Math.PI * 2);
+    ctx.clip();
     
+    ctx.drawImage(overlay.img, overlay.p.x, overlay.p.y, overlay.p.w, overlay.p.h);
+    ctx.restore();
+
+    // Optional: Draw a subtle border around the circle so you can see it better
+    // ctx.beginPath();
+    // ctx.arc(mouseX, mouseY, radius, 0, Math.PI * 2);
+    // ctx.strokeStyle = "rgba(255,255,255,0.5)";
+    // ctx.stroke();
+  } else if (compare.mode === "A") {
+    ctx.drawImage(img1, p1.x, p1.y, p1.w, p1.h);
   } else if (compare.mode === "B") {
-    // draw img 2 only
-    ctx.drawImage(img2, 0, 0, img2.naturalWidth, img2.naturalHeight, imgX, imgY, w, h);
+    ctx.drawImage(img2, p2.x, p2.y, p2.w, p2.h);
   }
 }
 

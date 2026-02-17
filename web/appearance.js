@@ -239,6 +239,10 @@ app.registerExtension({
     const allow_auto_color = app.ui.settings.getSettingValue("iTools.Nodes.Auto Color");
     const allow_auto_resize = app.ui.settings.getSettingValue("iTools.Nodes.Auto Resize");
     switch (node.comfyClass) {
+      case "iToolsPreviewText":
+        // force resize
+        node.setSize([240, 80]);
+        break;
       case "iToolsPromptStyler":
         if (!allow_auto_color) break;
         node.color = LGraphCanvas.node_colors.green.color;
