@@ -1,0 +1,617 @@
+# Nexus Style Library for Flux 2.0
+
+- name: none
+  negative_prompt: ''
+  prompt: ''
+
+- name: random
+  negative_prompt: ''
+  prompt: ''  
+
+# --- [PHOTOGRAPHY] ---
+- name: PHOTO | Cinematic Noir
+  negative_prompt: colorful, bright, cheerful, cartoon, 3d, sunny, vibrant
+  prompt: A dramatic black and white film noir still of {prompt}. Harsh shadows, 
+    volumetric cigarette smoke, wet city streets at night, high contrast, 
+    classic 1940s cinema aesthetic, sharp focus, 35mm grain, moody atmosphere.
+
+- name: PHOTO | Hyper-Realistic Macro
+  negative_prompt: blurry, drawing, painting, miniature, toy, low res, plastic
+  prompt: An extreme macro photograph of {prompt}. Visible microscopic textures, 
+    surface imperfections, dew drops, f/2.8 aperture, shallow depth of field, 
+    shot on Sony A7R IV, natural morning light, incredible detail, sharp focus.
+
+- name: PHOTO | Studio Product Shot
+  negative_prompt: messy, blurry, background, outdoor, natural, low-res
+  prompt: A high-end commercial product shot of {prompt} centered on a seamless 
+    matte grey background. Soft, diffused top-down studio lighting. Sharp edges, 
+    zero distortion, minimalist composition. 8k resolution, professional color grading.
+
+- name: PHOTO | The 70s Panavision
+  negative_prompt: digital, clean, modern, high-def, 4k, vibrant
+  prompt: A grainy, warm-toned 35mm film still of {prompt}. Authentic vintage 
+    color grading, slight chromatic aberration at the edges, and a soft glow 
+    on the highlights. Shot on Panavision anamorphic lenses, 1974 aesthetic.
+
+- name: PHOTO | The A24 Indie Look
+  negative_prompt: blockbuster, action, bright, vibrant, saturated, happy
+  prompt: A moody, minimalist cinematic shot of {prompt}. High-contrast natural 
+    lighting, centered composition, and a heavy sense of atmosphere. 
+    Desaturated earth tones, 4:3 aspect ratio feel, digital noise-free.
+
+- name: PHOTO | The Michael Bay Action
+  negative_prompt: slow, boring, dark, quiet, minimalist, monochrome
+  prompt: A low-angle, high-octane hero shot of {prompt}. Explosive orange 
+    and teal color palette, dramatic lens flares, and motion-blurred background. 
+    Extreme detail on metallic surfaces and debris, epic scale.
+
+- name: PHOTO | Noir Detective
+  negative_prompt: color, bright, sunny, happy, modern, digital
+  prompt: A high-contrast black and white street photograph of {prompt}. 
+    Harsh shadows from a Venetian blind, a smoky atmosphere, and wet 
+    cobblestone streets. 1940s film noir aesthetic, grainy 35mm film.
+
+- name: PHOTO | Streetwear Lookbook
+  negative_prompt: old, vintage, formal, messy, blurry, nature
+  prompt: A sharp fashion photography shot of {prompt} featuring heavy 
+    techwear fabrics, straps, and matte black textures. Urban brutalist 
+    background, overcast daylight, sharp shadows, high-fashion editorial style.
+
+# --- [FILM & CINEMATIC] ---
+- name: FILM | 1990s Flash Photography
+  negative_prompt: professional, cinematic, studio light, painting, clean, 3d
+  prompt: A raw, candid 1990s disposable camera photo of {prompt}. Harsh on-camera flash, red-eye effect, cluttered background, dated interior, slight motion blur, authentic grainy film texture, lo-fi aesthetic.
+
+- name: FILM | Nordic Noir
+  negative_prompt: warm, tropical, sunny, happy, bright colors, busy
+  prompt: A cold, atmospheric Scandinavian thriller shot of {prompt}. Muted blue and gray tones, vast empty snowy landscape, minimalist composition, sharp focus, overcast winter sky, hauntingly beautiful cinematography.
+
+- name: FILM | 80s Dark Synth Horror
+  negative_prompt: bright, clean, family friendly, modern, high-def, 4k
+  prompt: A grainy VHS-rip horror movie frame of {prompt}. Heavy analog distortion, tracking lines, eerie red backlighting, John Carpenter aesthetic, dark grainy shadows, lo-fi practical effects look.
+
+- name: FILM | Wes Anderson Aesthetic
+  negative_prompt: messy, dark, gritty, scary, chaotic, tilted
+  prompt: A perfectly symmetrical, pastel-colored shot of {prompt}. Whimsical storybook vibe, flat perspective, highly curated props, vintage 1960s color palette, whimsical and precise.
+
+- name: FILM | IMAX Nature Documentary
+  negative_prompt: studio, plastic, fake, urban, interior, blurry
+  prompt: An epic, wide-angle IMAX 70mm film still of {prompt}. Breathtaking natural scenery, extreme dynamic range, sharp cinematic detail, realistic lighting, National Geographic grandeur.
+
+- name: FILM | Cyber-Glitch VHS
+  negative_prompt: clean, 4k, high-def, stable, realistic, calm
+  prompt: A distorted, glitchy video frame of {prompt}. Tracking errors, magnetic interference, neon purple color bleed, 1980s analog tech aesthetic, low-fidelity cyberpunk vibe.
+
+- name: FILM | 70s Sci-Fi Book Cover
+  negative_prompt: realistic, photo, digital, 3d, clean, modern
+  prompt: A retro-futuristic painting of {prompt} in the style of Chris Foss. Vibrant airbrushed gradients, strange alien geometries, nostalgic space-age aesthetic, matte finish, classic science fiction paperback art.
+
+- name: FILM | 1950s Sci-Fi Pulps
+  negative_prompt: realistic, 3d, photo, digital, sleek, modern, high-def
+  prompt: A retro-futuristic 1950s sci-fi magazine cover of {prompt}. Hand-painted gouache style, vibrant primary colors, iconic "Golden Age" aesthetic, grainy paper texture, dramatic heroic lighting.
+
+- name: FILM | Post-Apocalyptic Dust
+  negative_prompt: clean, new, shiny, futuristic, blue, lush, water
+  prompt: A gritty, desaturated film still of {prompt} in a dry wasteland. Volumetric dust motes, harsh midday sun, weathered and rusted textures, Mad Max inspired cinematography.
+
+- name: FILM | Haunted Victorian
+  negative_prompt: bright, happy, modern, clean, new, sun
+  prompt: A spooky, desaturated daguerreotype of {prompt} in a dilapidated Victorian mansion. Ghostly motion blur, high contrast, creepy silhouettes, antique silver-plate photography.
+
+- name: FILM | Abandoned Pripyat
+  negative_prompt: new, clean, shiny, inhabited, happy, sunny
+  prompt: A haunting, desolate photo of {prompt} inside a decaying Soviet-era room. Peeling paint, rusted metal, overgrown moss, eerie silence, bleak lighting, Chernobyl exclusion zone style.
+
+- name: FILM | Abandoned Space Station
+  negative_prompt: earth, nature, bright, sunny, inhabited, new
+  prompt: A derelict {prompt} floating in the corridors of a dead starship. Zero-gravity, flickering emergency lights, drifting debris, cold metallic surfaces, cinematic horror sci-fi.
+
+- name: FILM | Vaporwave Aesthetic
+  negative_prompt: gritty, realistic, dark, brown, natural, boring
+  prompt: A 1980s vaporwave digital art of {prompt}. Statue aesthetic, glitch textures, neon palm trees, pink and teal color palette, retro-internet vibe.
+
+# --- [ART & ILLUSTRATION] ---
+- name: ART | Ethereal Glitch-Art
+  negative_prompt: stable, clean, realistic, boring, traditional, sharp
+  prompt: An abstract glitch-art interpretation of {prompt}. Digital fragmentation, 
+    chromatic aberration, data-moshing textures, glowing pixel sorted trails, 
+    vibrant neon artifacts, dark background, experimental media style.
+
+- name: ART | Origami Master
+  negative_prompt: organic, round, painting, messy, wet, liquid
+  prompt: An incredibly complex origami model of {prompt}, folded from a single 
+    square of textured gold foil. Sharp crisp edges, geometric precision, 
+    soft shadows, macro photography, studio background.
+
+- name: ART | Ancient Mayan Stone
+  negative_prompt: modern, metal, plastic, electronics, clean, smooth
+  prompt: A weathered, moss-covered stone monolith of {prompt} carved in ancient 
+    Mayan bas-relief style. Deep jungle surroundings, dappled sunlight, 
+    intricate hieroglyphics, crumbling rock texture, archaeological discovery aesthetic.
+
+- name: ART | Cyber-Organic
+  negative_prompt: metal, boxy, simple, human, bright, clean, plastic
+  prompt: A terrifying fusion of biology and machine, featuring {prompt}. Pulsing 
+    translucent veins, matte black carbon fiber plating, wet muscular textures, 
+    glowing neural pathways, dark sci-fi.
+
+- name: ART | Deep Space Nebula
+  negative_prompt: earth, ground, clouds, city, daytime, solid
+  prompt: A cosmic formation of interstellar gas and dust shaped like {prompt}. 
+    Vibrant purples and oranges, twinkling distant stars, galactic scale, 
+    ethereal and glowing celestial body.
+
+- name: ART | X-Ray Photography
+  negative_prompt: skin, solid, colorful, painting, 3d, opaque
+  prompt: A conceptual X-ray photograph of {prompt}. Glowing skeletal structure, 
+    internal mechanical or organic components visible, monochromatic blue and white, 
+    ethereal transparent layers, medical imaging aesthetic.
+
+- name: ART | Dark Souls Gothic
+  negative_prompt: bright, cheerful, anime, clean, modern, colorful, sunlight
+  prompt: A grim, dark fantasy masterpiece of {prompt}. High-gothic architecture, flickering embers, heavy fog, ornate wrought iron, weathered stone textures, cinematic moody lighting, in the style of FromSoftware concept art.
+
+- name: ART | Da Vinci Sketchbook
+  negative_prompt: photo, color, digital, clean, modern, 3d
+  prompt: A 15th-century anatomical study of {prompt} drawn by Leonardo da Vinci. Sepia ink on aged parchment, mirror writing annotations, faded sketches, Renaissance engineering style.
+
+- name: ART | Charcoal Expressive
+  negative_prompt: colorful, photo, 3d, clean, digital, neon, blue
+  prompt: A raw, expressive charcoal drawing of {prompt} on heavy textured paper. Smudged shadows, sharp graphite highlights, hand-drawn hatching, messy artistic vibe.
+
+- name: ART | Pencil Cross-Hatch
+  negative_prompt: color, photo, 3d, painting, digital, smooth
+  prompt: A meticulous pencil sketch of {prompt}. Dense cross-hatching for shadows, sharp graphite lines for highlights, white paper background, traditional fine art technique.
+
+- name: ART | Pop Art Warhol
+  negative_prompt: realistic, 3d, moody, dark, depth, textured
+  prompt: A bold, vibrant Pop Art screenprint of {prompt} in the style of Andy Warhol. Four-panel color grid, high saturation, silkscreen ink texture, iconic 1960s aesthetic, flat graphic style.
+
+- name: ART | Old Master Oil Painting
+  negative_prompt: modern, digital, clean, smooth, anime, 3d
+  prompt: A dramatic oil painting of {prompt} in the style of Rembrandt. 
+    Tenebrism lighting with deep, moody shadows and a single warm 
+    light source hitting the focal point. Visible heavy brushstrokes.
+
+- name: ART | The Dark Fantasy Etching
+  negative_prompt: colorful, bright, happy, clean, digital, 3d
+  prompt: A grim, detailed ink etching of {prompt}. Cross-hatched shading, 
+    gothic atmosphere, and high-contrast black and white. 
+    Reminiscent of 19th-century occult illustrations.
+
+- name: ART | Hyper-Realistic Sculpture
+  negative_prompt: living, organic, colorful, messy, soft
+  prompt: A macro photograph of a sculpture of {prompt} carved entirely 
+    from a single block of translucent white marble. Subsurface scattering 
+    allows light to glow through the edges. Dark velvet background.
+
+- name: ART | Frazetta Illustration
+  negative_prompt: clean, modern, bright, anime, low-detail
+  prompt: A digital illustration of {prompt} in the style of Frank Frazetta. 
+    Dramatic lighting, muscular forms, painterly brushstrokes, 
+    epic and barbaric atmosphere, high contrast.
+
+- name: ART | Steampunk Inventor
+  negative_prompt: plastic, modern, digital, clean, sleek, neon, laser
+  prompt: A detailed Victorian steampunk version of {prompt}. Crafted from polished brass, mahogany wood, and hissing steam valves. Intricate clockwork gears, leather straps, soot-stained surfaces, warm gaslight ambiance.
+
+- name: ART | Abstract Expressionism
+  negative_prompt: realistic, photographic, figurative, concrete, detail
+  prompt: An abstract expressionist style of {prompt}. Non-representational, vibrant splashes of color, chaotic and emotional brushwork, heavy texture, imaginative composition, 8k resolution.
+
+- name: ART | Studio Anime Artwork
+  negative_prompt: photo, deformed, black and white, realism, disfigured, low contrast
+  prompt: Anime artwork of {prompt}. High-quality studio anime style, key visual, vibrant colors, clean line art, dramatic anime lighting, highly detailed cel-shading.
+
+- name: ART | Dark Fantasy Oil
+  negative_prompt: bright, clean, anime, digital, smooth, modern, pop art
+  prompt: A moody oil painting of {prompt} in the style of Frank Frazetta. Heavy impasto brushstrokes, tenebrism lighting, dark epic atmosphere, weathered canvas texture, rich earthy pigments.
+
+- name: ART | 16-Bit Pixel Art
+  negative_prompt: 3d, photo, realistic, blurry, smooth, gradient, high-def
+  prompt: A detailed 16-bit isometric pixel art sprite of {prompt}. Vibrant limited color palette, clean dithering, SNES era RPG aesthetic, sharp pixels, charming retro game design.
+
+- name: ART | Ukiyo-e Woodblock
+  negative_prompt: 3d, photo, realistic, volume, shading, shadows
+  prompt: A traditional Japanese woodblock print of {prompt}. Bold black outlines, flat vibrant colors, stylized wave and cloud patterns, weathered handmade washi paper texture.
+
+- name: ART | Infrared Forest
+  negative_prompt: green, brown, natural, realistic, 3d, dark, dull
+  prompt: An ethereal infrared photograph of {prompt}. Leaves and foliage rendered in glowing snowy white and hot pink, deep black skies, surreal dreamlike atmosphere, shot on Aerochrome film.
+
+- name: ART | Anatomical Graphite
+  negative_prompt: color, photo, painting, 3d, digital, messy, blur
+  prompt: A precise anatomical graphite study of {prompt}. Scientific cross-sections, fine line work, meticulous shading on aged parchment, reminiscent of 19th-century medical textbooks.
+
+- name: ART | Gothic Inkwork
+  negative_prompt: colorful, 3d, photo, clean, bright, anime
+  prompt: A detailed black ink illustration of {prompt}. Intricate cross-hatching, heavy negative space, gothic horror vibes, reminiscent of Gustave Doré’s engravings.
+
+- name: ART | Baroque Oil Painting
+  negative_prompt: modern, digital, photo, 3d, bright, cartoon, sketch
+  prompt: A dramatic Baroque-era oil painting of {prompt}. Intense chiaroscuro lighting, deep shadows, rich textures, heavy brushstrokes, epic and somber atmosphere.
+
+- name: ART | 8-Bit Retro Game
+  negative_prompt: 3d, realistic, photo, smooth, gradient, high-def
+  prompt: A flat 8-bit pixel art version of {prompt}. Limited NES color palette, sharp jagged edges, retro gaming sprite aesthetic, nostalgic and blocky.
+
+- name: ART | Ethereal Ghostly
+  negative_prompt: solid, heavy, dark, grounded, realistic, 3d
+  prompt: A semi-transparent, wispy apparition of {prompt}. Glowing white edges, flowing trail-like textures, monochromatic, cinematic motion blur, haunting atmosphere.
+
+- name: ART | Stained Glass Art
+  negative_prompt: photo, realistic, 3d, simple, dull, plain, gray
+  prompt: A complex stained glass window depicting {prompt}. Vibrant translucent colors, leaded outlines, sunlight streaming through, colorful caustic shadows on a stone floor.
+
+- name: ART | Low Poly Art
+  negative_prompt: realistic, smooth, detailed, 3d, photo, blur
+  prompt: A stylish low-poly 3D model of {prompt}. Sharp triangular facets, vibrant flat shading, minimalist digital art, clean geometric composition.
+
+- name: ART | Neon Ink Wash
+  negative_prompt: dull, grey, traditional, realistic, photo, matte
+  prompt: A dynamic sumi-e ink wash painting of {prompt} but with glowing neon fluids. Splatter effects, minimalist brush strokes against a pitch-black canvas.
+
+- name: ART | Double Exposure
+  negative_prompt: 3d, render, messy, blurry, low-res, painting
+  prompt: A creative double exposure photograph of {prompt} and a dense pine forest. Ethereal blending, overlapping silhouettes, artistic and poetic composition.
+
+- name: ART | Claymation Studio
+  negative_prompt: realistic, smooth, digital, 3d, metal, photo
+  prompt: A handcrafted stop-motion clay figure of {prompt}. Visible fingerprints in the plasticine, slightly lumpy texture, bright studio lights, Aardman Animation style, tactile and nostalgic.
+
+- name: ART | Papercut Layered Art
+  negative_prompt: 3d, photo, smooth, realistic, messy
+  prompt: A multi-layered shadowbox made of cut paper depicting {prompt}. Distinct physical layers, cast shadows between paper sheets, vibrant craft paper textures.
+
+- name: ART | Felted Wool Miniature
+  negative_prompt: realistic, metal, plastic, smooth, digital
+  prompt: A cute, handcrafted needle-felted wool version of {prompt}. Fuzzy fiber textures, soft matte colors, stop-motion animation aesthetic, tactile and cozy.
+
+- name: ART | Gothic Ink & Gold
+  negative_prompt: colorful, anime, photo, 3d, bright, cheerful
+  prompt: A stunning black ink illustration of {prompt} accented with real gold leaf filigree. Intricate gothic patterns, deep black negative space, high contrast, elegant and dark luxury aesthetic.
+
+- name: ART | Vintage National Park Poster
+  negative_prompt: photo, realistic, 3d, messy, blurry, grainy, noisy
+  prompt: A minimalist WPA-style screenprint poster of {prompt}. Bold flat colors, stylized geometric shapes, textured paper grain, vintage typography, earthy muted palette.
+
+- name: ART | Risograph Print
+  negative_prompt: photo, realistic, 3d, smooth, gradient, clean
+  prompt: A stylized Risograph print of {prompt}. Overlapping ink textures, vibrant neon pink and teal colors, grainy soy-ink aesthetics, slight misregistration, retro-indie zine style.
+
+- name: ART | Blueprint Cyanotype
+  negative_prompt: photo, colorful, 3d, digital, clean, modern
+  prompt: A classic 19th-century cyanotype sun-print of {prompt}. Deep Prussian blue tones, white silhouettes, grainy chemical paper texture, vintage botanical/architectural study aesthetic.
+
+# --- [COMPOSITION & PERSPECTIVE] ---
+- name: COMP | Drone Top-Down
+  negative_prompt: eye-level, side view, horizon, close-up, blurry, 3d render
+  prompt: A crisp, professional 90-degree top-down drone photograph of {prompt}. Perfect symmetry, high altitude perspective, flat geometric layout, natural sunlight.
+
+- name: COMP | Isometric Diorama
+  negative_prompt: perspective, horizon, sky, blurry edges, flat, 2d
+  prompt: A detailed isometric 3D diorama of {prompt} sitting on a floating square platform. Clean miniature aesthetics, tilt-shift focus, soft clay-render lighting, cross-section view.
+
+- name: COMP | Low-Angle Hero Shot
+  negative_prompt: top-down, high angle, small, weak, flat, bird's eye
+  prompt: An extreme low-angle "worm's eye view" looking up at {prompt}. Makes the subject appear massive, powerful, and imposing against a dramatic sky. Cinematic wide-angle distortion.
+
+- name: COMP | Macro Bokeh
+  negative_prompt: wide shot, landscape, blurry subject, messy, busy
+  prompt: An extreme close-up macro photograph of {prompt}. Razor-sharp detail on a single focal point, surrounded by a heavy, creamy "bokeh" background with soft out-of-focus light orbs.
+
+- name: COMP | Knolling / Flat Lay
+  negative_prompt: messy, 3d, perspective, overlapping, shadows, dark
+  prompt: A perfectly organized "knolling" photography layout of {prompt}. Every component is disassembled and laid out flat in a neat 90-degree grid on a neutral surface. Top-down overhead view.
+
+- name: COMP | Through the Looking Glass
+  negative_prompt: clear, direct, simple, flat, boring
+  prompt: A creative composition where {prompt} is seen through a distorted glass sphere or a magnifying lens. Refracted light, warped edges, and a sense of voyeuristic depth.
+
+- name: COMP | Rule of Thirds Cinematic
+  negative_prompt: centered, symmetrical, boring, snapshot, casual
+  prompt: A professional cinematic frame of {prompt} positioned strictly on the right or left third of the image. Negative space dominates the opposite side, balanced by environmental storytelling and depth of field.
+
+- name: COMP | Split-Level Underwater
+  negative_prompt: dry, air, simple, flat, low-res
+  prompt: A "half-and-half" water-line shot. The top half shows the sky and surface, while the bottom half shows {prompt} submerged underwater. Clear water transition, refraction, and bubbles.
+
+- name: COMP | Wide-Angle Lead-In Lines
+  negative_prompt: flat, centered, zoom, narrow, blurry
+  prompt: A wide-angle composition of {prompt} where architectural or natural lines in the environment lead the viewer's eye directly toward the subject. High sense of depth and vanishing points.
+
+# --- [LIGHTING & ATMOSPHERE] ---
+- name: LIGHT | Golden Hour Radiance
+  negative_prompt: cold, blue, noon, harsh, dark, indoor, artificial
+  prompt: A breathtaking shot of {prompt} bathed in the long, soft shadows of a perfect golden hour. Warm honey-colored light, lens flares, high dynamic range, glowing highlights, serene atmosphere.
+
+- name: LIGHT | Moonlight Chiaroscuro
+  negative_prompt: sun, bright, colorful, warm, day, flat
+  prompt: A dramatic nocturnal scene of {prompt} illuminated only by a bright full moon. Intense silver highlights, deep velvety black shadows, astronomical accuracy, mystical and silent atmosphere.
+
+- name: LIGHT | Cyberpunk Underlighting
+  negative_prompt: sunlight, natural, top-down, dull, white, simple
+  prompt: A gritty urban shot of {prompt} with vibrant neon underlighting from street grates. Magenta and electric blue accents, wet floor reflections, volumetric steam, tech-noir cinematic style.
+
+- name: LIGHT | Morning Mist & Tyndall
+  negative_prompt: dry, clear, sharp, dark, night, harsh light
+  prompt: An ethereal morning scene of {prompt} shrouded in thick white fog. Visible Tyndall effect as sunlight breaks through trees/structures in defined beams, soft focus, peaceful and damp atmosphere.
+
+- name: LIGHT | Bioluminescent Glow
+  negative_prompt: external light, sun, bright, dry, normal, flat
+  prompt: A pitch-black environment where {prompt} is the sole light source. Internal bioluminescent pulses, soft neon cyan and lime gradients, light refracting through translucent membranes, alien-deep-sea aesthetic.
+
+- name: LIGHT | Molten Rim Lighting
+  negative_prompt: soft, cold, blue, bright, flat, daylight
+  prompt: A high-contrast studio shot of {prompt} with intense, fiery orange rim-lighting. The subject is a dark silhouette with glowing, sharp edges as if standing before a forge, dramatic and powerful.
+
+- name: LIGHT | Kaleidoscope Prismatic
+  negative_prompt: dull, grey, matte, simple, dark, monochromatic
+  prompt: A surreal lighting setup for {prompt} using fractured glass prisms. Rainbow light leaks, spectral chromatic aberration, dancing caustic patterns, vibrant and psychedelic crystal atmosphere.
+
+- name: LIGHT | Soft-Box Minimalism
+  negative_prompt: shadows, harsh, messy, colorful, outdoor, grainy
+  prompt: A professional high-key studio setup of {prompt}. Ultra-soft diffused white light from all angles, zero harsh shadows, clean and clinical, Apple-commercial aesthetic, 8k resolution.
+
+# --- [TECH & DIGITAL] ---
+- name: TECH | Exploded View
+  negative_prompt: solid, closed, messy, photo, realistic, 3d
+  prompt: A clean, technical 'exploded view' diagram of {prompt}. 
+    All internal components are hovering in mid-air, connected by 
+    thin gray leader lines. Soft studio lighting, white background.
+
+- name: TECH | Macro-Realistic Tech
+  negative_prompt: blurry, drawing, painting, plastic, toy, low res, cheap, messy
+  prompt: A high-end macro product photograph of {prompt}. Focus on brushed aluminum textures, chamfered glass edges, and internal copper circuitry. Shot on Phase One XF, 100mm lens, soft professional studio lighting, 8k resolution, crisp reflections.
+
+- name: TECH | Unreal Engine 5 Render
+  negative_prompt: 2d, sketch, painting, flat, low poly, simple, cartoon
+  prompt: A high-fidelity Unreal Engine 5 technical render of {prompt}. Lumen global illumination, Nanite-level geometric detail, Ray-traced reflections, volumetric shadows, 8k textures, cinematic post-processing.
+
+- name: TECH | Blueprint Hologram
+  negative_prompt: solid, paper, old, vintage, photo, realistic
+  prompt: A shimmering blue laser-projected hologram of {prompt}. Flickering digital interference, wireframe mesh visible, floating in a dark high-tech laboratory, futuristic HUD style.
+
+- name: TECH | Blueprint Technical
+  negative_prompt: photo, realistic, colorful, artistic, 3d, messy
+  prompt: A clean white-on-blue technical schematic of {prompt}. Isometric view, precise vector lines, legible engineering labels, drafting paper texture, mathematical accuracy, professional CAD drawing style.
+
+- name: TECH | Micro-Chip City
+  negative_prompt: organic, nature, trees, soft, messy, round
+  prompt: A sprawling metropolis made entirely of green circuit boards in the shape of {prompt}. Gold-plated capacitors, glowing data buses, microscopic pathways, tech-noir aesthetic.
+
+- name: TECH | Macro Circuit Board
+  negative_prompt: nature, organic, soft, messy, round, animal
+  prompt: A sprawling metropolis made entirely of green circuit boards in the shape of {prompt}. Gold-plated capacitors, glowing data buses, tech-noir aesthetic.
+
+# --- [TIME & PERIOD] ---
+
+- name: TIME | 1920s Art Deco
+  negative_prompt: plastic, neon, digital, messy, colorful, modern
+  prompt: A glamorous 1920s Great Gatsby aesthetic of {prompt}. Geometric gold filigree, black marble surfaces, symmetrical streamlined design, opulent jazz-age luxury, high-contrast lighting.
+
+- name: TIME | 1950s Retro-Futurism
+  negative_prompt: digital, dark, gritty, realistic, sleek, tablet
+  prompt: A "Jettsons" style 1950s vision of the future featuring {prompt}. Polished chrome fins, pastel mint and coral colors, bubble-glass domes, optimistic space-age atomic aesthetic, Raygun Gothic style.
+
+- name: TIME | 1980s Analog Tech
+  negative_prompt: sleek, thin, modern, smartphone, 4k, wireless
+  prompt: A chunky, beige-plastic 1980s version of {prompt}. Glowing green CRT phosphor screens, thick ribbon cables, tactile mechanical buttons, heavy industrial design, Polaroid film texture.
+
+- name: TIME | 1990s Y2K Aesthetic
+  negative_prompt: vintage, dark, wood, natural, matte, serious
+  prompt: A futuristic late-90s "Y2K" look for {prompt}. Translucent colored plastics (Atomic Purple), silver metallic fabrics, blob-like "blobject" industrial design, glossy surfaces, rave-culture influence.
+
+- name: TIME | Ancient Egyptian Myth
+  negative_prompt: modern, steel, plastic, electricity, digital
+  prompt: A monumental Ancient Egyptian interpretation of {prompt}. Carved from solid basalt and gold leaf, inlaid with lapis lazuli, surrounded by desert sand and towering sandstone pillars, divine cinematic lighting.
+
+- name: TIME | Medieval Illuminated Manuscript
+  negative_prompt: photo, 3d, realistic, perspective, camera
+  prompt: A 12th-century hand-painted parchment illustration of {prompt}. Gold leaf accents, vibrant tempera pigments, flat medieval perspective, intricate floral border decorations, gothic calligraphy style.
+
+- name: TIME | Post-Modern Brutalism
+  negative_prompt: colorful, soft, ornate, fancy, wood, glass
+  prompt: A cold, imposing 1960s Brutalist version of {prompt}. Raw unfinished concrete (béton brut), massive geometric forms, heavy shadows, monochromatic gray tones, urban monumental scale.
+
+- name: TIME | Far-Future Post-Human
+  negative_prompt: human, recognizable, old, broken, dirty, 20th century
+  prompt: A speculative, ultra-advanced version of {prompt} from the year 10,000. Made of programmable matter and light, non-Euclidean geometry, floating white porcelain components, shimmering energy fields.
+
+- name: TIME | Feudal Japan Shogunate
+  negative_prompt: modern, western, plastic, neon, digital
+  prompt: A late-Edo period version of {prompt}. Crafted from lacquered wood, hand-forged tamahagane steel, and silk brocade. Set in a traditional tatami room with sliding shoji screens and soft candlelight.
+
+# --- [ARCHITECTURE & STRUCTURES] ---
+- name: ARCH | Parametric Zaha Hadid
+  negative_prompt: straight lines, simple, old, wooden, brutalist
+  prompt: A futuristic parametric structure of {prompt} designed by Zaha Hadid. Flowing organic curves, white seamless composite materials, glass reflections, futuristic city background.
+
+- name: ARCH | Gothic Cathedral
+  negative_prompt: modern, simple, flat, bright, plastic, cheap
+  prompt: A massive stone structure of {prompt} built with gothic architecture. Flying buttresses, stained glass reflections, pointed arches, gargoyles, dramatic shafts of light.
+
+- name: ARCH | Cyber-Industrial
+  negative_prompt: clean, organic, bright, natural, magical, soft edges
+  prompt: A gritty industrial cyberpunk render of {prompt}. Exposed wiring, glowing orange heat vents, matte black metal, oil stains, heavy machinery, scifi atmosphere.
+
+- name: ARCH | Terracotta Army
+  negative_prompt: metal, shiny, colorful, plastic, new, smooth
+  prompt: An ancient, weathered terracotta statue of {prompt}. Earthy clay textures, kiln-fired cracks, buried for centuries look, archaeological lighting.
+
+- name: ARCH | Urban Brutalism
+  negative_prompt: nature, trees, soft, ornate, colorful, wooden
+  prompt: A massive raw concrete {prompt} located in a gray urban plaza. Sharp geometric shadows, weathered cement textures, minimalist and cold.
+
+- name: ARCH | Brutalist Concrete
+  negative_prompt: ornate, soft, wood, colorful, cozy, small
+  prompt: A monolithic, imposing concrete sculpture of {prompt}. Raw board-formed 
+    textures, massive scale, sharp shadows, cold grey tones, architectural minimalism.
+
+# --- [ENVIRONMENTS & NATURE] ---
+- name: ENV | National Geographic Wildlife
+  negative_prompt: zoo, cage, human, plastic, artificial, cartoon, distorted
+  prompt: A high-shutter speed wildlife photograph of {prompt} in its natural habitat. Dust particles in the air, authentic lighting, sharp fur and eye detail, 600mm lens, professional nature documentary aesthetic.
+
+- name: ENV | Solar-Punk Utopia
+  negative_prompt: gritty, dark, dirty, industrial, oil, smoke, grim, neon
+  prompt: A lush, solar-punk vision of {prompt}. Integrated white porcelain and natural wood, overflowing with hanging gardens and vibrant flora. Bright warm afternoon sun.
+
+- name: ENV | Polar Expedition
+  negative_prompt: warm, sun, desert, tropical, green, cozy, indoor
+  prompt: A desolate, wide-angle shot of {prompt} buried in a massive Antarctic glacier. Blinding white snow, deep blue ice fissures, extreme wind-blown textures, sub-zero atmosphere.
+
+- name: ENV | Desert Mirage
+  negative_prompt: cold, wet, ice, city, lush, dark, sharp edges
+  prompt: A shimmering, heat-distorted vision of {prompt} in the middle of the Sahara desert. Intense orange sun, sand dunes, heat haze blurring the horizon, extreme golden hour lighting.
+
+- name: ENV | Underwater Submerged
+  negative_prompt: dry, air, sky, fire, bright, sharp, desert
+  prompt: A haunting image of {prompt} resting at the bottom of the ocean. Covered in barnacles and sea anemones, rays of light filtering through the deep blue water, silt floating in the current.
+
+- name: ENV | Frozen Tundra
+  negative_prompt: warm, fire, sun, desert, tropical, red, yellow
+  prompt: A frost-covered, frozen {prompt} in a sub-zero arctic landscape. Blue ice crystals forming on the surface, biting wind, monochromatic cold tones.
+
+- name: ENV | Jungle Overgrowth
+  negative_prompt: clean, city, dry, cold, stone, desert, metal
+  prompt: A long-lost {prompt} reclaimed by nature. Thick vines, blooming exotic flowers, and heavy moss covering every surface. Dappled jungle sunlight, humid atmosphere.
+
+- name: ENV | Volumetric Smoke
+  negative_prompt: solid, hard, sharp, liquid, colorful, bright
+  prompt: A ghost-like {prompt} formed entirely out of thick, swirling gray and black smoke. Ethereal, flowing edges, dissipating into a dark void, dramatic rim lighting.
+
+- name: ENV | Industrial Foundry
+  negative_prompt: clean, cold, nature, white, bright, soft
+  prompt: A cinematic shot of {prompt} inside a dark steel foundry. Molten orange metal glowing, steam and sparks everywhere, heavy industrial machinery.
+
+- name: ENV | Bioluminescent Cave
+  negative_prompt: sun, sky, day, bright, flat, dry, normal
+  prompt: A dark subterranean cavern containing {prompt}. Glowing 
+    cyan fungi and neon blue minerals illuminate the scene. 
+    Reflections in stagnant water, damp rocky surfaces, mystical 
+    and eerie lighting.
+
+- name: ENV | Dark Matter Space
+  negative_prompt: earth, ground, clouds, city, daytime, sun
+  prompt: A cosmic formation of interstellar gas and dark 
+    matter shaped like {prompt}. Twinkling distant stars, 
+    galactic scale, ethereal celestial body, deep purples and blacks.
+
+- name: ENV | Miniature Tilt-Shift
+  negative_prompt: full scale, wide, perspective, huge, cinematic
+  prompt: A macro tilt-shift photograph of {prompt} as a tiny plastic 
+    model. Blurred top and bottom edges, saturated toy-like colors, 
+    shallow depth of field, handcrafted diorama aesthetic.
+
+# --- [MATERIALS & TEXTURES] ---
+- name: MAT | Masterpiece Woodcarving
+  negative_prompt: metal, plastic, colorful, painting, photo, smooth
+  prompt: A magnificent sculpture of {prompt} carved from a single piece of dark 
+    walnut wood. Visible wood grain, chisel marks, polished satin finish, 
+    intricate interlocking patterns, high-relief detail, set on a stone pedestal.
+
+- name: MAT | Ancient Bronze
+  negative_prompt: shiny, new, plastic, bright, colorful, modern
+  prompt: A weathered, oxidized bronze statue of {prompt}. Green verdigris patina, 
+    heavy metallic weight, intricate classical carvings, museum lighting, 
+    dark marble pedestal.
+
+- name: MAT | Liquid Chrome
+  negative_prompt: matte, rough, stone, wood, dull, dark, cheap
+  prompt: A high-gloss liquid mercury version of {prompt}. Reflective distorted 
+    surfaces, fluid ripples, metallic luster, futuristic sci-fi aesthetic, 
+    sharp studio lighting.
+
+- name: MAT | Ferrofluid Kinetic
+  negative_prompt: soft, round, colorful, matte, wood, stone
+  prompt: A surreal sculpture of {prompt} made entirely of black liquid ferrofluid. Sharp, jagged magnetic spikes, oily iridescent sheen, high-gloss reflections, experimental physics aesthetic.
+
+- name: MAT | Holographic Foil
+  negative_prompt: dull, matte, grey, solid, stone, wood
+  prompt: A 3D form of {prompt} wrapped in crinkled holographic foil. Shifting spectrum colors, metallic prismatic reflections, high-fashion editorial lighting, vibrant and futuristic.
+
+- name: MAT | Kinetic Sand
+  negative_prompt: solid, liquid, metal, glass, smooth, wet
+  prompt: A crumbling, tactile version of {prompt} made of glowing kinetic sand. Fine granular textures, particles suspended in mid-air, soft studio lighting, macro photography.
+
+- name: MAT | Glass Morphism
+  negative_prompt: opaque, solid, matte, wood, stone, blurry, messy
+  prompt: A futuristic translucent glass sculpture of {prompt}. Frosted surfaces, rainbow caustic light refractions, soft pastel gradients, floating in a void, minimalist 3D render, high-end UI aesthetic.
+
+- name: MAT | Liquid Gold
+  negative_prompt: dull, matte, dirty, rough, stone, wood, cheap
+  prompt: A luxurious splash of molten liquid gold forming the shape of {prompt}. High-gloss mirror reflections, viscous fluid dynamics, deep yellow luster, black studio background.
+
+- name: MAT | Molten Magma
+  negative_prompt: cold, ice, water, blue, calm, safe, metal
+  prompt: A volatile creation of {prompt} made entirely of flowing liquid lava. Glowing bright orange cracks, cooling black basalt crust, intense heat distortion, flying sparks and embers.
+
+- name: MAT | Carbon Fiber Tech
+  negative_prompt: wood, old, plastic, organic, soft, colorful, stone
+  prompt: A high-tech aerodynamic version of {prompt} crafted from woven black carbon fiber. Matte and gloss contrast, red LED accent lights, lightweight structural design, Formula 1 engineering aesthetic.
+
+- name: MAT | Iridescent Pearl
+  negative_prompt: matte, dull, dark, rough, wooden, stone, dirty
+  prompt: A breathtaking pearlescent sculpture of {prompt}. The surface shimmers with a mother-of-pearl oil-slick effect, reflecting a spectrum of soft rainbow colors. High-gloss finish, minimalist white studio background, ethereal lighting.
+
+- name: MAT | Porcelain Kintsugi
+  negative_prompt: plastic, metal, wood, cheap, messy, rough
+  prompt: A delicate white porcelain {prompt} that has been broken and repaired with shimmering gold lacquer. Kintsugi style, fine cracks, elegant and fragile, soft studio lighting, minimalist Zen aesthetic.
+
+- name: MAT | Chrome Liquid Mercury
+  negative_prompt: matte, dull, rough, wooden, stone, dark
+  prompt: A melting {prompt} made of liquid mercury. Mirror-like reflections, distorted silver surfaces, fluid ripples, high-tech sci-fi aesthetic, extreme gloss.
+
+- name: MAT | Crystalline Geode
+  negative_prompt: smooth, flat, metal, wood, soft, liquid
+  prompt: A heavy rock split open to reveal a shimmering amethyst geode center in the shape of {prompt}. Jagged purple crystals, sparkling facets, raw stone exterior, macro photography, sharp focus.
+
+- name: MAT | Emerald Glass
+  negative_prompt: opaque, matte, rough, metal, plastic, wood
+  prompt: A sculpture of {prompt} carved from solid emerald glass. Internal bubbles, light refracting through green facets, translucent and glowing, 8k render.
+
+- name: MAT | Copper Patina
+  negative_prompt: shiny, new, plastic, bright, colorful, gold
+  prompt: A weathered copper statue of {prompt}. Green oxidation and patina, heavy metallic weight, intricate classical carvings, museum lighting, dark marble pedestal.
+
+- name: MAT | Frozen Amber Fossil
+  negative_prompt: bright, clean, modern, liquid, metal, plastic
+  prompt: A prehistoric {prompt} perfectly preserved inside a translucent golden amber stone. Microscopic air bubbles, internal fractures, warm backlighting, macro photography, ancient relic aesthetic.
+
+- name: MAT | Translucent Jellyfish
+  negative_prompt: solid, opaque, matte, stone, metal, dry, hot
+  prompt: A bioluminescent, translucent creature style {prompt}. 
+    Underwater lighting, flowing gelatinous textures, 
+    shimmering inner glow, soft organic movement, deep sea aesthetics.
+
+- name: MAT | Iridescent Oil Slick
+  negative_prompt: matte, dull, dark, rough, wooden, stone, dry
+  prompt: A breathtaking pearlescent sculpture of {prompt}. 
+    The surface shimmers with a rainbow oil-slick effect, 
+    high-gloss finish, minimalist studio background, 
+    vibrant shifting colors.
+
+- name: MAT | Frozen in Ice
+  negative_prompt: warm, hot, fire, liquid, steam, melting
+  prompt: A thick, translucent block of cracked arctic ice containing {prompt}. 
+    Bubbles and fractures frozen in time. Cold blue light refracting 
+    through the ice, caustic light patterns on the ground.
+
+- name: MAT | Volcanic Obsidian
+  negative_prompt: soft, white, bright, cold, ice, water
+  prompt: A sleek, jagged carving of {prompt} made from black obsidian glass. 
+    Glowing molten lava visible in the cracks. Smoke and embers drifting 
+    in the background, sharp orange rim-lighting.
+
+- name: MAT | Forged Damascus Steel
+  negative_prompt: plastic, wood, dull, rough, painted, colorful
+  prompt: A close-up of {prompt} crafted from folded Damascus steel. 
+    Visible wavy 'water' patterns in the metal, polished to a mirror sheen. 
+    Dark, oily reflections and sharp, dangerous edges.
+
+- name: MAT | Molten Lava
+  negative_prompt: cold, ice, water, blue, calm, safe, metal, wood
+  prompt: A volatile creation of {prompt} made entirely of 
+    flowing liquid lava. Glowing bright orange cracks, 
+    cooling black basalt crust, intense heat distortion.
