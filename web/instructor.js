@@ -84,7 +84,9 @@ app.registerExtension({
   name: "iTools.instructorNode",
   async nodeCreated(node) {
     if (node.comfyClass !== "iToolsInstructorNode") return;
-
+    
+    node.size = [300, 400];
+    
     let selectedItems = new Set();
     let dynamicData = {};
 
