@@ -37,6 +37,9 @@ if allow_beta_nodes:
         NODE_CLASS_MAPPINGS["iToolsCropImage"] = IToolsCropImage
         NODE_DISPLAY_NAME_MAPPINGS["iToolsCropImage"] = "iTools Crop Image (Beta)"
 
+        NODE_CLASS_MAPPINGS["iToolsInstructorNode"] = IToolsInstructorNode
+        NODE_DISPLAY_NAME_MAPPINGS["iToolsInstructorNode"] = "iTools Instructor Node (Beta)"
+
     except ModuleNotFoundError as e:
         pass
         #print(e)
