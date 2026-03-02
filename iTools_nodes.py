@@ -29,7 +29,7 @@ from .backend.prompter_multi import (
     templates_extra2,
     templates_extra3,
 )
-from .backend.shared import styles, tensor2pil, pil2tensor, project_dir
+from .backend.shared import styles, tensor2pil, pil2tensor, project_dir, FlexibleOptionalInputType, any_type
 from comfy.cli_args import args  # type: ignore
 import re
 
@@ -1086,6 +1086,29 @@ class IToolsPromptRecord:
         return {"ui": {"text": text}, "result": (text,)}
 
 
+class IToolsInstructorNode:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {},
+            "optional": FlexibleOptionalInputType(any_type),
+        }
+
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("instruction",)
+    FUNCTION = "process_instructions"
+    CATEGORY = "iTools"
+    OUTPUT_NODE = True
+
+    def process_instructions(self, **kwargs):
+        final_text = ""
+        if "InstructorWidget" in kwargs:
+            data = kwargs["InstructorWidget"]
+            # Use the pre-assembled text from JS
+            final_text = data.get("finalText", "")
+        
+        return (final_text,)
+        
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -1108,6 +1131,7 @@ NODE_CLASS_MAPPINGS = {
     "iToolsPreviewImage": IToolsPreviewImage,
     "iToolsCompareImage": IToolsCompareImage,
     "iToolsPromptRecord": IToolsPromptRecord,
+    "iToolsInstructorNode": IToolsInstructorNode,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -1131,4 +1155,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsPreviewImage": "iTools Image Preview 🍿",
     "iToolsCompareImage": "iTools Image Compare 🔍",
     "iToolsPromptRecord": "iTools Prompt Record 🪶",
+    "iToolsInstructorNode": "iTools Instructor 👨🏻‍🏫",
 }
