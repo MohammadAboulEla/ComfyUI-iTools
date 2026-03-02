@@ -74,7 +74,10 @@ app.registerExtension({
           message: "Enter Template Title:",
           default: title,
         });
-        if (title === null) return;
+        if (title === null || title === "") {
+          showToast("error", "Error", "Template title cannot be empty.");
+          return;
+        };
       }
 
       const text = await app.extensionManager.dialog.prompt({
@@ -82,7 +85,10 @@ app.registerExtension({
         message: isDefault ? `Edit Instruction:` : "Enter Instruction Text:",
         default: existing ? existing.text : "",
       });
-      if (text === null) return;
+      if (text === null || text === "") {
+        showToast("error", "Error", "Template text cannot be empty.");
+        return;
+      };
 
       let userTemplates = getUserTemplates();
       const templateId = existing ? existing.id : "user_" + Date.now();
@@ -158,7 +164,7 @@ app.registerExtension({
                 `Current Title: ${template.title}`,
                 `Current Template: ${template.text}`,
               ],
-              hint: "Hint: Define custom variables using square brackets [].\nExample: Replace background with [NEW COLOR] and the [SUBJECT] with [NEW SUBJECT].",
+              hint: "Hint: Define custom variables between square brackets [].",
               message: `Do you want to edit this template?`,
             });
             if (wantEdit) editTemplate(template);
