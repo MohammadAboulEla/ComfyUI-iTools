@@ -98,7 +98,6 @@ app.registerExtension({
   async nodeCreated(node) {
     if (node.comfyClass !== "iToolsInstructorNode") return;
 
-    node.size = [300, 420];
     let selectedItems = new Set();
     let dynamicData = {};
 
@@ -124,7 +123,8 @@ app.registerExtension({
     };
 
     const container = document.createElement("div");
-    container.style.cssText = `display: flex; flex-direction: column; gap: 8px; padding: 5px; height: 100%; background: #1c1c1c; border-radius: 8px; color: white; font-family: sans-serif;`;
+    // start as hidden
+    container.style.display = 'none';
 
     const header = document.createElement("div");
     header.style.cssText = `display: flex; gap: 4px;`;
@@ -292,13 +292,13 @@ app.registerExtension({
           inputContainer.style.cssText = `display: ${cb.checked ? "flex" : "none"}; flex-direction: column; gap: 5px; margin-left: 22px;`;
 
           const placeholders = template.text.match(/\[#?([^\]]+)\]/g) || [];
-          
+
           const shouldShow = cb.checked && placeholders.length > 0;
           inputContainer.style.cssText = `display: ${shouldShow ? "flex" : "none"}; flex-direction: column; gap: 5px; margin-left: 22px;`;
 
-placeholders.forEach((placeholder) => {
+          placeholders.forEach((placeholder) => {
             const cleanName = placeholder.replace(/[\[\]]/g, "");
-            
+
             // Container for input + clear button
             const inputWrapper = document.createElement("div");
             inputWrapper.style.cssText = `position: relative; display: flex; align-items: center;`;
@@ -307,12 +307,12 @@ placeholders.forEach((placeholder) => {
             input.placeholder = cleanName;
             input.value = dynamicData[template.id]?.[cleanName] || "";
             input.style.cssText = `background: #111; border: 1px solid #444; color: #eee; padding: 3px 20px 3px 6px; border-radius: 3px; font-size: 10px; outline: none; width: 100%;`;
-            
+
             // The X button inside the input
             const clearX = document.createElement("div");
             clearX.innerHTML = "×";
             clearX.style.cssText = `position: absolute; right: 5px; cursor: pointer; color: #666; font-size: 14px; line-height: 1; display: ${input.value ? "block" : "none"};`;
-            
+
             // Logic to clear input
             clearX.onclick = (ev) => {
               ev.stopPropagation();
@@ -344,13 +344,13 @@ placeholders.forEach((placeholder) => {
             if (isChecked) selectedItems.add(template.id);
             else selectedItems.delete(template.id);
             cb.checked = isChecked;
-            
+
             // Toggle visibility only if placeholders exist
-            inputContainer.style.display = (isChecked && placeholders.length > 0) ? "flex" : "none";
-            
+            inputContainer.style.display =
+              isChecked && placeholders.length > 0 ? "flex" : "none";
+
             node.setDirtyCanvas(true, true);
           };
-          
 
           listContainer.appendChild(itemContainer);
         });
@@ -361,6 +361,9 @@ placeholders.forEach((placeholder) => {
 
     container.appendChild(header);
     container.appendChild(listContainer);
+
+    // init node size
+    node.size = [300, 240];
 
     const widget = node.addDOMWidget("InstructorWidget", "custom", container, {
       getValue: () => {
@@ -392,9 +395,20 @@ placeholders.forEach((placeholder) => {
           renderList(searchInput.value);
         }
       },
-      getMinHeight: () => 150,
+    //   getMinHeight: () => 150,
     });
 
+    // set container to visible after 100ms
+    setTimeout(() => {
+      container.style.cssText = `display: flex; flex-direction: column; gap: 8px; padding: 5px; height: 100%; background: #1c1c1c; border-radius: 8px; color: white; font-family: sans-serif;`;
+    }, 100);
+    
     renderList();
+    
+    node.onResize = () => {
+      if (node.size[0] < 300) {
+        node.size[0] = 300;
+      }
+    };
   },
 });
