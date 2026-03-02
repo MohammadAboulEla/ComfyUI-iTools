@@ -16,12 +16,12 @@ const TEMPLATES = [
   {
     id: "style_trans",
     title: "🎨 Style Transform",
-    text: "Convert the image into [STYLE: e.g., Watercolor, Cel-shaded, 3D Render], keep the same composition and character design.",
+    text: "Convert the image into [STYLE: e.g., Watercolor, Cel-shaded, 3D Render], keep the same composition and [SUBJECT] design.",
   },
   {
     id: "mat_change",
     title: "🧶 Material/Texture",
-    text: "Change the material of [OBJECT/OUTFIT] to [MATERIAL: e.g., Leather, Knitted fabric, Gold], keep the shapes and proportions identical.",
+    text: "Change the material of [SUBJECT] to [MATERIAL: e.g., Leather, Knitted fabric, Gold], keep the shapes and proportions identical.",
   },
   // --- CHARACTER & POSE ---
   {
@@ -226,8 +226,8 @@ app.registerExtension({
           renderList(searchInput.value);
         }
       },
-      getMinHeight: () => 350,
-      getMaxHeight: () => 700,
+      getMinHeight: () => 150,
+
     });
 
     renderList();
