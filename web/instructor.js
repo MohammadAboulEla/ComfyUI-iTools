@@ -292,6 +292,10 @@ app.registerExtension({
           inputContainer.style.cssText = `display: ${cb.checked ? "flex" : "none"}; flex-direction: column; gap: 5px; margin-left: 22px;`;
 
           const placeholders = template.text.match(/\[#?([^\]]+)\]/g) || [];
+          
+          const shouldShow = cb.checked && placeholders.length > 0;
+          inputContainer.style.cssText = `display: ${shouldShow ? "flex" : "none"}; flex-direction: column; gap: 5px; margin-left: 22px;`;
+
           placeholders.forEach((placeholder) => {
             const cleanName = placeholder.replace(/[\[\]]/g, "");
             const input = document.createElement("input");
@@ -313,9 +317,13 @@ app.registerExtension({
             if (isChecked) selectedItems.add(template.id);
             else selectedItems.delete(template.id);
             cb.checked = isChecked;
-            inputContainer.style.display = isChecked ? "flex" : "none";
+            
+            // Toggle visibility only if placeholders exist
+            inputContainer.style.display = (isChecked && placeholders.length > 0) ? "flex" : "none";
+            
             node.setDirtyCanvas(true, true);
           };
+          
 
           listContainer.appendChild(itemContainer);
         });
