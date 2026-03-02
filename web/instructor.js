@@ -1,20 +1,81 @@
 import { app } from "../../../scripts/app.js";
 
 const DEFAULT_TEMPLATES = [
-  { id: "bg_swap", title: "🖼️ Background Swap", text: "Replace the background with [NEW BG], keep the subject's face, outfit, pose, and camera angle unchanged." },
-  { id: "env_mood", title: "🌙 Time & Mood", text: "Change the scene to [TIME/WEATHER] with [LIGHTING STYLE], keep the main subject and composition unchanged." },
-  { id: "style_trans", title: "🎨 Style Transform", text: "Convert the image into [STYLE: e.g., Watercolor, Cel-shaded, 3D Render], keep the same composition and [SUBJECT] design." },
-  { id: "mat_change", title: "🧶 Material/Texture", text: "Change the material of [SUBJECT] to [MATERIAL: e.g., Leather, Knitted fabric, Gold], keep the shapes and proportions identical." },
-  { id: "pose_mod", title: "🏃 Pose Modification", text: "Change the subject's pose to [NEW POSE], keep the same character design, outfit, and lighting." },
-  { id: "expr_edit", title: "😊 Expression Edit", text: "Change the expression to [EXPRESSION], keep the face shape, eyes, and head angle unchanged." },
-  { id: "outfit_chg", title: "👕 Wardrobe Change", text: "Change the outfit to [NEW OUTFIT], keep the subject's identity, pose, and proportions the same." },
-  { id: "logo_mock", title: "☕ Branding Mockup", text: "Place the provided logo on [OBJECT: e.g., Mug, Bag, Wall], keep the logo shape perfectly unchanged and centered with realistic shadows." },
-  { id: "logo_3d", title: "💎 3D Logo Effect", text: "Convert the logo into a 3D extruded emblem with [MATERIAL: e.g., Polished gold, Frosted glass], keep the silhouette perfectly unchanged." },
-  { id: "cam_angle", title: "📸 Camera Angle", text: "Show a [ANGLE: e.g., 90-degree side view, Bird's eye view] of the subject, keep the exact same details and materials, only change the perspective." },
-  { id: "color_grade", title: "🌈 Color Grading", text: "Apply a [MOOD: e.g., Warm cinematic, Pastel] color palette, keep all objects and shapes unchanged." },
-  { id: "add_prop", title: "➕ Add Element", text: "Add [ITEM] to the scene, integrate it naturally with the current lighting and keep all other elements unchanged." },
-  { id: "rem_obj", title: "➖ Remove Element", text: "Remove [ITEM] completely and fill the area naturally, keeping the rest of the image unchanged." },
-  { id: "high_retouch", title: "✨ Pro Retouch", text: "Apply natural beauty retouch: reduce shine, soften minor skin texture while keeping pores realistic and identity unchanged." },
+  { 
+    id: "bg_swap", 
+    title: "🖼️ Background Swap", 
+    text: "Background replacement. Replace the environment with [NEW BG] while maintaining absolute consistency of the subject's facial features, outfit, pose, and original camera perspective. Seamless edge blending." 
+  },
+  { 
+    id: "env_mood", 
+    title: "🌙 Time & Mood", 
+    text: "Environmental relighting. Change the scene atmosphere to [TIME/WEATHER] with [LIGHTING STYLE: e.g., Volumetric fog, Golden hour]. Preserve the original subject geometry and composition layout." 
+  },
+  { 
+    id: "style_trans", 
+    title: "🎨 Style Transform", 
+    text: "Neural style transfer. Convert the image into [STYLE: e.g., Watercolor, Cel-shaded, 3D Octane Render]. Retain the global composition, spatial structure, and core [SUBJECT] design elements." 
+  },
+  { 
+    id: "mat_change", 
+    title: "🧶 Material/Texture", 
+    text: "Physically-based rendering (PBR) texture modification. Change the surface material of [SUBJECT] to [MATERIAL]. Maintain identical mesh topology, shadows, and proportions." 
+  },
+  { 
+    id: "pose_mod", 
+    title: "🏃 Pose Modification", 
+    text: "Rigging and pose adjustment. Modify the subject's pose to [NEW POSE]. Ensure strict character consistency, maintaining the exact outfit details, face ID, and environmental lighting." 
+  },
+  { 
+    id: "expr_edit", 
+    title: "😊 Expression Edit", 
+    text: "Facial expression synthesis. Alter the expression to [EXPRESSION: e.g., Joyful, Determined]. Keep the bone structure, eye color, and head orientation (yaw, pitch, roll) unchanged." 
+  },
+  { 
+    id: "outfit_chg", 
+    title: "👕 Wardrobe Change", 
+    text: "Garment replacement. Change the outfit to [NEW OUTFIT]. Maintain the subject's anatomical proportions, identity (Face ID), and current action/pose." 
+  },
+  { 
+    id: "logo_mock", 
+    title: "☕ Branding Mockup", 
+    text: "Precision logo mapping. Overlay the provided logo onto [OBJECT]. Apply realistic surface displacement, texture mapping, and ambient occlusion for a natural integrated look." 
+  },
+  { 
+    id: "logo_3d", 
+    title: "💎 3D Logo Effect", 
+    text: "3D extrusion and shading. Transform the 2D logo into a 3D emblem with [MATERIAL]. Maintain the exact vector silhouette with realistic specular highlights and depth of field." 
+  },
+  { 
+    id: "cam_angle", 
+    title: "📸 Camera Angle", 
+    text: "Virtual cinematography. Re-render the scene from a [ANGLE] perspective. Maintain 'Temporal Consistency' of all textures and character details while shifting the focal point." 
+  },
+  { 
+    id: "color_grade", 
+    title: "🌈 Color Grading", 
+    text: "Professional color science. Apply a [MOOD] LUT-based palette. Adjust highlights, midtones, and shadows without altering the underlying image data or shapes." 
+  },
+  { 
+    id: "add_prop", 
+    title: "➕ Add Element", 
+    text: "In-painting and object insertion. Synthesize [ITEM] into the scene. Match the global illumination, shadows, and noise profile of the original image for perfect integration." 
+  },
+  { 
+    id: "rem_obj", 
+    title: "➖ Remove Element", 
+    text: "Object removal and generative fill. Delete [ITEM] and reconstruct the underlying background using context-aware synthesis, ensuring no artifacts remain." 
+  },
+  { 
+    id: "high_retouch", 
+    title: "✨ Pro Retouch", 
+    text: "High-end frequency separation. Apply subtle skin retouching: eliminate blemishes, balance skin tones, and reduce oily specular highlights while preserving micro-texture and pores." 
+  },
+  { 
+    id: "upscale_fix", 
+    title: "🔍 Detail Enhancer", 
+    text: "Generative upscaling. Increase the resolution and inject high-frequency details into [SUBJECT/SCENE]. Improve sharpness and clarity without changing the original design." 
+  },
 ];
 
 app.registerExtension({
