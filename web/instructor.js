@@ -296,18 +296,45 @@ app.registerExtension({
           const shouldShow = cb.checked && placeholders.length > 0;
           inputContainer.style.cssText = `display: ${shouldShow ? "flex" : "none"}; flex-direction: column; gap: 5px; margin-left: 22px;`;
 
-          placeholders.forEach((placeholder) => {
+placeholders.forEach((placeholder) => {
             const cleanName = placeholder.replace(/[\[\]]/g, "");
+            
+            // Container for input + clear button
+            const inputWrapper = document.createElement("div");
+            inputWrapper.style.cssText = `position: relative; display: flex; align-items: center;`;
+
             const input = document.createElement("input");
             input.placeholder = cleanName;
             input.value = dynamicData[template.id]?.[cleanName] || "";
-            input.style.cssText = `background: #111; border: 1px solid #444; color: #eee; padding: 3px 6px; border-radius: 3px; font-size: 10px; outline: none;`;
+            input.style.cssText = `background: #111; border: 1px solid #444; color: #eee; padding: 3px 20px 3px 6px; border-radius: 3px; font-size: 10px; outline: none; width: 100%;`;
+            
+            // The X button inside the input
+            const clearX = document.createElement("div");
+            clearX.innerHTML = "×";
+            clearX.style.cssText = `position: absolute; right: 5px; cursor: pointer; color: #666; font-size: 14px; line-height: 1; display: ${input.value ? "block" : "none"};`;
+            
+            // Logic to clear input
+            clearX.onclick = (ev) => {
+              ev.stopPropagation();
+              input.value = "";
+              if (dynamicData[template.id]) {
+                delete dynamicData[template.id][cleanName];
+              }
+              clearX.style.display = "none";
+              node.setDirtyCanvas(true, true);
+            };
+
             input.oninput = (ev) => {
               ev.stopPropagation();
               if (!dynamicData[template.id]) dynamicData[template.id] = {};
               dynamicData[template.id][cleanName] = input.value;
+              // Show/hide X based on content
+              clearX.style.display = input.value ? "block" : "none";
             };
-            inputContainer.appendChild(input);
+
+            inputWrapper.appendChild(input);
+            inputWrapper.appendChild(clearX);
+            inputContainer.appendChild(inputWrapper);
           });
 
           itemContainer.appendChild(inputContainer);
