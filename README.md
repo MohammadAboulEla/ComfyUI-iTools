@@ -38,6 +38,14 @@ For full functionality, use the classic node system.
 
 
 ## Nodes:
+
+### **iTools Instructor 👨🏻‍🏫**
+
+This node is a powerful prompt engineering tool that helps you write better prompts by providing a structured template system. It allows you to define placeholders in your prompt text (e.g., `[SUBJECT]`, `[STYLE]`) and then fill them in using a simple interface. The node also includes features for prompt organization, history tracking, and template management.
+
+![iTools Instructor](examples/Screenshot23.jpg)
+
+---
 ### **iTools Prompt Record 🪶:**
 
 Tracks and records your prompts during workflow execution. Features a Timeline system that saves your prompt history between sessions, allowing you to quickly access and reuse previously successful prompts. Includes favorites management and prompt organization tools.
