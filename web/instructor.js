@@ -10,13 +10,13 @@ const DEFAULT_TEMPLATES = [
   {
     id: "env_mood",
     title: "🌙 Time & Mood",
-    text: `Environmental relighting. Change the scene atmosphere to [TIME/WEATHER] with 
-    [LIGHTING STYLE: e.g., Volumetric fog, Golden hour]. Preserve the original subject geometry and composition layout.`,
+    text: `Environmental relighting. Change the scene atmosphere to [TIME / WEATHER] with 
+    [LIGHTING STYLE]. Preserve the original subject geometry and composition layout.`,
   },
   {
     id: "style_trans",
     title: "🎨 Style Transform",
-    text: `Neural style transfer. Convert the image into [STYLE: e.g., Watercolor, Cel-shaded, 3D Octane Render]. 
+    text: `Neural style transfer. Convert the image into [STYLE]. 
     Retain the global composition, spatial structure, and core [SUBJECT] design elements.`,
   },
   {
@@ -34,7 +34,7 @@ const DEFAULT_TEMPLATES = [
   {
     id: "expr_edit",
     title: "😊 Expression Edit",
-    text: `Facial expression synthesis. Alter the expression to [EXPRESSION: e.g., Joyful, Determined]. 
+    text: `Facial expression synthesis. Alter the expression to [EXPRESSION]. 
     Keep the bone structure, eye color, and head orientation (yaw, pitch, roll) unchanged.`,
   },
   {
@@ -88,7 +88,7 @@ const DEFAULT_TEMPLATES = [
   {
     id: "upscale_fix",
     title: "🔍 Detail Enhancer",
-    text: `Generative upscaling. Increase the resolution and inject high-frequency details into [SUBJECT/SCENE]. 
+    text: `Generative upscaling. Increase the resolution and inject high-frequency details into [SUBJECT / SCENE]. 
     Improve sharpness and clarity without changing the original design.`,
   },
 ];
