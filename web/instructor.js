@@ -1,206 +1,241 @@
 import { app } from "../../../scripts/app.js";
 
-const TEMPLATES = [
-  // --- BACKGROUND & ENVIRONMENT ---
-  {
-    id: "bg_swap",
-    title: "🖼️ Background Swap",
-    text: "Replace the background with [DESCRIBE NEW BG], keep the subject's face, outfit, pose, and camera angle unchanged.",
-  },
-  {
-    id: "env_mood",
-    title: "🌙 Time & Mood",
-    text: "Change the scene to [TIME/WEATHER] with [LIGHTING STYLE], keep the main subject and composition unchanged.",
-  },
-  // --- STYLE & MATERIAL ---
-  {
-    id: "style_trans",
-    title: "🎨 Style Transform",
-    text: "Convert the image into [STYLE: e.g., Watercolor, Cel-shaded, 3D Render], keep the same composition and [SUBJECT] design.",
-  },
-  {
-    id: "mat_change",
-    title: "🧶 Material/Texture",
-    text: "Change the material of [SUBJECT] to [MATERIAL: e.g., Leather, Knitted fabric, Gold], keep the shapes and proportions identical.",
-  },
-  // --- CHARACTER & POSE ---
-  {
-    id: "pose_mod",
-    title: "🏃 Pose Modification",
-    text: "Change the subject's pose to [NEW POSE], keep the same character design, outfit, and lighting.",
-  },
-  {
-    id: "expr_edit",
-    title: "😊 Expression Edit",
-    text: "Change the expression to [EXPRESSION], keep the face shape, eyes, and head angle unchanged.",
-  },
-  {
-    id: "outfit_chg",
-    title: "👕 Wardrobe Change",
-    text: "Change the outfit to [NEW OUTFIT], keep the subject's identity, pose, and proportions the same.",
-  },
-  // --- BRANDING & MOCKUPS ---
-  {
-    id: "logo_mock",
-    title: "☕ Branding Mockup",
-    text: "Place the provided logo on [OBJECT: e.g., Mug, Bag, Wall], keep the logo shape perfectly unchanged and centered with realistic shadows.",
-  },
-  {
-    id: "logo_3d",
-    title: "💎 3D Logo Effect",
-    text: "Convert the logo into a 3D extruded emblem with [MATERIAL: e.g., Polished gold, Frosted glass], keep the silhouette perfectly unchanged.",
-  },
-  // --- CAMERA & POST-PROCESSING ---
-  {
-    id: "cam_angle",
-    title: "📸 Camera Angle",
-    text: "Show a [ANGLE: e.g., 90-degree side view, Bird's eye view] of the subject, keep the exact same details and materials, only change the perspective.",
-  },
-  {
-    id: "color_grade",
-    title: "🌈 Color Grading",
-    text: "Apply a [MOOD: e.g., Warm cinematic, Pastel] color palette, keep all objects and shapes unchanged.",
-  },
-  // --- ADD/REMOVE ELEMENTS ---
-  {
-    id: "add_prop",
-    title: "➕ Add Element",
-    text: "Add [ITEM] to the scene, integrate it naturally with the current lighting and keep all other elements unchanged.",
-  },
-  {
-    id: "rem_obj",
-    title: "➖ Remove Element",
-    text: "Remove [ITEM] completely and fill the area naturally, keeping the rest of the image unchanged.",
-  },
-  // --- UTILITY ---
-  {
-    id: "high_retouch",
-    title: "✨ Pro Retouch",
-    text: "Apply natural beauty retouch: reduce shine, soften minor skin texture while keeping pores realistic and identity unchanged.",
-  },
+const DEFAULT_TEMPLATES = [
+  { id: "bg_swap", title: "🖼️ Background Swap", text: "Replace the background with [NEW BG], keep the subject's face, outfit, pose, and camera angle unchanged." },
+  { id: "env_mood", title: "🌙 Time & Mood", text: "Change the scene to [TIME/WEATHER] with [LIGHTING STYLE], keep the main subject and composition unchanged." },
+  { id: "style_trans", title: "🎨 Style Transform", text: "Convert the image into [STYLE: e.g., Watercolor, Cel-shaded, 3D Render], keep the same composition and [SUBJECT] design." },
+  { id: "mat_change", title: "🧶 Material/Texture", text: "Change the material of [SUBJECT] to [MATERIAL: e.g., Leather, Knitted fabric, Gold], keep the shapes and proportions identical." },
+  { id: "pose_mod", title: "🏃 Pose Modification", text: "Change the subject's pose to [NEW POSE], keep the same character design, outfit, and lighting." },
+  { id: "expr_edit", title: "😊 Expression Edit", text: "Change the expression to [EXPRESSION], keep the face shape, eyes, and head angle unchanged." },
+  { id: "outfit_chg", title: "👕 Wardrobe Change", text: "Change the outfit to [NEW OUTFIT], keep the subject's identity, pose, and proportions the same." },
+  { id: "logo_mock", title: "☕ Branding Mockup", text: "Place the provided logo on [OBJECT: e.g., Mug, Bag, Wall], keep the logo shape perfectly unchanged and centered with realistic shadows." },
+  { id: "logo_3d", title: "💎 3D Logo Effect", text: "Convert the logo into a 3D extruded emblem with [MATERIAL: e.g., Polished gold, Frosted glass], keep the silhouette perfectly unchanged." },
+  { id: "cam_angle", title: "📸 Camera Angle", text: "Show a [ANGLE: e.g., 90-degree side view, Bird's eye view] of the subject, keep the exact same details and materials, only change the perspective." },
+  { id: "color_grade", title: "🌈 Color Grading", text: "Apply a [MOOD: e.g., Warm cinematic, Pastel] color palette, keep all objects and shapes unchanged." },
+  { id: "add_prop", title: "➕ Add Element", text: "Add [ITEM] to the scene, integrate it naturally with the current lighting and keep all other elements unchanged." },
+  { id: "rem_obj", title: "➖ Remove Element", text: "Remove [ITEM] completely and fill the area naturally, keeping the rest of the image unchanged." },
+  { id: "high_retouch", title: "✨ Pro Retouch", text: "Apply natural beauty retouch: reduce shine, soften minor skin texture while keeping pores realistic and identity unchanged." },
 ];
 
 app.registerExtension({
   name: "iTools.instructorNode",
   async nodeCreated(node) {
     if (node.comfyClass !== "iToolsInstructorNode") return;
-    
-    node.size = [300, 400];
-    
+
+    node.size = [300, 420];
     let selectedItems = new Set();
     let dynamicData = {};
 
-    const container = document.createElement("div");
-    container.style.cssText = `
-            display: flex; flex-direction: column; gap: 8px; padding: 5px;
-            height: 100%;
-            background: #1c1c1c; border-radius: 8px; color: white; font-family: sans-serif;
-        `;
+    const getUserTemplates = () => JSON.parse(localStorage.getItem("iTools_userTemplates") || "[]");
+    const saveUserTemplates = (templates) => localStorage.setItem("iTools_userTemplates", JSON.stringify(templates));
 
-    // 1. Search Input
+    const getMergedTemplates = () => {
+      const userTemplates = getUserTemplates();
+      const merged = DEFAULT_TEMPLATES.map((dt) => {
+        const userVersion = userTemplates.find((ut) => ut.id === dt.id);
+        return userVersion || dt;
+      });
+      const newOnes = userTemplates.filter((ut) => !DEFAULT_TEMPLATES.find((dt) => dt.id === ut.id));
+      return [...merged, ...newOnes];
+    };
+
+    const showToast = (severity, summary, detail) => {
+      app.extensionManager.toast.add({ severity, summary, detail, life: 2000 });
+    };
+
+    const container = document.createElement("div");
+    container.style.cssText = `display: flex; flex-direction: column; gap: 8px; padding: 5px; height: 100%; background: #1c1c1c; border-radius: 8px; color: white; font-family: sans-serif;`;
+
+    const header = document.createElement("div");
+    header.style.cssText = `display: flex; gap: 4px;`;
+
     const searchInput = document.createElement("input");
     searchInput.placeholder = "Search instructions...";
-    searchInput.style.cssText = `
-            padding: 5px; border-radius: 4px; border: 1px solid #444;
-            background: #333; color: white; outline: none;
-        `;
+    searchInput.style.cssText = `flex: 1; padding: 5px; border-radius: 4px; border: 1px solid #444; background: #333; color: white; outline: none;`;
 
-    // 2. List Container
+    const addBtn = document.createElement("button");
+    addBtn.innerHTML = "＋";
+    addBtn.style.cssText = `padding: 0 8px; background: #444; border: none; border-radius: 4px; color: white; cursor: pointer;`;
+
+    header.appendChild(searchInput);
+    header.appendChild(addBtn);
+
     const listContainer = document.createElement("div");
-    listContainer.style.cssText = `
-            height: 100%; overflow-y: auto; border: 1px solid #444;
-            border-radius: 4px; background: #252525;
-        `;
+    listContainer.style.cssText = `flex: 1; overflow-y: auto; border: 1px solid #444; border-radius: 4px; background: #252525;`;
+
+    const editTemplate = async (existing = null) => {
+      const isDefault = existing && DEFAULT_TEMPLATES.some(dt => dt.id === existing.id);
+      let title = existing ? existing.title : "";
+
+      // Only prompt for title if it's NOT a default template
+      if (!isDefault) {
+        title = await app.extensionManager.dialog.prompt({
+          title: "Template Settings",
+          message: "Enter Template Title:",
+          default: title,
+        });
+        if (title === null) return;
+      }
+
+      const text = await app.extensionManager.dialog.prompt({
+        title: "Template Settings",
+        message: isDefault ? `Edit Instruction:` : "Enter Instruction Text:",
+        default: existing ? existing.text : "",
+      });
+      if (text === null) return;
+
+      let userTemplates = getUserTemplates();
+      const templateId = existing ? existing.id : "user_" + Date.now();
+      const idx = userTemplates.findIndex((t) => t.id === templateId);
+
+      if (idx > -1) {
+        userTemplates[idx] = { ...userTemplates[idx], title, text };
+      } else {
+        userTemplates.push({ id: templateId, title, text, isUser: !isDefault });
+      }
+
+      saveUserTemplates(userTemplates);
+      showToast("success", "Saved", `"${title}" updated.`);
+      renderList(searchInput.value);
+    };
+
+    const deleteOrReset = async (template) => {
+      const isDefault = DEFAULT_TEMPLATES.some(dt => dt.id === template.id);
+      const actionText = isDefault ? "reset" : "delete";
+
+      const wantAction = await app.extensionManager.dialog.confirm({
+        title: `${isDefault ? "Reset" : "Delete"} Template`,
+        message: `Are you sure you want to ${actionText} "${template.title}"?\nThis cannot be undone.`,
+        type: "delete",
+      });
+
+      if (wantAction) {
+        let userTemplates = getUserTemplates();
+        const updated = userTemplates.filter((ut) => ut.id !== template.id);
+        saveUserTemplates(updated);
+        showToast("success", "Success", `Template ${actionText}ed.`);
+        renderList(searchInput.value);
+      }
+    };
 
     const renderList = (filter = "") => {
       listContainer.innerHTML = "";
-      TEMPLATES.filter((t) =>
-        t.title.toLowerCase().includes(filter.toLowerCase())
-      ).forEach((template) => {
-        const itemContainer = document.createElement("div");
-        itemContainer.style.cssText = `
-                border-bottom: 1px solid #333;
-                padding: 8px;
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-            `;
+      const allTemplates = getMergedTemplates();
+      const userTemplates = getUserTemplates();
 
-        const row = document.createElement("div");
-        row.style.cssText = `display: flex; align-items: center; gap: 8px; cursor: pointer;`;
+      allTemplates
+        .filter((t) => t.title.toLowerCase().includes(filter.toLowerCase()))
+        .forEach((template) => {
+          const itemContainer = document.createElement("div");
+          itemContainer.style.cssText = `border-bottom: 1px solid #333; padding: 8px; display: flex; flex-direction: column; gap: 5px; position: relative;`;
 
-        const cb = document.createElement("input");
-        cb.type = "checkbox";
-        cb.checked = selectedItems.has(template.id);
-        cb.style.pointerEvents = "none";
+          const row = document.createElement("div");
+          row.style.cssText = `display: flex; align-items: center; gap: 8px; cursor: pointer; padding-right: 55px;`;
 
-        const label = document.createElement("span");
-        label.textContent = template.title;
-        label.style.fontSize = "13px";
-        label.style.fontWeight = "bold";
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.checked = selectedItems.has(template.id);
+          cb.style.pointerEvents = "none";
 
-        row.appendChild(cb);
-        row.appendChild(label);
-        itemContainer.appendChild(row);
+          const label = document.createElement("span");
+          label.textContent = template.title;
+          label.style.fontSize = "12px";
+          label.style.fontWeight = "bold";
 
-        // --- Dynamic Inputs Logic ---
-        const inputContainer = document.createElement("div");
-        inputContainer.style.cssText = `display: ${cb.checked ? "flex" : "none"}; flex-direction: column; gap: 5px; margin-left: 25px;`;
+          // Action Buttons
+          const actions = document.createElement("div");
+          actions.style.cssText = `position: absolute; right: 8px; top: 8px; display: flex; gap: 10px; align-items: center;`;
 
-        const placeholders = template.text.match(/\[#?([^\]]+)\]/g) || [];
-
-        placeholders.forEach((placeholder) => {
-          const cleanName = placeholder.replace(/[\[\]]/g, "");
-          const input = document.createElement("input");
-          input.placeholder = cleanName;
-          input.value = dynamicData[template.id]?.[cleanName] || "";
-          input.style.cssText = `
-                background: #111; border: 1px solid #444; color: #eee; 
-                padding: 4px 8px; border-radius: 3px; font-size: 11px;
-                outline: none;
-            `;
-
-          // Handle input without triggering full node refresh
-          input.oninput = (e) => {
-            e.stopPropagation(); // Prevent ComfyUI from stealing focus
-            if (!dynamicData[template.id]) dynamicData[template.id] = {};
-            dynamicData[template.id][cleanName] = input.value;
-            // No node.setDirtyCanvas here to keep focus
+          const editBtn = document.createElement("div");
+          editBtn.innerHTML = "✎";
+          editBtn.style.cssText = `cursor: pointer; color: #888; font-size: 14px;`;
+          editBtn.onclick = async (e) => {
+            e.stopPropagation();
+            // --- Preview/Confirm Dialog ---
+            const wantEdit = await app.extensionManager.dialog.confirm({
+              title: "Template Actions",
+              itemList: [
+                `Current Title: ${template.title}`,
+                `Current Template: ${template.text}`,
+              ],
+              hint: "Hint: Define custom variables using square brackets [].\nExample: Replace background with [NEW COLOR] and the [SUBJECT] with [NEW SUBJECT].",
+              message: `Do you want to edit this template?`,
+            });
+            if (wantEdit) editTemplate(template);
           };
 
-          inputContainer.appendChild(input);
+          actions.appendChild(editBtn);
+
+          // Delete/Reset logic
+          const isUserCreated = userTemplates.find(ut => ut.id === template.id)?.isUser;
+          const isEditedDefault = DEFAULT_TEMPLATES.some(dt => dt.id === template.id) && userTemplates.some(ut => ut.id === template.id);
+
+          if (isUserCreated) {
+            const delBtn = document.createElement("div");
+            delBtn.innerHTML = "✕";
+            delBtn.title = "Delete";
+            delBtn.style.cssText = `cursor: pointer; color: #ff5555; font-size: 14px; font-weight: bold;`;
+            delBtn.onclick = (e) => { e.stopPropagation(); deleteOrReset(template); };
+            actions.appendChild(delBtn);
+          } else if (isEditedDefault) {
+            const resetBtn = document.createElement("div");
+            resetBtn.innerHTML = "↺";
+            resetBtn.title = "Reset to Default";
+            resetBtn.style.cssText = `cursor: pointer; color: #55aaff; font-size: 16px;`;
+            resetBtn.onclick = (e) => { e.stopPropagation(); deleteOrReset(template); };
+            actions.appendChild(resetBtn);
+          }
+
+          row.appendChild(cb);
+          row.appendChild(label);
+          itemContainer.appendChild(row);
+          itemContainer.appendChild(actions);
+
+          const inputContainer = document.createElement("div");
+          inputContainer.style.cssText = `display: ${cb.checked ? "flex" : "none"}; flex-direction: column; gap: 5px; margin-left: 22px;`;
+
+          const placeholders = template.text.match(/\[#?([^\]]+)\]/g) || [];
+          placeholders.forEach((placeholder) => {
+            const cleanName = placeholder.replace(/[\[\]]/g, "");
+            const input = document.createElement("input");
+            input.placeholder = cleanName;
+            input.value = dynamicData[template.id]?.[cleanName] || "";
+            input.style.cssText = `background: #111; border: 1px solid #444; color: #eee; padding: 3px 6px; border-radius: 3px; font-size: 10px; outline: none;`;
+            input.oninput = (ev) => {
+              ev.stopPropagation();
+              if (!dynamicData[template.id]) dynamicData[template.id] = {};
+              dynamicData[template.id][cleanName] = input.value;
+            };
+            inputContainer.appendChild(input);
+          });
+
+          itemContainer.appendChild(inputContainer);
+
+          row.onclick = () => {
+            const isChecked = !selectedItems.has(template.id);
+            if (isChecked) selectedItems.add(template.id);
+            else selectedItems.delete(template.id);
+            cb.checked = isChecked;
+            inputContainer.style.display = isChecked ? "flex" : "none";
+            node.setDirtyCanvas(true, true);
+          };
+
+          listContainer.appendChild(itemContainer);
         });
-
-        itemContainer.appendChild(inputContainer);
-
-        // Row click (Toggle)
-        row.onclick = () => {
-          const isChecked = !selectedItems.has(template.id);
-          if (isChecked) selectedItems.add(template.id);
-          else selectedItems.delete(template.id);
-
-          cb.checked = isChecked;
-          inputContainer.style.display = isChecked ? "flex" : "none";
-          // We don't redraw the whole list to maintain other inputs
-          node.setDirtyCanvas(true, true);
-        };
-
-        listContainer.appendChild(itemContainer);
-      });
     };
 
+    addBtn.onclick = () => editTemplate();
     searchInput.oninput = (e) => renderList(e.target.value);
 
-    container.appendChild(searchInput);
+    container.appendChild(header);
     container.appendChild(listContainer);
 
-    // 3. Create the widget with dynamic getValue
     const widget = node.addDOMWidget("InstructorWidget", "custom", container, {
       getValue: () => {
-        // Collect everything ONLY when requested by the system
         const finalStrings = [];
+        const allTemplates = getMergedTemplates();
         selectedItems.forEach((id) => {
-          const template = TEMPLATES.find((t) => t.id === id);
+          const template = allTemplates.find((t) => t.id === id);
           if (template) {
             let processedText = template.text;
             const placeholders = template.text.match(/\[#?([^\]]+)\]/g) || [];
@@ -212,7 +247,6 @@ app.registerExtension({
             finalStrings.push(processedText);
           }
         });
-
         return {
           selected: Array.from(selectedItems),
           dynamicData: dynamicData,
@@ -227,10 +261,8 @@ app.registerExtension({
         }
       },
       getMinHeight: () => 150,
-
     });
 
     renderList();
-    node.setDirtyCanvas(true, true);
   },
 });
