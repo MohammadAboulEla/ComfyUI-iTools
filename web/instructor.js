@@ -185,7 +185,11 @@ app.registerExtension({
       }
 
       saveUserTemplates(userTemplates);
-      showToast("success", "Saved", `${title} ${isDefault ? "updated" : "added"}.`);
+      showToast(
+        "success",
+        "Saved",
+        `${title} ${isDefault ? "updated" : "added"}.`,
+      );
       renderList(searchInput.value);
     };
 
@@ -314,7 +318,6 @@ app.registerExtension({
                 delete dynamicData[template.id][cleanName];
               }
               clearX.style.display = "none";
-              node.setDirtyCanvas(true, true);
             };
 
             input.oninput = (ev) => {
@@ -341,8 +344,6 @@ app.registerExtension({
             // Toggle visibility only if placeholders exist
             inputContainer.style.display =
               isChecked && placeholders.length > 0 ? "flex" : "none";
-
-            node.setDirtyCanvas(true, true);
           };
 
           listContainer.appendChild(itemContainer);
@@ -393,6 +394,7 @@ app.registerExtension({
     // set container to visible after 100ms
     setTimeout(() => {
       container.style.cssText = `display: flex; flex-direction: column; gap: 8px; padding: 5px; height: 100%; background: #1c1c1c; border-radius: 8px; color: white; font-family: sans-serif;`;
+      node.setDirtyCanvas(true, true);
     }, 100);
 
     renderList();
@@ -404,8 +406,9 @@ app.registerExtension({
     };
 
     node.onRemove = () => {
-      // remove container
       container.remove();
+      node.removeDOMWidget(widget);
+      widget.remove();
     };
   },
 });
