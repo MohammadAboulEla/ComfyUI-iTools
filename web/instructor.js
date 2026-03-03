@@ -124,6 +124,7 @@ app.registerExtension({
     };
 
     const container = document.createElement("div");
+    container.style.cssText = `flex-direction: column; gap: 8px; padding: 5px; height: 100%; background: #1c1c1c; border-radius: 8px; color: white; font-family: sans-serif;`;
     // start as hidden
     container.style.display = "none";
 
@@ -156,7 +157,8 @@ app.registerExtension({
           message: "Enter Instruction Title:",
           default: title,
         });
-        if (title === null || title === "") {
+        if (title === null) return;
+        if (title === "") {
           showToast("error", "Error", "Instruction title cannot be empty.");
           return;
         }
@@ -169,7 +171,8 @@ app.registerExtension({
         hint: "ⓘ Hint: Use your own variables inside brackets [].",
         default: existing ? existing.text : "",
       });
-      if (text === null || text === "") {
+      if (text === null) return;
+      if (text === "") {
         showToast("error", "Error", "Instruction text cannot be empty.");
         return;
       }
@@ -357,7 +360,7 @@ app.registerExtension({
     container.appendChild(listContainer);
 
     // init node size
-    node.size = [300, 240];
+    node.size = [300, 380];
 
     const widget = node.addDOMWidget("InstructorWidget", "custom", container, {
       getValue: () => {
@@ -393,7 +396,7 @@ app.registerExtension({
 
     // set container to visible after 100ms
     setTimeout(() => {
-      container.style.cssText = `display: flex; flex-direction: column; gap: 8px; padding: 5px; height: 100%; background: #1c1c1c; border-radius: 8px; color: white; font-family: sans-serif;`;
+      container.style.display = "flex";
       node.setDirtyCanvas(true, true);
     }, 100);
 
