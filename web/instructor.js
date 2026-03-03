@@ -153,11 +153,11 @@ app.registerExtension({
       if (!isDefault) {
         title = await IToolsUI.prompt({
           title: "Template Settings",
-          message: "Enter Template Title:",
+          message: "Enter Instruction Title:",
           default: title,
         });
         if (title === null || title === "") {
-          showToast("error", "Error", "Template title cannot be empty.");
+          showToast("error", "Error", "Instruction title cannot be empty.");
           return;
         }
       }
@@ -166,10 +166,11 @@ app.registerExtension({
         title: "Template Settings",
         message: isDefault ? `Edit Instruction:` : "Enter Instruction Text:",
         type: "textarea",
+        hint: "ⓘ Hint: Use your own variables inside brackets [].",
         default: existing ? existing.text : "",
       });
       if (text === null || text === "") {
-        showToast("error", "Error", "Template text cannot be empty.");
+        showToast("error", "Error", "Instruction text cannot be empty.");
         return;
       }
 
@@ -184,7 +185,7 @@ app.registerExtension({
       }
 
       saveUserTemplates(userTemplates);
-      showToast("success", "Saved", `"${title}" updated.`);
+      showToast("success", "Saved", `${title} ${isDefault ? "updated" : "added"}.`);
       renderList(searchInput.value);
     };
 
@@ -192,17 +193,17 @@ app.registerExtension({
       const isDefault = DEFAULT_TEMPLATES.some((dt) => dt.id === template.id);
       const actionText = isDefault ? "reset" : "delete";
 
-      const wantAction = await app.extensionManager.dialog.confirm({
+      const wantAction = await IToolsUI.confirm({
         title: `${isDefault ? "Reset" : "Delete"} Template`,
-        message: `Are you sure you want to ${actionText} "${template.title}"?\nThis cannot be undone.`,
-        type: "delete",
+        message: `Are you sure you want to ${actionText} ${template.title} ?`,
+        type: isDefault ? "reset" : "delete",
       });
 
       if (wantAction) {
         let userTemplates = getUserTemplates();
         const updated = userTemplates.filter((ut) => ut.id !== template.id);
         saveUserTemplates(updated);
-        showToast("success", "Success", `Template ${actionText}ed.`);
+        showToast("success", "Success", `${template.title} ${actionText}ed.`);
         renderList(searchInput.value);
       }
     };
@@ -240,17 +241,7 @@ app.registerExtension({
           editBtn.style.cssText = `cursor: pointer; color: #888; font-size: 14px;`;
           editBtn.onclick = async (e) => {
             e.stopPropagation();
-            // --- Preview/Confirm Dialog ---
-            const wantEdit = await app.extensionManager.dialog.confirm({
-              title: "Template Actions",
-              itemList: [
-                `Current Title:\n${template.title}`,
-                `Current Template:\n${template.text}`,
-              ],
-              hint: "Hint: Define custom variables between square brackets [].",
-              message: `Do you want to edit this template?`,
-            });
-            if (wantEdit) editTemplate(template);
+            editTemplate(template);
           };
 
           actions.appendChild(editBtn);
