@@ -124,9 +124,17 @@ app.registerExtension({
     };
 
     const container = document.createElement("div");
-    container.style.cssText = `flex-direction: column; gap: 8px; padding: 5px; height: 100%; background: #1c1c1c; border-radius: 8px; color: white; font-family: sans-serif;`;
-    // start as hidden
-    container.style.display = "none";
+    container.style.cssText = `
+        display: flex;
+        flex-direction: column; 
+        gap: 8px; 
+        padding: 5px; 
+        height: 100%; 
+        background: #1c1c1c; 
+        border-radius: 8px; 
+        color: white; 
+        font-family: sans-serif;
+    `;
 
     const header = document.createElement("div");
     header.style.cssText = `display: flex; gap: 4px;`;
@@ -362,7 +370,7 @@ app.registerExtension({
     // init node size
     node.size = [300, 380];
 
-    const widget = node.addDOMWidget("InstructorWidget", "custom", container, {
+    let widget = node.addDOMWidget("InstructorWidget", "custom", container, {
       getValue: () => {
         const finalStrings = [];
         const allTemplates = getMergedTemplates();
@@ -394,13 +402,8 @@ app.registerExtension({
       },
     });
 
-    // set container to visible after 100ms
-    setTimeout(() => {
-      container.style.display = "flex";
-      node.setDirtyCanvas(true, true);
-    }, 100);
-
     renderList();
+    node.setDirtyCanvas(true, true);
 
     node.onResize = () => {
       if (node.size[0] < 300) {
@@ -408,10 +411,8 @@ app.registerExtension({
       }
     };
 
-    node.onRemove = () => {
-      container.remove();
-      node.removeDOMWidget(widget);
-      widget.remove();
+    node.onRemoved = () => {
+      widget = null;
     };
   },
 });
