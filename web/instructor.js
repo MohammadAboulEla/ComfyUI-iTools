@@ -1,4 +1,5 @@
 import { app } from "../../../scripts/app.js";
+import { IToolsUI } from "./itools_ui.js";
 
 const DEFAULT_TEMPLATES = [
   {
@@ -124,7 +125,7 @@ app.registerExtension({
 
     const container = document.createElement("div");
     // start as hidden
-    container.style.display = 'none';
+    container.style.display = "none";
 
     const header = document.createElement("div");
     header.style.cssText = `display: flex; gap: 4px;`;
@@ -150,7 +151,7 @@ app.registerExtension({
 
       // Only prompt for title if it's NOT a default template
       if (!isDefault) {
-        title = await app.extensionManager.dialog.prompt({
+        title = await IToolsUI.prompt({
           title: "Template Settings",
           message: "Enter Template Title:",
           default: title,
@@ -161,9 +162,10 @@ app.registerExtension({
         }
       }
 
-      const text = await app.extensionManager.dialog.prompt({
+      const text = await IToolsUI.prompt({
         title: "Template Settings",
         message: isDefault ? `Edit Instruction:` : "Enter Instruction Text:",
+        type: "textarea",
         default: existing ? existing.text : "",
       });
       if (text === null || text === "") {
@@ -395,20 +397,24 @@ app.registerExtension({
           renderList(searchInput.value);
         }
       },
-    //   getMinHeight: () => 150,
     });
 
     // set container to visible after 100ms
     setTimeout(() => {
       container.style.cssText = `display: flex; flex-direction: column; gap: 8px; padding: 5px; height: 100%; background: #1c1c1c; border-radius: 8px; color: white; font-family: sans-serif;`;
     }, 100);
-    
+
     renderList();
-    
+
     node.onResize = () => {
       if (node.size[0] < 300) {
         node.size[0] = 300;
       }
+    };
+
+    node.onRemove = () => {
+      // remove container
+      container.remove();
     };
   },
 });
