@@ -11,7 +11,7 @@ const DEFAULT_TEMPLATES = [
   {
     id: "env_mood",
     title: "🌙 Time & Mood",
-    text: `Environmental relighting. Change the scene atmosphere to [TIME / WEATHER] with 
+    text: `Environmental relighting. Change the scene atmosphere to [TIME | WEATHER] with 
     [LIGHTING STYLE]. Preserve the original subject geometry and composition layout.`,
   },
   {
@@ -111,10 +111,10 @@ const DEFAULT_TEMPLATES = [
     Synchronize volumetric lighting, occlusion, and surface wetness/accumulation with the environment.`,
   },
   {
-    id: "shadow_enhance",
-    title: "🖤 Adjust Shadows",
-    text: `Shadow morphology adjustment. Enhance or soften contact shadows for [SUBJECT]. 
-    Ensure light source directionality remains consistent and eliminate non-physical artifacts.`,
+    id: "shadow_overlay",
+    title: "🌒 Shadow Overlay",
+    text: `Light masking and GOBOS. Overlay a [PATTERN | SHADOW TYPE] shadow onto [FACE | OBJECT]. 
+    Adjust the penumbra softness and opacity to match the environment's ambient occlusion and light source direction.`,
   },
   {
     id: "lens_effects",
