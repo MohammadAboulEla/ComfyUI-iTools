@@ -135,12 +135,6 @@ const DEFAULT_TEMPLATES = [
     Synchronize all specular highlights, ambient light bounce, and environmental reflections.`,
   },
   {
-    id: "texture_restore",
-    title: "🧱 Texture Restoration",
-    text: `Generative surface reconstruction. Repair damaged or low-resolution textures on [OBJECT | SURFACE]. 
-    Synthesize high-frequency details while preserving the original UV mapping and geometry.`,
-  },
-  {
     id: "motion_blur",
     title: "🍃 Motion Blur",
     text: `Kinetic blur synthesis. Add directional motion blur to [SUBJECT | OBJECT] based on a virtual movement vector. 
@@ -517,8 +511,8 @@ app.registerExtension({
     node.setDirtyCanvas(true, true);
 
     node.onResize = () => {
-      if (node.size[0] < 300) {
-        node.size[0] = 300;
+      if (node.size[0] < 310) {
+        node.size[0] = 310;
       }
     };
 
