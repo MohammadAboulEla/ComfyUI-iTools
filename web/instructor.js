@@ -101,6 +101,7 @@ app.registerExtension({
 
     let selectedItems = new Set();
     let dynamicData = {};
+    let showSelectedOnly = false;
 
     const getUserTemplates = () =>
       JSON.parse(localStorage.getItem("iTools_userTemplates") || "[]");
@@ -145,9 +146,41 @@ app.registerExtension({
 
     const addBtn = document.createElement("button");
     addBtn.innerHTML = "＋";
-    addBtn.style.cssText = `padding: 0 8px; background: #444; border: none; border-radius: 4px; color: white; cursor: pointer;`;
+    addBtn.title = "Add Instruction";
+    addBtn.style.cssText = `min-width: 30px; padding: 0 8px; background: #444; border: none; border-radius: 4px; color: white; cursor: pointer;`;
+
+    const toggleFilterBtn = document.createElement("button");
+    const inactiveEmoji = "⛶";
+    const activeEmoji = "☐";
+    const updateFilterBtnUI = () => {
+      toggleFilterBtn.innerHTML = showSelectedOnly
+        ? activeEmoji
+        : inactiveEmoji;
+      toggleFilterBtn.style.background = showSelectedOnly ? "#888" : "#444";
+    };
+
+    updateFilterBtnUI();
+    toggleFilterBtn.title = "Show Selected Only";
+    toggleFilterBtn.style.cssText = `min-width: 30px; padding: 0 8px; background: #444; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 14px;`;
+    toggleFilterBtn.onclick = () => {
+      if (selectedItems.size === 0) {
+        showToast(
+          "warn",
+          "Selection Required",
+          "Please select at least one instruction from the list.",
+        );
+        showSelectedOnly = false;
+        updateFilterBtnUI();
+        renderList(searchInput.value);
+        return;
+      }
+      showSelectedOnly = !showSelectedOnly;
+      updateFilterBtnUI();
+      renderList(searchInput.value);
+    };
 
     header.appendChild(searchInput);
+    header.appendChild(toggleFilterBtn);
     header.appendChild(addBtn);
 
     const listContainer = document.createElement("div");
@@ -229,7 +262,13 @@ app.registerExtension({
       const userTemplates = getUserTemplates();
 
       allTemplates
-        .filter((t) => t.title.toLowerCase().includes(filter.toLowerCase()))
+        .filter((t) => {
+          const matchesSearch = t.title
+            .toLowerCase()
+            .includes(filter.toLowerCase());
+          const matchesSelection = !showSelectedOnly || selectedItems.has(t.id);
+          return matchesSearch && matchesSelection;
+        })
         .forEach((template) => {
           const itemContainer = document.createElement("div");
           itemContainer.style.cssText = `border-bottom: 1px solid #333; padding: 8px; display: flex; flex-direction: column; gap: 5px; position: relative;`;
@@ -390,6 +429,7 @@ app.registerExtension({
         return {
           selected: Array.from(selectedItems),
           dynamicData: dynamicData,
+          showSelectedOnly: showSelectedOnly,
           finalText: finalStrings.join("\n\n"),
         };
       },
@@ -397,6 +437,8 @@ app.registerExtension({
         if (v) {
           selectedItems = new Set(v.selected || []);
           dynamicData = v.dynamicData || {};
+          showSelectedOnly = !!v.showSelectedOnly;
+          updateFilterBtnUI();
           renderList(searchInput.value);
         }
       },
