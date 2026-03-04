@@ -162,18 +162,18 @@ app.registerExtension({
     updateFilterBtnUI();
     toggleFilterBtn.title = "Show Selected Only";
     toggleFilterBtn.style.cssText = `min-width: 30px; padding: 0 8px; background: #444; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 14px;`;
+    // Logic for Toggle Filter Button
     toggleFilterBtn.onclick = () => {
-      if (selectedItems.size === 0) {
+      // If user tries to filter but nothing is selected
+      if (!showSelectedOnly && selectedItems.size === 0) {
         showToast(
           "warn",
           "Selection Required",
           "Please select at least one instruction from the list.",
         );
-        showSelectedOnly = false;
-        updateFilterBtnUI();
-        renderList(searchInput.value);
-        return;
+        return; // Just exit, don't change state
       }
+
       showSelectedOnly = !showSelectedOnly;
       updateFilterBtnUI();
       renderList(searchInput.value);
@@ -387,13 +387,28 @@ app.registerExtension({
 
           row.onclick = () => {
             const isChecked = !selectedItems.has(template.id);
-            if (isChecked) selectedItems.add(template.id);
-            else selectedItems.delete(template.id);
-            cb.checked = isChecked;
+            if (isChecked) {
+              selectedItems.add(template.id);
+            } else {
+              selectedItems.delete(template.id);
+              // Auto-disable filter if no items are left selected
+              if (showSelectedOnly && selectedItems.size === 0) {
+                showSelectedOnly = false;
+                updateFilterBtnUI();
+                // Add this line to show everything again
+                renderList(searchInput.value);
+                return; // Exit here since renderList already handled the update
+              }
+            }
 
-            // Toggle visibility only if placeholders exist
+            cb.checked = isChecked;
             inputContainer.style.display =
               isChecked && placeholders.length > 0 ? "flex" : "none";
+
+            // Re-render if filtering is active to remove the unchecked item from view
+            if (showSelectedOnly) {
+              renderList(searchInput.value);
+            }
           };
 
           listContainer.appendChild(itemContainer);
