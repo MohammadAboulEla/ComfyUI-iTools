@@ -338,20 +338,8 @@ app.registerExtension({
         .forEach((template) => {
           const itemContainer = document.createElement("div");
           itemContainer.style.cssText = `border-bottom: 1px solid #333; padding: 8px; display: flex; flex-direction: column; gap: 5px; position: relative; transition: background 0.2s;`;
-          itemContainer.draggable = true;
 
-          // Drag & Drop events
-          itemContainer.addEventListener("dragstart", (e) => {
-            e.dataTransfer.setData("text/plain", template.id);
-            itemContainer.style.opacity = "0.4";
-            itemContainer.style.background = "#333";
-          });
-
-          itemContainer.addEventListener("dragend", () => {
-            itemContainer.style.opacity = "1";
-            itemContainer.style.background = "transparent";
-          });
-
+          // Drop targets stay on the container
           itemContainer.addEventListener("dragover", (e) => {
             e.preventDefault();
             itemContainer.style.background = "#2a2a2a";
@@ -387,6 +375,21 @@ app.registerExtension({
           dragHandle.innerHTML = "⋮⋮";
           dragHandle.title = "Drag to reorder";
           dragHandle.style.cssText = `cursor: grab; color: #555; font-size: 14px; margin-right: 2px; user-select: none;`;
+          dragHandle.draggable = true;
+
+          dragHandle.addEventListener("dragstart", (e) => {
+            e.dataTransfer.setData("text/plain", template.id);
+            if (e.dataTransfer.setDragImage) {
+              e.dataTransfer.setDragImage(itemContainer, 15, 15);
+            }
+            itemContainer.style.opacity = "0.4";
+            itemContainer.style.background = "#333";
+          });
+
+          dragHandle.addEventListener("dragend", () => {
+            itemContainer.style.opacity = "1";
+            itemContainer.style.background = "transparent";
+          });
 
           const cb = document.createElement("input");
           cb.type = "checkbox";
