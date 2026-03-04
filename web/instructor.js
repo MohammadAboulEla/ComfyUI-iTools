@@ -57,12 +57,6 @@ const DEFAULT_TEMPLATES = [
     Maintain the exact vector silhouette with realistic specular highlights and depth of field.`,
   },
   {
-    id: "cam_angle",
-    title: "📸 Camera Angle",
-    text: `Virtual cinematography. Re-render the scene from a [ANGLE] perspective. 
-    Maintain 'Temporal Consistency' of all textures and character details while shifting the focal point.`,
-  },
-  {
     id: "color_grade",
     title: "🌈 Color Grading",
     text: `Professional color science. Apply a [MOOD] LUT-based palette. 
@@ -91,6 +85,66 @@ const DEFAULT_TEMPLATES = [
     title: "🔍 Detail Enhancer",
     text: `Generative upscaling. Increase the resolution and inject high-frequency details into [SUBJECT / SCENE]. 
     Improve sharpness and clarity without changing the original design.`,
+  },
+  {
+    id: "lighting_fix",
+    title: "💡 Lighting Correction",
+    text: `Advanced relighting. Adjust the scene's [BRIGHTNESS | CONTRAST | COLOR TEMP] using global illumination principles. 
+    Preserve shadow density, specular reflections, and the original subject's structural integrity.`,
+  },
+  {
+    id: "background_blur",
+    title: "💧 Depth Blur",
+    text: `Optical depth-of-field simulation. Apply a [BACKGROUND | FOREGROUND] Gaussian or lens blur. 
+    Maintain sub-pixel subject sharpness and render a realistic bokeh diaphragm effect.`,
+  },
+  {
+    id: "reflections_add",
+    title: "🪞 Add Reflection",
+    text: `Ray-traced reflection synthesis. Generate realistic reflections of [SUBJECT] on [SURFACE]. 
+    Account for surface roughness, Fresnel effects, and accurate perspective vanishing points.`,
+  },
+  {
+    id: "weather_effect",
+    title: "☔ Weather Effects",
+    text: `Atmospheric particle simulation. Superimpose [RAIN | SNOW | FOG] onto the scene. 
+    Synchronize volumetric lighting, occlusion, and surface wetness/accumulation with the environment.`,
+  },
+  {
+    id: "shadow_enhance",
+    title: "🖤 Adjust Shadows",
+    text: `Shadow morphology adjustment. Enhance or soften contact shadows for [SUBJECT]. 
+    Ensure light source directionality remains consistent and eliminate non-physical artifacts.`,
+  },
+  {
+    id: "lens_effects",
+    title: "🎥 Lens Effects",
+    text: `Cinematic optical artifacts. Apply [FLARE | BOKEH | DISTORTION] mimicking high-end prime lenses. 
+    Maintain chromatic accuracy and natural geometric perspective.`,
+  },
+  {
+    id: "cam_angle",
+    title: "📸 Camera Angle",
+    text: `Virtual cinematography. Re-render the scene from a [ANGLE] perspective. 
+    Maintain 'Temporal Consistency' of all textures and character details while shifting the focal point.`,
+  },
+  {
+    id: "environment_map",
+    title: "🏞️ Environment Map",
+    text: `HDRI environment remapping. Generate a cohesive lighting wrap for [SCENE | SUBJECT]. 
+    Synchronize all specular highlights, ambient light bounce, and environmental reflections.`,
+  },
+  {
+    id: "texture_restore",
+    title: "🧱 Texture Restoration",
+    text: `Generative surface reconstruction. Repair damaged or low-resolution textures on [OBJECT | SURFACE]. 
+    Synthesize high-frequency details while preserving the original UV mapping and geometry.`,
+  },
+  {
+    id: "motion_blur",
+    title: "🍃 Motion Blur",
+    text: `Kinetic blur synthesis. Add directional motion blur to [SUBJECT | OBJECT] based on a virtual movement vector. 
+    Ensure temporal edge blending while keeping static background elements perfectly sharp.`,
   },
 ];
 
