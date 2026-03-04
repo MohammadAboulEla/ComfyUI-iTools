@@ -156,6 +156,11 @@ app.registerExtension({
     const saveUserTemplates = (templates) =>
       localStorage.setItem("iTools_userTemplates", JSON.stringify(templates));
 
+    const getTemplateOrder = () =>
+      JSON.parse(localStorage.getItem("iTools_templateOrder") || "[]");
+    const saveTemplateOrder = (order) =>
+      localStorage.setItem("iTools_templateOrder", JSON.stringify(order));
+
     const getMergedTemplates = () => {
       const userTemplates = getUserTemplates();
       const merged = DEFAULT_TEMPLATES.map((dt) => {
@@ -165,7 +170,20 @@ app.registerExtension({
       const newOnes = userTemplates.filter(
         (ut) => !DEFAULT_TEMPLATES.find((dt) => dt.id === ut.id),
       );
-      return [...merged, ...newOnes];
+      const all = [...merged, ...newOnes];
+
+      const order = getTemplateOrder();
+      if (order.length > 0) {
+        all.sort((a, b) => {
+          const idxA = order.indexOf(a.id);
+          const idxB = order.indexOf(b.id);
+          if (idxA === -1 && idxB === -1) return 0;
+          if (idxA === -1) return 1;
+          if (idxB === -1) return -1;
+          return idxA - idxB;
+        });
+      }
+      return all;
     };
 
     const showToast = (severity, summary, detail) => {
@@ -319,10 +337,56 @@ app.registerExtension({
         })
         .forEach((template) => {
           const itemContainer = document.createElement("div");
-          itemContainer.style.cssText = `border-bottom: 1px solid #333; padding: 8px; display: flex; flex-direction: column; gap: 5px; position: relative;`;
+          itemContainer.style.cssText = `border-bottom: 1px solid #333; padding: 8px; display: flex; flex-direction: column; gap: 5px; position: relative; transition: background 0.2s;`;
+          itemContainer.draggable = true;
+
+          // Drag & Drop events
+          itemContainer.addEventListener("dragstart", (e) => {
+            e.dataTransfer.setData("text/plain", template.id);
+            itemContainer.style.opacity = "0.4";
+            itemContainer.style.background = "#333";
+          });
+
+          itemContainer.addEventListener("dragend", () => {
+            itemContainer.style.opacity = "1";
+            itemContainer.style.background = "transparent";
+          });
+
+          itemContainer.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            itemContainer.style.background = "#2a2a2a";
+          });
+
+          itemContainer.addEventListener("dragleave", () => {
+            itemContainer.style.background = "transparent";
+          });
+
+          itemContainer.addEventListener("drop", (e) => {
+            e.preventDefault();
+            itemContainer.style.background = "transparent";
+            const draggedId = e.dataTransfer.getData("text/plain");
+            const targetId = template.id;
+            if (draggedId === targetId) return;
+
+            const all = getMergedTemplates();
+            const order = all.map((t) => t.id);
+            const fromIdx = order.indexOf(draggedId);
+            const toIdx = order.indexOf(targetId);
+
+            order.splice(fromIdx, 1);
+            order.splice(toIdx, 0, draggedId);
+
+            saveTemplateOrder(order);
+            renderList(searchInput.value);
+          });
 
           const row = document.createElement("div");
           row.style.cssText = `display: flex; align-items: center; gap: 8px; cursor: pointer; padding-right: 55px;`;
+
+          const dragHandle = document.createElement("div");
+          dragHandle.innerHTML = "⋮⋮";
+          dragHandle.title = "Drag to reorder";
+          dragHandle.style.cssText = `cursor: grab; color: #555; font-size: 14px; margin-right: 2px; user-select: none;`;
 
           const cb = document.createElement("input");
           cb.type = "checkbox";
@@ -378,6 +442,7 @@ app.registerExtension({
             actions.appendChild(resetBtn);
           }
 
+          row.appendChild(dragHandle);
           row.appendChild(cb);
           row.appendChild(label);
           itemContainer.appendChild(row);
@@ -470,20 +535,20 @@ app.registerExtension({
     container.appendChild(listContainer);
 
     // init node size
-    node.size = [300, 380];
+    node.size = [310, 380];
 
     let widget = node.addDOMWidget("InstructorWidget", "custom", container, {
       getValue: () => {
         const finalStrings = [];
         const allTemplates = getMergedTemplates();
-        selectedItems.forEach((id) => {
-          const template = allTemplates.find((t) => t.id === id);
-          if (template) {
+        // Follow the list order instead of selection order
+        allTemplates.forEach((template) => {
+          if (selectedItems.has(template.id)) {
             let processedText = template.text.replace(/\s+/g, " ");
             const placeholders = template.text.match(/\[#?([^\]]+)\]/g) || [];
             placeholders.forEach((placeholder) => {
               const cleanName = placeholder.replace(/[\[\]]/g, "");
-              const val = dynamicData[id]?.[cleanName] || placeholder;
+              const val = dynamicData[template.id]?.[cleanName] || placeholder;
               processedText = processedText.replace(placeholder, val);
             });
             finalStrings.push(processedText);
