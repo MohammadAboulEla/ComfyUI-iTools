@@ -88,7 +88,7 @@ const DEFAULT_TEMPLATES = [
   },
   {
     id: "lighting_fix",
-    title: "💡 Lighting Correction",
+    title: "💡 Light Correction",
     text: `Advanced relighting. Adjust the scene's [BRIGHTNESS | CONTRAST | COLOR TEMP] using global illumination principles. 
     Preserve shadow density, specular reflections, and the original subject's structural integrity.`,
   },
