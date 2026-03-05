@@ -30,7 +30,7 @@ app.registerExtension({
         color: #ddd;
         padding: 10px;
         resize: none;
-        font-size: 14px;
+        font-size: 15px;
         outline: none;
         transition: border-color 0.2s;
     `;
@@ -89,15 +89,24 @@ app.registerExtension({
     selectorContainer.appendChild(categoryRes.col);
     selectorContainer.appendChild(styleRes.col);
 
+    // Buttons Section
+    const btnContainer = document.createElement("div");
+    btnContainer.style.cssText = `
+        display: flex;
+        gap: 5px;
+        margin-top: 5px;
+        align-items: center;
+    `;
+
     // Merge Button
     const mergeBtn = document.createElement("button");
-    mergeBtn.innerHTML = `<span style="margin-right: 8px; opacity: 0.6;">✨</span> MERGE STYLE`;
+    mergeBtn.innerHTML = `<span style="margin-right: 8px; opacity: 0.6;">✨</span> MERGE`;
     mergeBtn.style.cssText = `
         background: #222;
         border: 1px solid #444;
         border-radius: 6px;
         color: #fff;
-        padding: 5px;
+        padding: 5px 10px;
         font-size: 11px;
         font-weight: bold;
         cursor: pointer;
@@ -106,18 +115,60 @@ app.registerExtension({
         justify-content: center;
         transition: all 0.2s;
         letter-spacing: 1px;
-        margin-top: 5px;
+        flex: 2;
+        height: 32px;
     `;
-    mergeBtn.onmouseover = () => {
-      mergeBtn.style.background = "#444";
-    };
-    mergeBtn.onmouseout = () => {
-      mergeBtn.style.background = "#222";
-    };
+    mergeBtn.onmouseover = () => (mergeBtn.style.background = "#444");
+    mergeBtn.onmouseout = () => (mergeBtn.style.background = "#222");
+
+    // Append Button
+    const appendBtn = document.createElement("button");
+    appendBtn.innerHTML = `<span style="margin-right: 8px; opacity: 0.6;">☰</span> APPEND`;
+    appendBtn.style.cssText = `
+        background: #222;
+        border: 1px solid #444;
+        border-radius: 6px;
+        color: #fff;
+        padding: 5px 10px;
+        font-size: 11px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+        letter-spacing: 1px;
+        flex: 1;
+        height: 32px;
+    `;
+    appendBtn.onmouseover = () => (appendBtn.style.background = "#444");
+    appendBtn.onmouseout = () => (appendBtn.style.background = "#222");
+
+    // Reset Button
+    const resetBtn = document.createElement("button");
+    resetBtn.innerHTML = `&#x21BB;`;
+    resetBtn.title = "Clear everything";
+    resetBtn.style.cssText = `
+        background: #222;
+        border: 1px solid #444;
+        border-radius: 6px;
+        color: #fff;
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    `;
+    resetBtn.onmouseover = () => (resetBtn.style.background = "#444");
+    resetBtn.onmouseout = () => (resetBtn.style.background = "#222");
+
+    btnContainer.appendChild(mergeBtn);
+    btnContainer.appendChild(appendBtn);
+    btnContainer.appendChild(resetBtn);
 
     container.appendChild(promptArea);
     container.appendChild(selectorContainer);
-    container.appendChild(mergeBtn);
+    container.appendChild(btnContainer);
 
     // Initial load
     const loadStyles = async () => {
@@ -132,8 +183,12 @@ app.registerExtension({
           categoryRes.select.appendChild(opt);
         });
 
-        if (data.styles.length > 0) {
-          updateTemplates(data.styles[0]);
+        const defaultStyle = data.styles.includes("basic.yaml")
+          ? "basic.yaml"
+          : data.styles[0];
+        if (defaultStyle) {
+          categoryRes.select.value = defaultStyle;
+          updateTemplates(defaultStyle);
         }
       } catch (e) {
         console.error("Failed to load styles", e);
@@ -193,6 +248,39 @@ app.registerExtension({
       } catch (e) {
         console.error("Merge failed", e);
       }
+    };
+
+    appendBtn.onclick = async () => {
+      const style_file = categoryRes.select.value;
+      const template_name = styleRes.select.value;
+
+      if (template_name === "none") return;
+
+      try {
+        const formData = new FormData();
+        formData.append("prompt", ""); // Get style only
+        formData.append("style_file", style_file);
+        formData.append("template_name", template_name);
+
+        const resp = await fetch("/itools/merge_style", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await resp.json();
+
+        if (data.prompt) {
+          const separator = promptArea.value.trim() ? "\n\n" : "";
+          promptArea.value = promptArea.value + separator + data.prompt;
+        }
+        // styleRes.select.value = "none";
+      } catch (e) {
+        console.error("Append failed", e);
+      }
+    };
+
+    resetBtn.onclick = () => {
+      promptArea.value = "";
+      styleRes.select.value = "none";
     };
 
     loadStyles();
