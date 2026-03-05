@@ -2,6 +2,32 @@ import { app } from "../../../scripts/app.js";
 
 app.registerExtension({
   name: "iTools.smartStyler",
+  async beforeRegisterNodeDef(nodeType, nodeData, app) {
+    if (nodeData.name === "iToolsSmartStyler") {
+      const originalOnExecuted = nodeType.prototype.onExecuted;
+      nodeType.prototype.onExecuted = function (message) {
+        originalOnExecuted?.apply(this, arguments);
+        if (message.prompt !== undefined) {
+          // This allows the UI to reflect the merged state if it was done on server
+          const widget = this.widgets.find(
+            (w) => w.name === "SmartStylerWidget",
+          );
+          if (widget && widget.set_value) {
+            widget.set_value(message.prompt);
+          }
+        }
+        if (message.style === "none") {
+          // Reset style dropdown if it was merged
+          const widget = this.widgets.find(
+            (w) => w.name === "SmartStylerWidget",
+          );
+          if (widget && widget.reset_style) {
+            widget.reset_style();
+          }
+        }
+      };
+    }
+  },
   async nodeCreated(node) {
     if (node.comfyClass !== "iToolsSmartStyler") return;
 
@@ -253,8 +279,8 @@ app.registerExtension({
           categoryRes.select.appendChild(opt);
         });
 
-        const defaultStyle = data.styles.includes("basic.yaml")
-          ? "basic.yaml"
+        const defaultStyle = data.styles.includes("nexus.yaml")
+          ? "nexus.yaml"
           : data.styles[0];
         if (defaultStyle) {
           categoryRes.select.value = defaultStyle;
@@ -284,6 +310,7 @@ app.registerExtension({
         styleRes.select.appendChild(noneOpt);
 
         data.templates.forEach((t) => {
+          if (t === "none") return;
           const opt = document.createElement("option");
           opt.value = opt.text = t;
           styleRes.select.appendChild(opt);
@@ -377,6 +404,13 @@ app.registerExtension({
           promptArea.value = v.prompt || "";
           // Note: category and style might need more care since they depend on async loads
         }
+      },
+      set_value: (v) => {
+        promptArea.value = v;
+        updateIconPositions();
+      },
+      reset_style: () => {
+        styleRes.select.value = "none";
       },
     });
     // init size

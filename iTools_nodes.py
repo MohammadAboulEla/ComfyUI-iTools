@@ -825,9 +825,11 @@ class IToolsVaePreview:
 
         def decode(vae, samples):
             images = vae.decode(samples["samples"])
-            if len(images.shape) == 5: #Combine batches
-                images = images.reshape(-1, images.shape[-3], images.shape[-2], images.shape[-1])
-            return (images, )
+            if len(images.shape) == 5:  # Combine batches
+                images = images.reshape(
+                    -1, images.shape[-3], images.shape[-2], images.shape[-1]
+                )
+            return (images,)
 
         return_options = decode(vae, samples)
         images = return_options[0]
@@ -1136,8 +1138,20 @@ class IToolsSmartStyler:
         final_text = ""
         if "SmartStylerWidget" in kwargs:
             data = kwargs["SmartStylerWidget"]
-            final_text = data.get("prompt", "")
-        return (final_text,)
+            prompt = data.get("prompt", "")
+            category = data.get("category")
+            style = data.get("style", "none")
+
+            if style != "none" and category:
+                # Merge if style is selected
+                final_text, _, _ = read_replace_and_combine(style, prompt, "", category)
+                return {
+                    "ui": {"prompt": final_text, "style": "none"},
+                    "result": (final_text,),
+                }
+            else:
+                final_text = prompt
+        return {"ui": {"prompt": final_text}, "result": (final_text,)}
 
 
 # A dictionary that contains all nodes you want to export with their names
