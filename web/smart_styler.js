@@ -1,9 +1,9 @@
 import { app } from "../../../scripts/app.js";
 
 app.registerExtension({
-  name: "iTools.smartStyler",
+  name: "iTools.promptMixer",
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
-    if (nodeData.name === "iToolsSmartStyler") {
+    if (nodeData.name === "iToolsPromptMixer") {
       const originalOnExecuted = nodeType.prototype.onExecuted;
       nodeType.prototype.onExecuted = function (message) {
         originalOnExecuted?.apply(this, arguments);
@@ -29,7 +29,7 @@ app.registerExtension({
     }
   },
   async nodeCreated(node) {
-    if (node.comfyClass !== "iToolsSmartStyler") return;
+    if (node.comfyClass !== "iToolsPromptMixer") return;
 
     let pendingValue = null;
     const container = document.createElement("div");
@@ -419,7 +419,7 @@ app.registerExtension({
 
     // Node setup
     node.size = [320, 260];
-    const widget = node.addDOMWidget("SmartStylerWidget", "custom", container, {
+    const widget = node.addDOMWidget("PromptMixerWidget", "custom", container, {
       getValue: () => {
         return {
           prompt: promptArea.value,

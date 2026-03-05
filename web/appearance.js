@@ -239,7 +239,7 @@ app.registerExtension({
     const allow_auto_color = app.ui.settings.getSettingValue("iTools.Nodes.Auto Color");
     const allow_auto_resize = app.ui.settings.getSettingValue("iTools.Nodes.Auto Resize");
     switch (node.comfyClass) {
-      case "iToolsSmartStyler":
+      case "iToolsPromptMixer":
         if (!allow_auto_color) break;
         node.color = LGraphCanvas.node_colors.green.color;
         node.bgcolor = LGraphCanvas.node_colors.green.bgcolor;

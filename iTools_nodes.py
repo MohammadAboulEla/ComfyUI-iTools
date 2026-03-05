@@ -1119,7 +1119,7 @@ class IToolsInstructorNode:
         return (final_text,)
 
 
-class IToolsSmartStyler:
+class IToolsPromptMixer:
     @classmethod
     def INPUT_TYPES(s):
         return {
@@ -1135,8 +1135,8 @@ class IToolsSmartStyler:
 
     def process(self, **kwargs):
         final_text = ""
-        if "SmartStylerWidget" in kwargs:
-            data = kwargs["SmartStylerWidget"]
+        if "PromptMixerWidget" in kwargs:
+            data = kwargs["PromptMixerWidget"]
             prompt = data.get("prompt", "")
             category = data.get("category")
             style = data.get("style", "none")
@@ -1153,8 +1153,8 @@ class IToolsSmartStyler:
         return {"ui": {"prompt": final_text}, "result": (final_text,)}
 
     def IS_CHANGED(self, **kwargs):
-        if "SmartStylerWidget" in kwargs:
-            data = kwargs["SmartStylerWidget"]
+        if "PromptMixerWidget" in kwargs:
+            data = kwargs["PromptMixerWidget"]
             style = data.get("style", "none")
             if style != "none":
                 return float("nan")  # Force re-execution if template is "random"
@@ -1182,7 +1182,7 @@ NODE_CLASS_MAPPINGS = {
     "iToolsCompareImage": IToolsCompareImage,
     "iToolsPromptRecord": IToolsPromptRecord,
     "iToolsInstructorNode": IToolsInstructorNode,
-    "iToolsSmartStyler": IToolsSmartStyler,
+    "iToolsPromptMixer": IToolsPromptMixer,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -1207,5 +1207,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsCompareImage": "Image Compare 🔍",
     "iToolsPromptRecord": "Prompt Record 🪶",
     "iToolsInstructorNode": "Instructor 👨🏻‍🏫",
-    "iToolsSmartStyler": "Smart Styler 🖌️",
+    "iToolsPromptMixer": "Prompt Mixer 🍜",
 }
