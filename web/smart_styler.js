@@ -107,7 +107,7 @@ app.registerExtension({
     resetBtn.onmouseover = () => (resetBtn.style.color = "#fff");
     resetBtn.onmouseout = () => (resetBtn.style.color = "#888");
 
-    // // Copy Button 
+    // // Copy Button
     const copyBtn = document.createElement("button");
     copyBtn.innerHTML = `🗒`; // Clipboard icon
     copyBtn.title = "Copy to clipboard";
@@ -171,7 +171,7 @@ app.registerExtension({
 
       col.appendChild(label);
       col.appendChild(select);
-      return { col, select };
+      return { col, select, label };
     };
 
     const categoryRes = createDropdown("CATEGORY", "Basic");
@@ -250,7 +250,7 @@ app.registerExtension({
 
     // Merge Button
     const mergeBtn = document.createElement("button");
-    mergeBtn.innerHTML = `<span style="margin-right: 8px; font-size: 12px;">✨</span> MERGE`;
+    mergeBtn.innerHTML = `<span style="margin-right: 8px; font-size: 12px;">✨</span> MERGE NOW`;
     applyButtonStyle(mergeBtn, true);
     mergeBtn.style.flex = "3";
 
@@ -325,6 +325,15 @@ app.registerExtension({
 
     categoryRes.select.onchange = (e) => updateTemplates(e.target.value);
 
+    const updateStyleLabel = () => {
+      styleRes.label.innerText =
+        styleRes.select.value === "none"
+          ? "STYLE"
+          : "STYLE (Merge upon execution)";
+    };
+
+    styleRes.select.onchange = updateStyleLabel;
+
     mergeBtn.onclick = async () => {
       const prompt = promptArea.value;
       const style_file = categoryRes.select.value;
@@ -347,6 +356,7 @@ app.registerExtension({
 
         promptArea.value = data.prompt;
         styleRes.select.value = "none";
+        updateStyleLabel();
         updateIconPositions();
       } catch (e) {
         console.error("Merge failed", e);
@@ -377,7 +387,8 @@ app.registerExtension({
           promptArea.value = promptArea.value + separator + data.prompt;
           updateIconPositions();
         }
-        // styleRes.select.value = "none";
+        styleRes.select.value = "none";
+        updateStyleLabel();
       } catch (e) {
         console.error("Append failed", e);
       }
@@ -390,6 +401,7 @@ app.registerExtension({
         promptArea.value = "";
         styleRes.select.value = "none";
       }
+      updateStyleLabel();
       updateIconPositions();
     };
 
@@ -418,6 +430,7 @@ app.registerExtension({
       },
       reset_style: () => {
         styleRes.select.value = "none";
+        updateStyleLabel();
       },
     });
     // init size
