@@ -46,13 +46,21 @@ app.registerExtension({
     `;
     promptArea.onfocus = () => (promptArea.style.borderColor = "#555");
 
+    const updateIconPositions = () => {
+      const hasScrollBar = promptArea.scrollHeight > promptArea.clientHeight;
+      const rightOffset = hasScrollBar ? "20px" : "0px";
+      resetBtn.style.right = rightOffset;
+      copyBtn.style.right = rightOffset;
+    };
+
+    promptArea.oninput = updateIconPositions;
+
     // Reset Button (moved here)
     const resetBtn = document.createElement("button");
     resetBtn.innerHTML = `&#x21BB;`;
     resetBtn.title = "Clear everything";
-    resetBtn.style.cssText = `
+    const actionBtnStyle = `
         position: absolute;
-        top: 5px;
         right: 5px;
         background: transparent;
         border: none;
@@ -68,11 +76,31 @@ app.registerExtension({
         padding: 0;
         z-index: 10;
     `;
+    resetBtn.style.cssText = actionBtnStyle + "top: 0px;";
     resetBtn.onmouseover = () => (resetBtn.style.color = "#fff");
     resetBtn.onmouseout = () => (resetBtn.style.color = "#888");
 
+    // Copy Button
+    const copyBtn = document.createElement("button");
+    copyBtn.innerHTML = `🗒`; // Clipboard icon
+    copyBtn.title = "Copy to clipboard";
+    copyBtn.style.cssText = actionBtnStyle + "top: 20px;";
+    copyBtn.onmouseover = () => (copyBtn.style.color = "#fff");
+    copyBtn.onmouseout = () => (copyBtn.style.color = "#888");
+
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(promptArea.value);
+      app.extensionManager.toast.add({
+        severity: "success",
+        summary: "Copied!",
+        detail: "Prompt copied to clipboard",
+        life: 2000,
+      });
+    };
+
     promptWrapper.appendChild(promptArea);
     promptWrapper.appendChild(resetBtn);
+    promptWrapper.appendChild(copyBtn);
 
     // Selectors Section
     const selectorContainer = document.createElement("div");
@@ -95,7 +123,8 @@ app.registerExtension({
       label.innerText = labelStr;
       label.style.cssText = ` 
             font-size: 10px; 
-            padding: 5px 0px; 
+            padding-top: 2.5px;
+            padding-bottom: 2.5px; 
             color: #555; 
             letter-spacing: 0.5px;`;
 
@@ -136,51 +165,76 @@ app.registerExtension({
         align-items: center;
     `;
 
-    // Merge Button
-    const mergeBtn = document.createElement("button");
-    mergeBtn.innerHTML = `<span style="margin-right: 8px; opacity: 0.6;">✨</span> MERGE`;
-    mergeBtn.style.cssText = `
-        background: #222;
-        border: 1px solid #444;
+    // Function to apply styles and states to buttons
+    const applyButtonStyle = (btn, isPrimary = false) => {
+      // Base colors using a modern dark palette
+      const colors = {
+        base: "#222",
+        border: "#444",
+        hover: "#333",
+        press: "#444",
+        accent: isPrimary ? "#3b82f6" : "#ffffff", // Optional accent for the "Merge" button
+      };
+
+      btn.style.cssText = `
+        background: ${colors.base};
+        border: 1px solid ${colors.border};
         border-radius: 6px;
-        color: #fff;
-        padding: 5px 10px;
+        color: #e5e5e5;
+        padding: 5px 12px;
         font-size: 11px;
-        font-weight: bold;
+        font-weight: 600;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s;
-        letter-spacing: 1px;
-        flex: 2;
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        letter-spacing: 0.5px;
         height: 32px;
+        outline: none;
+        user-select: none;
     `;
-    mergeBtn.onmouseover = () => (mergeBtn.style.background = "#444");
-    mergeBtn.onmouseout = () => (mergeBtn.style.background = "#222");
+
+      // Hover State
+      btn.onmouseenter = () => {
+        btn.style.background = colors.hover;
+        btn.style.borderColor = "#555";
+      };
+
+      // Normal State
+      btn.onmouseleave = () => {
+        btn.style.background = colors.base;
+        btn.style.borderColor = colors.border;
+      };
+
+      // Pressed State
+      btn.onmousedown = () => {
+        btn.style.background = colors.press;
+        btn.style.borderColor = "#666";
+        btn.style.transform = "translateY(1px)"; // Subtle shrink on click
+      };
+
+      // Release State
+      btn.onmouseup = () => {
+        btn.style.background = colors.hover;
+        btn.style.transform = "translateY(0)";
+      };
+    };
+
+    // Merge Button
+    const mergeBtn = document.createElement("button");
+    mergeBtn.innerHTML = `<span style="margin-right: 8px; font-size: 12px;">✨</span> MERGE`;
+    applyButtonStyle(mergeBtn, true);
+    mergeBtn.style.flex = "3";
 
     // Append Button
     const appendBtn = document.createElement("button");
-    appendBtn.innerHTML = `<span style="margin-right: 8px; opacity: 0.6;">☰</span> APPEND`;
-    appendBtn.style.cssText = `
-        background: #222;
-        border: 1px solid #444;
-        border-radius: 6px;
-        color: #fff;
-        padding: 5px 10px;
-        font-size: 11px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.2s;
-        letter-spacing: 1px;
-        flex: 1;
-        height: 32px;
-    `;
-    appendBtn.onmouseover = () => (appendBtn.style.background = "#444");
-    appendBtn.onmouseout = () => (appendBtn.style.background = "#222");
+    appendBtn.innerHTML = `<span style="margin-right: 8px; font-size: 12px; opacity: 0.7;">☰</span> APPEND`;
+    applyButtonStyle(appendBtn, false);
+    appendBtn.style.flex = "1";
 
-    btnContainer.appendChild(mergeBtn);
     btnContainer.appendChild(appendBtn);
+    btnContainer.appendChild(mergeBtn);
 
     container.appendChild(promptWrapper);
     container.appendChild(selectorContainer);
@@ -261,6 +315,7 @@ app.registerExtension({
 
         promptArea.value = data.prompt;
         styleRes.select.value = "none";
+        updateIconPositions();
       } catch (e) {
         console.error("Merge failed", e);
       }
@@ -287,6 +342,7 @@ app.registerExtension({
         if (data.prompt) {
           const separator = promptArea.value.trim() ? "\n\n" : "";
           promptArea.value = promptArea.value + separator + data.prompt;
+          updateIconPositions();
         }
         // styleRes.select.value = "none";
       } catch (e) {
@@ -297,8 +353,10 @@ app.registerExtension({
     resetBtn.onclick = () => {
       promptArea.value = "";
       styleRes.select.value = "none";
+      updateIconPositions();
     };
 
+    updateIconPositions();
     loadStyles();
 
     // Node setup
@@ -321,6 +379,7 @@ app.registerExtension({
     // init size
     node.size = [380, 260];
     node.onResize = () => {
+      updateIconPositions();
       if (node.size[0] < 380) node.size[0] = 380;
       if (node.size[1] < 260) node.size[1] = 260;
       console.log(node.size);
