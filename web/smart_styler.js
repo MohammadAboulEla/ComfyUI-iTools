@@ -18,6 +18,14 @@ app.registerExtension({
         font-family: sans-serif;
     `;
 
+    // Prompt Area Wrapper for Absolute Positioning
+    const promptWrapper = document.createElement("div");
+    promptWrapper.style.cssText = `
+        position: relative;
+        flex: 1;
+        width: 100%;
+    `;
+
     // Textarea
     const promptArea = document.createElement("textarea");
     promptArea.placeholder = "Base prompt...";
@@ -29,12 +37,42 @@ app.registerExtension({
         border-radius: 6px;
         color: #ddd;
         padding: 10px;
+        padding-right: 25px; 
         resize: none;
         font-size: 15px;
         outline: none;
         transition: border-color 0.2s;
+        box-sizing: border-box;
     `;
     promptArea.onfocus = () => (promptArea.style.borderColor = "#555");
+
+    // Reset Button (moved here)
+    const resetBtn = document.createElement("button");
+    resetBtn.innerHTML = `&#x21BB;`;
+    resetBtn.title = "Clear everything";
+    resetBtn.style.cssText = `
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: transparent;
+        border: none;
+        color: #888;
+        width: 20px;
+        height: 20px;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        padding: 0;
+        z-index: 10;
+    `;
+    resetBtn.onmouseover = () => (resetBtn.style.color = "#fff");
+    resetBtn.onmouseout = () => (resetBtn.style.color = "#888");
+
+    promptWrapper.appendChild(promptArea);
+    promptWrapper.appendChild(resetBtn);
 
     // Selectors Section
     const selectorContainer = document.createElement("div");
@@ -69,7 +107,7 @@ app.registerExtension({
             border-radius: 6px;
             color: #ddd;
             font-size: 12px;
-            padding: 5px 10px; 
+            padding: 2.5px 10px; 
             outline: none;
             cursor: pointer;
 
@@ -141,32 +179,10 @@ app.registerExtension({
     appendBtn.onmouseover = () => (appendBtn.style.background = "#444");
     appendBtn.onmouseout = () => (appendBtn.style.background = "#222");
 
-    // Reset Button
-    const resetBtn = document.createElement("button");
-    resetBtn.innerHTML = `&#x21BB;`;
-    resetBtn.title = "Clear everything";
-    resetBtn.style.cssText = `
-        background: #222;
-        border: 1px solid #444;
-        border-radius: 6px;
-        color: #fff;
-        width: 32px;
-        height: 32px;
-        font-size: 18px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-    `;
-    resetBtn.onmouseover = () => (resetBtn.style.background = "#444");
-    resetBtn.onmouseout = () => (resetBtn.style.background = "#222");
-
     btnContainer.appendChild(mergeBtn);
     btnContainer.appendChild(appendBtn);
-    btnContainer.appendChild(resetBtn);
 
-    container.appendChild(promptArea);
+    container.appendChild(promptWrapper);
     container.appendChild(selectorContainer);
     container.appendChild(btnContainer);
 
