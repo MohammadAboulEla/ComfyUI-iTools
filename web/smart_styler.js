@@ -180,7 +180,7 @@ app.registerExtension({
         background: ${colors.base};
         border: 1px solid ${colors.border};
         border-radius: 6px;
-        color: #e5e5e5;
+        color: #ddd;
         padding: 5px 12px;
         font-size: 11px;
         font-weight: 600;
@@ -266,6 +266,7 @@ app.registerExtension({
     };
 
     const updateTemplates = async (fileName) => {
+      styleRes.select.innerHTML = '<option value="none">Loading...</option>';
       try {
         const formData = new FormData();
         formData.append("file_name", fileName);
@@ -288,6 +289,8 @@ app.registerExtension({
           styleRes.select.appendChild(opt);
         });
       } catch (e) {
+        styleRes.select.innerHTML =
+          '<option value="none">Error loading</option>';
         console.error("Failed to load templates", e);
       }
     };
