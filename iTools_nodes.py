@@ -3,15 +3,15 @@ import os
 import time
 from pathlib import Path
 import random
-from PIL.PngImagePlugin import PngInfo # type: ignore
-import comfy.samplers # type: ignore
-import folder_paths # type: ignore
-import node_helpers # type: ignore
-import numpy as np # type: ignore
-import torch # type: ignore
-from PIL import Image, ImageSequence, ImageOps # type: ignore
+from PIL.PngImagePlugin import PngInfo  # type: ignore
+import comfy.samplers  # type: ignore
+import folder_paths  # type: ignore
+import node_helpers  # type: ignore
+import numpy as np  # type: ignore
+import torch  # type: ignore
+from PIL import Image, ImageSequence, ImageOps  # type: ignore
 from .backend.checker_board import ChessTensor, ChessPattern
-from nodes import common_ksampler, SaveImage, PreviewImage # type: ignore
+from nodes import common_ksampler, SaveImage, PreviewImage  # type: ignore
 import json
 from .backend.file_handeler import FileHandler
 from .backend.grid_filler import (
@@ -29,8 +29,16 @@ from .backend.prompter_multi import (
     templates_extra2,
     templates_extra3,
 )
-from .backend.shared import styles, tensor2pil, pil2tensor, project_dir, FlexibleOptionalInputType, any_type
+from .backend.shared import (
+    styles,
+    tensor2pil,
+    pil2tensor,
+    project_dir,
+    FlexibleOptionalInputType,
+    any_type,
+)
 from comfy.cli_args import args  # type: ignore
+from .backend import iserver
 import re
 
 
@@ -1106,9 +1114,32 @@ class IToolsInstructorNode:
             data = kwargs["InstructorWidget"]
             # Use the pre-assembled text from JS
             final_text = data.get("finalText", "")
-        
+
         return (final_text,)
-        
+
+
+class IToolsSmartStyler:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {},
+            "optional": FlexibleOptionalInputType(any_type),
+        }
+
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("prompt",)
+    FUNCTION = "process"
+    CATEGORY = "iTools"
+    OUTPUT_NODE = True
+
+    def process(self, **kwargs):
+        final_text = ""
+        if "SmartStylerWidget" in kwargs:
+            data = kwargs["SmartStylerWidget"]
+            final_text = data.get("prompt", "")
+        return (final_text,)
+
+
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -1132,6 +1163,7 @@ NODE_CLASS_MAPPINGS = {
     "iToolsCompareImage": IToolsCompareImage,
     "iToolsPromptRecord": IToolsPromptRecord,
     "iToolsInstructorNode": IToolsInstructorNode,
+    "iToolsSmartStyler": IToolsSmartStyler,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -1156,4 +1188,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsCompareImage": "iTools Image Compare 🔍",
     "iToolsPromptRecord": "iTools Prompt Record 🪶",
     "iToolsInstructorNode": "iTools Instructor 👨🏻‍🏫",
+    "iToolsSmartStyler": "iTools Smart Styler 🖌️",
 }

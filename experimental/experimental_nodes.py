@@ -4,21 +4,18 @@ import io
 from ..backend.shared import (
     pil2tensor,
     project_dir,
-    install_package,
     base64_to_pil,
     any_type,
     FlexibleOptionalInputType,
     get_together_client,
 )
 import os
-from server import PromptServer  # type: ignore
-from aiohttp import web  # type: ignore
-import json
 import folder_paths  # type: ignore
 import node_helpers  # type: ignore
 import numpy as np  # type: ignore
 import torch  # type: ignore
 import hashlib
+from ..backend import iserver
 
 
 class IToolsFreeSchnell:
@@ -153,7 +150,6 @@ class IToolsDomNode:
 
 
 class IToolsPaintNode:
-
     @classmethod
     def INPUT_TYPES(self):
         return {
@@ -283,170 +279,3 @@ class IToolsCropImage:
             return "Invalid image file: {}".format(image)
 
         return True
-
-
-@PromptServer.instance.routes.post("/itools/request_save_paint")
-async def respond_to_request_save_paint(request):
-    post = await request.post()
-
-    # Get the uploaded files
-    foreground_file = post.get("foreground")
-    background_file = post.get("background")
-
-    if not foreground_file or not background_file:
-        return web.json_response(
-            {"status": "error", "message": "Missing foreground or background file"},
-            status=400,
-        )
-
-    # Define the directory where the images will be saved
-    save_directory = os.path.join(project_dir, "backend")
-    # os.makedirs(save_directory, exist_ok=True)
-
-    # Save the foreground file
-    foreground_path = os.path.join(save_directory, foreground_file.filename)
-    with open(foreground_path, "wb") as f:
-        f.write(foreground_file.file.read())
-
-    # Save the background file
-    background_path = os.path.join(save_directory, background_file.filename)
-    with open(background_path, "wb") as f:
-        f.write(background_file.file.read())
-
-    return web.json_response(
-        {
-            "status": "success",
-            "foreground": foreground_path,
-            "background": background_path,
-        }
-    )
-
-
-@PromptServer.instance.routes.post("/itools/request_the_paint_file")
-async def respond_to_request_the_paint_file(request):
-    post = await request.post()
-
-    filename_prefix = post.get("filename_prefix")
-    if not filename_prefix:
-        return web.json_response(
-            {"status": "error", "message": "Filename prefix is required"}, status=400
-        )
-
-    # Define the directory where the images are saved
-    save_directory = os.path.join(project_dir, "backend")
-
-    # Define file paths
-    foreground_path = os.path.join(save_directory, f"{filename_prefix}_foreground.png")
-    background_path = os.path.join(save_directory, f"{filename_prefix}_background.png")
-
-    # Check if both files exist
-    if not os.path.exists(foreground_path) or not os.path.exists(background_path):
-        return web.json_response(
-            {"status": "error", "message": "File not found"}, status=404
-        )
-
-    # Read the files
-    with open(foreground_path, "rb") as fg_file:
-        foreground_data = fg_file.read()
-
-    with open(background_path, "rb") as bg_file:
-        background_data = bg_file.read()
-
-    return web.json_response(
-        {
-            "status": "success",
-            "data": {
-                "foreground": foreground_data.hex(),
-                "background": background_data.hex(),
-            },
-        }
-    )
-
-
-@PromptServer.instance.routes.post("/itools/request_load_img")
-async def respond_to_request_load_img(request):
-    post = await request.post()
-
-    filename_prefix = post.get("filename_prefix")
-    if not filename_prefix:
-        return web.json_response(
-            {"status": "error", "message": "Filename prefix is required"}, status=400
-        )
-
-    # Define the directory where the images are saved
-    save_directory = os.path.join(project_dir, "backend")
-
-    # Define file paths
-    img_path = os.path.join(save_directory, f"{filename_prefix}.png")
-
-    # Check if both files exist
-    if not os.path.exists(img_path):
-        return web.json_response(
-            {"status": "error", "message": "File not found"}, status=404
-        )
-
-    # Read the files
-    with open(img_path, "rb") as fg_file:
-        img_data = fg_file.read()
-
-    return web.json_response(
-        {
-            "status": "success",
-            "data": {
-                "img": img_data.hex(),
-            },
-        }
-    )
-
-
-def removeBackground(input_path, output_path):
-    # Try importing rembg
-    try:
-        from rembg import remove # type: ignore
-    except ImportError:
-        install_package("rembg[gpu]")
-        from rembg import remove  # type: ignore # Retry the import after installation
-
-    input_img = Image.open(input_path)
-    output_img = remove(input_img)
-    output_img.save(output_path)
-
-
-@PromptServer.instance.routes.post("/itools/request_mask_img")
-async def respond_to_request_mask_img(request):
-    # Parse the multipart form data
-    reader = await request.multipart()
-
-    # Read the uploaded file
-    field = await reader.next()  # Get the first field (should be "image")
-    if field.name != "image":
-        return web.json_response(
-            {"status": "error", "message": "Invalid field name"}, status=400
-        )
-
-    # Define the save directory and ensure it exists
-    save_directory = os.path.join(project_dir, "backend")
-
-    # Define the temporary file path
-    temp_file_path = os.path.join(save_directory, "uploaded_image.png")
-
-    # Open the file in binary write mode and write the entire content
-    with open(temp_file_path, "wb") as f:
-        f.write(await field.read())
-
-    # Process the saved file
-    img_out = os.path.join(save_directory, "iToolsMaskedImg.png")
-    removeBackground(temp_file_path, img_out)
-
-    # Clean up the temporary file if needed
-    if os.path.exists(temp_file_path):
-        try:
-            os.remove(temp_file_path)
-        except Exception as e:
-            pass
-
-    return web.json_response(
-        {
-            "status": "success",
-        }
-    )
