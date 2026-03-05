@@ -63,7 +63,7 @@ app.registerExtension({
         border-radius: 6px;
         color: #ddd;
         padding: 10px;
-        padding-right: 25px; 
+        padding-right: 20px; 
         resize: none;
         font-size: 15px;
         outline: none;
@@ -80,11 +80,12 @@ app.registerExtension({
     };
 
     promptArea.oninput = updateIconPositions;
+    let promptHistory = [];
 
     // Reset Button (moved here)
     const resetBtn = document.createElement("button");
     resetBtn.innerHTML = `&#x21BB;`;
-    resetBtn.title = "Clear everything";
+    resetBtn.title = "Undo | Reset";
     const actionBtnStyle = `
         position: absolute;
         right: 5px;
@@ -106,11 +107,11 @@ app.registerExtension({
     resetBtn.onmouseover = () => (resetBtn.style.color = "#fff");
     resetBtn.onmouseout = () => (resetBtn.style.color = "#888");
 
-    // Copy Button
+    // // Copy Button 
     const copyBtn = document.createElement("button");
     copyBtn.innerHTML = `🗒`; // Clipboard icon
     copyBtn.title = "Copy to clipboard";
-    copyBtn.style.cssText = actionBtnStyle + "top: 20px;";
+    copyBtn.style.cssText = actionBtnStyle + "top: 20px; display: none;";
     copyBtn.onmouseover = () => (copyBtn.style.color = "#fff");
     copyBtn.onmouseout = () => (copyBtn.style.color = "#888");
 
@@ -330,6 +331,7 @@ app.registerExtension({
       const template_name = styleRes.select.value;
 
       if (template_name === "none") return;
+      promptHistory.push(promptArea.value);
 
       try {
         const formData = new FormData();
@@ -356,6 +358,7 @@ app.registerExtension({
       const template_name = styleRes.select.value;
 
       if (template_name === "none") return;
+      promptHistory.push(promptArea.value);
 
       try {
         const formData = new FormData();
@@ -381,8 +384,12 @@ app.registerExtension({
     };
 
     resetBtn.onclick = () => {
-      promptArea.value = "";
-      styleRes.select.value = "none";
+      if (promptHistory.length > 0) {
+        promptArea.value = promptHistory.pop();
+      } else {
+        promptArea.value = "";
+        styleRes.select.value = "none";
+      }
       updateIconPositions();
     };
 
