@@ -912,7 +912,6 @@ class IToolsCheckerBoard:
 
 
 class IToolsLoadRandomImage:
-
     @classmethod
     def INPUT_TYPES(s):
         default_dir = folder_paths.output_directory
@@ -1153,6 +1152,12 @@ class IToolsSmartStyler:
                 final_text = prompt
         return {"ui": {"prompt": final_text}, "result": (final_text,)}
 
+    def IS_CHANGED(self, **kwargs):
+        if "SmartStylerWidget" in kwargs:
+            data = kwargs["SmartStylerWidget"]
+            style = data.get("style", "none")
+            if style != "none":
+                return float("nan")  # Force re-execution if template is "random"
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique

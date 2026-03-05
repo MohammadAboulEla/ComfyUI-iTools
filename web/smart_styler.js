@@ -31,6 +31,7 @@ app.registerExtension({
   async nodeCreated(node) {
     if (node.comfyClass !== "iToolsSmartStyler") return;
 
+    let pendingValue = null;
     const container = document.createElement("div");
     container.style.cssText = `
         display: flex;
@@ -62,7 +63,7 @@ app.registerExtension({
         border: 1px solid #444;
         border-radius: 6px;
         color: #ddd;
-        padding: 10px;
+        padding: 5px;
         padding-right: 20px; 
         resize: none;
         font-size: 15px;
@@ -150,8 +151,8 @@ app.registerExtension({
       label.innerText = labelStr;
       label.style.cssText = ` 
             font-size: 10px; 
-            padding-top: 2.5px;
-            padding-bottom: 2.5px; 
+            padding-top: 5px;
+            padding-bottom: 5px; 
             color: #555; 
             letter-spacing: 0.5px;`;
 
@@ -217,7 +218,7 @@ app.registerExtension({
         justify-content: center;
         transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
         letter-spacing: 0.5px;
-        height: 32px;
+        height: 28px;
         outline: none;
         user-select: none;
     `;
@@ -250,7 +251,7 @@ app.registerExtension({
 
     // Merge Button
     const mergeBtn = document.createElement("button");
-    mergeBtn.innerHTML = `<span style="margin-right: 8px; font-size: 12px;">✨</span> MERGE NOW`;
+    mergeBtn.innerHTML = `<span style="margin-right: 8px; font-size: 12px;">✨</span> MERGE STYLE`;
     applyButtonStyle(mergeBtn, true);
     mergeBtn.style.flex = "3";
 
@@ -260,7 +261,7 @@ app.registerExtension({
     applyButtonStyle(appendBtn, false);
     appendBtn.style.flex = "1";
 
-    btnContainer.appendChild(appendBtn);
+    // btnContainer.appendChild(appendBtn); // disable for now, keep for future
     btnContainer.appendChild(mergeBtn);
 
     container.appendChild(promptWrapper);
@@ -280,12 +281,17 @@ app.registerExtension({
           categoryRes.select.appendChild(opt);
         });
 
-        const defaultStyle = data.styles.includes("nexus.yaml")
-          ? "nexus.yaml"
-          : data.styles[0];
+        const defaultStyle =
+          pendingValue?.category ||
+          (data.styles.includes("nexus.yaml") ? "nexus.yaml" : data.styles[0]);
         if (defaultStyle) {
           categoryRes.select.value = defaultStyle;
-          updateTemplates(defaultStyle);
+          await updateTemplates(defaultStyle);
+          if (pendingValue?.style) {
+            styleRes.select.value = pendingValue.style;
+            updateStyleLabel();
+          }
+          pendingValue = null;
         }
       } catch (e) {
         console.error("Failed to load styles", e);
@@ -316,6 +322,11 @@ app.registerExtension({
           opt.value = opt.text = t;
           styleRes.select.appendChild(opt);
         });
+
+        if (pendingValue?.style) {
+          styleRes.select.value = pendingValue.style;
+          updateStyleLabel();
+        }
       } catch (e) {
         styleRes.select.innerHTML =
           '<option value="none">Error loading</option>';
@@ -327,9 +338,7 @@ app.registerExtension({
 
     const updateStyleLabel = () => {
       styleRes.label.innerText =
-        styleRes.select.value === "none"
-          ? "STYLE"
-          : "STYLE (Merge upon execution)";
+        styleRes.select.value === "none" ? "STYLE" : "STYLE (will be merged on run ⓘ)";
     };
 
     styleRes.select.onchange = updateStyleLabel;
@@ -421,7 +430,8 @@ app.registerExtension({
       setValue: (v) => {
         if (v) {
           promptArea.value = v.prompt || "";
-          // Note: category and style might need more care since they depend on async loads
+          pendingValue = v;
+          updateIconPositions();
         }
       },
       set_value: (v) => {
@@ -434,12 +444,16 @@ app.registerExtension({
       },
     });
     // init size
-    node.size = [380, 260];
+    node.size = [400, 300];
     node.onResize = () => {
       updateIconPositions();
-      if (node.size[0] < 380) node.size[0] = 380;
-      if (node.size[1] < 260) node.size[1] = 260;
+      if (node.size[0] < 400) node.size[0] = 400;
+      if (node.size[1] < 300) node.size[1] = 300;
       console.log(node.size);
     };
+    // add delay to updateIconPositions on init
+    setTimeout(() => {
+      updateIconPositions();
+    }, 500);
   },
 });
