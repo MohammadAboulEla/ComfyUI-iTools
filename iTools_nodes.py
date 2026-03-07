@@ -1220,5 +1220,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsCompareImage": "Image Compare 🔍",
     "iToolsPromptRecord": "Prompt Record 🪶",
     "iToolsInstructorNode": "Instructor 👨🏻‍🏫",
-    "iToolsPromptMixer": "Prompt Mixer 🍜",
+    "iToolsPromptMixer": "Prompt Builder 🛖",
 }

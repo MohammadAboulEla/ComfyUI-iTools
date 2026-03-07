@@ -49,7 +49,7 @@ app.registerExtension({
     const promptWrapper = document.createElement("div");
     promptWrapper.style.cssText = `
         position: relative;
-        flex: 6;
+        flex: 2;
         width: 100%;
     `;
 
@@ -340,7 +340,7 @@ app.registerExtension({
 
         const defaultStyle =
           pendingValue?.category ||
-          (data.styles.includes("nexus.yaml") ? "nexus.yaml" : data.styles[0]);
+          (data.styles.includes("basic.yaml") ? "basic.yaml" : data.styles[0]);
         if (defaultStyle) {
           categoryRes.select.value = defaultStyle;
           await updateTemplates(defaultStyle);
