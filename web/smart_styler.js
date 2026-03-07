@@ -289,16 +289,18 @@ app.registerExtension({
 
     negToggle.appendChild(switchText);
 
-    let showNegative = false;
+    let negState = 0; // 0: Off, 1: Output only (🌔), 2: Output + Textarea (🌓)
     const updateNegState = (val, initial = false) => {
-      showNegative = val;
-      if (showNegative) {
-        switchText.innerText = "🌓";
+      negState = typeof val === "boolean" ? (val ? 2 : 0) : val;
+
+      if (negState === 1 || negState === 2) {
+        switchText.innerText = negState === 1 ? "🌔" : "🌓";
         switchText.style.color = "#fff";
         negToggle.style.borderColor = "#3b82f6";
-        negativeWrapper.style.display = "block";
+        negativeWrapper.style.display = negState === 2 ? "block" : "none";
         if (node.outputs.length < 2) node.addOutput("negative", "STRING");
       } else {
+        negState = 0;
         switchText.innerText = "🌕";
         switchText.style.color = "#888";
         negToggle.style.borderColor = "#444";
@@ -306,10 +308,10 @@ app.registerExtension({
         if (node.outputs.length > 1) node.removeOutput(1);
       }
     };
-    updateNegState(false); // Ensure no negative output on init
+    updateNegState(0); // Ensure no negative output on init
 
     negToggle.onclick = () => {
-      updateNegState(!showNegative);
+      updateNegState((negState + 1) % 3);
       updateIconPositions();
       app.graph.setDirtyCanvas(true);
     };
@@ -496,7 +498,7 @@ app.registerExtension({
           negative: negativeArea.value,
           category: categoryRes.select.value,
           style: styleRes.select.value,
-          showNegative: showNegative,
+          negState: negState,
         };
       },
       setValue: (v) => {
@@ -504,7 +506,10 @@ app.registerExtension({
           promptArea.value = v.prompt || "";
           negativeArea.value = v.negative || "";
           pendingValue = v;
-          updateNegState(!!v.showNegative, true);
+          updateNegState(
+            v.negState !== undefined ? v.negState : v.showNegative ? 2 : 0,
+            true,
+          );
           updateIconPositions();
         }
       },
