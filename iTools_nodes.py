@@ -1172,32 +1172,6 @@ class IToolsPromptMixer:
                 return float("nan")  # Force re-execution if template is "random"
 
 
-class IToolsCssCardDesigner:
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "image": ("IMAGE",),
-            },
-            "optional": FlexibleOptionalInputType(any_type),
-        }
-
-    RETURN_TYPES = ("STRING", "STRING")
-    RETURN_NAMES = ("html", "css")
-    FUNCTION = "process"
-    CATEGORY = "iTools"
-    OUTPUT_NODE = True
-
-    def process(self, image, **kwargs):
-        html = ""
-        css = ""
-        if "CssCardDesignerWidget" in kwargs:
-            data = kwargs["CssCardDesignerWidget"]
-            html = data.get("html", "")
-            css = data.get("css", "")
-        return (html, css)
-
-
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -1222,7 +1196,6 @@ NODE_CLASS_MAPPINGS = {
     "iToolsPromptRecord": IToolsPromptRecord,
     "iToolsInstructorNode": IToolsInstructorNode,
     "iToolsPromptMixer": IToolsPromptMixer,
-    "iToolsCssCardDesigner": IToolsCssCardDesigner,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -1248,5 +1221,4 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsPromptRecord": "Prompt Record 🪶",
     "iToolsInstructorNode": "Instructor 👨🏻‍🏫",
     "iToolsPromptMixer": "Prompt Builder 🛖",
-    "iToolsCssCardDesigner": "CSS Card Designer 🎴",
 }
