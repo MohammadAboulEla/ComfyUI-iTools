@@ -10,16 +10,16 @@ app.registerExtension({
         if (message.prompt !== undefined) {
           // This allows the UI to reflect the merged state if it was done on server
           const widget = this.widgets.find(
-            (w) => w.name === "SmartStylerWidget",
+            (w) => w.name === "PromptMixerWidget",
           );
           if (widget && widget.set_value) {
-            widget.set_value(message.prompt);
+            widget.set_value(message);
           }
         }
         if (message.style === "none") {
           // Reset style dropdown if it was merged
           const widget = this.widgets.find(
-            (w) => w.name === "SmartStylerWidget",
+            (w) => w.name === "PromptMixerWidget",
           );
           if (widget && widget.reset_style) {
             widget.reset_style();
@@ -34,9 +34,9 @@ app.registerExtension({
     let pendingValue = null;
     const container = document.createElement("div");
     container.style.cssText = `
+        box-sizing: border-box;
         display: flex;
         flex-direction: column; 
-        // gap: 5px; 
         padding: 5px; 
         height: 100%; 
         background: #1c1c1c; 
@@ -49,7 +49,7 @@ app.registerExtension({
     const promptWrapper = document.createElement("div");
     promptWrapper.style.cssText = `
         position: relative;
-        flex: 1;
+        flex: 6;
         width: 100%;
     `;
 
@@ -82,6 +82,22 @@ app.registerExtension({
 
     promptArea.oninput = updateIconPositions;
     let promptHistory = [];
+    let negHistory = [];
+
+    // Negative Prompt Wrapper
+    const negativeWrapper = document.createElement("div");
+    negativeWrapper.style.cssText = `
+        position: relative;
+        flex: 1;
+        width: 100%;
+        display: none;
+        margin-top: 5px;
+    `;
+
+    const negativeArea = document.createElement("textarea");
+    negativeArea.placeholder = "Negative prompt...";
+    negativeArea.style.cssText = promptArea.style.cssText;
+    negativeArea.oninput = updateIconPositions;
 
     // Reset Button (moved here)
     const resetBtn = document.createElement("button");
@@ -129,6 +145,8 @@ app.registerExtension({
     promptWrapper.appendChild(promptArea);
     promptWrapper.appendChild(resetBtn);
     promptWrapper.appendChild(copyBtn);
+
+    negativeWrapper.appendChild(negativeArea);
 
     // Selectors Section
     const selectorContainer = document.createElement("div");
@@ -194,14 +212,13 @@ app.registerExtension({
     `;
 
     // Function to apply styles and states to buttons
-    const applyButtonStyle = (btn, isPrimary = false) => {
+    const applyButtonStyle = (btn) => {
       // Base colors using a modern dark palette
       const colors = {
         base: "#222",
         border: "#444",
         hover: "#333",
         press: "#444",
-        accent: isPrimary ? "#3b82f6" : "#ffffff", // Optional accent for the "Merge" button
       };
 
       btn.style.cssText = `
@@ -209,7 +226,7 @@ app.registerExtension({
         border: 1px solid ${colors.border};
         border-radius: 6px;
         color: #ddd;
-        padding: 5px 12px;
+        padding: 5px 8px;
         font-size: 11px;
         font-weight: 600;
         cursor: pointer;
@@ -252,19 +269,57 @@ app.registerExtension({
     // Merge Button
     const mergeBtn = document.createElement("button");
     mergeBtn.innerHTML = `<span style="margin-right: 8px; font-size: 12px;">✨</span> MERGE STYLE`;
-    applyButtonStyle(mergeBtn, true);
+    applyButtonStyle(mergeBtn);
     mergeBtn.style.flex = "3";
 
     // Append Button
     const appendBtn = document.createElement("button");
     appendBtn.innerHTML = `<span style="margin-right: 8px; font-size: 12px; opacity: 0.7;">☰</span> APPEND`;
-    applyButtonStyle(appendBtn, false);
+    applyButtonStyle(appendBtn);
     appendBtn.style.flex = "1";
 
+    // NEG Toggle Switch
+    const negToggle = document.createElement("div");
+    applyButtonStyle(negToggle);
+
+    const switchText = document.createElement("span");
+    switchText.innerText = "🌕";
+    switchText.style.cssText =
+      "font-size: 9px; color: #888; font-weight: bold; letter-spacing: 0.5px;";
+
+    negToggle.appendChild(switchText);
+
+    let showNegative = false;
+    const updateNegState = (val, initial = false) => {
+      showNegative = val;
+      if (showNegative) {
+        switchText.innerText = "🌓";
+        switchText.style.color = "#fff";
+        negToggle.style.borderColor = "#3b82f6";
+        negativeWrapper.style.display = "block";
+        if (node.outputs.length < 2) node.addOutput("negative", "STRING");
+      } else {
+        switchText.innerText = "🌕";
+        switchText.style.color = "#888";
+        negToggle.style.borderColor = "#444";
+        negativeWrapper.style.display = "none";
+        if (node.outputs.length > 1) node.removeOutput(1);
+      }
+    };
+    updateNegState(false); // Ensure no negative output on init
+
+    negToggle.onclick = () => {
+      updateNegState(!showNegative);
+      updateIconPositions();
+      app.graph.setDirtyCanvas(true);
+    };
+
+    btnContainer.appendChild(negToggle);
     // btnContainer.appendChild(appendBtn); // disable for now, keep for future
     btnContainer.appendChild(mergeBtn);
 
     container.appendChild(promptWrapper);
+    container.appendChild(negativeWrapper);
     container.appendChild(selectorContainer);
     container.appendChild(btnContainer);
 
@@ -338,22 +393,27 @@ app.registerExtension({
 
     const updateStyleLabel = () => {
       styleRes.label.innerText =
-        styleRes.select.value === "none" ? "STYLE" : "STYLE (will be merged on run ⓘ)";
+        styleRes.select.value === "none"
+          ? "STYLE"
+          : "STYLE - will be merged on run ⓘ";
     };
 
     styleRes.select.onchange = updateStyleLabel;
 
     mergeBtn.onclick = async () => {
       const prompt = promptArea.value;
+      const negative = negativeArea.value;
       const style_file = categoryRes.select.value;
       const template_name = styleRes.select.value;
 
       if (template_name === "none") return;
       promptHistory.push(promptArea.value);
+      negHistory.push(negativeArea.value);
 
       try {
         const formData = new FormData();
         formData.append("prompt", prompt);
+        formData.append("negative", negative);
         formData.append("style_file", style_file);
         formData.append("template_name", template_name);
 
@@ -364,6 +424,7 @@ app.registerExtension({
         const data = await resp.json();
 
         promptArea.value = data.prompt;
+        negativeArea.value = data.negative || "";
         styleRes.select.value = "none";
         updateStyleLabel();
         updateIconPositions();
@@ -378,10 +439,12 @@ app.registerExtension({
 
       if (template_name === "none") return;
       promptHistory.push(promptArea.value);
+      negHistory.push(negativeArea.value);
 
       try {
         const formData = new FormData();
         formData.append("prompt", ""); // Get style only
+        formData.append("negative", "");
         formData.append("style_file", style_file);
         formData.append("template_name", template_name);
 
@@ -396,6 +459,11 @@ app.registerExtension({
           promptArea.value = promptArea.value + separator + data.prompt;
           updateIconPositions();
         }
+        if (data.negative) {
+          const separator = negativeArea.value.trim() ? "\n\n" : "";
+          negativeArea.value = negativeArea.value + separator + data.negative;
+          updateIconPositions();
+        }
         styleRes.select.value = "none";
         updateStyleLabel();
       } catch (e) {
@@ -406,8 +474,10 @@ app.registerExtension({
     resetBtn.onclick = () => {
       if (promptHistory.length > 0) {
         promptArea.value = promptHistory.pop();
+        negativeArea.value = negHistory.pop();
       } else {
         promptArea.value = "";
+        negativeArea.value = "";
         styleRes.select.value = "none";
       }
       updateStyleLabel();
@@ -423,19 +493,28 @@ app.registerExtension({
       getValue: () => {
         return {
           prompt: promptArea.value,
+          negative: negativeArea.value,
           category: categoryRes.select.value,
           style: styleRes.select.value,
+          showNegative: showNegative,
         };
       },
       setValue: (v) => {
         if (v) {
           promptArea.value = v.prompt || "";
+          negativeArea.value = v.negative || "";
           pendingValue = v;
+          updateNegState(!!v.showNegative, true);
           updateIconPositions();
         }
       },
       set_value: (v) => {
-        promptArea.value = v;
+        if (v && typeof v === "object") {
+          promptArea.value = v.prompt || "";
+          negativeArea.value = v.negative || "";
+        } else {
+          promptArea.value = v || "";
+        }
         updateIconPositions();
       },
       reset_style: () => {

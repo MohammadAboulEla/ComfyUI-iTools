@@ -1127,30 +1127,42 @@ class IToolsPromptMixer:
             "optional": FlexibleOptionalInputType(any_type),
         }
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("prompt",)
+    RETURN_TYPES = ("STRING", "STRING")
+    RETURN_NAMES = ("prompt", "negative")
     FUNCTION = "process"
     CATEGORY = "iTools"
     OUTPUT_NODE = True
 
     def process(self, **kwargs):
         final_text = ""
+        negative_text = ""
         if "PromptMixerWidget" in kwargs:
             data = kwargs["PromptMixerWidget"]
             prompt = data.get("prompt", "")
+            negative = data.get("negative", "")
             category = data.get("category")
             style = data.get("style", "none")
 
             if style != "none" and category:
                 # Merge if style is selected
-                final_text, _, _ = read_replace_and_combine(style, prompt, "", category)
+                final_text, negative_text, _ = read_replace_and_combine(
+                    style, prompt, negative, category
+                )
                 return {
-                    "ui": {"prompt": final_text, "style": "none"},
-                    "result": (final_text,),
+                    "ui": {
+                        "prompt": final_text,
+                        "negative": negative_text,
+                        "style": "none",
+                    },
+                    "result": (final_text, negative_text),
                 }
             else:
                 final_text = prompt
-        return {"ui": {"prompt": final_text}, "result": (final_text,)}
+                negative_text = negative
+        return {
+            "ui": {"prompt": final_text, "negative": negative_text},
+            "result": (final_text, negative_text),
+        }
 
     def IS_CHANGED(self, **kwargs):
         if "PromptMixerWidget" in kwargs:
@@ -1158,6 +1170,7 @@ class IToolsPromptMixer:
             style = data.get("style", "none")
             if style != "none":
                 return float("nan")  # Force re-execution if template is "random"
+
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
