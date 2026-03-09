@@ -36,6 +36,9 @@ from .backend.shared import (
     project_dir,
     FlexibleOptionalInputType,
     any_type,
+    get_user_node_display_name_preferences,
+    get_user_dev_mode,
+    get_user_dev_mode2,
 )
 from comfy.cli_args import args  # type: ignore
 from .backend import iserver
@@ -1205,8 +1208,7 @@ NODE_CLASS_MAPPINGS = {
     "iToolsPromptMixer": IToolsPromptMixer,
 }
 
-# A dictionary that contains the friendly/humanly readable titles for the nodes
-NODE_DISPLAY_NAME_MAPPINGS = {
+BASE_MAPPINGS = {
     "iToolsLoadImagePlus": "Load Image 🏕️",
     "iToolsPromptLoader": "Prompt Loader",
     "iToolsPromptSaver": "Prompt Saver",
@@ -1229,3 +1231,79 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "iToolsInstructorNode": "Instructor 👨🏻‍🏫",
     "iToolsPromptMixer": "Prompt Builder 🛖",
 }
+
+use_simple_names = get_user_node_display_name_preferences()
+allow_beta_nodes = get_user_dev_mode()
+allow_dev_nodes = get_user_dev_mode2()
+allow_experimental_nodes = False
+
+# INIT NODE DISPLAY NAME MAPPINGS
+def get_node_display_name_mappings():
+    if use_simple_names:
+        return BASE_MAPPINGS
+
+    # Add "iTools " prefix dynamically if simple names are not preferred
+    return {k: f"iTools {v}" for k, v in BASE_MAPPINGS.items()}
+
+
+# A dictionary that contains the friendly/humanly readable titles for the nodes
+NODE_DISPLAY_NAME_MAPPINGS = get_node_display_name_mappings()
+
+
+def append_extra_nodes():
+    if allow_beta_nodes:
+        try:
+            from .experimental.experimental_nodes import IToolsPaintNode, IToolsCropImage
+
+            NODE_CLASS_MAPPINGS["iToolsPaintNode"] = IToolsPaintNode
+            NODE_DISPLAY_NAME_MAPPINGS["iToolsPaintNode"] = (
+                "Paint Node (Beta)" if use_simple_names else "iTools Paint Node (Beta)"
+            )
+
+            NODE_CLASS_MAPPINGS["iToolsCropImage"] = IToolsCropImage
+            NODE_DISPLAY_NAME_MAPPINGS["iToolsCropImage"] = (
+                "Crop Image (Beta)" if use_simple_names else "iTools Crop Image (Beta)"
+            )
+
+        except ModuleNotFoundError as e:
+            pass
+            # print(e)
+
+    if allow_dev_nodes:
+        try:
+            from .experimental.experimental_nodes import IToolsTestNode, IToolsDomNode
+
+            NODE_CLASS_MAPPINGS["iToolsTestNode"] = IToolsTestNode
+            NODE_DISPLAY_NAME_MAPPINGS["iToolsTestNode"] = (
+                "Paint Node (Beta)" if use_simple_names else "iTools Paint Node (Beta)"
+            )
+
+            NODE_CLASS_MAPPINGS["iToolsDomNode"] = IToolsDomNode
+            NODE_DISPLAY_NAME_MAPPINGS["iToolsDomNode"] = (
+                "Dom Node (Dev)" if use_simple_names else "iTools Dom Node (Dev)"
+            )
+
+        except ModuleNotFoundError as e:
+            pass
+
+    if allow_experimental_nodes:
+        try:
+            from .experimental.experimental_nodes import IToolsFreeChat, IToolsFreeSchnell
+
+            NODE_CLASS_MAPPINGS["iToolsFreeChat"] = IToolsFreeChat
+            NODE_DISPLAY_NAME_MAPPINGS["iToolsFreeChat"] = (
+                "Free Chat (API)" if use_simple_names else "iTools Free Chat (API)"
+            )
+
+            NODE_CLASS_MAPPINGS["iToolsFreeSchnell"] = IToolsFreeSchnell
+            NODE_DISPLAY_NAME_MAPPINGS["iToolsFreeSchnell"] = (
+                "Free Schnell (API)"
+                if use_simple_names
+                else "iTools Free Schnell (API)"
+            )
+
+        except ModuleNotFoundError as e:
+            pass
+
+
+append_extra_nodes()

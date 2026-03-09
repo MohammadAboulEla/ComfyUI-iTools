@@ -166,24 +166,6 @@ def tensor2pil(image):
     )
 
 
-# not used
-def tensor2pil_hi(image):
-    try:
-        # Handle single image
-        return Image.fromarray(
-            np.clip(255.0 * image.cpu().numpy().squeeze(), 0, 255).astype(np.uint8)
-        )
-    except:
-        # Handle batch of images
-        images = [
-            Image.fromarray(
-                np.clip(255.0 * img.cpu().numpy().squeeze(), 0, 255).astype(np.uint8)
-            )
-            for img in image
-        ]
-        return images
-
-
 def pil2tensor(image):
     return torch.from_numpy(np.array(image).astype(np.float32) / 255.0).unsqueeze(0)
 
@@ -199,6 +181,7 @@ def pil2mask(image):
     return mask
 
 
+# deprecated
 def get_together_client():
     ud_dir = os.path.join(folder_paths.base_path, "user", "default")
     settings_file = os.path.join(ud_dir, "comfy.settings.json")
@@ -232,3 +215,38 @@ def get_together_client():
         raise MyCustomError("Failed to initialize Together client.") from e
 
     return client
+
+
+# get allow beta nodes
+def get_user_dev_mode():
+    try:
+        ud_dir = os.path.join(folder_paths.base_path, "user", "default")
+        settings_file = os.path.join(ud_dir, "comfy.settings.json")
+        with open(settings_file, "r") as file:
+            settings = json.load(file)
+        return settings.get("iTools.Nodes.Dev Mode", True)
+    except (OSError, json.JSONDecodeError, AttributeError):
+        return True
+
+
+# get allow dev nodes
+def get_user_dev_mode2():
+    try:
+        ud_dir = os.path.join(folder_paths.base_path, "user", "default")
+        settings_file = os.path.join(ud_dir, "comfy.settings.json")
+        with open(settings_file, "r") as file:
+            settings = json.load(file)
+        return settings.get("iTools.Nodes.Dev Mode2", False)
+    except (OSError, json.JSONDecodeError, AttributeError):
+        return False
+
+
+# get node display name preferences
+def get_user_node_display_name_preferences():
+    ud_dir = os.path.join(folder_paths.base_path, "user", "default")
+    settings_file = os.path.join(ud_dir, "comfy.settings.json")
+
+    with open(settings_file, "r") as file:
+        settings = json.load(file)
+
+    return settings.get("iTools.Nodes.Node Display Name Preferences", True)

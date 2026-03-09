@@ -116,6 +116,31 @@ app.registerExtension({
 //   ],
 // });
 
+// Register node display name preferences
+app.registerExtension({
+  name: "makadi_iTools_node_display_name_preferences",
+  settings: [
+    {
+      id: "iTools.Nodes.Node Display Name Preferences",
+      name: "Use Simple Names for iTools nodes",
+      type: "boolean",
+      defaultValue: true,
+      tooltip: "Will remove \"iTools\" prefix from the node names.",
+      onChange: (value) => {
+        const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.Node Display Name Preferences");
+        if (prevValue !== undefined && prevValue !== value) {
+          app.extensionManager.toast.add({
+            severity: "warn",
+            summary: "Alert!",
+            detail: "Restart ComfyUI and refresh your browser",
+            life: 3000,
+          });
+        }
+      },
+    },
+  ],
+});
+
 // Register a new setting mask tool
 app.registerExtension({
   name: "makadi_iTools_mask_tool",
