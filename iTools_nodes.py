@@ -305,6 +305,7 @@ class IToolsLoadImages:
                 ),
                 "start_index": ("INT", {"default": 0, "min": 0, "max": 200}),
                 "load_limit": ("INT", {"default": 4, "min": 2, "max": 200}),
+                "output_mode": (["list", "batch"], {"default": "list"}),
             }
         }
 
@@ -319,7 +320,9 @@ class IToolsLoadImages:
         "names."
     )
 
-    def load_images(self, images_directory, load_limit, start_index):
+    def load_images(
+        self, images_directory, load_limit, start_index, output_mode="list"
+    ):
         image_extensions = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif"}
         images_path = Path(images_directory.replace('"', ""))
 
@@ -341,7 +344,11 @@ class IToolsLoadImages:
                 if len(images) >= load_limit:
                     break
 
-        return images, images_names, len(images)
+        count = len(images)
+        if output_mode == "batch" and images:
+            images = [torch.cat(images, dim=0)]
+
+        return images, images_names, count
 
 
 class IToolsPromptStylerExtra:
