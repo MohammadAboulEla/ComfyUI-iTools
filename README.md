@@ -39,6 +39,24 @@ For full functionality, use the classic node system.
 
 ## Nodes:
 
+### **iTools Prompt Builder 🛖**
+
+This node is an interactive, all-in-one prompt management node for ComfyUI. It combines a clean, modern text interface with a dynamic styling system, allowing you to build, merge, and manage both positive and negative prompts without leaving the node.
+
+#### 🚀 Key Features:
+* Dynamic Styler Integration: Directly connects to your `.yaml` style libraries. Browse categories and specific templates (e.g., Cinematic, Anime, Photographic) and merge them into your prompt with one click.
+* Dual-Prompt Workspace: High-performance textareas for both Positive and Negative prompts with auto-adjusting layouts.
+* Smart "NEG" Toggle: A three-state cycle button (**🌕**, **🌔**, **🌓**) to manage your workflow:
+    * Off (🌕): Standard positive output only.
+    * Output Only (🌔): Adds a "negative" output pin to the node without showing the text area.
+    * Full UI (🌓): Displays the dedicated negative prompt textarea and enables the output pin.
+* Merge & Append Modes:
+    * MERGE STYLE: Intelligently blends your text with the selected style via server-side logic.
+    * APPEND: Quickly tags style keywords onto the end of your existing prompt.
+* History & Undo: Includes a dedicated Reset/Undo button (`↺`) to step back through prompt changes or clear the text entirely.
+
+[![Watch the video](https://github.com/user-attachments/assets/8c824129-e608-467e-813c-567049152dec)](https://github.com/user-attachments/assets/8c824129-e608-467e-813c-567049152dec)
+
 ### **iTools Instructor 👨🏻‍🏫**
 
 This node is a powerful prompt engineering tool that helps you write better prompts by providing a structured template system. It allows you to define placeholders in your prompt text (e.g., `[SUBJECT]`, `[STYLE]`) and then fill them in using a simple interface. The node also includes features for prompt organization, history tracking, and template management.

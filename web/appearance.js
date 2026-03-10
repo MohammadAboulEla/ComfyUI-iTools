@@ -122,7 +122,7 @@ app.registerExtension({
       "iTools.Nodes.Auto Resize",
     );
     switch (node.comfyClass) {
-      case "iToolsPromptMixer":
+      case "iToolsPromptBuilder":
         if (!allow_auto_color) break;
         node.color = LGraphCanvas.node_colors.green.color;
         node.bgcolor = LGraphCanvas.node_colors.green.bgcolor;

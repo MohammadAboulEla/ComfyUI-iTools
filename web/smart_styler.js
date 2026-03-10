@@ -1,16 +1,16 @@
 import { app } from "../../../scripts/app.js";
 
 app.registerExtension({
-  name: "iTools.promptMixer",
+  name: "iTools.PromptBuilder",
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
-    if (nodeData.name === "iToolsPromptMixer") {
+    if (nodeData.name === "iToolsPromptBuilder") {
       const originalOnExecuted = nodeType.prototype.onExecuted;
       nodeType.prototype.onExecuted = function (message) {
         originalOnExecuted?.apply(this, arguments);
         if (message.prompt !== undefined) {
           // This allows the UI to reflect the merged state if it was done on server
           const widget = this.widgets.find(
-            (w) => w.name === "PromptMixerWidget",
+            (w) => w.name === "PromptBuilderWidget",
           );
           if (widget && widget.set_value) {
             widget.set_value(message);
@@ -19,7 +19,7 @@ app.registerExtension({
         if (message.style === "none") {
           // Reset style dropdown if it was merged
           const widget = this.widgets.find(
-            (w) => w.name === "PromptMixerWidget",
+            (w) => w.name === "PromptBuilderWidget",
           );
           if (widget && widget.reset_style) {
             widget.reset_style();
@@ -29,7 +29,7 @@ app.registerExtension({
     }
   },
   async nodeCreated(node) {
-    if (node.comfyClass !== "iToolsPromptMixer") return;
+    if (node.comfyClass !== "iToolsPromptBuilder") return;
 
     let pendingValue = null;
     const container = document.createElement("div");
@@ -491,7 +491,7 @@ app.registerExtension({
 
     // Node setup
     node.size = [320, 260];
-    const widget = node.addDOMWidget("PromptMixerWidget", "custom", container, {
+    const widget = node.addDOMWidget("PromptBuilderWidget", "custom", container, {
       getValue: () => {
         return {
           prompt: promptArea.value,
@@ -533,11 +533,14 @@ app.registerExtension({
       updateIconPositions();
       if (node.size[0] < 400) node.size[0] = 400;
       if (node.size[1] < 300) node.size[1] = 300;
-      console.log(node.size);
     };
     // add delay to updateIconPositions on init
     setTimeout(() => {
       updateIconPositions();
     }, 500);
+    // force redraw
+    setTimeout(() => {
+      node.setDirtyCanvas(true, true);
+    }, 100);
   },
 });

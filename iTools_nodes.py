@@ -1129,7 +1129,7 @@ class IToolsInstructorNode:
         return (final_text,)
 
 
-class IToolsPromptMixer:
+class IToolsPromptBuilder:
     @classmethod
     def INPUT_TYPES(s):
         return {
@@ -1146,8 +1146,8 @@ class IToolsPromptMixer:
     def process(self, **kwargs):
         final_text = ""
         negative_text = ""
-        if "PromptMixerWidget" in kwargs:
-            data = kwargs["PromptMixerWidget"]
+        if "PromptBuilderWidget" in kwargs:
+            data = kwargs["PromptBuilderWidget"]
             prompt = data.get("prompt", "")
             negative = data.get("negative", "")
             category = data.get("category")
@@ -1175,8 +1175,8 @@ class IToolsPromptMixer:
         }
 
     def IS_CHANGED(self, **kwargs):
-        if "PromptMixerWidget" in kwargs:
-            data = kwargs["PromptMixerWidget"]
+        if "PromptBuilderWidget" in kwargs:
+            data = kwargs["PromptBuilderWidget"]
             style = data.get("style", "none")
             if style != "none":
                 return float("nan")  # Force re-execution if template is "random"
@@ -1205,7 +1205,7 @@ NODE_CLASS_MAPPINGS = {
     "iToolsCompareImage": IToolsCompareImage,
     "iToolsPromptRecord": IToolsPromptRecord,
     "iToolsInstructorNode": IToolsInstructorNode,
-    "iToolsPromptMixer": IToolsPromptMixer,
+    "iToolsPromptBuilder": IToolsPromptBuilder,
 }
 
 BASE_MAPPINGS = {
@@ -1229,7 +1229,7 @@ BASE_MAPPINGS = {
     "iToolsCompareImage": "Image Compare 🔍",
     "iToolsPromptRecord": "Prompt Record 🪶",
     "iToolsInstructorNode": "Instructor 👨🏻‍🏫",
-    "iToolsPromptMixer": "Prompt Builder 🛖",
+    "iToolsPromptBuilder": "Prompt Builder 🛖",
 }
 
 use_simple_names = get_user_node_display_name_preferences()
