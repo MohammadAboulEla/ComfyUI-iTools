@@ -13,7 +13,6 @@ from PIL import Image, ImageSequence, ImageOps  # type: ignore
 from .backend.checker_board import ChessTensor, ChessPattern
 from nodes import common_ksampler, SaveImage, PreviewImage  # type: ignore
 import json
-from .backend.file_handeler import FileHandler
 from .backend.grid_filler import (
     fill_grid_with_images_new,
     tensor_to_images,
@@ -30,6 +29,7 @@ from .backend.prompter_multi import (
     templates_extra3,
 )
 from .backend.shared import (
+    FileHandler,
     styles,
     tensor2pil,
     pil2tensor,
