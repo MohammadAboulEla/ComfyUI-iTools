@@ -1275,7 +1275,7 @@ def append_extra_nodes():
 
             NODE_CLASS_MAPPINGS["iToolsTestNode"] = IToolsTestNode
             NODE_DISPLAY_NAME_MAPPINGS["iToolsTestNode"] = (
-                "Paint Node (Beta)" if use_simple_names else "iTools Paint Node (Beta)"
+                "Test Node (Dev)" if use_simple_names else "iTools Test Node (Dev)"
             )
 
             NODE_CLASS_MAPPINGS["iToolsDomNode"] = IToolsDomNode

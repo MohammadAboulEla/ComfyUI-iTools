@@ -1,268 +1,126 @@
 import { app } from "../../../scripts/app.js";
-import { allow_debug } from "./js_shared.js";
 
-// Register a new setting more styles
+// REGISTER ALL SETTINGS
+const itoolsSettings = [
+  {
+    id: "iTools.Nodes.More Styles",
+    name: "Load extra styles",
+    type: "boolean",
+    defaultValue: true,
+    tooltip:
+      "Yaml files in the 'styles/more examples' folder will also be loaded for prompt styler nodes.",
+    toastMsg: "Restart ComfyUI and refresh your browser",
+  },
+  {
+    id: "iTools.Nodes.Compare Mode",
+    name: "iTools Image Compare mode",
+    type: "combo",
+    defaultValue: "makadi",
+    options: ["rgthree", "makadi"],
+    tooltip:
+      "makadi: is how iTools developer like this node to work.\n\n rgthree: will behave exactly like the rgthree image compare node.",
+    toastMsg: "Refresh your browser",
+  },
+  {
+    id: "iTools.Nodes.Auto Resize",
+    name: "Auto resize nodes when created",
+    type: "boolean",
+    defaultValue: false,
+    toastMsg: "Refresh your browser",
+  },
+  {
+    id: "iTools.Nodes.Auto Color",
+    name: "Auto color nodes when created",
+    type: "boolean",
+    defaultValue: true,
+    toastMsg: "Refresh your browser",
+  },
+  {
+    id: "iTools.Nodes.Node Display Name Preferences",
+    name: "Use Simple Names for iTools nodes",
+    type: "boolean",
+    defaultValue: true,
+    tooltip: 'Will remove "iTools" prefix from the node names.',
+    toastMsg: "Restart ComfyUI and refresh your browser",
+  },
+  {
+    id: "iTools.Nodes.Mask Tool",
+    name: "Allow Masking in iTools Paint Node",
+    type: "boolean",
+    defaultValue: false,
+    tooltip:
+      "Give a permission to download 209mb models needed for removing background from images.\n\n As for this Beta version models are saved in the user home folder in the .u2net directory.",
+    toastMsg: "Refresh your browser",
+  },
+  {
+    id: "iTools.Nodes.Dev Mode",
+    name: "Enable beta nodes",
+    type: "boolean",
+    defaultValue: true,
+    tooltip:
+      "Will show or hide some experimental nodes, Restart ComfyUI and refresh your browser after changing this value.",
+    toastMsg: "Restart ComfyUI and refresh your browser",
+  },
+  {
+    id: "iTools.Nodes.Dev Mode2",
+    name: "Enable dev nodes",
+    type: "boolean",
+    defaultValue: false,
+    tooltip:
+      "You do not have to enable this, these are just test nodes for development.",
+    toastMsg: "Restart ComfyUI and refresh your browser",
+  },
+  {
+    id: "iTools.Tabs.menuTab",
+    name: "Enable iTools tab on the menu bar.",
+    type: "boolean",
+    defaultValue: false,
+    tooltip: "Refresh your browser after changing this value.",
+    toastMsg: "Refresh your browser",
+  },
+  {
+    id: "iTools.Tabs.Side Tab",
+    name: "Enable Prompt Library in the sidebar.",
+    type: "boolean",
+    defaultValue: true,
+    tooltip: "Refresh your browser after changing this value.",
+    toastMsg: "Refresh your browser",
+  },
+];
+
 app.registerExtension({
-  name: "makadi_iTools_more_styles",
-  settings: [
-    {
-      id: "iTools.Nodes.More Styles",
-      name: "Load extra styles",
-      type: "boolean",
-      defaultValue: true,
-      tooltip: "Yaml files in the 'styles/more examples' folder will also be loaded for prompt styler nodes.",
-      onChange: (value) => {
-        const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.More Styles");
-        if (prevValue !== undefined && prevValue !== value) {
-          app.extensionManager.toast.add({
-            severity: "warn",
-            summary: "Alert!",
-            detail: "Restart ComfyUI and refresh your browser",
-            life: 3000,
-          });
-        }
-      },
+  name: "makadi_iTools_settings_manager",
+  settings: itoolsSettings.map((s) => ({
+    id: s.id,
+    name: s.name,
+    type: s.type,
+    defaultValue: s.defaultValue,
+    options: s.options, // This will be undefined for boolean, which is fine
+    tooltip: s.tooltip,
+    onChange: (value) => {
+      const prevValue = app.ui.settings.getSettingValue(s.id);
+      if (prevValue !== undefined && prevValue !== value) {
+        app.extensionManager.toast.add({
+          severity: "warn",
+          summary: "Alert!",
+          detail: s.toastMsg,
+          life: 3000,
+        });
+      }
     },
-  ],
-});
-
-// Register a new setting compare mode
-app.registerExtension({
-  name: "makadi_iTools_compare_mode",
-  settings: [
-    {
-      id: "iTools.Nodes.Compare Mode",
-      name: "iTools Image Compare mode",
-      type: "combo",
-      defaultValue: "makadi",
-      options: ["rgthree", "makadi"],
-      tooltip:
-        "makadi: is how iTools developer like this node to work.\n\n rgthree: will behave exactly like the rgthree image compare node.",
-      onChange: (value) => {
-        const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.Compare Mode");
-        if (prevValue !== undefined && prevValue !== value) {
-          app.extensionManager.toast.add({
-            severity: "warn",
-            summary: "Alert!",
-            detail: "Refresh your browser",
-            life: 3000,
-          });
-        }
-      },
-    },
-  ],
-});
-
-// Register a new setting auto resize
-app.registerExtension({
-  name: "makadi_iTools_resize",
-  settings: [
-    {
-      id: "iTools.Nodes.Auto Resize",
-      name: "Auto resize nodes when created",
-      type: "boolean",
-      defaultValue: false,
-      onChange: (value) => {
-        const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.Auto Resize");
-        if (prevValue !== undefined && prevValue !== value) {
-          app.extensionManager.toast.add({
-            severity: "warn",
-            summary: "Alert!",
-            detail: "Refresh your browser",
-            life: 3000,
-          });
-        }
-      },
-    },
-  ],
-});
-
-// Register a new setting auto color
-app.registerExtension({
-  name: "makadi_iTools_color",
-  settings: [
-    {
-      id: "iTools.Nodes.Auto Color",
-      name: "Auto color nodes when created",
-      type: "boolean",
-      defaultValue: true,
-      onChange: (value) => {
-        const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.Auto Color");
-        if (prevValue !== undefined && prevValue !== value) {
-          app.extensionManager.toast.add({
-            severity: "warn",
-            summary: "Alert!",
-            detail: "Refresh your browser",
-            life: 3000,
-          });
-        }
-      },
-    },
-  ],
-});
-
-// Register TogetherApi setting
-// app.registerExtension({
-//   name: "makadi_iTools_together_api",
-//   settings: [
-//     {
-//       id: "iTools.Nodes. together.ai Api Key",
-//       name: "Together Api Key",
-//       type: "text",
-//       defaultValue: "None",
-//       tooltip:
-//         "(needed for API nodes)\nGet your free key from together.ai put it here or add it as TOGETHER_API_KEY in your system environment.",
-//     },
-//   ],
-// });
-
-// Register node display name preferences
-app.registerExtension({
-  name: "makadi_iTools_node_display_name_preferences",
-  settings: [
-    {
-      id: "iTools.Nodes.Node Display Name Preferences",
-      name: "Use Simple Names for iTools nodes",
-      type: "boolean",
-      defaultValue: true,
-      tooltip: "Will remove \"iTools\" prefix from the node names.",
-      onChange: (value) => {
-        const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.Node Display Name Preferences");
-        if (prevValue !== undefined && prevValue !== value) {
-          app.extensionManager.toast.add({
-            severity: "warn",
-            summary: "Alert!",
-            detail: "Restart ComfyUI and refresh your browser",
-            life: 3000,
-          });
-        }
-      },
-    },
-  ],
-});
-
-// Register a new setting mask tool
-app.registerExtension({
-  name: "makadi_iTools_mask_tool",
-  settings: [
-    {
-      id: "iTools.Nodes.Mask Tool",
-      name: "Allow Masking in iTools Paint Node",
-      type: "boolean",
-      defaultValue: false,
-      tooltip:
-        "Give a permission to download 209mb models needed for removing background from images.\n\n As for this Beta version models are saved in the user home folder in the .u2net directory.",
-    },
-  ],
-});
-
-// Register experimental nodes dev
-app.registerExtension({
-  name: "makadi_iTools_dev_mode2",
-  settings: [
-    {
-      id: "iTools.Nodes.Dev Mode2",
-      name: "Enable dev nodes",
-      type: "boolean",
-      defaultValue: false,
-      tooltip: "You do not have to enable this, these are just test nodes for development.",
-      onChange: (value) => {
-        const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.Dev Mode2");
-        if (prevValue !== undefined && prevValue !== value) {
-          app.extensionManager.toast.add({
-            severity: "warn",
-            summary: "Alert!",
-            detail: "Restart ComfyUI and refresh your browser",
-            life: 3000,
-          });
-        }
-      },
-    },
-  ],
-});
-
-// Register experimental nodes beta
-app.registerExtension({
-  name: "makadi_iTools_dev_mode",
-  settings: [
-    {
-      id: "iTools.Nodes.Dev Mode",
-      name: "Enable beta nodes",
-      type: "boolean",
-      defaultValue: true,
-      tooltip:
-        "Will show or hide some experimental nodes, Restart ComfyUI and refresh your browser after changing this value.",
-      onChange: (value) => {
-        const prevValue = app.ui.settings.getSettingValue("iTools.Nodes.Dev Mode");
-        if (prevValue !== undefined && prevValue !== value) {
-          app.extensionManager.toast.add({
-            severity: "warn",
-            summary: "Alert!",
-            detail: "Restart ComfyUI and refresh your browser",
-            life: 3000,
-          });
-        }
-      },
-    },
-  ],
-});
-
-// Register a new setting iTools_tab top bar
-app.registerExtension({
-  name: "makadi_iTools_tab",
-  settings: [
-    {
-      id: "iTools.Tabs.menuTab",
-      name: "Enable iTools tab on the menu bar.",
-      type: "boolean",
-      defaultValue: false,
-      tooltip: "Refresh your browser after changing this value.",
-      onChange: (value) => {
-        const prevValue = app.ui.settings.getSettingValue("iTools.Tabs.menuTab");
-        if (prevValue !== undefined && prevValue !== value) {
-          app.extensionManager.toast.add({
-            severity: "warn",
-            summary: "Alert!",
-            detail: "Refresh your browser",
-            life: 3000,
-          });
-        }
-      },
-    },
-  ],
-});
-
-// Register a new setting iTools_tab side bar
-app.registerExtension({
-  name: "makadi_iTools_side_tab",
-  settings: [
-    {
-      id: "iTools.Tabs.Side Tab",
-      name: "Enable Prompt Library in the sidebar.",
-      type: "boolean",
-      defaultValue: true,
-      tooltip: "Refresh your browser after changing this value.",
-      onChange: (value) => {
-        const prevValue = app.ui.settings.getSettingValue("iTools.Tabs.Side Tab");
-        if (prevValue !== undefined && prevValue !== value) {
-          app.extensionManager.toast.add({
-            severity: "warn",
-            summary: "Alert!",
-            detail: "Refresh your browser",
-            life: 3000,
-          });
-        }
-      },
-    },
-  ],
+  })),
 });
 
 // APPEARANCE
 app.registerExtension({
   name: "makadi.appearance",
   nodeCreated(node) {
-    const allow_auto_color = app.ui.settings.getSettingValue("iTools.Nodes.Auto Color");
-    const allow_auto_resize = app.ui.settings.getSettingValue("iTools.Nodes.Auto Resize");
+    const allow_auto_color = app.ui.settings.getSettingValue(
+      "iTools.Nodes.Auto Color",
+    );
+    const allow_auto_resize = app.ui.settings.getSettingValue(
+      "iTools.Nodes.Auto Resize",
+    );
     switch (node.comfyClass) {
       case "iToolsPromptMixer":
         if (!allow_auto_color) break;
