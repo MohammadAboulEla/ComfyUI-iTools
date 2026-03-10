@@ -48,8 +48,8 @@ This node is an interactive, all-in-one prompt management node for ComfyUI. It c
 * Dual-Prompt Workspace: High-performance textareas for both Positive and Negative prompts with auto-adjusting layouts.
 * Smart "NEG" Toggle: A three-state cycle button (**🌕**, **🌔**, **🌓**) to manage your workflow:
     * Off (🌕): Standard positive output only.
-    * Output Only (🌔): Adds a "negative" output pin to the node without showing the text area.
-    * Full UI (🌓): Displays the dedicated negative prompt textarea and enables the output pin.
+    * Output Only (🌔): Adds a "negative" output pin to the node without showing the text area, It will automatically retrieve the default negative prompt from the `.yaml` file.
+    * Full UI (🌓): Displays the dedicated negative prompt textarea and enables the output pin. so you may add additional negative prompts.
 * Merge & Append Modes:
     * MERGE STYLE: Intelligently blends your text with the selected style via server-side logic.
     * APPEND: Quickly tags style keywords onto the end of your existing prompt.
