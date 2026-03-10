@@ -2,6 +2,8 @@ import numpy as np
 import torch
 from PIL import Image
 from sxa import yt
+
+
 # suggested by chatGPT
 def pil_to_tensor(_img):
     """
@@ -26,6 +28,7 @@ def pil_to_tensor(_img):
 
     return tensor_img
 
+
 # suggested by chatGPT
 def tensor_to_pil(_img):
     """
@@ -41,6 +44,7 @@ def tensor_to_pil(_img):
 
     return pil_img
 
+
 def print_3d_tensor(_tensor):
     # Ensure the tensor is a 3D tensor for visualization
     if _tensor.dim() != 3:
@@ -53,7 +57,7 @@ def print_3d_tensor(_tensor):
         # Convert to NumPy for better printing and format it
         array = _tensor[i].numpy()
         for row in array:
-            print(' | '.join(map(str, row)))  # Print each row
+            print(" | ".join(map(str, row)))  # Print each row
         print()  # Add a new line for separation
 
 
@@ -71,7 +75,7 @@ def print_4d_tensor(_tensor):
         print()  # Blank line for separation
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Example usage
     rows = 2  # Set your number of rows
     cols = 3  # Set your number of columns
@@ -79,22 +83,13 @@ if __name__ == '__main__':
     d3_tensor = torch.randint(0, 2, (3, rows, cols))
     d4_tensor = torch.randint(0, 2, (2, 3, rows, cols))
     # Original tensor
-    t = torch.tensor([[1, 2],
-                      [3, 4],
-                      [5, 6]])
+    t = torch.tensor([[1, 2], [3, 4], [5, 6]])
 
-    t2 = torch.tensor([[12, 21],
-                      [33, 4],
-                      [45, 16]])
+    t2 = torch.tensor([[12, 21], [33, 4], [45, 16]])
     # New row of zeros
     zero = torch.zeros((3, 2), dtype=torch.int8)
     res = t2 - t
     print(res)
-
-
-
-
-
 
     # print(d2_tensor)
     # print(d2_tensor.unsqueeze(1))
