@@ -296,7 +296,7 @@ app.registerExtension({
       if (negState === 1 || negState === 2) {
         switchText.innerText = negState === 1 ? "🌔" : "🌓";
         switchText.style.color = "#fff";
-        negToggle.style.borderColor = "#3b82f6";
+        negToggle.style.borderColor = "#444";
         negativeWrapper.style.display = negState === 2 ? "block" : "none";
         if (node.outputs.length < 2) node.addOutput("negative", "STRING");
       } else {
