@@ -13,7 +13,7 @@ const itoolsSettings = [
   },
   {
     id: "iTools.Nodes.Compare Mode",
-    name: "iTools Image Compare mode",
+    name: "Image Compare mode",
     type: "combo",
     defaultValue: "makadi",
     options: ["rgthree", "makadi"],
@@ -36,14 +36,6 @@ const itoolsSettings = [
     toastMsg: "Refresh your browser",
   },
   {
-    id: "iTools.Nodes.Node Display Name Preferences",
-    name: "Use Simple Names for iTools nodes",
-    type: "boolean",
-    defaultValue: true,
-    tooltip: 'Will remove "iTools" prefix from the node names.',
-    toastMsg: "Restart ComfyUI and refresh your browser",
-  },
-  {
     id: "iTools.Nodes.Mask Tool",
     name: "Allow Masking in iTools Paint Node",
     type: "boolean",
@@ -51,6 +43,15 @@ const itoolsSettings = [
     tooltip:
       "Give a permission to download 209mb models needed for removing background from images.\n\n As for this Beta version models are saved in the user home folder in the .u2net directory.",
     toastMsg: "Refresh your browser",
+  },
+  {
+    id: "iTools.Nodes.Dev Mode2",
+    name: "Enable dev nodes",
+    type: "boolean",
+    defaultValue: false,
+    tooltip:
+      "You do not have to enable this, these are just test nodes for development.",
+    toastMsg: "Restart ComfyUI and refresh your browser",
   },
   {
     id: "iTools.Nodes.Dev Mode",
@@ -61,13 +62,13 @@ const itoolsSettings = [
       "Will show or hide some experimental nodes, Restart ComfyUI and refresh your browser after changing this value.",
     toastMsg: "Restart ComfyUI and refresh your browser",
   },
+
   {
-    id: "iTools.Nodes.Dev Mode2",
-    name: "Enable dev nodes",
+    id: "iTools.Nodes.Node Display Name Preferences",
+    name: "Use Simple Names for iTools nodes",
     type: "boolean",
     defaultValue: false,
-    tooltip:
-      "You do not have to enable this, these are just test nodes for development.",
+    tooltip: 'Will remove "iTools" prefix from the node names.',
     toastMsg: "Restart ComfyUI and refresh your browser",
   },
   {
@@ -80,7 +81,7 @@ const itoolsSettings = [
   },
   {
     id: "iTools.Tabs.Side Tab",
-    name: "Enable Prompt Library in the sidebar.",
+    name: "Enable Prompt Library icon in the sidebar.",
     type: "boolean",
     defaultValue: true,
     tooltip: "Refresh your browser after changing this value.",
