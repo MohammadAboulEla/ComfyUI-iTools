@@ -8,20 +8,15 @@ import { inputsHistoryShow } from "./prompt_gallery.js";
 
 app.registerExtension({
   name: "iTools.promptRecord",
-  async beforeRegisterNodeDef(nodeType, nodeData, app) {
-    if (nodeData.name === "iToolsPromptRecord") {
-      const originalOnExecuted = nodeType.prototype.onExecuted;
-      nodeType.prototype.onExecuted = async function (message) {
-        originalOnExecuted?.apply(this, arguments);
-        const value = message.text.join("");
-        nodeType.prototype.executionText = value;
-        if (allow_debug) console.log("iToolsPromptRecord Executed");
-      };
-    }
-  },
   async nodeCreated(node) {
     if (node.comfyClass !== "iToolsPromptRecord") {
       return;
+    }
+
+    const w = node.widgets.find((w) => w.name === "timeline_data");
+    if (w) {
+      console.log("iTools: Found timeline_data widget", node);
+      w.hidden = true; // This hides it from the UI but keeps it in node.widgets
     }
 
     // init size
@@ -33,7 +28,45 @@ app.registerExtension({
 
     // vars
     let inputWidget = node.widgets.filter((w) => w.type == "customtext");
-    let inputsHistory = [];
+
+    // Use the hidden widget defined in Python for persistence
+    const historyWidget = node.widgets.find((w) => w.name === "timeline_data");
+
+    const _inputsHistory = [];
+    // Proxy handles synchronization whenever the array is modified (push, splice, length=0)
+    const inputsHistory = new Proxy(_inputsHistory, {
+      set(target, prop, value) {
+        const res = Reflect.set(target, prop, value);
+        if (historyWidget && (prop === "length" || !isNaN(prop))) {
+          historyWidget.value = JSON.stringify(target);
+        }
+        return res;
+      },
+      deleteProperty(target, prop) {
+        const res = Reflect.deleteProperty(target, prop);
+        if (historyWidget) historyWidget.value = JSON.stringify(target);
+        return res;
+      },
+    });
+
+    // Restore history when the workflow is loaded
+    const originalOnConfigure = node.onConfigure;
+    node.onConfigure = function (data) {
+      if (originalOnConfigure) originalOnConfigure.apply(this, arguments);
+      if (historyWidget && historyWidget.value) {
+        try {
+          const saved = JSON.parse(historyWidget.value);
+          if (Array.isArray(saved)) {
+            _inputsHistory.length = 0;
+            _inputsHistory.push(...saved);
+            if (allow_debug)
+              console.log("iTools: Timeline restored", _inputsHistory.length);
+          }
+        } catch (e) {
+          if (allow_debug) console.log("iTools: Failed to parse timeline data");
+        }
+      }
+    };
 
     function createButtons(startVisible = true) {
       const bx = 10;
@@ -99,7 +132,14 @@ app.registerExtension({
       };
       currentX += 40;
 
-      const add = new SmartButton(currentX, by, 20, h, node, "▶" || "✚" || "➤" || "Add to");
+      const add = new SmartButton(
+        currentX,
+        by,
+        20,
+        h,
+        node,
+        "▶" || "✚" || "➤" || "Add to",
+      );
       add.allowVisualHover = true;
       add.textYoffset = 1;
       add.isVisible = startVisible;
@@ -135,7 +175,14 @@ app.registerExtension({
       };
       currentX += 20;
 
-      const his = new SmartButton(currentX, by, 72, h, node, "Timeline 🧾" || "Run History");
+      const his = new SmartButton(
+        currentX,
+        by,
+        72,
+        h,
+        node,
+        "Timeline 🧾" || "Run History",
+      );
       his.allowVisualHover = true;
       his.textYoffset = 1;
       his.isVisible = startVisible;
@@ -147,6 +194,7 @@ app.registerExtension({
       his.font = buttonFont;
       his.onClick = () => {
         inputsHistoryShow(inputsHistory, inputWidget);
+        if (allow_debug) console.log("node", node);
       };
       currentX += 72;
 
@@ -193,7 +241,8 @@ app.registerExtension({
         const t = node.executionText;
         if (t && t.trim() !== "" && !inputsHistory.includes(t)) {
           inputsHistory.push(t);
-          if (allow_debug) console.log("Inputs history updated from linked node");
+          if (allow_debug)
+            console.log("Inputs history updated from linked node");
         }
       }
     });

@@ -1087,7 +1087,8 @@ class IToolsPromptRecord:
                     "STRING",
                     {"default": "", "multiline": True, "placeholder": "text"},
                 ),
-            }
+                "timeline_data": ("STRING", {"default": ""}),
+            },
         }
 
     RETURN_TYPES = ("STRING",)
@@ -1101,7 +1102,7 @@ class IToolsPromptRecord:
         "Includes a history system that saves your favorite prompts."
     )
 
-    def text_entry(self, text):
+    def text_entry(self, text, timeline_data=""):
         return {"ui": {"text": text}, "result": (text,)}
 
 
@@ -1237,6 +1238,7 @@ allow_beta_nodes = get_user_dev_mode()
 allow_dev_nodes = get_user_dev_mode2()
 allow_experimental_nodes = False
 
+
 # INIT NODE DISPLAY NAME MAPPINGS
 def get_node_display_name_mappings():
     if use_simple_names:
@@ -1253,7 +1255,10 @@ NODE_DISPLAY_NAME_MAPPINGS = get_node_display_name_mappings()
 def append_extra_nodes():
     if allow_beta_nodes:
         try:
-            from .experimental.experimental_nodes import IToolsPaintNode, IToolsCropImage
+            from .experimental.experimental_nodes import (
+                IToolsPaintNode,
+                IToolsCropImage,
+            )
 
             NODE_CLASS_MAPPINGS["iToolsPaintNode"] = IToolsPaintNode
             NODE_DISPLAY_NAME_MAPPINGS["iToolsPaintNode"] = (
@@ -1288,7 +1293,10 @@ def append_extra_nodes():
 
     if allow_experimental_nodes:
         try:
-            from .experimental.experimental_nodes import IToolsFreeChat, IToolsFreeSchnell
+            from .experimental.experimental_nodes import (
+                IToolsFreeChat,
+                IToolsFreeSchnell,
+            )
 
             NODE_CLASS_MAPPINGS["iToolsFreeChat"] = IToolsFreeChat
             NODE_DISPLAY_NAME_MAPPINGS["iToolsFreeChat"] = (

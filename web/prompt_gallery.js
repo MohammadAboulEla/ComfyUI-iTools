@@ -20,7 +20,10 @@ export function exportHistoryToFile(history) {
 
   // Create temporary link element
   const element = document.createElement("a");
-  element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(content));
+  element.setAttribute(
+    "href",
+    "data:text/plain;charset=utf-8," + encodeURIComponent(content),
+  );
 
   // Get current date for filename
   const date = new Date();
@@ -38,6 +41,105 @@ export function exportHistoryToFile(history) {
 
   // Cleanup
   document.body.removeChild(element);
+}
+
+export function importHistoryFormNodeTimeineData(targetInputs) {
+  if (allow_debug)
+    console.log("iTools: Starting importHistoryFormNodeTimeineData");
+
+  const nodes = app.graph.findNodesByType("iToolsPromptRecord");
+  if (allow_debug)
+    console.log(`iTools: Found ${nodes?.length || 0} iToolsPromptRecord nodes`);
+
+  if (!nodes || nodes.length === 0) return;
+
+  const userHistory = getUserHistoryFile();
+  if (allow_debug)
+    console.log("iTools: Current userHistory retrieved", userHistory);
+
+  if (!userHistory || !userHistory.prompts) {
+    if (allow_debug) console.error("iTools: userHistory or prompts missing");
+    return;
+  }
+
+  const currentPrompts = new Set(userHistory.prompts);
+  const initialSize = currentPrompts.size;
+  let addedToTarget = 0;
+
+  for (const node of nodes) {
+    if (allow_debug) console.log(`iTools: Processing node ${node.id}`);
+
+    // Attempt to get timeline_data from its dedicated widget or index 1
+    const timelineWidget = node.widgets?.find(
+      (w) => w.name === "timeline_data",
+    );
+    let timelineValue = timelineWidget
+      ? timelineWidget.value
+      : node.widgets_values?.[1];
+
+    if (allow_debug)
+      console.log(`iTools: Node ${node.id} raw timeline value:`, timelineValue);
+
+    if (timelineValue) {
+      // If it's a string (serialized), parse it. If it's already an array (live), use it directly.
+      let data = timelineValue;
+      if (
+        typeof timelineValue === "string" &&
+        timelineValue.trim().startsWith("[")
+      ) {
+        try {
+          data = JSON.parse(timelineValue);
+        } catch (e) {
+          if (allow_debug)
+            console.error(
+              `iTools: Failed to parse timeline_data for node ${node.id}`,
+              e,
+            );
+        }
+      }
+
+      if (Array.isArray(data)) {
+        if (allow_debug)
+          console.log(
+            `iTools: Node ${node.id} has ${data.length} prompts to import`,
+          );
+        for (const item of data) {
+          if (item && typeof item === "string" && item.trim()) {
+            const trimmed = item.trim();
+            // Add to global history Set
+            currentPrompts.add(trimmed);
+            // Add to the local inputs array for the UI
+            if (targetInputs && !targetInputs.includes(trimmed)) {
+              targetInputs.push(trimmed);
+              addedToTarget++;
+            }
+          }
+        }
+      } else {
+        if (allow_debug)
+          console.warn(
+            `iTools: Node ${node.id} timeline data is not an array`,
+            data,
+          );
+      }
+    }
+  }
+
+  if (currentPrompts.size > initialSize) {
+    const addedCount = currentPrompts.size - initialSize;
+    userHistory.prompts = Array.from(currentPrompts);
+    localStorage.setItem("iTools_userHistory", JSON.stringify(userHistory));
+    if (allow_debug)
+      console.log(
+        `iTools: ${addedCount} prompts imported to global history. Total now: ${currentPrompts.size}`,
+      );
+  }
+
+  if (allow_debug && addedToTarget > 0) {
+    console.log(
+      `iTools: ${addedToTarget} prompts added to current view history.`,
+    );
+  }
 }
 
 export function importHistoryFromFile(callback) {
@@ -99,6 +201,7 @@ export function getUserHistoryFile() {
 
 // MAIN FUNCTION
 export function inputsHistoryShow(inputs, inputWidget) {
+  importHistoryFormNodeTimeineData(inputs);
   // Create modal container
   const modal = document.createElement("div");
   modal.style.cssText = `
@@ -217,7 +320,8 @@ export function inputsHistoryShow(inputs, inputWidget) {
     if (needsConfirmation) {
       shouldProceed = await app.extensionManager.dialog.confirm({
         title: "Load Favorites 🪶",
-        message: "This will load your saved favorites, current prompts here will be lost.\nDo you want to continue?",
+        message:
+          "This will load your saved favorites, current prompts here will be lost.\nDo you want to continue?",
       });
     }
 
@@ -281,7 +385,8 @@ export function inputsHistoryShow(inputs, inputWidget) {
     try {
       const confirmed = await app.extensionManager.dialog.confirm({
         title: "Save As New Favorites 🪶",
-        message: "This will overwrite your saved favorites with current season prompts.\nDo you want to continue?",
+        message:
+          "This will overwrite your saved favorites with current season prompts.\nDo you want to continue?",
         type: "overwrite",
       });
 
@@ -323,7 +428,8 @@ export function inputsHistoryShow(inputs, inputWidget) {
     try {
       const confirmed = await app.extensionManager.dialog.confirm({
         title: "Add New Prompts To Favorites 🪶",
-        message: "This will append only new prompts here to your saved favorites.\nDo you want to continue?",
+        message:
+          "This will append only new prompts here to your saved favorites.\nDo you want to continue?",
       });
 
       if (confirmed) {
@@ -333,7 +439,10 @@ export function inputsHistoryShow(inputs, inputWidget) {
             ? [...new Set([...savedHistory.prompts, ...inputs])] // Merge and remove duplicates
             : inputs;
 
-        localStorage.setItem("iTools_userHistory", JSON.stringify({ prompts: mergedPrompts }));
+        localStorage.setItem(
+          "iTools_userHistory",
+          JSON.stringify({ prompts: mergedPrompts }),
+        );
         app.extensionManager.toast.add({
           severity: "success",
           summary: "Success",
@@ -363,7 +472,8 @@ export function inputsHistoryShow(inputs, inputWidget) {
 
     const confirmed = await app.extensionManager.dialog.confirm({
       title: "Clear Current Season",
-      message: "This will remove all current season prompts.\nSaved favorites will not be affected.",
+      message:
+        "This will remove all current season prompts.\nSaved favorites will not be affected.",
       type: "delete",
     });
 
@@ -454,7 +564,8 @@ export function inputsHistoryShow(inputs, inputWidget) {
   // Add resize observer to update padding when content changes
   const resizeObserver = new ResizeObserver((entries) => {
     for (let entry of entries) {
-      const hasScrollbar = entry.target.scrollHeight > entry.target.clientHeight;
+      const hasScrollbar =
+        entry.target.scrollHeight > entry.target.clientHeight;
       entry.target.style.paddingRight = hasScrollbar ? "10px" : "0";
     }
   });
@@ -544,8 +655,10 @@ export function inputsHistoryShow(inputs, inputWidget) {
                 cursor: pointer;
                 transition: background 0.2s;
             `;
-        insertButton.onmouseover = () => (insertButton.style.background = "#444");
-        insertButton.onmouseout = () => (insertButton.style.background = "#333");
+        insertButton.onmouseover = () =>
+          (insertButton.style.background = "#444");
+        insertButton.onmouseout = () =>
+          (insertButton.style.background = "#333");
         insertButton.onclick = async () => {
           try {
             await navigator.clipboard.writeText(text);
@@ -584,8 +697,10 @@ export function inputsHistoryShow(inputs, inputWidget) {
                 cursor: pointer;
                 transition: background 0.2s;
             `;
-        deleteButton.onmouseover = () => (deleteButton.style.background = "#882222");
-        deleteButton.onmouseout = () => (deleteButton.style.background = "#662222");
+        deleteButton.onmouseover = () =>
+          (deleteButton.style.background = "#882222");
+        deleteButton.onmouseout = () =>
+          (deleteButton.style.background = "#662222");
         deleteButton.onclick = () => {
           const index = inputs.indexOf(text);
           if (index > -1) {
@@ -626,7 +741,9 @@ export function inputsHistoryShow(inputs, inputWidget) {
                 font-style: italic;
             `;
       // Different message based on whether we're filtering or just have no history
-      noResults.textContent = filterText ? "No matching prompts found" : "No prompts in current season";
+      noResults.textContent = filterText
+        ? "No matching prompts found"
+        : "No prompts in current season";
       list.appendChild(noResults);
     }
   }
