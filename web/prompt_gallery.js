@@ -43,102 +43,67 @@ export function exportHistoryToFile(history) {
   document.body.removeChild(element);
 }
 
-export function importHistoryFormNodeTimeineData(targetInputs) {
-  if (allow_debug)
-    console.log("iTools: Starting importHistoryFormNodeTimeineData");
-
-  const nodes = app.graph.findNodesByType("iToolsPromptRecord");
-  if (allow_debug)
-    console.log(`iTools: Found ${nodes?.length || 0} iToolsPromptRecord nodes`);
-
-  if (!nodes || nodes.length === 0) return;
-
-  const userHistory = getUserHistoryFile();
-  if (allow_debug)
-    console.log("iTools: Current userHistory retrieved", userHistory);
-
-  if (!userHistory || !userHistory.prompts) {
-    if (allow_debug) console.error("iTools: userHistory or prompts missing");
+export function importHistoryFromNodeTimeLineData(targetInputs) {
+  // Check if targetInputs exists to avoid errors
+  if (!targetInputs || !Array.isArray(targetInputs)) {
+    if (allow_debug) console.error("iTools: targetInputs is missing or not an array");
     return;
   }
 
-  const currentPrompts = new Set(userHistory.prompts);
-  const initialSize = currentPrompts.size;
-  let addedToTarget = 0;
+  if (allow_debug)
+    console.log("iTools: Starting import from Node Timeline Data only");
 
+  // 1. Find the specific nodes
+  const nodes = app.graph.findNodesByType("iToolsPromptRecord");
+  if (!nodes || nodes.length === 0) {
+    if (allow_debug) console.log("iTools: No iToolsPromptRecord nodes found");
+    return;
+  }
+
+  let addedCount = 0;
+
+  // 2. Loop through each node to extract timeline_data
   for (const node of nodes) {
-    if (allow_debug) console.log(`iTools: Processing node ${node.id}`);
-
-    // Attempt to get timeline_data from its dedicated widget or index 1
     const timelineWidget = node.widgets?.find(
       (w) => w.name === "timeline_data",
     );
+    
     let timelineValue = timelineWidget
       ? timelineWidget.value
       : node.widgets_values?.[1];
 
-    if (allow_debug)
-      console.log(`iTools: Node ${node.id} raw timeline value:`, timelineValue);
-
     if (timelineValue) {
-      // If it's a string (serialized), parse it. If it's already an array (live), use it directly.
       let data = timelineValue;
-      if (
-        typeof timelineValue === "string" &&
-        timelineValue.trim().startsWith("[")
-      ) {
+
+      // Parse if it's a JSON string
+      if (typeof timelineValue === "string" && timelineValue.trim().startsWith("[")) {
         try {
           data = JSON.parse(timelineValue);
         } catch (e) {
-          if (allow_debug)
-            console.error(
-              `iTools: Failed to parse timeline_data for node ${node.id}`,
-              e,
-            );
+          if (allow_debug) console.error(`iTools: Failed to parse node ${node.id}`, e);
+          continue; // Skip this node if parsing fails
         }
       }
 
+      // 3. Add prompts to targetInputs if they are valid and not already there
       if (Array.isArray(data)) {
-        if (allow_debug)
-          console.log(
-            `iTools: Node ${node.id} has ${data.length} prompts to import`,
-          );
         for (const item of data) {
           if (item && typeof item === "string" && item.trim()) {
             const trimmed = item.trim();
-            // Add to global history Set
-            currentPrompts.add(trimmed);
-            // Add to the local inputs array for the UI
-            if (targetInputs && !targetInputs.includes(trimmed)) {
+            
+            // Check for duplicates in the current targetInputs array
+            if (!targetInputs.includes(trimmed)) {
               targetInputs.push(trimmed);
-              addedToTarget++;
+              addedCount++;
             }
           }
         }
-      } else {
-        if (allow_debug)
-          console.warn(
-            `iTools: Node ${node.id} timeline data is not an array`,
-            data,
-          );
       }
     }
   }
 
-  if (currentPrompts.size > initialSize) {
-    const addedCount = currentPrompts.size - initialSize;
-    userHistory.prompts = Array.from(currentPrompts);
-    localStorage.setItem("iTools_userHistory", JSON.stringify(userHistory));
-    if (allow_debug)
-      console.log(
-        `iTools: ${addedCount} prompts imported to global history. Total now: ${currentPrompts.size}`,
-      );
-  }
-
-  if (allow_debug && addedToTarget > 0) {
-    console.log(
-      `iTools: ${addedToTarget} prompts added to current view history.`,
-    );
+  if (allow_debug) {
+    console.log(`iTools: Import finished. Added ${addedCount} new prompts to the view.`);
   }
 }
 
@@ -201,7 +166,7 @@ export function getUserHistoryFile() {
 
 // MAIN FUNCTION
 export function inputsHistoryShow(inputs, inputWidget) {
-  importHistoryFormNodeTimeineData(inputs);
+  importHistoryFromNodeTimeLineData(inputs);
   // Create modal container
   const modal = document.createElement("div");
   modal.style.cssText = `
@@ -269,7 +234,9 @@ export function inputsHistoryShow(inputs, inputWidget) {
 
   // Create export button
   const exportButton = document.createElement("button");
-  exportButton.textContent = "Export";
+  exportButton.textContent = "Export" || "💾";
+  // add tooltip
+  exportButton.title = "Export current season to .txt File";
   exportButton.style.cssText = buttonStyle;
   exportButton.onmouseover = () => (exportButton.style.background = "#444");
   exportButton.onmouseout = () => (exportButton.style.background = "#333");
@@ -277,7 +244,9 @@ export function inputsHistoryShow(inputs, inputWidget) {
 
   // Create import button
   const importButton = document.createElement("button");
-  importButton.textContent = "Import";
+  importButton.textContent = "Import" || "📥";
+  // add tooltip
+  importButton.title = "Import prompts from .txt file to the Timeline";
   importButton.style.cssText = buttonStyle;
   importButton.onmouseover = () => (importButton.style.background = "#444");
   importButton.onmouseout = () => (importButton.style.background = "#333");
@@ -306,7 +275,9 @@ export function inputsHistoryShow(inputs, inputWidget) {
 
   // Create load button
   const loadButton = document.createElement("button");
-  loadButton.textContent = "🪶" || "Favorites ⭐" || "Load";
+  loadButton.textContent = "🪶" || "Favorites ⭐" || "Favorites 🪶" || "Load";
+  // add tooltip
+  loadButton.title = "Load my favorite prompts to the Timeline";
   loadButton.style.cssText = buttonStyle;
   loadButton.onmouseover = () => (loadButton.style.background = "#444");
   loadButton.onmouseout = () => (loadButton.style.background = "#333");
@@ -360,6 +331,8 @@ export function inputsHistoryShow(inputs, inputWidget) {
   // Create save button
   const saveButton = document.createElement("button");
   saveButton.textContent = "Save" || "Save";
+  // add tooltip
+  saveButton.title = "Save current season to my favorite prompts";
   // saveButton.style.cssText = buttonStyle;
   // saveButton.onmouseover = () => (saveButton.style.background = "#444");
   // saveButton.onmouseout = () => (saveButton.style.background = "#333");
@@ -412,6 +385,8 @@ export function inputsHistoryShow(inputs, inputWidget) {
   // Create add button
   const addButton = document.createElement("button");
   addButton.textContent = "↩" || "Add";
+  // add tooltip
+  addButton.title = "Append current season to my favorite prompts";
   addButton.style.cssText = buttonStyle;
   addButton.onmouseover = () => (addButton.style.background = "#444");
   addButton.onmouseout = () => (addButton.style.background = "#333");
@@ -463,6 +438,8 @@ export function inputsHistoryShow(inputs, inputWidget) {
   // Create clear button
   const clearButton = document.createElement("button");
   clearButton.textContent = "Clear";
+  // add tooltip
+  clearButton.title = "Clear current Timeline";
   clearButton.style.cssText = buttonStyle + "background: #662222;"; // Slightly reddish background
   clearButton.onmouseover = () => (clearButton.style.background = "#882222");
   clearButton.onmouseout = () => (clearButton.style.background = "#662222");
