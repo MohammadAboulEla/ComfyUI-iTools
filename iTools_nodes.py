@@ -1175,10 +1175,11 @@ class IToolsPromptBuilder:
             "result": (final_text, negative_text),
         }
 
-    def IS_CHANGED(self, **kwargs):
+    def IS_CHANGED(**kwargs):
         if "PromptBuilderWidget" in kwargs:
             data = kwargs["PromptBuilderWidget"]
             style = data.get("style", "none")
+            # print("ITOOLS_PROMPT_BUILDER_STYLE",style)
             if style != "none":
                 return float("nan")  # Force re-execution if template is "random"
 
