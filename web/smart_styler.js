@@ -163,6 +163,7 @@ app.registerExtension({
         flex-direction: column;
         padding: 0px;
         flex: 1; 
+        min-width: 0;
         `;
 
       const label = document.createElement("label");
@@ -172,7 +173,10 @@ app.registerExtension({
             padding-top: 5px;
             padding-bottom: 5px; 
             color: #555; 
-            letter-spacing: 0.5px;`;
+            letter-spacing: 0.5px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;`;
 
       const select = document.createElement("select");
       select.style.cssText = `
