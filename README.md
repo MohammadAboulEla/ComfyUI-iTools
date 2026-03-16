@@ -68,6 +68,8 @@ This node is a powerful prompt engineering tool that helps you write better prom
 
 Tracks and records your prompts during workflow execution. Features a Timeline system that saves your prompt history between sessions, allowing you to quickly access and reuse previously successful prompts. Includes favorites management and prompt organization tools.
 
+`Edit: Now this node will save its Timeline with the node itself. It will remember every prompt that runs through it, even after reloading the workflow.`
+
 [![Watch the video](https://github.com/user-attachments/assets/99c55c91-f71d-4f5c-9067-cd5966cc9a75)](https://github.com/user-attachments/assets/99c55c91-f71d-4f5c-9067-cd5966cc9a75)
 
 ---
