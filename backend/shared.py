@@ -283,10 +283,11 @@ def get_user_dev_mode2():
 
 # get node display name preferences
 def get_user_node_display_name_preferences():
-    ud_dir = os.path.join(folder_paths.base_path, "user", "default")
-    settings_file = os.path.join(ud_dir, "comfy.settings.json")
-
-    with open(settings_file, "r") as file:
-        settings = json.load(file)
-
-    return settings.get("iTools.Nodes.Node Display Name Preferences", True)
+    try:
+        ud_dir = os.path.join(folder_paths.base_path, "user", "default")
+        settings_file = os.path.join(ud_dir, "comfy.settings.json")
+        with open(settings_file, "r") as file:
+            settings = json.load(file)
+        return settings.get("iTools.Nodes.Node Display Name Preferences", True)
+    except (OSError, json.JSONDecodeError, AttributeError):
+        return True
