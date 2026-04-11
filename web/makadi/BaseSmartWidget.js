@@ -195,40 +195,39 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
     return this.node.widgets || [];
   }
 
+  _forEachWidget(fnName, e) {
+    const scoped = this.node._useDomCtx || this.node.type === this.nodeName;
+    if (!scoped) return;
+    const smart = this.getSmartWidgets();
+    for (let i = 0; i < smart.length; i++) {
+      const w = smart[i];
+      if (w instanceof BaseSmartWidget) w[fnName]?.(e);
+    }
+    const others = this.otherWidgets;
+    for (let i = 0; i < others.length; i++) {
+      const w = others[i];
+      if (w instanceof BaseSmartWidget) w[fnName]?.(e);
+    }
+  }
+
   handleMouseDown(e) {
-    [...this.getSmartWidgets(), ...this.otherWidgets].forEach((widget) => {
-      if (widget instanceof BaseSmartWidget && (this.node._useDomCtx || this.node.type === this.nodeName)) {
-        widget.handleDown?.(e);
-      }
-    });
+    this._forEachWidget("handleDown", e);
     if (this.allowDebug) console.log("MouseDown", this.mousePos);
   }
 
   handleMouseMove(e) {
-    [...this.getSmartWidgets(), ...this.otherWidgets].forEach((widget) => {
-      if (widget instanceof BaseSmartWidget && (this.node._useDomCtx || this.node.type === this.nodeName)) {
-        widget.handleMove?.(e);
-      }
-    });
+    this._forEachWidget("handleMove", e);
     if (this.allowDebug) console.log("MouseMoved");
   }
 
   handleMouseClick(e) {
-    [...this.getSmartWidgets(), ...this.otherWidgets].forEach((widget) => {
-      if (widget instanceof BaseSmartWidget && (this.node._useDomCtx || this.node.type === this.nodeName)) {
-        widget.handleClick?.(e);
-      }
-    });
+    this._forEachWidget("handleClick", e);
     this.filterDeletedWIdgets();
     if (this.allowDebug) console.log("MouseClicked");
   }
 
   handleMouseDrag(e) {
-    [...this.getSmartWidgets(), ...this.otherWidgets].forEach((widget) => {
-      if (widget instanceof BaseSmartWidget && (this.node._useDomCtx || this.node.type === this.nodeName)) {
-        widget.handleDrag?.(e);
-      }
-    });
+    this._forEachWidget("handleDrag", e);
     if (this.allowDebug) console.log("MouseDrag");
   }
 
@@ -245,11 +244,16 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   }
 
   drawAll(ctx) {
-    [...this.getSmartWidgets(), ...this.otherWidgets].forEach((widget) => {
-      if (widget instanceof BaseSmartWidget && widget.draw) {
-        widget.draw(ctx);
-      }
-    });
+    const smart = this.getSmartWidgets();
+    for (let i = 0; i < smart.length; i++) {
+      const w = smart[i];
+      if (w instanceof BaseSmartWidget && w.draw) w.draw(ctx);
+    }
+    const others = this.otherWidgets;
+    for (let i = 0; i < others.length; i++) {
+      const w = others[i];
+      if (w instanceof BaseSmartWidget && w.draw) w.draw(ctx);
+    }
   }
 
   destroy() {

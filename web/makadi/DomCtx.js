@@ -43,7 +43,10 @@ export const domCtx = {
   },
 
   requestRedraw(legacyNode = null) {
-    // DOM mode: self-driving rAF loop against the attached canvas.
+    // DOM mode: event-driven rAF. One frame per requestRedraw call; the
+    // frame callback does NOT re-arm itself, so the loop idles when nothing
+    // is dirty. Callers (mouse handlers, paint stroke updates, etc.) must
+    // call requestRedraw again when state changes.
     if (this.canvas) {
       this._dirty = true;
       if (this._rafPending) return;
@@ -53,7 +56,6 @@ export const domCtx = {
         if (!this._dirty || !this.canvas) return;
         this._dirty = false;
         this._onFrame?.();
-        this.requestRedraw();
       });
       return;
     }

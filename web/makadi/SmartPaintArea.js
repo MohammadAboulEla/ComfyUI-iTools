@@ -3,6 +3,7 @@ import { app } from "../../../../scripts/app.js";
 import { api } from "../../../../scripts/api.js";
 import { allow_debug } from "../js_shared.js";
 import {  drawAngledStrips } from "../utils.js";
+import { domCtx } from "./DomCtx.js";
 
 
 export class SmartPaintArea extends BaseSmartWidget {
@@ -331,15 +332,17 @@ export class SmartPaintArea extends BaseSmartWidget {
         fgImg.onload = () => {
           this.foregroundCtx.clearRect(0, 0, this.width, this.height);
           this.foregroundCtx.drawImage(fgImg, 0, 0);
+          if (this.node?._useDomCtx) domCtx.requestRedraw();
         };
       }
-  
+
       if (this.tempBackground) {
         let bgImg = new Image();
         bgImg.src = this.tempBackground;
         bgImg.onload = () => {
           this.backgroundCtx.clearRect(0, 0, this.width, this.height);
           this.backgroundCtx.drawImage(bgImg, 0, 0);
+          if (this.node?._useDomCtx) domCtx.requestRedraw();
         };
       }
     }
@@ -454,6 +457,7 @@ export class SmartPaintArea extends BaseSmartWidget {
             const fgX = (this.width - fgImg.width) / 2;
             const fgY = (this.height - fgImg.height) / 2;
             this.foregroundCtx.drawImage(fgImg, fgX, fgY);
+            if (this.node?._useDomCtx) domCtx.requestRedraw();
           };
   
           // Load the background image
@@ -468,6 +472,7 @@ export class SmartPaintArea extends BaseSmartWidget {
             const bgX = (this.width - bgImg.width) / 2;
             const bgY = (this.height - bgImg.height) / 2;
             this.backgroundCtx.drawImage(bgImg, bgX, bgY);
+            if (this.node?._useDomCtx) domCtx.requestRedraw();
           };
           if (allow_debug) console.log("Drawing received successfully.");
         } else {
@@ -567,6 +572,7 @@ export class SmartPaintArea extends BaseSmartWidget {
         fgImg.onload = () => {
           this.foregroundCtx.clearRect(0, 0, this.width, this.height);
           this.foregroundCtx.drawImage(fgImg, 0, 0);
+          if (this.node?._useDomCtx) domCtx.requestRedraw();
         };
       }
       if (state.background) {
@@ -575,6 +581,7 @@ export class SmartPaintArea extends BaseSmartWidget {
         bgImg.onload = () => {
           this.backgroundCtx.clearRect(0, 0, this.width, this.height);
           this.backgroundCtx.drawImage(bgImg, 0, 0);
+          if (this.node?._useDomCtx) domCtx.requestRedraw();
         };
       }
     }

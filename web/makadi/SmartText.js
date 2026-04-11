@@ -1,6 +1,7 @@
 import { BaseSmartWidget } from "./BaseSmartWidget.js";
 import { allow_debug } from "../js_shared.js";
 import { app } from "../../../scripts/app.js";
+import { domCtx } from "./DomCtx.js";
 
 export class SmartText extends BaseSmartWidget {
   constructor(x, y, node, options = {}) {
@@ -534,8 +535,10 @@ export class SmartText extends BaseSmartWidget {
 
     // plot preview
     this.isPlotted = true;
+    if (this.node?._useDomCtx) domCtx.requestRedraw();
     setTimeout(() => {
       this.isPlotted = false;
+      if (this.node?._useDomCtx) domCtx.requestRedraw();
     }, 200);
   }
 

@@ -88,7 +88,10 @@ app.registerExtension({
     `;
     innerCanvas.tabIndex = 0;
     container.appendChild(innerCanvas);
-    const innerCtx = innerCanvas.getContext("2d", { willReadFrequently: true });
+    // Display canvas: no getImageData reads happen here (trackMouseColor
+     // reads via a separate pipeline), so leave willReadFrequently off to
+     // keep the GPU-accelerated backend.
+     const innerCtx = innerCanvas.getContext("2d", { alpha: false });
 
     let _lastGraphScale = 0;
     node.addDOMWidget("PaintWidget", "custom", container, {
@@ -1059,7 +1062,7 @@ app.registerExtension({
       innerCtx.fillRect(0, 0, innerCanvas.width, innerCanvas.height);
       innerCtx.setTransform(_scaleX, 0, 0, _scaleY, 0, 0);
       innerCtx.imageSmoothingEnabled = true;
-      innerCtx.imageSmoothingQuality = "high";
+      innerCtx.imageSmoothingQuality = "low";
       m.drawAll(innerCtx);
       innerCtx.restore();
     };

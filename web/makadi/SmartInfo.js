@@ -1,6 +1,7 @@
 import { BaseSmartWidget } from "./BaseSmartWidget.js";
 import { Shapes } from "../utils.js";
 import { allow_debug } from "../js_shared.js";
+import { domCtx } from "./DomCtx.js";
 
 export class SmartInfo extends BaseSmartWidget {
   constructor(x, y, width, height, node, text, options = {}) {
@@ -89,6 +90,7 @@ export class SmartInfo extends BaseSmartWidget {
     this.myY = this.originalY;
     this.color = this.originalColor;
     this.textColor = this.originalTextColor;
+    if (this.node?._useDomCtx) domCtx.requestRedraw();
   }
 
   showWarning(msg, newWidth = 120, newColor = "#cd7f32") {
@@ -113,6 +115,7 @@ export class SmartInfo extends BaseSmartWidget {
     this.previewDuration = newDuration;
 
     this.start();
+    if (this.node?._useDomCtx) domCtx.requestRedraw();
   }
 
   draw(ctx) {

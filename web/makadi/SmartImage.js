@@ -3,6 +3,7 @@ import { SmartLoading } from "./SmartLoading.js";
 import { api } from "../../../../scripts/api.js";
 import { allow_debug } from "../js_shared.js";
 import { app } from "../../../../scripts/app.js";
+import { domCtx } from "./DomCtx.js";
 
 export class SmartImage extends BaseSmartWidget {
   constructor(x, y, width, height, node, options = {}) {
@@ -115,6 +116,7 @@ export class SmartImage extends BaseSmartWidget {
     this.img.onload = () => {
       this.imgLoaded = true;
       if (this.onImgLoaded) this.onImgLoaded();
+      if (this.node?._useDomCtx) domCtx.requestRedraw();
     };
 
     this.img.onerror = () => {
@@ -157,6 +159,7 @@ export class SmartImage extends BaseSmartWidget {
         this.img.onload = () => {
           this.imgLoaded = true;
           if (this.onImgLoaded) this.onImgLoaded();
+          if (this.node?._useDomCtx) domCtx.requestRedraw();
         };
         this.img.onerror = () => {
           console.error("Failed to load image from API");
@@ -198,6 +201,7 @@ export class SmartImage extends BaseSmartWidget {
         this.img.src = `data:image/png;base64,${hexToBase64(img)}`;
         this.img.onload = async () => {
           const bounds = await this.cropVisibleArea();
+          if (this.node?._useDomCtx) domCtx.requestRedraw();
         };
         this.img.onerror = () => {
           console.error("Failed to load Masked image from API");
@@ -752,8 +756,10 @@ export class SmartImage extends BaseSmartWidget {
 
     // plot preview
     this.isPlotted = true;
+    if (this.node?._useDomCtx) domCtx.requestRedraw();
     setTimeout(() => {
       this.isPlotted = false;
+      if (this.node?._useDomCtx) domCtx.requestRedraw();
     }, 200);
   }
 
