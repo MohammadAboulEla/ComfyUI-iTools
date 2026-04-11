@@ -63,16 +63,16 @@ export class SmartPreview extends BaseSmartWidget {
   }
   handleMove() {
     // AUTO PIN
-    const safeZone = 50;
-    const { x, y } = this.mousePos;
-    if (y > 30 && y < this.node.height + safeZone) {
-      if (x > this.node.width + safeZone || x < -safeZone) {
-        this.node.flags.pinned = false;
-      } else {
-        this.node.flags.pinned = true;
-      }
-    } else {
-      this.node.flags.pinned = false;
-    }
+    // const safeZone = 50;
+    // const { x, y } = this.mousePos;
+    // if (y > 30 && y < this.node.height + safeZone) {
+    //   if (x > this.node.width + safeZone || x < -safeZone) {
+    //     this.node.flags.pinned = false;
+    //   } else {
+    //     this.node.flags.pinned = true;
+    //   }
+    // } else {
+    //   this.node.flags.pinned = false;
+    // }
   }
 }
