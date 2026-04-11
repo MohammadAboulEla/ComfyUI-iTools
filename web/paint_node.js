@@ -90,13 +90,23 @@ app.registerExtension({
     container.appendChild(innerCanvas);
     const innerCtx = innerCanvas.getContext("2d", { willReadFrequently: true });
 
+    let _lastGraphScale = 0;
     node.addDOMWidget("PaintWidget", "custom", container, {
       getValue: () => ({}),
       setValue: (v) => {},
       getMinHeight: () => NODE_H,
       getMaxHeight: () => NODE_H * 2,
       margin: 0,
-      onDraw: (ctx) => {},
+      onDraw: (ctx) => {
+        // Litegraph calls this every graph redraw. Use it to detect zoom
+        // changes (CSS transform on parent) so the backing bitmap can be
+        // resized to match the new on-screen footprint.
+        const s = app?.canvas?.ds?.scale || 1;
+        if (s !== _lastGraphScale) {
+          _lastGraphScale = s;
+          domCtx.requestRedraw();
+        }
+      },
     });
 
     // Intercept addCustomWidget BEFORE any Smart* widget is constructed, so
@@ -1013,26 +1023,28 @@ app.registerExtension({
     const m = new BaseSmartWidgetManager(node, "iToolsPaintNode");
     m.attachDomCanvas(innerCanvas, NODE_W, NODE_H);
 
-    // Keep the backing bitmap matched to (cssSize * devicePixelRatio) so
-    // strokes stay sharp when the container stretches, and when the user
-    // moves the window to a HiDPI monitor. The render loop re-applies the
-    // transform each frame so Smart* widgets can keep drawing in a fixed
-    // 512x592 logical space.
+    // Keep the backing bitmap matched to the real on-screen pixel footprint:
+    // cssSize * devicePixelRatio * graphZoom. ResizeObserver catches layout
+    // changes, but litegraph applies graph zoom via CSS transform on the
+    // widget's parent — transforms do NOT fire ResizeObserver, so we also
+    // re-check the size every frame (cheap: no-op when unchanged).
     let _scaleX = 1;
     let _scaleY = 1;
     const resizeBackingCanvas = () => {
-      const rect = innerCanvas.getBoundingClientRect();
-      if (rect.width === 0 || rect.height === 0) return;
+      const cssW = innerCanvas.offsetWidth;
+      const cssH = innerCanvas.offsetHeight;
+      if (cssW === 0 || cssH === 0) return;
       const dpr = window.devicePixelRatio || 1;
-      const targetW = Math.round(rect.width * dpr);
-      const targetH = Math.round(rect.height * dpr);
+      const graphScale = app?.canvas?.ds?.scale || 1;
+      const targetW = Math.max(1, Math.round(cssW * dpr * graphScale));
+      const targetH = Math.max(1, Math.round(cssH * dpr * graphScale));
       if (innerCanvas.width !== targetW || innerCanvas.height !== targetH) {
         innerCanvas.width = targetW;
         innerCanvas.height = targetH;
+        _scaleX = innerCanvas.width / NODE_W;
+        _scaleY = innerCanvas.height / NODE_H;
+        domCtx.requestRedraw();
       }
-      _scaleX = innerCanvas.width / NODE_W;
-      _scaleY = innerCanvas.height / NODE_H;
-      domCtx.requestRedraw();
     };
 
     const ro = new ResizeObserver(resizeBackingCanvas);
@@ -1040,6 +1052,7 @@ app.registerExtension({
     resizeBackingCanvas();
 
     const renderFrame = () => {
+      resizeBackingCanvas();
       innerCtx.save();
       innerCtx.setTransform(1, 0, 0, 1, 0, 0);
       innerCtx.fillStyle = LiteGraph.WIDGET_BGCOLOR || "#333";

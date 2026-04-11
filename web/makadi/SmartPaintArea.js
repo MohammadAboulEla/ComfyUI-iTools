@@ -187,9 +187,19 @@ export class SmartPaintArea extends BaseSmartWidget {
       const scaleFactorY = Math.min(1, maxPreviewSize / newY);
       this.scaleFactor = Math.min(scaleFactorX, scaleFactorY);
   
-      // Center the canvas on the x and y axis of the node
+      // Center the canvas on the x and y axis of the node.
+      // In DOM mode the toolbar occupies y=0..80 inside the widget, so center
+      // the paint area in the remaining space below the toolbar instead of
+      // using the legacy nodeYoffset (which was tuned for the litegraph title
+      // strip).
       this.myX = (this.node.width - newX * this.scaleFactor) / 2;
-      this.myY = (this.node.height + this.nodeYoffset - newY * this.scaleFactor) / 2;
+      if (this.node._useDomCtx) {
+        const toolbarBottom = 25;
+        const available = this.node.height - toolbarBottom;
+        this.myY = toolbarBottom + (available - newY * this.scaleFactor) / 2;
+      } else {
+        this.myY = (this.node.height + this.nodeYoffset - newY * this.scaleFactor) / 2;
+      }
   
       // Update the width and height properties
       this.width = newX;
