@@ -25,13 +25,12 @@ Whether you're a casual user or a power user, iTools brings quality-of-life impr
 </table>
 
 ## Known issues:
-5 of 21 nodes are not yet compatible with ComfyUI Node.2 (Beta). I’m working to make most nodes fully supported in both modes, but frequent ComfyUI updates may cause occasional issues. Keep in mind that Node.2 is also still in (Beta).
+4 of 21 nodes are not yet compatible with ComfyUI Node.2 (Beta). I’m working to make most nodes fully supported in both modes, but frequent ComfyUI updates may cause occasional issues. Keep in mind that Node.2 is also still in (Beta).
 
 #### Unsupported Nodes in Node.2:
 - iTools Prompt Record
 - iTools Image Preview
 - iTools Image Compare
-- iTools Paint Node (Beta)
 - iTools Crop Node (Beta)
 
 For full functionality, use the classic node system.
@@ -89,7 +88,7 @@ Advanced image comparison node that helps you analyze differences between images
 ---
 ### **iTools Paint Node:**  
 
-The iTools Paint node is currently in beta and functions as a standalone project. It may be the most complex node in ComfyUI, and future updates could break its functionality. However, I will strive to keep it working. All custom widget code was built from scratch specifically for ComfyUI and this node. It supports painting, compositing, remove background, text editing, and pasting images from the clipboard, making it the fastest mini Photoshop for ComfyUI.  
+The iTools Paint node functions as a standalone project and now supports both the classic node system and ComfyUI Node.2. It may be the most complex node in ComfyUI, and future updates could break its functionality. However, I will strive to keep it working. All custom widget code was built from scratch specifically for ComfyUI and this node. It supports painting, compositing, remove background, text editing, and pasting images from the clipboard, making it the fastest mini Photoshop for ComfyUI.  
 
 Compositing Example
 
