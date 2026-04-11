@@ -65,7 +65,7 @@ export class SmartPaintArea extends BaseSmartWidget {
     }
   
     draw(ctx) {
-      this.node.setSize([512, 592]);
+      if (!this.node._useDomCtx) this.node.setSize([512, 592]);
       if (this.ctx === null) this.ctx = ctx;
       const { x, y } = this.mousePos;
   

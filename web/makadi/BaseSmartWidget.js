@@ -1,5 +1,6 @@
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "../js_shared.js";
+import { domCtx } from "./DomCtx.js";
 
 export class BaseSmartWidget {
   constructor(node) {
@@ -16,19 +17,28 @@ export class BaseSmartWidget {
     return [0, 0]; // Important override comfy widget computedSize
   }
 
+  // Legacy default reads litegraph pointer. Nodes that opt into DOM mode set
+  // `node._useDomCtx = true` and the widgets read from the DomCtx singleton
+  // instead. All other hosts keep their original behavior untouched.
   isMouseDown() {
+    if (this.node?._useDomCtx) return domCtx.pointerDown;
     return app.canvas.pointer.isDown;
   }
 
   isLowQuality() {
+    if (this.node?._useDomCtx) return false;
     const canvas = app.canvas;
-    const scale = canvas?.ds?.scale ?? 1; // Get scale, default to 1 if undefined
+    const scale = canvas?.ds?.scale ?? 1;
     return scale <= 0.5;
   }
 
   delete() {
     this.node.widgets = this.node.widgets.filter((widget) => widget !== this);
-    this.node.setDirtyCanvas(true, true);
+    if (this.node?._useDomCtx) {
+      domCtx.requestRedraw();
+    } else {
+      this.node.setDirtyCanvas(true, true);
+    }
   }
 
   get markDelete() {
@@ -40,6 +50,9 @@ export class BaseSmartWidget {
   }
 
   get mousePos() {
+    if (this.node?._useDomCtx) {
+      return { x: domCtx.mouseX, y: domCtx.mouseY };
+    }
     const graphMouse = app.canvas.graph_mouse;
     return {
       x: graphMouse[0] - this.node.pos[0],
@@ -57,13 +70,18 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
     super(node);
     this.nodeName = nodeName;
     this.allowDebug = false;
-    this.otherWidgets = []
+    this.otherWidgets = [];
+    this._domListeners = [];
     this.init();
-    this.initEventListeners();
+    // Only install the global litegraph-canvas hooks when running in legacy
+    // mode. DOM-mode hosts call attachDomCanvas() instead.
+    if (!node._useDomCtx) {
+      this.initEventListeners();
+    }
   }
 
   init() {
-    Object.values(this.node.widgets).forEach((widget) => {
+    Object.values(this.node.widgets || {}).forEach((widget) => {
       if (widget instanceof BaseSmartWidget) {
       }
     });
@@ -73,6 +91,7 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
     this.otherWidgets.push(widget);
   }
 
+  // --- Legacy path: hook litegraph canvas events ------------------------
   initEventListeners() {
     //works even out of node
     const originalMouseDown = app.canvas.onMouseDown;
@@ -111,9 +130,74 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
     };
   }
 
+  // --- DOM mode: hook a DOM canvas's events -----------------------------
+  // logicalWidth/Height is the coordinate space Smart* widgets draw in
+  // (e.g. 512x592 for paint_node). The backing bitmap can be any size —
+  // the host scales the context to map logical → physical pixels, and
+  // mouse events are mapped back to logical space here.
+  attachDomCanvas(canvas, logicalWidth, logicalHeight) {
+    this.canvas = canvas;
+    this._logicalWidth = logicalWidth || canvas.width;
+    this._logicalHeight = logicalHeight || canvas.height;
+
+    const updateMouse = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      domCtx.mouseX = ((e.clientX - rect.left) / rect.width) * this._logicalWidth;
+      domCtx.mouseY = ((e.clientY - rect.top) / rect.height) * this._logicalHeight;
+    };
+
+    const onDown = (e) => {
+      updateMouse(e);
+      domCtx.pointerDown = true;
+      this.handleMouseDown(e);
+      domCtx.requestRedraw();
+    };
+    const onMove = (e) => {
+      updateMouse(e);
+      this.handleMouseMove(e);
+      this.handleMouseDrag(e);
+      domCtx.requestRedraw();
+    };
+    const onUp = (e) => {
+      updateMouse(e);
+      domCtx.pointerDown = false;
+      domCtx.requestRedraw();
+    };
+    const onClick = (e) => {
+      updateMouse(e);
+      this.handleMouseClick(e);
+      domCtx.requestRedraw();
+    };
+    const onLeave = () => {
+      domCtx.pointerDown = false;
+      domCtx.requestRedraw();
+    };
+
+    canvas.addEventListener("mousedown", onDown);
+    canvas.addEventListener("mousemove", onMove);
+    canvas.addEventListener("mouseup", onUp);
+    canvas.addEventListener("click", onClick);
+    canvas.addEventListener("mouseleave", onLeave);
+
+    this._domListeners.push(
+      ["mousedown", onDown],
+      ["mousemove", onMove],
+      ["mouseup", onUp],
+      ["click", onClick],
+      ["mouseleave", onLeave]
+    );
+  }
+
+  // In DOM mode widgets live in node._smartWidgets (populated by the host's
+  // addCustomWidget shim). In legacy mode they live in node.widgets.
+  getSmartWidgets() {
+    if (this.node._useDomCtx) return this.node._smartWidgets || [];
+    return this.node.widgets || [];
+  }
+
   handleMouseDown(e) {
-    [...this.node.widgets, ...this.otherWidgets].forEach((widget) => {
-      if (widget instanceof BaseSmartWidget && this.node.type === this.nodeName) {
+    [...this.getSmartWidgets(), ...this.otherWidgets].forEach((widget) => {
+      if (widget instanceof BaseSmartWidget && (this.node._useDomCtx || this.node.type === this.nodeName)) {
         widget.handleDown?.(e);
       }
     });
@@ -121,8 +205,8 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   }
 
   handleMouseMove(e) {
-    [...this.node.widgets, ...this.otherWidgets].forEach((widget) => {
-      if (widget instanceof BaseSmartWidget && this.node.type === this.nodeName) {
+    [...this.getSmartWidgets(), ...this.otherWidgets].forEach((widget) => {
+      if (widget instanceof BaseSmartWidget && (this.node._useDomCtx || this.node.type === this.nodeName)) {
         widget.handleMove?.(e);
       }
     });
@@ -130,8 +214,8 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   }
 
   handleMouseClick(e) {
-    [...this.node.widgets, ...this.otherWidgets].forEach((widget) => {
-      if (widget instanceof BaseSmartWidget && this.node.type === this.nodeName) {
+    [...this.getSmartWidgets(), ...this.otherWidgets].forEach((widget) => {
+      if (widget instanceof BaseSmartWidget && (this.node._useDomCtx || this.node.type === this.nodeName)) {
         widget.handleClick?.(e);
       }
     });
@@ -140,8 +224,8 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   }
 
   handleMouseDrag(e) {
-    [...this.node.widgets, ...this.otherWidgets].forEach((widget) => {
-      if (widget instanceof BaseSmartWidget && this.node.type === this.nodeName) {
+    [...this.getSmartWidgets(), ...this.otherWidgets].forEach((widget) => {
+      if (widget instanceof BaseSmartWidget && (this.node._useDomCtx || this.node.type === this.nodeName)) {
         widget.handleDrag?.(e);
       }
     });
@@ -149,18 +233,36 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
   }
 
   filterDeletedWIdgets() {
-    // console.log('node.widgets',this.node.widgets)
-    // console.log('node.widgets',this.node.widgets.length)
-
-    // Filter out widgets marked for deletion
+    if (this.node._useDomCtx) {
+      if (this.node._smartWidgets) {
+        this.node._smartWidgets = this.node._smartWidgets.filter((w) => !w.markDelete);
+      }
+      domCtx.requestRedraw();
+      return;
+    }
     this.node.widgets = this.node.widgets.filter((widget) => !widget.markDelete);
     this.node.setDirtyCanvas(true, true);
+  }
 
-    // console.log('node.widgets',this.node.widgets.length)
-    // console.log('node.widgets',this.node.widgets)
+  drawAll(ctx) {
+    [...this.getSmartWidgets(), ...this.otherWidgets].forEach((widget) => {
+      if (widget instanceof BaseSmartWidget && widget.draw) {
+        widget.draw(ctx);
+      }
+    });
   }
 
   destroy() {
-    this.node.widgets = []
+    if (this.canvas) {
+      for (const [type, fn] of this._domListeners) {
+        this.canvas.removeEventListener(type, fn);
+      }
+    }
+    this._domListeners = [];
+    if (this.node._useDomCtx) {
+      this.node._smartWidgets = [];
+    } else {
+      this.node.widgets = [];
+    }
   }
 }

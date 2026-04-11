@@ -1,5 +1,6 @@
 import { BaseSmartWidget } from "./BaseSmartWidget.js";
 import { allow_debug } from "../js_shared.js";
+import { app } from "../../../scripts/app.js";
 
 export class SmartText extends BaseSmartWidget {
   constructor(x, y, node, options = {}) {

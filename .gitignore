@@ -1,6 +1,7 @@
 __pycache__
 .vscode
 .idea
+.claude
 ignore
 excluded
 

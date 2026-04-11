@@ -2,6 +2,7 @@ import { BaseSmartWidget } from "./BaseSmartWidget.js";
 import { SmartLoading } from "./SmartLoading.js";
 import { api } from "../../../../scripts/api.js";
 import { allow_debug } from "../js_shared.js";
+import { app } from "../../../../scripts/app.js";
 
 export class SmartImage extends BaseSmartWidget {
   constructor(x, y, width, height, node, options = {}) {

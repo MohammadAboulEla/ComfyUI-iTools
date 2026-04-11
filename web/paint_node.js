@@ -13,6 +13,7 @@ import {
 } from "./utils.js";
 
 import { BaseSmartWidgetManager } from "./makadi/BaseSmartWidget.js";
+import { domCtx } from "./makadi/DomCtx.js";
 import { SmartButton } from "./makadi/SmartButton.js";
 import { SmartWidget } from "./makadi/SmartWidget.js";
 import { SmartSlider } from "./makadi/SmartSlider.js";
@@ -48,10 +49,65 @@ app.registerExtension({
     }
 
     // NODE SETTINGS
-    node.setSize([512, 592]);
+    const NODE_W = 512;
+    const NODE_H = 592;
+    // Opt this node into DOM-canvas mode. BaseSmartWidget, DomCtx and the
+    // manager check this flag to pick the DOM path; all other hosts (crop,
+    // preview, compare, text_entry) leave it unset and keep legacy behavior.
+    node._useDomCtx = true;
+    node.setSize([NODE_W, NODE_H]);
     node.resizable = false;
-    node.setDirtyCanvas(true, true);
     if (allow_debug) console.log("node", node);
+
+    // DOM container + inner canvas that hosts all Smart* widget rendering.
+    // Every Smart* widget will draw into innerCanvas instead of the litegraph
+    // foreground, and read mouse state via the domCtx singleton.
+    const container = document.createElement("div");
+    container.className = "itools-paint-widget";
+    container.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+      background-color: #2a2a2a;
+      overflow: hidden;
+    `;
+
+    const innerCanvas = document.createElement("canvas");
+    innerCanvas.width = NODE_W;
+    innerCanvas.height = NODE_H;
+    innerCanvas.style.cssText = `
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+      outline: none;
+    `;
+    innerCanvas.tabIndex = 0;
+    container.appendChild(innerCanvas);
+    const innerCtx = innerCanvas.getContext("2d", { willReadFrequently: true });
+
+    node.addDOMWidget("PaintWidget", "custom", container, {
+      getValue: () => ({}),
+      setValue: (v) => {},
+      getMinHeight: () => NODE_H,
+      getMaxHeight: () => NODE_H * 2,
+      margin: 0,
+      onDraw: (ctx) => {},
+    });
+
+    // Intercept addCustomWidget BEFORE any Smart* widget is constructed, so
+    // widgets land in node._smartWidgets (owned by us) rather than in
+    // node.widgets (where litegraph would also try to draw them onto its own
+    // canvas). _smartWidgets preserves insertion order for our draw loop.
+    node._smartWidgets = [];
+    node.addCustomWidget = (w) => {
+      node._smartWidgets.push(w);
+      return w;
+    };
 
     // START POINT
     let canvasImgs = [];
@@ -573,7 +629,7 @@ app.registerExtension({
         // } // ToDO
       }
       if (caller === "click" || caller === "drag") {
-        let trackedColor = trackMouseColor(e, app.canvas.canvas);
+        let trackedColor = trackMouseColor(e, innerCanvas);
         cp.allowPickVis = true;
 
         if ((caller === "click" && isHoldingShift) || (caller === "drag" && cp.isVisible && !isHoldingShift)) {
@@ -840,37 +896,28 @@ app.registerExtension({
       return null;
     };
 
-    node.onMouseDown = (e, pos, node) => {
+    innerCanvas.addEventListener("mousedown", (e) => {
       pickColor(e, "click");
       selectedImg = canvasImgs.find((img) => img.isSelected);
       if (selectedImg) {
         selectedImg.isUnderCover = false;
       }
+    });
 
-      // if (allow_debug) {
-      //   console.log("node", node);
-      //   console.log("app",app)
-      // }
-    };
-
-    node.onMouseUp = (e, pos, node) => {
+    innerCanvas.addEventListener("mouseup", () => {
       saveImgToDesk(200);
-    };
+    });
 
-    node.onKeyDown = (e, pos, node) => {
-      // if (allow_debug) {
-      //   console.log("e.code", e.code);
-      // }
+    innerCanvas.addEventListener("keydown", (e) => {
       if (e.code === "Space") {
         isHoldingSpace = true;
         pa.blockPainting = true;
       }
-    };
+    });
 
-    node.onMouseMove = (e, pos) => {
+    innerCanvas.addEventListener("mousemove", (e) => {
       pickColor(e, "drag");
 
-      //prevent resize cursor while hovering over canvas buttons
       if (canvasImgs.length > 0 && bc.some((b) => b.isMouseIn())) {
         if (selectedImg) {
           selectedImg.isUnderCover = true;
@@ -878,34 +925,29 @@ app.registerExtension({
       }
 
       toggleImagesCloseButton();
-    };
+    });
 
-    node.onMouseEnter = (e, pos) => {
+    innerCanvas.addEventListener("mouseenter", () => {
       mouseInNode = true;
-      app.canvas.zoom_speed = 1; // disable zoom
-    };
+    });
 
-    node.onMouseLeave = (e) => {
+    innerCanvas.addEventListener("mouseleave", () => {
       mouseInNode = false;
-      app.canvas.zoom_speed = 1.1; // enable zoom
       saveImgToDesk(500);
-    };
+    });
 
     node.onIdle = () => {
       if (allow_debug) console.log("idle");
     };
 
     // COMMON CLICKS EVENTS
-    app.canvas.canvas.onkeydown = (event) => {
-      // if (allow_debug) {
-      //   console.log("app", app);
-      // }
+    const onKeyDown = (event) => {
+      if (!mouseInNode) return;
       if (event.key === "Alt") {
         if (!isHoldingAlt) info.show("Alt", 40);
         isHoldingAlt = true;
         event.preventDefault();
 
-        // plot selected image on back ground
         canvasImgs.forEach((img) => {
           if (img.isSelected) {
             const ctx = pa.isPaintingBackground ? pa.backgroundCtx : pa.foregroundCtx;
@@ -913,33 +955,35 @@ app.registerExtension({
           }
         });
 
-        // change color picker position
         if (cp.isVisible) {
           cp.x === 0 ? (cp.x = 512 - cp.width) : (cp.x = 0);
         }
+        domCtx.requestRedraw();
       }
 
       if (event.key === "Shift" && !isHoldingShift) {
         if (!isHoldingShift) info.show("Shift", 40);
         isHoldingShift = true;
-        // if(allow_debug) console.log('isHoldingShift',isHoldingShift);
+        domCtx.requestRedraw();
       }
     };
+    window.addEventListener("keydown", onKeyDown);
 
-    app.canvas.canvas.ondblclick = (e) => {
-      // reset image rotation
+    innerCanvas.addEventListener("dblclick", () => {
       canvasImgs.forEach((item) => {
         item.rotationAngle = 0;
         item.width = item.originalWidth;
         item.height = item.originalHeight;
       });
-    };
+      domCtx.requestRedraw();
+    });
 
-    globalThis.onkeyup = (event) => {
+    const onKeyUp = () => {
       info.done = true;
       isHoldingShift = false;
       isHoldingAlt = false;
       isHoldingSpace = false;
+      domCtx.requestRedraw();
       // if (allow_debug) {
       //   console.log("canvasImgs.length", canvasImgs.length);
       // }
@@ -952,26 +996,74 @@ app.registerExtension({
       //   isHoldingShift = false;
       // }
     };
+    window.addEventListener("keyup", onKeyUp);
 
-    app.canvas.canvas.onpaste = (e) => {};
-
-    const originalWheel = globalThis.onwheel;
-    globalThis.onwheel = function (e) {
-      if (originalWheel) originalWheel.call(this);
+    const onWheel = (e) => {
       changeBrushSizeWithKey(e);
-      node.setDirtyCanvas(true, true);
+      domCtx.requestRedraw();
+      e.preventDefault();
     };
+    innerCanvas.addEventListener("wheel", onWheel, { passive: false });
 
     globalThis.oncopy = (...args) => {};
 
+    // Wire the Smart* widget manager onto the inner DOM canvas and start the
+    // draw loop. drawAll iterates node._smartWidgets (populated by our
+    // addCustomWidget shim) and calls widget.draw(innerCtx).
     const m = new BaseSmartWidgetManager(node, "iToolsPaintNode");
+    m.attachDomCanvas(innerCanvas, NODE_W, NODE_H);
+
+    // Keep the backing bitmap matched to (cssSize * devicePixelRatio) so
+    // strokes stay sharp when the container stretches, and when the user
+    // moves the window to a HiDPI monitor. The render loop re-applies the
+    // transform each frame so Smart* widgets can keep drawing in a fixed
+    // 512x592 logical space.
+    let _scaleX = 1;
+    let _scaleY = 1;
+    const resizeBackingCanvas = () => {
+      const rect = innerCanvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+      const dpr = window.devicePixelRatio || 1;
+      const targetW = Math.round(rect.width * dpr);
+      const targetH = Math.round(rect.height * dpr);
+      if (innerCanvas.width !== targetW || innerCanvas.height !== targetH) {
+        innerCanvas.width = targetW;
+        innerCanvas.height = targetH;
+      }
+      _scaleX = innerCanvas.width / NODE_W;
+      _scaleY = innerCanvas.height / NODE_H;
+      domCtx.requestRedraw();
+    };
+
+    const ro = new ResizeObserver(resizeBackingCanvas);
+    ro.observe(innerCanvas);
+    resizeBackingCanvas();
+
+    const renderFrame = () => {
+      innerCtx.save();
+      innerCtx.setTransform(1, 0, 0, 1, 0, 0);
+      innerCtx.fillStyle = LiteGraph.WIDGET_BGCOLOR || "#333";
+      innerCtx.fillRect(0, 0, innerCanvas.width, innerCanvas.height);
+      innerCtx.setTransform(_scaleX, 0, 0, _scaleY, 0, 0);
+      innerCtx.imageSmoothingEnabled = true;
+      innerCtx.imageSmoothingQuality = "high";
+      m.drawAll(innerCtx);
+      innerCtx.restore();
+    };
+
+    domCtx.attach(innerCanvas, innerCtx, node, renderFrame);
+
     // Clean up on node removal
     const origOnRemoved = node.onRemoved;
     node.onRemoved = function () {
       origOnRemoved?.apply(this, arguments);
-      app.canvas.zoom_speed = 1.1; // enable zoom
       if (allow_debug) console.log("Cleaning up paint node widget");
-      m.destroy()
+      ro.disconnect();
+      m.destroy();
+      domCtx.detach();
+      innerCanvas.removeEventListener("wheel", onWheel);
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
     };
   },
 });
