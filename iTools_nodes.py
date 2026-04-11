@@ -1184,46 +1184,6 @@ class IToolsPromptBuilder:
                 return float("nan")  # Force re-execution if template is "random"
 
 
-class IToolsPaintNode:
-    @classmethod
-    def INPUT_TYPES(self):
-        return {
-            "required": {},
-            "optional": FlexibleOptionalInputType(any_type),
-        }
-
-    CATEGORY = "iTools"
-
-    RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("image",)
-    FUNCTION = "paint_func"
-    DESCRIPTION = "Will paint"
-
-    def paint_func(self, **kwargs):
-        save_directory = os.path.join(project_dir, "backend")
-        background_path = os.path.join(
-            save_directory, "iToolsPaintedImage_background.png"
-        )
-        foreground_path = os.path.join(
-            save_directory, "iToolsPaintedImage_foreground.png"
-        )
-        background_img = Image.open(background_path)
-        foreground_img = Image.open(foreground_path)
-
-        # Overlay the foreground onto the background
-        final_img = Image.alpha_composite(background_img, foreground_img)
-
-        final_img = final_img.convert("RGB")
-
-        result = [final_img]
-        return pil2tensor(result)
-
-    def IS_CHANGED(
-        cls,
-    ):
-        return True
-
-
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -1248,7 +1208,6 @@ NODE_CLASS_MAPPINGS = {
     "iToolsPromptRecord": IToolsPromptRecord,
     "iToolsInstructorNode": IToolsInstructorNode,
     "iToolsPromptBuilder": IToolsPromptBuilder,
-    "iToolsPaintNode": IToolsPaintNode,
 }
 
 BASE_MAPPINGS = {
@@ -1273,7 +1232,6 @@ BASE_MAPPINGS = {
     "iToolsPromptRecord": "Prompt Record 🪶",
     "iToolsInstructorNode": "Instructor 👨🏻‍🏫",
     "iToolsPromptBuilder": "Prompt Builder 🛖",
-    "iToolsPaintNode": "Paint Node",
 }
 
 use_simple_names = get_user_node_display_name_preferences()
@@ -1299,7 +1257,13 @@ def append_extra_nodes():
     if allow_beta_nodes:
         try:
             from .experimental.experimental_nodes import (
+                IToolsPaintNode,
                 IToolsCropImage,
+            )
+
+            NODE_CLASS_MAPPINGS["iToolsPaintNode"] = IToolsPaintNode
+            NODE_DISPLAY_NAME_MAPPINGS["iToolsPaintNode"] = (
+                "Paint Node (Beta)" if use_simple_names else "iTools Paint Node (Beta)"
             )
 
             NODE_CLASS_MAPPINGS["iToolsCropImage"] = IToolsCropImage
