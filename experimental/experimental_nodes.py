@@ -17,7 +17,7 @@ import torch  # type: ignore
 import hashlib
 from ..backend import iserver
 
-
+# experimental nodes
 class IToolsFreeSchnell:
     @classmethod
     def INPUT_TYPES(s):
@@ -99,7 +99,7 @@ class IToolsFreeChat:
         # print(answer)
         return (answer,)
 
-
+# dev nodes
 class IToolsTestNode:
     @classmethod
     def INPUT_TYPES(self):
@@ -148,7 +148,7 @@ class IToolsDomNode:
                 text = value["text"] or ""
         return (str(text + " " + counter),)
 
-
+# beta nodes
 class IToolsPaintNode:
     @classmethod
     def INPUT_TYPES(self):

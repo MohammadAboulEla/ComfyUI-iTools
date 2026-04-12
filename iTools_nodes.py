@@ -9,7 +9,7 @@ import folder_paths  # type: ignore
 import node_helpers  # type: ignore
 import numpy as np  # type: ignore
 import torch  # type: ignore
-from PIL import Image, ImageSequence, ImageOps  # type: ignore
+from PIL import Image, ImageSequence, ImageOps, ImageEnhance  # type: ignore
 from .backend.checker_board import ChessTensor, ChessPattern
 from nodes import common_ksampler, SaveImage, PreviewImage  # type: ignore
 import json
@@ -40,9 +40,12 @@ from .backend.shared import (
     get_user_dev_mode,
     get_user_dev_mode2,
 )
-from comfy.cli_args import args  # type: ignore
 from .backend import iserver
+from comfy.cli_args import args  # type: ignore
 import re
+import base64
+import io as py_io
+from comfy_api.latest import io
 
 
 class IToolsLoadImagePlus:
@@ -1184,6 +1187,88 @@ class IToolsPromptBuilder:
                 return float("nan")  # Force re-execution if template is "random"
 
 
+# V3 Nodes
+class IToolsImageAdjust(io.ComfyNode):
+    # related imports
+    """
+    import base64
+    import io as py_io
+    import json
+    import torch
+    import numpy as np
+    from PIL import Image, ImageEnhance
+    from comfy_api.latest import io
+    """
+
+    @classmethod
+    def define_schema(cls) -> io.Schema:
+        return io.Schema(
+            node_id="iToolsImageAdjust", # same as node mapping
+            display_name="Image Adjust",
+            category="iTools",
+            description=(
+                "Upload an image or connect one from the workflow, then use the "
+                "brightness and contrast sliders to adjust it. A connected IMAGE "
+                "input takes priority over a manually uploaded image."
+            ),
+            inputs=[
+                io.Image.Input(
+                    "image",
+                    optional=True,
+                    tooltip="Optional IMAGE from another node. Takes priority over the uploaded image.",
+                ),
+                # widget_state stores all DOM widget values as a JSON string.
+                # The JS extension removes the default text widget and replaces
+                # it with the custom DOM widget (upload area + sliders).
+                io.String.Input(
+                    "widget_state",
+                    default='{"brightness":0,"contrast":100,"imageData":""}',
+                ),
+            ],
+            outputs=[
+                io.Image.Output(display_name="image"),
+            ],
+        )
+
+    @classmethod
+    def execute(
+        cls,
+        widget_state: str = '{"brightness":0,"contrast":100,"imageData":""}',
+        image=None,
+    ) -> io.NodeOutput:
+        state = json.loads(widget_state)
+        brightness = state.get("brightness", 0) / 100.0  # maps -100..+100 → -1.0..+1.0
+        contrast = state.get("contrast", 100) / 100.0  # maps 0..200 → 0.0..2.0
+        image_data = state.get("imageData", "")
+
+        if image is not None:
+            # ComfyUI IMAGE tensor shape: [B, H, W, C], float32, range 0-1
+            arr = (image[0].cpu().numpy() * 255).clip(0, 255).astype(np.uint8)
+            pil_img = Image.fromarray(arr).convert("RGB")
+        elif image_data:
+            # Strip the data-URL prefix (e.g. "data:image/png;base64,")
+            if "," in image_data:
+                image_data = image_data.split(",", 1)[1]
+            img_bytes = base64.b64decode(image_data)
+            pil_img = Image.open(py_io.BytesIO(img_bytes)).convert("RGB")
+        else:
+            # Nothing provided — return a neutral grey placeholder
+            pil_img = Image.new("RGB", (512, 512), (64, 64, 64))
+
+        # PIL Brightness: 1.0 = original, 0.0 = black, 2.0 = double brightness
+        brightness_factor = max(0.0, 1.0 + brightness)
+        pil_img = ImageEnhance.Brightness(pil_img).enhance(brightness_factor)
+
+        # PIL Contrast: 1.0 = original, 0.0 = greyscale mean, 2.0 = doubled
+        contrast_factor = max(0.0, contrast)
+        pil_img = ImageEnhance.Contrast(pil_img).enhance(contrast_factor)
+
+        out_arr = np.array(pil_img).astype(np.float32) / 255.0
+        out_tensor = torch.from_numpy(out_arr).unsqueeze(0)  # [1, H, W, C]
+
+        return io.NodeOutput(out_tensor)
+
+
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -1208,6 +1293,7 @@ NODE_CLASS_MAPPINGS = {
     "iToolsPromptRecord": IToolsPromptRecord,
     "iToolsInstructorNode": IToolsInstructorNode,
     "iToolsPromptBuilder": IToolsPromptBuilder,
+    "iToolsImageAdjust": IToolsImageAdjust,
 }
 
 BASE_MAPPINGS = {
@@ -1232,16 +1318,13 @@ BASE_MAPPINGS = {
     "iToolsPromptRecord": "Prompt Record 🪶",
     "iToolsInstructorNode": "Instructor 👨🏻‍🏫",
     "iToolsPromptBuilder": "Prompt Builder 🛖",
+    "iToolsImageAdjust": "Image Adjustment",
 }
-
-use_simple_names = get_user_node_display_name_preferences()
-allow_beta_nodes = get_user_dev_mode()
-allow_dev_nodes = get_user_dev_mode2()
-allow_experimental_nodes = False
 
 
 # INIT NODE DISPLAY NAME MAPPINGS
 def get_node_display_name_mappings():
+    use_simple_names = get_user_node_display_name_preferences()
     if use_simple_names:
         return BASE_MAPPINGS
 
@@ -1254,6 +1337,10 @@ NODE_DISPLAY_NAME_MAPPINGS = get_node_display_name_mappings()
 
 
 def append_extra_nodes():
+    use_simple_names = get_user_node_display_name_preferences()
+    allow_beta_nodes = get_user_dev_mode()
+    allow_dev_nodes = get_user_dev_mode2()
+    allow_experimental_nodes = False
     if allow_beta_nodes:
         try:
             from .experimental.experimental_nodes import (
