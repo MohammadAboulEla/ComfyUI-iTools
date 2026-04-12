@@ -99,6 +99,65 @@ app.registerExtension({
         clearPreview();
       });
 
+      // ── Right-click context menu ─────────────────────────────────────────
+      uploadArea.addEventListener("contextmenu", async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Remove any existing context menu
+        const existing = document.getElementById("itools-ctx-menu");
+        if (existing) existing.remove();
+
+        const menu = document.createElement("div");
+        menu.id = "itools-ctx-menu";
+        menu.style.cssText =
+          "position:fixed;z-index:99999;background:#2a2a2a;border:1px solid #555;" +
+          "border-radius:6px;padding:4px 0;box-shadow:0 4px 12px rgba(0,0,0,.6);";
+
+        const pasteItem = document.createElement("div");
+        pasteItem.textContent = "Paste image from clipboard";
+        pasteItem.style.cssText =
+          "padding:6px 14px;margin-left:5px;margin-right:5px;font-size:12px;color:#ddd;cursor:pointer;white-space:nowrap;";
+        pasteItem.addEventListener("mouseenter", () => { pasteItem.style.background = "#3a3a3a"; });
+        pasteItem.addEventListener("mouseleave", () => { pasteItem.style.background = "";
+            menu.remove(); });
+        pasteItem.addEventListener("click", async () => {
+          menu.remove();
+          try {
+            const items = await navigator.clipboard.read();
+            for (const item of items) {
+              const imageType = item.types.find((t) => t.startsWith("image/"));
+              if (imageType) {
+                const blob = await item.getType(imageType);
+                const reader = new FileReader();
+                reader.onload = (ev) => showPreview(ev.target.result);
+                reader.readAsDataURL(blob);
+                return;
+              }
+            }
+            alert("No image found in clipboard.");
+          } catch (err) {
+            alert("Could not read clipboard: " + err.message);
+          }
+        });
+
+        menu.appendChild(pasteItem);
+        document.body.appendChild(menu);
+
+        // Position near cursor, keeping inside viewport
+        const mw = 220, mh = 36;
+        const left = Math.min(e.clientX, window.innerWidth  - mw - 8);
+        const top  = Math.min(e.clientY, window.innerHeight - mh - 8);
+        menu.style.left = left + "px";
+        menu.style.top  = top  + "px";
+
+        // Close on any outside interaction
+        const close = (ev) => {
+          if (!menu.contains(ev.target)) { menu.remove(); document.removeEventListener("mousedown", close); }
+        };
+        document.addEventListener("mousedown", close);
+      });
+
       uploadArea.addEventListener("dragover", (e) => {
         e.preventDefault();
         uploadArea.style.borderColor = "#7ab";
