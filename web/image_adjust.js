@@ -16,6 +16,8 @@ app.registerExtension({
       if (idx !== undefined && idx !== -1) {
         this.widgets.splice(idx, 1);
       }
+      // init size
+      this.size = [256, 300];
 
       // ── State ────────────────────────────────────────────────────────────
       let imageData = "";  // base64 data URL of the uploaded image
@@ -32,7 +34,7 @@ app.registerExtension({
       const uploadArea = document.createElement("div");
       uploadArea.style.cssText =
         "width:100%;height:100%;border:2px dashed #555;border-radius:8px;" +
-        "display:flex;align-items:center;justify-content:center;" +
+        "margin-bottom:5px; display:flex;align-items:center;justify-content:center;" +
         "cursor:pointer;position:relative;overflow:hidden;background:#1a1a1a;" +
         "box-sizing:border-box;transition:border-color .15s;";
 

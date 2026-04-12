@@ -1204,10 +1204,10 @@ class IToolsImageAdjust(io.ComfyNode):
     def define_schema(cls) -> io.Schema:
         return io.Schema(
             node_id="iToolsImageAdjust", # same as node mapping
-            display_name="Image Adjust",
+            display_name="Image Adjustments", # same as node mapping
             category="iTools",
             description=(
-                "Upload an image or connect one from the workflow, then use the "
+                "Upload an image, right click to paste image from clipboard, or connect one from the workflow, then use the "
                 "brightness and contrast sliders to adjust it. A connected IMAGE "
                 "input takes priority over a manually uploaded image."
             ),
@@ -1318,7 +1318,7 @@ BASE_MAPPINGS = {
     "iToolsPromptRecord": "Prompt Record 🪶",
     "iToolsInstructorNode": "Instructor 👨🏻‍🏫",
     "iToolsPromptBuilder": "Prompt Builder 🛖",
-    "iToolsImageAdjust": "Image Adjustment",
+    "iToolsImageAdjust": "Image Adjustments 🎨",
 }
 
 
