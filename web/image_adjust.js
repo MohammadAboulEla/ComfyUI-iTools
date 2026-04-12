@@ -1,4 +1,5 @@
 import { app } from "../../../scripts/app.js";
+import { api } from "../../../scripts/api.js";
 
 app.registerExtension({
   name: "iTools.ImageAdjust",
@@ -17,8 +18,8 @@ app.registerExtension({
       this.size = [Math.max(this.size[0], 256), Math.max(this.size[1], 400)];
 
       // ── State ────────────────────────────────────────────────────────────
-      let imageData        = "";   // raw source image (uploaded or upstream URL)
-      let processedImageData = ""; // JS-rendered result — what Python will output
+      let imagePath   = "";   // server path after upload
+      let imageData   = "";   // raw source image (uploaded blob URL or upstream URL)
       let brightness  = 0;    // -100..+100
       let contrast    = 100;  // 50..200
       let saturation  = 100;  // 0..200
@@ -30,7 +31,7 @@ app.registerExtension({
       // ── Root container ───────────────────────────────────────────────────
       const container = document.createElement("div");
       container.style.cssText =
-        "display:flex;flex-direction:column;gap:4px;padding:0px;" +
+        "display:none;flex-direction:column;gap:4px;padding:0px;" +
         "width:100%;height:100%;box-sizing:border-box;align-items:center;";
 
       // ── Upload / preview area ────────────────────────────────────────────
@@ -227,15 +228,10 @@ app.registerExtension({
         });
       }
 
-      // Debounced update — computes processedImageData after slider settles
+      // Debounced update
       let _updateTimer = null;
       function scheduleProcessedUpdate() {
-        clearTimeout(_updateTimer);
-        _updateTimer = setTimeout(async () => {
-          if (!imageData) { processedImageData = ""; return; }
-          try { processedImageData = await getFilteredDataUrl(); }
-          catch (_) { processedImageData = ""; }
-        }, 120);
+        // We no longer rely on processedImageData string conversion, saving workflow bloat
       }
 
       function showPreview(dataUrl) {
@@ -251,7 +247,7 @@ app.registerExtension({
 
       function clearPreview() {
         imageData = "";
-        processedImageData = "";
+        imagePath = "";
         previewImg.src = "";
         previewImg.style.display = "none";
         uploadLabel.style.display = "block";
@@ -260,10 +256,24 @@ app.registerExtension({
         fileInput.value = "";
       }
 
-      function loadFile(file) {
-        const reader = new FileReader();
-        reader.onload = (e) => showPreview(e.target.result);
-        reader.readAsDataURL(file);
+      async function loadFile(file) {
+        try {
+          const body = new FormData();
+          body.append("image", file);
+          body.append("type", "input");
+
+          const resp = await api.fetchApi("/upload/image", { method: "POST", body });
+          if (resp.status === 200) {
+            const data = await resp.json();
+            imagePath = data.subfolder ? data.subfolder + "/" + data.name : data.name;
+            const viewUrl = api.apiURL(`/view?filename=${encodeURIComponent(data.name)}&type=input&subfolder=${encodeURIComponent(data.subfolder || "")}&t=${Date.now()}`);
+            showPreview(viewUrl);
+          } else {
+            console.error("Upload failed", resp.status, await resp.text());
+          }
+        } catch (e) {
+          console.error("Upload error", e);
+        }
       }
 
       uploadArea.addEventListener("click", (e) => {
@@ -308,9 +318,8 @@ app.registerExtension({
               const imageType = item.types.find((t) => t.startsWith("image/"));
               if (imageType) {
                 const blob = await item.getType(imageType);
-                const reader = new FileReader();
-                reader.onload = (ev) => showPreview(ev.target.result);
-                reader.readAsDataURL(blob);
+                const file = new File([blob], "pasted_image.png", { type: imageType });
+                loadFile(file);
                 return;
               }
             }
@@ -542,7 +551,10 @@ app.registerExtension({
         if (snap && snap !== _lastUpstreamSnapshot) {
           _lastUpstreamSnapshot = snap;
           const url = getUpstreamImageUrl();
-          if (url) showPreview(url);
+          if (url) {
+            imagePath = ""; // Driven via graph, not saved
+            showPreview(url);
+          }
         }
       };
 
@@ -558,12 +570,9 @@ app.registerExtension({
       // ── Register the DOM widget ──────────────────────────────────────────
       this.addDOMWidget("widget_state", "imageAdjust", container, {
         getValue() {
-          // processedImageData is what Python will decode as output.
-          // Slider values are included so state can be restored on reload.
           return JSON.stringify({
             brightness, contrast, saturation, temperature, gamma, sharpness, hue,
-            imageData,          // raw source (for restore)
-            processedImageData, // JS-rendered result — Python uses this
+            imagePath, // saving the server path instead of base64
           });
         },
         setValue(val) {
@@ -576,8 +585,7 @@ app.registerExtension({
             gamma       = state.gamma       ?? 100;
             sharpness   = state.sharpness   ?? 100;
             hue         = state.hue         ?? 0;
-            imageData   = state.imageData   ?? "";
-            processedImageData = state.processedImageData ?? "";
+            imagePath   = state.imagePath   ?? "";
 
             brightnessCtrl.slider.value  = brightness;
             brightnessCtrl.valDisplay.textContent = fmtSign(brightness);
@@ -594,11 +602,27 @@ app.registerExtension({
             hueCtrl.slider.value         = hue;
             hueCtrl.valDisplay.textContent        = fmtDeg(hue);
 
-            if (imageData) showPreview(imageData);
-            else clearPreview();
+            if (imagePath) {
+               const parts = imagePath.split("/");
+               const filename = parts.pop();
+               const subfolder = parts.join("/");
+               const viewUrl = api.apiURL(`/view?filename=${encodeURIComponent(filename)}&type=input&subfolder=${encodeURIComponent(subfolder)}&t=${Date.now()}`);
+               showPreview(viewUrl);
+            } else if (state.imageData) {
+               showPreview(state.imageData);
+            } else {
+               clearPreview();
+            }
           } catch (_) {}
         },
       });
+
+      // Force canvas update after 100ms
+      setTimeout(() => {
+        container.style.display = "flex";
+        node.setDirtyCanvas(true, true);
+      }, 200);
+      
     };
   },
 });

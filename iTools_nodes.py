@@ -1222,7 +1222,7 @@ class IToolsImageAdjust(io.ComfyNode):
                 # it with the custom DOM widget (upload area + sliders).
                 io.String.Input(
                     "widget_state",
-                    default='{"brightness":0,"contrast":100,"saturation":100,"temperature":0,"gamma":100,"sharpness":100,"hue":0,"imageData":"","processedImageData":""}',
+                    default='{"brightness":0,"contrast":100,"saturation":100,"temperature":0,"gamma":100,"sharpness":100,"hue":0,"imagePath":""}',
                 ),
             ],
             outputs=[
@@ -1233,12 +1233,13 @@ class IToolsImageAdjust(io.ComfyNode):
     @classmethod
     def execute(
         cls,
-        widget_state: str = '{"brightness":0,"contrast":100,"saturation":100,"temperature":0,"gamma":100,"sharpness":100,"hue":0,"imageData":"","processedImageData":""}',
+        widget_state: str = '{"brightness":0,"contrast":100,"saturation":100,"temperature":0,"gamma":100,"sharpness":100,"hue":0,"imagePath":""}',
         image=None,
     ) -> io.NodeOutput:
         state = json.loads(widget_state)
         processed_data = state.get("processedImageData", "")
         image_data     = state.get("imageData", "")
+        image_path     = state.get("imagePath", "")
 
         # Primary path: JS has already rendered all adjustments into processedImageData.
         # We just decode it — preview and output are guaranteed to match.
@@ -1247,14 +1248,17 @@ class IToolsImageAdjust(io.ComfyNode):
                 processed_data = processed_data.split(",", 1)[1]
             pil_img = Image.open(py_io.BytesIO(base64.b64decode(processed_data))).convert("RGB")
 
-        # Fallback: API / headless mode — no JS, so apply adjustments in Python.
-        elif image is not None or image_data:
+        # Fallback: API / headless mode / optimal workflow path — JS does not send processedImageData bloat
+        elif image is not None or image_data or image_path:
             if image is not None:
                 arr = (image[0].cpu().numpy() * 255).clip(0, 255).astype(np.uint8)
                 pil_img = Image.fromarray(arr).convert("RGB")
-            else:
+            elif image_data:
                 raw = image_data.split(",", 1)[1] if "," in image_data else image_data
                 pil_img = Image.open(py_io.BytesIO(base64.b64decode(raw))).convert("RGB")
+            elif image_path:
+                full_path = folder_paths.get_annotated_filepath(image_path)
+                pil_img = node_helpers.pillow(Image.open, full_path).convert("RGB")
 
             brightness  = state.get("brightness",  0)   / 100.0
             contrast    = state.get("contrast",   100)  / 100.0
