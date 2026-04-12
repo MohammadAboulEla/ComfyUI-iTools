@@ -1196,7 +1196,7 @@ class IToolsImageAdjust(io.ComfyNode):
     import json
     import torch
     import numpy as np
-    from PIL import Image, ImageEnhance
+    from PIL import Image, ImageEnhance, ImageFilter
     from comfy_api.latest import io
     """
 
@@ -1222,7 +1222,7 @@ class IToolsImageAdjust(io.ComfyNode):
                 # it with the custom DOM widget (upload area + sliders).
                 io.String.Input(
                     "widget_state",
-                    default='{"brightness":0,"contrast":100,"imageData":""}',
+                    default='{"brightness":0,"contrast":100,"saturation":100,"temperature":0,"gamma":100,"sharpness":100,"hue":0,"imageData":""}',
                 ),
             ],
             outputs=[
@@ -1233,35 +1233,61 @@ class IToolsImageAdjust(io.ComfyNode):
     @classmethod
     def execute(
         cls,
-        widget_state: str = '{"brightness":0,"contrast":100,"imageData":""}',
+        widget_state: str = '{"brightness":0,"contrast":100,"saturation":100,"temperature":0,"gamma":100,"sharpness":100,"hue":0,"imageData":""}',
         image=None,
     ) -> io.NodeOutput:
         state = json.loads(widget_state)
-        brightness = state.get("brightness", 0) / 100.0  # maps -100..+100 → -1.0..+1.0
-        contrast = state.get("contrast", 100) / 100.0  # maps 0..200 → 0.0..2.0
-        image_data = state.get("imageData", "")
+        brightness  = state.get("brightness",  0)   / 100.0  # -1.0..+1.0
+        contrast    = state.get("contrast",   100)  / 100.0  # 0.0..2.0
+        saturation  = state.get("saturation", 100)  / 100.0  # 0.0..2.0
+        temperature = state.get("temperature", 0)            # -100..+100 (raw)
+        gamma       = state.get("gamma",      100)  / 100.0  # 0.1..3.0
+        sharpness   = state.get("sharpness",  100)  / 100.0  # 0.0..2.0
+        hue_shift   = state.get("hue",          0)           # -180..+180 degrees
+        image_data  = state.get("imageData", "")
 
         if image is not None:
-            # ComfyUI IMAGE tensor shape: [B, H, W, C], float32, range 0-1
             arr = (image[0].cpu().numpy() * 255).clip(0, 255).astype(np.uint8)
             pil_img = Image.fromarray(arr).convert("RGB")
         elif image_data:
-            # Strip the data-URL prefix (e.g. "data:image/png;base64,")
             if "," in image_data:
                 image_data = image_data.split(",", 1)[1]
             img_bytes = base64.b64decode(image_data)
             pil_img = Image.open(py_io.BytesIO(img_bytes)).convert("RGB")
         else:
-            # Nothing provided — return a neutral grey placeholder
             pil_img = Image.new("RGB", (512, 512), (64, 64, 64))
 
-        # PIL Brightness: 1.0 = original, 0.0 = black, 2.0 = double brightness
-        brightness_factor = max(0.0, 1.0 + brightness)
-        pil_img = ImageEnhance.Brightness(pil_img).enhance(brightness_factor)
+        # 1. Brightness  — PIL factor 1.0 = original
+        pil_img = ImageEnhance.Brightness(pil_img).enhance(max(0.0, 1.0 + brightness))
 
-        # PIL Contrast: 1.0 = original, 0.0 = greyscale mean, 2.0 = doubled
-        contrast_factor = max(0.0, contrast)
-        pil_img = ImageEnhance.Contrast(pil_img).enhance(contrast_factor)
+        # 2. Contrast  — PIL factor 1.0 = original
+        pil_img = ImageEnhance.Contrast(pil_img).enhance(max(0.0, contrast))
+
+        # 3. Saturation  — PIL Color factor 1.0 = original
+        pil_img = ImageEnhance.Color(pil_img).enhance(max(0.0, saturation))
+
+        # 4. Temperature  — scale R/B channels in float32
+        if temperature != 0:
+            arr = np.array(pil_img).astype(np.float32)
+            strength = temperature / 100.0  # -1.0..+1.0
+            arr[:, :, 0] = np.clip(arr[:, :, 0] * (1.0 + strength * 0.3), 0, 255)  # R
+            arr[:, :, 2] = np.clip(arr[:, :, 2] * (1.0 - strength * 0.3), 0, 255)  # B
+            pil_img = Image.fromarray(arr.astype(np.uint8))
+
+        # 5. Gamma  — power-law correction; gamma=1.0 = original
+        if gamma != 1.0:
+            arr = np.array(pil_img).astype(np.float32) / 255.0
+            arr = np.power(np.clip(arr, 0, 1), 1.0 / max(gamma, 0.01))
+            pil_img = Image.fromarray((arr * 255).astype(np.uint8))
+
+        # 6. Sharpness  — PIL factor 1.0 = original
+        pil_img = ImageEnhance.Sharpness(pil_img).enhance(max(0.0, sharpness))
+
+        # 7. Hue rotation  — operate in HSV space
+        if hue_shift != 0:
+            hsv = np.array(pil_img.convert("HSV")).astype(np.int32)
+            hsv[:, :, 0] = (hsv[:, :, 0] + int(hue_shift / 360.0 * 255)) % 256
+            pil_img = Image.fromarray(hsv.astype(np.uint8), "HSV").convert("RGB")
 
         out_arr = np.array(pil_img).astype(np.float32) / 255.0
         out_tensor = torch.from_numpy(out_arr).unsqueeze(0)  # [1, H, W, C]

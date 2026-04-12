@@ -21,8 +21,13 @@ app.registerExtension({
 
       // ── State ────────────────────────────────────────────────────────────
       let imageData = "";  // base64 data URL of the uploaded image
-      let brightness = 0;  // integer -100..+100
-      let contrast = 100;  // integer 0..200
+      let brightness = 0;   // -100..+100
+      let contrast   = 100; // 0..200
+      let saturation = 100; // 0..200
+      let temperature = 0;  // -100..+100  (negative = cool, positive = warm)
+      let gamma      = 100; // 10..300  (stored as integer; /100 → float 0.1..3.0)
+      let sharpness  = 100; // 0..200
+      let hue        = 0;   // -180..+180 degrees
 
       // ── Root container ───────────────────────────────────────────────────
       const container = document.createElement("div");
@@ -73,6 +78,7 @@ app.registerExtension({
         previewImg.style.display = "block";
         uploadLabel.style.display = "none";
         clearBtn.style.display = "block";
+        uploadArea.style.border = "none";
         refreshFilter();
       }
 
@@ -82,6 +88,7 @@ app.registerExtension({
         previewImg.style.display = "none";
         uploadLabel.style.display = "block";
         clearBtn.style.display = "none";
+        uploadArea.style.border = "2px dashed #555";
         fileInput.value = "";
       }
 
@@ -215,19 +222,87 @@ app.registerExtension({
         return { row, slider, valDisplay };
       }
 
-      const fmtBrightness = (v) => (v >= 0 ? "+" : "") + v;
-      const fmtContrast   = (v) => v + "%";
+      const fmtSign    = (v) => (v >= 0 ? "+" : "") + v;
+      const fmtPct     = (v) => v + "%";
+      const fmtDeg     = (v) => (v >= 0 ? "+" : "") + v + "°";
+      const fmtGamma   = (v) => (v / 100).toFixed(2);
 
-      // Apply CSS filters to the preview so it matches the Python output in real time.
-      // CSS brightness(1) = PIL factor 1.0 (unchanged), contrast(1) = PIL factor 1.0.
-      function refreshFilter() {
-        const b = 1.0 + brightness / 100; // same formula as Python
-        const c = contrast / 100;
-        previewImg.style.filter = `brightness(${b}) contrast(${c})`;
+      // ── SVG filter for gamma + temperature (no CSS equivalent) ─────────
+      const svgNS = "http://www.w3.org/2000/svg";
+      const svgEl = document.createElementNS(svgNS, "svg");
+      svgEl.setAttribute("width", "0");
+      svgEl.setAttribute("height", "0");
+      svgEl.style.cssText = "position:absolute;width:0;height:0;overflow:hidden;";
+
+      const filterId = "itools-img-adjust-" + Math.random().toString(36).slice(2);
+      const filterEl = document.createElementNS(svgNS, "filter");
+      filterEl.setAttribute("id", filterId);
+      filterEl.setAttribute("color-interpolation-filters", "linearRGB");
+
+      // feColorMatrix for temperature: scales R and B channels
+      const tempMatrix = document.createElementNS(svgNS, "feColorMatrix");
+      tempMatrix.setAttribute("type", "matrix");
+      tempMatrix.setAttribute("result", "tempOut");
+
+      // feComponentTransfer for gamma on each channel
+      const gammaTransfer = document.createElementNS(svgNS, "feComponentTransfer");
+      gammaTransfer.setAttribute("in", "tempOut");
+      const gammaR = document.createElementNS(svgNS, "feFuncR");
+      const gammaG = document.createElementNS(svgNS, "feFuncG");
+      const gammaB = document.createElementNS(svgNS, "feFuncB");
+      for (const fn of [gammaR, gammaG, gammaB]) {
+        fn.setAttribute("type", "gamma");
+        fn.setAttribute("amplitude", "1");
+        fn.setAttribute("offset", "0");
+      }
+      gammaTransfer.appendChild(gammaR);
+      gammaTransfer.appendChild(gammaG);
+      gammaTransfer.appendChild(gammaB);
+
+      filterEl.appendChild(tempMatrix);
+      filterEl.appendChild(gammaTransfer);
+      svgEl.appendChild(filterEl);
+      document.body.appendChild(svgEl);
+
+      function updateSvgFilter() {
+        // Temperature: strength in -1..+1, mirrors Python ±30% on R/B
+        const t = (temperature / 100) * 0.3;
+        const rScale = 1.0 + t;
+        const bScale = 1.0 - t;
+        // feColorMatrix identity with R and B scaled:
+        // R' = rScale*R, G' = G, B' = bScale*B
+        tempMatrix.setAttribute("values",
+          `${rScale} 0 0 0 0  ` +
+          `0 1 0 0 0  ` +
+          `0 0 ${bScale} 0 0  ` +
+          `0 0 0 1 0`
+        );
+
+        // Gamma: CSS feComponentTransfer exponent = 1/gamma (same as Python)
+        const exp = 1.0 / Math.max(gamma / 100, 0.01);
+        for (const fn of [gammaR, gammaG, gammaB]) {
+          fn.setAttribute("exponent", exp.toFixed(4));
+        }
       }
 
-      const brightnessCtrl = makeSlider("Brightness", -100, 100, 0,   fmtBrightness);
-      const contrastCtrl   = makeSlider("Contrast",     0,  200, 100, fmtContrast);
+      // Apply CSS filters to the preview so it matches the Python output in real time.
+      function refreshFilter() {
+        const b = 1.0 + brightness / 100;
+        const c = contrast / 100;
+        const s = saturation / 100;
+        const h = hue;
+        updateSvgFilter();
+        previewImg.style.filter =
+          `brightness(${b}) contrast(${c}) saturate(${s}) hue-rotate(${h}deg) url(#${filterId})`;
+      }
+
+      const brightnessCtrl  = makeSlider("Brightness",   -100, 100,  0,   fmtSign);
+      const contrastCtrl    = makeSlider("Contrast",        0, 200, 100,   fmtPct);
+      const saturationCtrl  = makeSlider("Saturation",      0, 200, 100,   fmtPct);
+      const temperatureCtrl = makeSlider("Temperature",  -100, 100,   0,   fmtSign);
+      const gammaCtrl       = makeSlider("Gamma",           10, 300, 100,   fmtGamma);
+      const sharpnessCtrl   = makeSlider("Sharpness",       0, 200, 100,   fmtPct);
+      const hueCtrl         = makeSlider("Hue",           -180, 180,   0,   fmtDeg);
 
       brightnessCtrl.slider.addEventListener("input", () => {
         brightness = parseInt(brightnessCtrl.slider.value, 10);
@@ -237,12 +312,37 @@ app.registerExtension({
         contrast = parseInt(contrastCtrl.slider.value, 10);
         refreshFilter();
       });
+      saturationCtrl.slider.addEventListener("input", () => {
+        saturation = parseInt(saturationCtrl.slider.value, 10);
+        refreshFilter();
+      });
+      temperatureCtrl.slider.addEventListener("input", () => {
+        temperature = parseInt(temperatureCtrl.slider.value, 10);
+        refreshFilter();
+      });
+      gammaCtrl.slider.addEventListener("input", () => {
+        gamma = parseInt(gammaCtrl.slider.value, 10);
+        refreshFilter();
+      });
+      sharpnessCtrl.slider.addEventListener("input", () => {
+        sharpness = parseInt(sharpnessCtrl.slider.value, 10);
+        // no CSS sharpness equivalent — preview won't reflect this
+      });
+      hueCtrl.slider.addEventListener("input", () => {
+        hue = parseInt(hueCtrl.slider.value, 10);
+        refreshFilter();
+      });
 
       // ── Assemble ─────────────────────────────────────────────────────────
       container.appendChild(uploadArea);
       container.appendChild(fileInput);
       container.appendChild(brightnessCtrl.row);
       container.appendChild(contrastCtrl.row);
+      container.appendChild(saturationCtrl.row);
+      container.appendChild(temperatureCtrl.row);
+      container.appendChild(gammaCtrl.row);
+      container.appendChild(sharpnessCtrl.row);
+      container.appendChild(hueCtrl.row);
 
       // ── Auto-detect upstream image changes ───────────────────────────────
       // LiteGraph has no "upstream widget changed" hook, so we snapshot
@@ -297,6 +397,16 @@ app.registerExtension({
         return null;
       }
 
+      // Initialise SVG filter to neutral values before any slider interaction
+      updateSvgFilter();
+
+      // Clean up the SVG element when the node is removed from the graph
+      const origOnRemoved = node.onRemoved;
+      node.onRemoved = function () {
+        origOnRemoved?.apply(this, arguments);
+        svgEl.remove();
+      };
+
       const origOnDrawForeground = node.onDrawForeground;
       node.onDrawForeground = function (_ctx) {
         origOnDrawForeground?.apply(this, arguments);
@@ -327,21 +437,43 @@ app.registerExtension({
       // name must match the Python input name "widget_state"
       const widget = this.addDOMWidget("widget_state", "imageAdjust", container, {
         getValue() {
-          return JSON.stringify({ brightness, contrast, imageData });
+          return JSON.stringify({
+            brightness, contrast, saturation, temperature, gamma, sharpness, hue, imageData,
+          });
         },
         setValue(val) {
           try {
             const state = typeof val === "string" ? JSON.parse(val) : val;
 
-            brightness = state.brightness ?? 0;
-            contrast   = state.contrast   ?? 100;
-            imageData  = state.imageData  ?? "";
+            brightness  = state.brightness  ?? 0;
+            contrast    = state.contrast    ?? 100;
+            saturation  = state.saturation  ?? 100;
+            temperature = state.temperature ?? 0;
+            gamma       = state.gamma       ?? 100;
+            sharpness   = state.sharpness   ?? 100;
+            hue         = state.hue         ?? 0;
+            imageData   = state.imageData   ?? "";
 
-            brightnessCtrl.slider.value = brightness;
-            brightnessCtrl.valDisplay.textContent = fmtBrightness(brightness);
+            brightnessCtrl.slider.value  = brightness;
+            brightnessCtrl.valDisplay.textContent  = fmtSign(brightness);
 
-            contrastCtrl.slider.value = contrast;
-            contrastCtrl.valDisplay.textContent = fmtContrast(contrast);
+            contrastCtrl.slider.value    = contrast;
+            contrastCtrl.valDisplay.textContent    = fmtPct(contrast);
+
+            saturationCtrl.slider.value  = saturation;
+            saturationCtrl.valDisplay.textContent  = fmtPct(saturation);
+
+            temperatureCtrl.slider.value = temperature;
+            temperatureCtrl.valDisplay.textContent = fmtSign(temperature);
+
+            gammaCtrl.slider.value       = gamma;
+            gammaCtrl.valDisplay.textContent       = fmtGamma(gamma);
+
+            sharpnessCtrl.slider.value   = sharpness;
+            sharpnessCtrl.valDisplay.textContent   = fmtPct(sharpness);
+
+            hueCtrl.slider.value         = hue;
+            hueCtrl.valDisplay.textContent         = fmtDeg(hue);
 
             if (imageData) {
               showPreview(imageData);
