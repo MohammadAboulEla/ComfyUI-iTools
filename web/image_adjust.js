@@ -244,6 +244,85 @@ app.registerExtension({
       container.appendChild(brightnessCtrl.row);
       container.appendChild(contrastCtrl.row);
 
+      // ── Auto-detect upstream image changes ───────────────────────────────
+      // LiteGraph has no "upstream widget changed" hook, so we snapshot
+      // the connected image input each frame and reload when it differs.
+      const node = this;
+      let _lastUpstreamSnapshot = "";
+
+      function getUpstreamSnapshot() {
+        const graph = node.graph;
+        if (!graph) return "";
+        const inp = (node.inputs || []).find((i) => i.name === "image");
+        if (!inp || inp.link == null) return "";
+        const link = graph.links[inp.link];
+        if (!link) return "";
+        const src = graph.getNodeById(link.origin_id);
+        if (!src) return "";
+        const pieces = [];
+        if (src.comfyClass === "LoadImage" || src.type === "LoadImage") {
+          const w = (src.widgets || []).find((w) => w.name === "image");
+          if (w) pieces.push("file=" + w.value);
+        }
+        if (src.imgs?.length) {
+          const img = src.imgs[link.origin_slot] || src.imgs[0];
+          const s = typeof img === "string" ? img : img?.src || "";
+          pieces.push("prev=" + s);
+        }
+        return pieces.join("|");
+      }
+
+      function getUpstreamImageUrl() {
+        const graph = node.graph;
+        if (!graph) return null;
+        const inp = (node.inputs || []).find((i) => i.name === "image");
+        if (!inp || inp.link == null) return null;
+        const link = graph.links[inp.link];
+        if (!link) return null;
+        const src = graph.getNodeById(link.origin_id);
+        if (!src) return null;
+        // Prefer executed preview (imgs array)
+        if (src.imgs?.length) {
+          const img = src.imgs[link.origin_slot] || src.imgs[0];
+          const s = typeof img === "string" ? img : img?.src || "";
+          if (s) return s + (s.includes("?") ? "&" : "?") + "t=" + Date.now();
+        }
+        // Fall back to LoadImage file URL
+        if (src.comfyClass === "LoadImage" || src.type === "LoadImage") {
+          const w = (src.widgets || []).find((w) => w.name === "image");
+          if (w?.value) {
+            return `/view?filename=${encodeURIComponent(w.value)}&type=input&t=${Date.now()}`;
+          }
+        }
+        return null;
+      }
+
+      const origOnDrawForeground = node.onDrawForeground;
+      node.onDrawForeground = function (_ctx) {
+        origOnDrawForeground?.apply(this, arguments);
+        const snap = getUpstreamSnapshot();
+        if (snap && snap !== _lastUpstreamSnapshot) {
+          _lastUpstreamSnapshot = snap;
+          const url = getUpstreamImageUrl();
+          if (url) showPreview(url);
+        }
+      };
+
+      const origOnConnectionsChange = node.onConnectionsChange;
+      node.onConnectionsChange = function (_type, index, connected, _linkInfo) {
+        origOnConnectionsChange?.apply(this, arguments);
+        const inp = (node.inputs || [])[index];
+        if (inp?.name !== "image") return;
+        if (!connected) {
+          // Connection removed — clear upstream preview (keep manual upload if any)
+          _lastUpstreamSnapshot = "";
+          clearPreview();
+        } else {
+          // Connection added — snapshot will be picked up on next draw frame
+          _lastUpstreamSnapshot = "";
+        }
+      };
+
       // ── Register the DOM widget ──────────────────────────────────────────
       // name must match the Python input name "widget_state"
       const widget = this.addDOMWidget("widget_state", "imageAdjust", container, {
