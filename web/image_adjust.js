@@ -17,6 +17,12 @@ app.registerExtension({
 
       this.size = [Math.max(this.size[0], 256), Math.max(this.size[1], 400)];
 
+      const node = this;
+      function isImageConnected() {
+        const inp = (node.inputs || []).find((i) => i.name === "image");
+        return inp && inp.link != null;
+      }
+
       // ── State ────────────────────────────────────────────────────────────
       let imagePath   = "";   // server path after upload
       let imageData   = "";   // raw source image (uploaded blob URL or upstream URL)
@@ -239,7 +245,7 @@ app.registerExtension({
         previewImg.src = dataUrl;
         previewImg.style.display = "block";
         uploadLabel.style.display = "none";
-        clearBtn.style.display = "block";
+        clearBtn.style.display = isImageConnected() ? "none" : "block";
         uploadArea.style.border = "none";
         refreshFilter();
         scheduleProcessedUpdate();
@@ -277,6 +283,7 @@ app.registerExtension({
       }
 
       uploadArea.addEventListener("click", (e) => {
+        if (isImageConnected()) return;
         if (e.target === clearBtn) return;
         fileInput.click();
       });
@@ -310,8 +317,10 @@ app.registerExtension({
         menu.addEventListener("mouseleave", () => { menu.remove(); });
 
         const pasteItem = makeMenuItem("Paste image");
+        if (isImageConnected()) pasteItem.style.color = "#555";
         pasteItem.addEventListener("click", async () => {
           menu.remove();
+          if (isImageConnected()) return;
           try {
             const items = await navigator.clipboard.read();
             for (const item of items) {
@@ -384,10 +393,12 @@ app.registerExtension({
       });
 
       uploadArea.addEventListener("dragover", (e) => {
+        if (isImageConnected()) return;
         e.preventDefault(); uploadArea.style.borderColor = "#7ab";
       });
       uploadArea.addEventListener("dragleave", () => { uploadArea.style.borderColor = "#555"; });
       uploadArea.addEventListener("drop", (e) => {
+        if (isImageConnected()) return;
         e.preventDefault(); uploadArea.style.borderColor = "#555";
         const file = e.dataTransfer.files[0];
         if (file && file.type.startsWith("image/")) loadFile(file);
@@ -489,7 +500,6 @@ app.registerExtension({
       container.appendChild(hueCtrl.row);
 
       // ── Auto-detect upstream image changes ───────────────────────────────
-      const node = this;
       let _lastUpstreamSnapshot = "";
 
       function getUpstreamSnapshot() {
@@ -563,8 +573,13 @@ app.registerExtension({
         origOnConnectionsChange?.apply(this, arguments);
         const inp = (node.inputs || [])[index];
         if (inp?.name !== "image") return;
-        if (!connected) { _lastUpstreamSnapshot = ""; clearPreview(); }
-        else { _lastUpstreamSnapshot = ""; }
+        if (!connected) { 
+          _lastUpstreamSnapshot = ""; 
+          clearPreview(); 
+        } else { 
+          _lastUpstreamSnapshot = ""; 
+          clearBtn.style.display = "none";
+        }
       };
 
       // ── Register the DOM widget ──────────────────────────────────────────

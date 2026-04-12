@@ -1204,7 +1204,7 @@ class IToolsImageAdjust(io.ComfyNode):
     def define_schema(cls) -> io.Schema:
         return io.Schema(
             node_id="iToolsImageAdjust", # same as node mapping
-            display_name="Image Adjustments", # same as node mapping
+            display_name="Image Adjustments 🎛️", # same as node mapping
             category="iTools",
             description=(
                 "Upload an image, right click to paste image from clipboard, or connect one from the workflow, then use the "
@@ -1344,7 +1344,7 @@ BASE_MAPPINGS = {
     "iToolsPromptRecord": "Prompt Record 🪶",
     "iToolsInstructorNode": "Instructor 👨🏻‍🏫",
     "iToolsPromptBuilder": "Prompt Builder 🛖",
-    "iToolsImageAdjust": "Image Adjustments 🎨",
+    "iToolsImageAdjust": "Image Adjustments", # V3 node so name is overriden by node display name
 }
 
 

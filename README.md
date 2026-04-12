@@ -123,6 +123,11 @@ Reset size and rotation when double-clicking the image
 - **`Alt`** (while the color picker is visible) – Swaps the position of the color palette.
 - **`Double Click`** – Will Reset selecting image or text rotation.  
 ---
+### **iTools Image Adjustments 🎛️:**
+
+Fine-tune your images directly within ComfyUI, a node that can run on its own or within a workflow. I'm not the first to do it, but I did it the way I like it. live updates, no extra windows, can work separately, support drag-and-drop / pasting, save your edits directly or pass the result to the next node.
+
+---
 ### **iTools Image Loader Plus:**
 
 is an enhancement of the original ComfyUI ImageLoader node. It attempts to return the possible prompt used to create an image. If the prompt isn't found directly, this node will search for the prompt within the following supported nodes in the workflow:
