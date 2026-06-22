@@ -1182,10 +1182,10 @@ class IToolsPromptBuilder:
         if "PromptBuilderWidget" in kwargs:
             data = kwargs["PromptBuilderWidget"]
             style = data.get("style", "none")
-            # print("ITOOLS_PROMPT_BUILDER_STYLE",style)
-            if style != "none":
+            print("ITOOLS_PROMPT_BUILDER_STYLE",style)
+            if style == "random":
                 return float("nan")  # Force re-execution if template is "random"
-
+            return False
 
 # V3 Nodes
 class IToolsImageAdjust(io.ComfyNode):
