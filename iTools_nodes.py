@@ -508,7 +508,7 @@ class IToolsLineLoader:
                     "INT",
                     {
                         "default": 0,
-                        "control_after_generate": "increment",
+                        "control_after_generate": True,
                         "min": 0,
                         "max": 0xFFF,
                     },
