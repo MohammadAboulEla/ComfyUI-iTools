@@ -204,16 +204,16 @@ app.registerExtension({
     `;
 
     const header = document.createElement("div");
-    header.style.cssText = `display: flex; gap: 4px;`;
+    header.style.cssText = `display: flex; gap: 4px; min-width: 0;`;
 
     const searchInput = document.createElement("input");
     searchInput.placeholder = "Search instructions...";
-    searchInput.style.cssText = `flex: 1; padding: 5px; border-radius: 4px; border: 1px solid #444; background: #333; color: white; outline: none;`;
+    searchInput.style.cssText = `flex: 1 1 0; min-width: 0; width: 0; padding: 5px; border-radius: 4px; border: 1px solid #444; background: #333; color: white; outline: none;`;
 
     const addBtn = document.createElement("button");
     addBtn.innerHTML = "＋";
     addBtn.title = "Add Instruction";
-    addBtn.style.cssText = `min-width: 30px; padding: 0 8px; background: #444; border: none; border-radius: 4px; color: white; cursor: pointer;`;
+    addBtn.style.cssText = `flex: 0 0 auto; min-width: 30px; padding: 0 8px; background: #444; border: none; border-radius: 4px; color: white; cursor: pointer;`;
 
     const toggleFilterBtn = document.createElement("button");
     const inactiveEmoji = "⛶";
@@ -227,7 +227,7 @@ app.registerExtension({
 
     updateFilterBtnUI();
     toggleFilterBtn.title = "Show Selected Only";
-    toggleFilterBtn.style.cssText = `min-width: 30px; padding: 0 8px; background: #444; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 14px;`;
+    toggleFilterBtn.style.cssText = `flex: 0 0 auto; min-width: 30px; padding: 0 8px; background: #444; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 14px;`;
     // Logic for Toggle Filter Button
     toggleFilterBtn.onclick = () => {
       // If user tries to filter but nothing is selected
