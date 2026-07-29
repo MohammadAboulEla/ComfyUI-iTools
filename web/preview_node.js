@@ -24,6 +24,7 @@ app.registerExtension({
     let a = null;
     let b = null;
     let c = null;
+    let noteButton = null;
     let compare = false;
     let imgsBeforeCompare = null;
     let imagesTracked = [];
@@ -235,6 +236,115 @@ app.registerExtension({
         applyCompareState();
         toggleButtonActivation(c, compare);
       };
+
+      // Sits on top left of the image, only shown while hovering the node
+      noteButton = new SmartButton(8, 40, 70, 18, node, "Add Note");
+      noteButton.allowVisualHover = true;
+      noteButton.textYoffset = -0;
+      noteButton.isVisible = false;
+      noteButton.shape = Shapes.ROUND;
+      noteButton.roundRadius = 5;
+      noteButton.outlineWidth = 1;
+      noteButton.outlineColor = "#656565";
+      noteButton.color = "#222222AA";
+      noteButton.font = "11px Arial";
+      noteButton.onClick = () => {
+        const img = noteTargetImage();
+        if (!img) return;
+        app.extensionManager.dialog
+          .prompt({
+            title: "iTools Preview Image",
+            message: "Note for this image (leave empty to remove)",
+            defaultValue: getNote(img), // key name differs between frontend versions
+            default: getNote(img),
+          })
+          .then((value) => {
+            if (value === null || value === undefined) return; // cancelled
+            setNote(img, value.trim());
+            node.setDirtyCanvas(true, true);
+          });
+      };
+    }
+
+    // Notes are stored per image filename in node.properties, so they are saved
+    // with the workflow and follow the image through history / compare instead of
+    // being baked into the image itself
+    function getNotes() {
+      if (!node.properties.iToolsImageNotes) node.properties.iToolsImageNotes = {};
+      return node.properties.iToolsImageNotes;
+    }
+
+    function getNote(img) {
+      const key = getImageKey(img);
+      return (key && getNotes()[key]) || "";
+    }
+
+    function setNote(img, text) {
+      const key = getImageKey(img);
+      if (!key) return;
+      if (text) getNotes()[key] = text;
+      else delete getNotes()[key];
+    }
+
+    // The image a new note applies to: the one currently on screen, or the
+    // current (right hand) image while comparing
+    function noteTargetImage() {
+      if (!node.imgs?.length) return null;
+      if (compare && node.imgs.length > 1) return node.imgs.at(-1);
+      // In the grid state overIndex is the image the mouse is over
+      if (node.imageIndex == null && node.imgs.length > 1) return node.imgs[node.overIndex ?? 0];
+      return node.imgs[node.imageIndex ?? 0] || node.imgs[0];
+    }
+
+    // Mirrors the frontend renderPreview geometry so the note sits exactly on the
+    // image in both preview states: single image and the multi image grid
+    function collectNoteTargets(widget_width, shiftY, computedHeight) {
+      if (!node.imgs?.length) return [];
+
+      // Grid state: the frontend fills node.imageRects with the cell of each image
+      if (node.imageIndex == null && node.imgs.length > 1) {
+        const cells = node.imageRects;
+        if (!cells?.length) return [];
+        return node.imgs
+          .map((img, i) => {
+            const cell = cells[i];
+            if (!cell || !img?.width) return null;
+            const [cellX, cellY, cellW, cellH] = cell;
+            const ratio = Math.min(cellW / img.width, cellH / img.height);
+            const w = img.width * ratio;
+            const h = img.height * ratio;
+            return { img, rect: { x: cellX + (cellW - w) / 2, y: cellY + (cellH - h) / 2, w, h } };
+          })
+          .filter(Boolean);
+      }
+
+      // Single image state, scale is capped at 1 (no upscaling) like the frontend
+      const img = node.imgs[node.imageIndex ?? 0];
+      if (!img?.naturalWidth) return [];
+      const sizeTextHeight = app.extensionManager.setting.get("Comfy.Node.AllowImageSizeDraw") ? 15 : 0;
+      const dw = widget_width;
+      const dh = (computedHeight ?? node.size[1] - shiftY) - sizeTextHeight;
+      const scale = Math.min(dw / img.naturalWidth, dh / img.naturalHeight, 1);
+      const w = img.naturalWidth * scale;
+      const h = img.naturalHeight * scale;
+      return [{ img, rect: { x: (dw - w) / 2, y: (dh - h) / 2 + shiftY, w, h } }];
+    }
+
+    function drawNotes(ctx, widget_width, shiftY, computedHeight) {
+      const targets = collectNoteTargets(widget_width, shiftY || 0, computedHeight).filter((t) =>
+        getNote(t.img)
+      );
+      if (!targets.length) return;
+
+      // The frontend defers its drawImage calls to a microtask, so queue ours
+      // right after to land on top of the images instead of under them
+      const transform = ctx.getTransform();
+      queueMicrotask(() => {
+        ctx.save();
+        ctx.setTransform(transform);
+        for (const target of targets) drawNoteBar(ctx, target.rect, getNote(target.img));
+        ctx.restore();
+      });
     }
 
     // iToolsPreviewImage gets one image per run, while iToolsCompareImage gets two.
@@ -262,6 +372,25 @@ app.registerExtension({
       const previewWidget =
         node.widgets?.find((widget) => widget.name === "$$canvas-image-preview") ||
         node.widgets?.find((widget) => !(widget instanceof BaseSmartWidget) && widget.drawWidget);
+
+      // Pinned to the node, top left of the preview area, shown on hover
+      if (noteButton) {
+        const targetImg = noteTargetImage();
+        noteButton.isVisible = !!previewWidget && mouse.mouseInNode && !!node.imgs?.length;
+        if (typeof previewWidget?.y === "number") noteButton.myY = previewWidget.y + 6;
+        noteButton.text = getNote(targetImg) ? "Edit Note" : "Add Note";
+
+        // Widgets paint in array order, so keep the button after the image
+        // preview or the image covers it (it takes no layout space anyway)
+        const widgets = node.widgets;
+        const buttonIndex = widgets.indexOf(noteButton);
+        const previewIndex = widgets.indexOf(previewWidget);
+        if (buttonIndex !== -1 && previewIndex !== -1 && buttonIndex < previewIndex) {
+          widgets.splice(buttonIndex, 1);
+          widgets.push(noteButton);
+        }
+      }
+
       if (!previewWidget) return;
 
       const comparing = () => compare && node.imgs?.length > 1;
@@ -273,10 +402,11 @@ app.registerExtension({
         const originalDraw = previewWidget.draw;
         const drawWrapper = function (ctx, node, widget_width, y, widget_height, lowQuality) {
           if (comparing()) {
-            drawImgOverlay(mouse, node, widget_width, y, ctx, compare);
-            return;
+            drawImgOverlay(mouse, node, widget_width, y, ctx, compare, getNote);
+          } else {
+            originalDraw.call(this, ctx, node, widget_width, y, widget_height, lowQuality);
+            drawNotes(ctx, widget_width, y, this.computedHeight ?? widget_height);
           }
-          originalDraw.call(this, ctx, node, widget_width, y, widget_height, lowQuality);
         };
         previewWidget._itoolsDrawWrapper = drawWrapper;
         previewWidget.draw = drawWrapper;
@@ -285,11 +415,13 @@ app.registerExtension({
       if (previewWidget.drawWidget !== previewWidget._itoolsDrawWidgetWrapper) {
         const originalDrawWidget = previewWidget.drawWidget;
         const drawWidgetWrapper = function (ctx, options) {
+          const width = options?.width ?? node.size[0];
           if (comparing()) {
-            drawImgOverlay(mouse, node, options?.width ?? node.size[0], this.y, ctx, compare);
-            return;
+            drawImgOverlay(mouse, node, width, this.y, ctx, compare, getNote);
+          } else {
+            originalDrawWidget?.call(this, ctx, options);
+            drawNotes(ctx, width, this.y, this.computedHeight);
           }
-          originalDrawWidget?.call(this, ctx, options);
         };
         previewWidget._itoolsDrawWidgetWrapper = drawWidgetWrapper;
         previewWidget.drawWidget = drawWidgetWrapper;
@@ -351,11 +483,13 @@ app.registerExtension({
     node.onMouseEnter = (e) => {
       if(allow_debug) console.log('node.y',node.y);
       mouse.mouseInNode = true;
+      node.setDirtyCanvas(true, false); // reveal the note button
     };
 
     node.onMouseLeave = (e) => {
 
       mouse.mouseInNode = false;
+      node.setDirtyCanvas(true, false); // hide the note button
     };
 
     node.onMouseMove = (e, pos) => {
@@ -370,7 +504,38 @@ app.registerExtension({
 });
 
 const compareWay = app.extensionManager.setting.get("iTools.Nodes.Compare Mode", "makadi");
-function drawImgOverlay(mouse, node, widget_width, y, ctx, compareMode = false) {
+
+// Notes key off the output filename so the same image keeps its note across
+// runs, history cycling and compare
+function getImageKey(img) {
+  if (!img?.src) return "";
+  const match = img.src.match(/filename=([^&]+)/);
+  return match ? decodeURIComponent(match[1]) : img.src;
+}
+
+// Note bar sitting on the bottom of the image, clipped to it
+function drawNoteBar(ctx, rect, text) {
+  if (!text || !rect) return;
+  const fontSize = Math.max(8, Math.min(12, Math.round(rect.w / 16)));
+  const padding = Math.round(fontSize / 2);
+  const barHeight = fontSize + padding * 2;
+  const barY = rect.y + rect.h - barHeight;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(rect.x, barY, rect.w, barHeight);
+  ctx.clip();
+  ctx.fillStyle = "#000000AA";
+  ctx.fillRect(rect.x, barY, rect.w, barHeight);
+  ctx.fillStyle = "white";
+  ctx.font = `${fontSize}px monospace`;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, rect.x + padding, barY + barHeight / 2);
+  ctx.restore();
+}
+
+function drawImgOverlay(mouse, node, widget_width, y, ctx, compareMode = false, getNote = null) {
   if (!compareMode || !node.imgs || node.imgs.length < 2) return;
   y = y ? y : 0; // Ensure y is defined
 
@@ -427,6 +592,7 @@ function drawImgOverlay(mouse, node, widget_width, y, ctx, compareMode = false) 
   ctx.rect(0, y, splitX, dh);
   ctx.clip();
   ctx.drawImage(left.img, left.p.x, left.p.y, left.p.w, left.p.h);
+  drawNoteBar(ctx, left.p, getNote?.(left.img)); // clipped to this half
   ctx.restore();
 
   // Draw Right Side
@@ -435,5 +601,6 @@ function drawImgOverlay(mouse, node, widget_width, y, ctx, compareMode = false) 
   ctx.rect(splitX, y, dw - splitX, dh);
   ctx.clip();
   ctx.drawImage(right.img, right.p.x, right.p.y, right.p.w, right.p.h);
+  drawNoteBar(ctx, right.p, getNote?.(right.img));
   ctx.restore();
 }
