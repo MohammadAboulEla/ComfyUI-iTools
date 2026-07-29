@@ -25,6 +25,7 @@ app.registerExtension({
     let b = null;
     let c = null;
     let noteButton = null;
+    let drawNoteButton = () => {};
     let compare = false;
     let imgsBeforeCompare = null;
     let imagesTracked = [];
@@ -237,8 +238,8 @@ app.registerExtension({
         toggleButtonActivation(c, compare);
       };
 
-      // Sits on top left of the image, only shown while hovering the node
-      noteButton = new SmartButton(8, 40, 70, 18, node, "Add Note");
+      // Sits on the top left of the preview area
+      noteButton = new SmartButton(8, 40, 54, 17, node, "Add Note");
       noteButton.allowVisualHover = true;
       noteButton.textYoffset = -0;
       noteButton.isVisible = false;
@@ -263,6 +264,15 @@ app.registerExtension({
             setNote(img, value.trim());
             node.setDirtyCanvas(true, true);
           });
+      };
+
+      // The frontend paints the image from a deferred microtask, which lands on
+      // top of anything the widget pass drew, so this button is painted from that
+      // same deferred pass instead (see drawNoteLayer). Clicks still use isVisible.
+      const buttonDraw = noteButton.draw.bind(noteButton);
+      noteButton.draw = () => {};
+      drawNoteButton = (ctx) => {
+        if (noteButton.isVisible) buttonDraw(ctx);
       };
     }
 
@@ -330,19 +340,19 @@ app.registerExtension({
       return [{ img, rect: { x: (dw - w) / 2, y: (dh - h) / 2 + shiftY, w, h } }];
     }
 
-    function drawNotes(ctx, widget_width, shiftY, computedHeight) {
+    // The frontend defers its drawImage calls to a microtask, so queue the notes
+    // and the button right after to land on top of the images instead of under them
+    function drawNoteLayer(ctx, widget_width, shiftY, computedHeight) {
       const targets = collectNoteTargets(widget_width, shiftY || 0, computedHeight).filter((t) =>
         getNote(t.img)
       );
-      if (!targets.length) return;
 
-      // The frontend defers its drawImage calls to a microtask, so queue ours
-      // right after to land on top of the images instead of under them
       const transform = ctx.getTransform();
       queueMicrotask(() => {
         ctx.save();
         ctx.setTransform(transform);
         for (const target of targets) drawNoteBar(ctx, target.rect, getNote(target.img));
+        drawNoteButton(ctx);
         ctx.restore();
       });
     }
@@ -373,22 +383,12 @@ app.registerExtension({
         node.widgets?.find((widget) => widget.name === "$$canvas-image-preview") ||
         node.widgets?.find((widget) => !(widget instanceof BaseSmartWidget) && widget.drawWidget);
 
-      // Pinned to the node, top left of the preview area, shown on hover
+      // Pinned to the node, top left of the preview area
       if (noteButton) {
         const targetImg = noteTargetImage();
-        noteButton.isVisible = !!previewWidget && mouse.mouseInNode && !!node.imgs?.length;
+        noteButton.isVisible = !!previewWidget && !!node.imgs?.length;
         if (typeof previewWidget?.y === "number") noteButton.myY = previewWidget.y + 6;
         noteButton.text = getNote(targetImg) ? "Edit Note" : "Add Note";
-
-        // Widgets paint in array order, so keep the button after the image
-        // preview or the image covers it (it takes no layout space anyway)
-        const widgets = node.widgets;
-        const buttonIndex = widgets.indexOf(noteButton);
-        const previewIndex = widgets.indexOf(previewWidget);
-        if (buttonIndex !== -1 && previewIndex !== -1 && buttonIndex < previewIndex) {
-          widgets.splice(buttonIndex, 1);
-          widgets.push(noteButton);
-        }
       }
 
       if (!previewWidget) return;
@@ -403,9 +403,10 @@ app.registerExtension({
         const drawWrapper = function (ctx, node, widget_width, y, widget_height, lowQuality) {
           if (comparing()) {
             drawImgOverlay(mouse, node, widget_width, y, ctx, compare, getNote);
+            drawNoteButton(ctx); // compare draws its images synchronously
           } else {
             originalDraw.call(this, ctx, node, widget_width, y, widget_height, lowQuality);
-            drawNotes(ctx, widget_width, y, this.computedHeight ?? widget_height);
+            drawNoteLayer(ctx, widget_width, y, this.computedHeight ?? widget_height);
           }
         };
         previewWidget._itoolsDrawWrapper = drawWrapper;
@@ -418,9 +419,10 @@ app.registerExtension({
           const width = options?.width ?? node.size[0];
           if (comparing()) {
             drawImgOverlay(mouse, node, width, this.y, ctx, compare, getNote);
+            drawNoteButton(ctx); // compare draws its images synchronously
           } else {
             originalDrawWidget?.call(this, ctx, options);
-            drawNotes(ctx, width, this.y, this.computedHeight);
+            drawNoteLayer(ctx, width, this.y, this.computedHeight);
           }
         };
         previewWidget._itoolsDrawWidgetWrapper = drawWidgetWrapper;
@@ -483,13 +485,11 @@ app.registerExtension({
     node.onMouseEnter = (e) => {
       if(allow_debug) console.log('node.y',node.y);
       mouse.mouseInNode = true;
-      node.setDirtyCanvas(true, false); // reveal the note button
     };
 
     node.onMouseLeave = (e) => {
 
       mouse.mouseInNode = false;
-      node.setDirtyCanvas(true, false); // hide the note button
     };
 
     node.onMouseMove = (e, pos) => {
