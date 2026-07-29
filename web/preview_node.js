@@ -25,6 +25,7 @@ app.registerExtension({
     let b = null;
     let c = null;
     let compare = false;
+    let imgsBeforeCompare = null;
     let imagesTracked = [];
     const MAX_IMAGES = 8;
 
@@ -161,6 +162,7 @@ app.registerExtension({
         if (compare) {
           // cancel compare
           compare = !compare;
+          applyCompareState();
           toggleButtonActivation(c, compare);
         }
         if (!node.imgs) {
@@ -196,6 +198,7 @@ app.registerExtension({
         if (compare) {
           // cancel compare
           compare = !compare;
+          applyCompareState();
           toggleButtonActivation(c, compare);
         }
         togglingLastTwoImages();
@@ -215,14 +218,6 @@ app.registerExtension({
         // reset togglingLastTwoImages
         if (b.text !== "[Current] | Previous") togglingLastTwoImages();
 
-        // reset from history state
-        if (node.imageIndex === null) {
-          if (imagesTracked.length > 1) {
-            node.imageIndex = 0; // reset to single view
-            node.imgs = node.imgs = [node.imgs[node.imgs.length - 1]]; // show last image in node.imgs list;
-          }
-        }
-
         // start compare
         if (imagesTracked.length <= 1) {
           if (toastShownCountI < MAX_TOAST_SHOWS) {
@@ -237,9 +232,77 @@ app.registerExtension({
           return;
         }
         compare = !compare;
+        applyCompareState();
         toggleButtonActivation(c, compare);
       };
     }
+
+    // iToolsPreviewImage gets one image per run, while iToolsCompareImage gets two.
+    // Feeding node.imgs the last two tracked images puts this node in the same
+    // two-image preview state compare_node draws from.
+    function applyCompareState() {
+      if (compare) {
+        const lastTwo = imagesTracked.slice(-2);
+        imgsBeforeCompare = node.imgs;
+        node.imgs = [lastTwo[0], lastTwo[1]]; // A = previous, B = current
+        node.imageIndex = null; // multi image view, same as compare node
+      } else {
+        node.imgs = imgsBeforeCompare || [imagesTracked.at(-1)];
+        node.imageIndex = 0;
+        imgsBeforeCompare = null;
+      }
+      patchPreviewWidget(); // widget may already be swapped by the assignment above
+      node.setDirtyCanvas(true, true);
+    }
+
+    // Patches the image preview widget draw. Re-applied on demand because
+    // assigning node.imgs makes the frontend rebuild the widget, dropping the patch.
+    function patchPreviewWidget() {
+      // ImagePreviewWidget is added by the frontend under this name
+      const previewWidget =
+        node.widgets?.find((widget) => widget.name === "$$canvas-image-preview") ||
+        node.widgets?.find((widget) => !(widget instanceof BaseSmartWidget) && widget.drawWidget);
+      if (!previewWidget) return;
+
+      const comparing = () => compare && node.imgs?.length > 1;
+
+      // The canvas uses widget.draw when it exists, otherwise widget.drawWidget,
+      // so both entry points need the override
+      // Only wrap draw if the widget already has one, adding it would change dispatch
+      if (typeof previewWidget.draw === "function" && previewWidget.draw !== previewWidget._itoolsDrawWrapper) {
+        const originalDraw = previewWidget.draw;
+        const drawWrapper = function (ctx, node, widget_width, y, widget_height, lowQuality) {
+          if (comparing()) {
+            drawImgOverlay(mouse, node, widget_width, y, ctx, compare);
+            return;
+          }
+          originalDraw.call(this, ctx, node, widget_width, y, widget_height, lowQuality);
+        };
+        previewWidget._itoolsDrawWrapper = drawWrapper;
+        previewWidget.draw = drawWrapper;
+      }
+
+      if (previewWidget.drawWidget !== previewWidget._itoolsDrawWidgetWrapper) {
+        const originalDrawWidget = previewWidget.drawWidget;
+        const drawWidgetWrapper = function (ctx, options) {
+          if (comparing()) {
+            drawImgOverlay(mouse, node, options?.width ?? node.size[0], this.y, ctx, compare);
+            return;
+          }
+          originalDrawWidget?.call(this, ctx, options);
+        };
+        previewWidget._itoolsDrawWidgetWrapper = drawWidgetWrapper;
+        previewWidget.drawWidget = drawWidgetWrapper;
+      }
+    }
+
+    // Canvas level hook, same approach as BaseSmartWidget: runs every frame so the
+    // patch is re-applied as soon as the frontend rebuilds the preview widget
+    const origCanvasDrawForeground = app.canvas.onDrawForeground;
+    app.canvas.onDrawForeground = (ctx) => {
+      if (origCanvasDrawForeground) origCanvasDrawForeground.call(app.canvas, ctx);
+      if (node.graph) patchPreviewWidget();
+    };
 
     createButtons();
 
@@ -264,22 +327,11 @@ app.registerExtension({
           pushToImgs(lastImage);
         }
 
+        // Keep comparing against the freshly generated image
+        if (compare) applyCompareState();
+
         // Override draw function in ImagePreviewWidget
-        const previewWidget = node.widgets.find((widget) => !(widget instanceof BaseSmartWidget));
-        if (!previewWidget) {
-          if (allow_debug) console.log("ImagePreviewWidget not found");
-          return;
-        }
-    
-        const originalDraw = previewWidget.drawWidget;
-        if (originalDraw) {
-          previewWidget.draw = function (ctx, node, widget_width, y, widget_height, ...args) {
-            // Call the original draw function first
-            originalDraw.apply(this, [ctx, node, widget_width, y, widget_height, ...args]);
-            
-            drawImgOverlay(mouse, node, widget_width, y, ctx, imagesTracked, compare);
-          };
-        }
+        patchPreviewWidget();
       }, 300);
     };
 
@@ -317,41 +369,71 @@ app.registerExtension({
   
 });
 
-function drawImgOverlay(mouse, node, widget_width, y, ctx, _imagesRef, compareMode = false) {
-  if (!compareMode) return;
+const compareWay = app.extensionManager.setting.get("iTools.Nodes.Compare Mode", "makadi");
+function drawImgOverlay(mouse, node, widget_width, y, ctx, compareMode = false) {
+  if (!compareMode || !node.imgs || node.imgs.length < 2) return;
   y = y ? y : 0; // Ensure y is defined
 
-  const allowImageSizeDraw = app.extensionManager.setting.get("Comfy.Node.AllowImageSizeDraw", true);
-  const IMAGE_TEXT_SIZE_TEXT_HEIGHT = allowImageSizeDraw ? 15 : 0;
-
-  const img2 = _imagesRef[0];
-  const img1 = _imagesRef.length > 1 ? _imagesRef[_imagesRef.length - 2] : null;
-  if (!img2) {
+  const img1 = node.imgs[0]; // previous
+  const img2 = node.imgs[1]; // current
+  if (!img1 || !img2) {
     if (allow_debug) console.log("No previous image to compare with");
     return;
-  };
+  }
 
   const dw = widget_width;
-  const dh = node.size[1] - y - IMAGE_TEXT_SIZE_TEXT_HEIGHT;
-  let w = Math.max(img1.naturalWidth, img2.naturalWidth);
-  let h = Math.max(img1.naturalHeight, img2.naturalHeight);
+  const dh = node.size[1] - y;
 
-  const scaleX = dw / w;
-  const scaleY = dh / h;
-  const scale = Math.min(scaleX, scaleY, 1);
+  // Force both images to the same height (dh), scaling down if too wide
+  const getParams = (img) => {
+    const scale = dh / img.naturalHeight;
+    const w = img.naturalWidth * scale;
+    const finalScale = w > dw ? dw / w : 1;
 
-  w *= scale;
-  h *= scale;
+    const finalW = w * finalScale;
+    const finalH = dh * finalScale;
 
-  // Centered position within the widget
-  const imgX = (dw - w) / 2;
-  const imgY = (dh - h) / 2 + y; // +y to offset within canvas
+    return {
+      x: (dw - finalW) / 2,
+      y: y + (dh - finalH) / 2,
+      w: finalW,
+      h: finalH,
+    };
+  };
 
-  const mouseX = mouse.x
-  const splitX = Math.max(imgX, Math.min(mouseX, imgX + w));
-  const splitRatio = (splitX - imgX) / w;
+  const p1 = getParams(img1);
+  const p2 = getParams(img2);
 
-  if (img1 && compareMode) {
-   ctx.drawImage(img1, 0, 0, img1.naturalWidth * splitRatio, img1.naturalHeight, imgX, imgY, w * splitRatio, h);
+  // Shared interaction bounds (the container area)
+  const viewW = Math.max(p1.w, p2.w);
+  const imgX = (dw - viewW) / 2;
+
+  let mouseX;
+  if (compareWay === "makadi") {
+    const graphMouse = app.canvas.graph_mouse;
+    mouseX = graphMouse[0] - node.pos[0];
+  } else {
+    mouseX = mouse.mouseInNode ? mouse.x : dw / 2;
   }
+
+  const splitX = Math.max(imgX, Math.min(mouseX, imgX + viewW));
+
+  const left = compareWay === "makadi" ? { img: img1, p: p1 } : { img: img2, p: p2 };
+  const right = compareWay === "makadi" ? { img: img2, p: p2 } : { img: img1, p: p1 };
+
+  // Draw Left Side
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, y, splitX, dh);
+  ctx.clip();
+  ctx.drawImage(left.img, left.p.x, left.p.y, left.p.w, left.p.h);
+  ctx.restore();
+
+  // Draw Right Side
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(splitX, y, dw - splitX, dh);
+  ctx.clip();
+  ctx.drawImage(right.img, right.p.x, right.p.y, right.p.w, right.p.h);
+  ctx.restore();
 }
