@@ -16,7 +16,7 @@ app.registerExtension({
     }
 
     // init size
-    node.size = [285, 330];
+    node.size = [350, 350];
 
     if (allow_debug) console.log("node", node);
 
