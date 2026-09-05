@@ -269,10 +269,10 @@ app.registerExtension({
       // The frontend paints the image from a deferred microtask, which lands on
       // top of anything the widget pass drew, so this button is painted from that
       // same deferred pass instead (see drawNoteLayer). Clicks still use isVisible.
-      const buttonDraw = noteButton.draw.bind(noteButton);
+      const origButtonDraw = noteButton.draw;
       noteButton.draw = () => {};
       drawNoteButton = (ctx) => {
-        if (noteButton.isVisible) buttonDraw(ctx);
+        if (noteButton.isVisible) origButtonDraw.call(noteButton, ctx);
       };
     }
 
