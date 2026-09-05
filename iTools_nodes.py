@@ -1243,9 +1243,13 @@ class IToolsImageAdjust(io.ComfyNode):
 
         # Primary path: JS has already rendered all adjustments into processedImageData.
         # We just decode it — preview and output are guaranteed to match.
+        # Cap the encoded payload to guard against memory-exhaustion via oversized/decompression-bomb images.
+        MAX_BASE64_CHARS = 40 * 1024 * 1024  # ~30MB decoded
         if processed_data:
             if "," in processed_data:
                 processed_data = processed_data.split(",", 1)[1]
+            if len(processed_data) > MAX_BASE64_CHARS:
+                raise ValueError("processedImageData exceeds the maximum allowed size")
             pil_img = Image.open(py_io.BytesIO(base64.b64decode(processed_data))).convert("RGB")
 
         # Fallback: API / headless mode / optimal workflow path — JS does not send processedImageData bloat
@@ -1255,6 +1259,8 @@ class IToolsImageAdjust(io.ComfyNode):
                 pil_img = Image.fromarray(arr).convert("RGB")
             elif image_data:
                 raw = image_data.split(",", 1)[1] if "," in image_data else image_data
+                if len(raw) > MAX_BASE64_CHARS:
+                    raise ValueError("imageData exceeds the maximum allowed size")
                 pil_img = Image.open(py_io.BytesIO(base64.b64decode(raw))).convert("RGB")
             elif image_path:
                 full_path = folder_paths.get_annotated_filepath(image_path)
