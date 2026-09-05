@@ -1,6 +1,6 @@
 from server import PromptServer
 from aiohttp import web
-from .shared import load_yaml_data, read_styles, clean_text, project_dir
+from .shared import load_yaml_data, read_styles, clean_text, project_dir, get_safe_path
 import os
 import random
 
@@ -28,6 +28,8 @@ templates_extra3 = read_styles(yaml_data_extra3)
 def get_template_value_from_yaml_file(file_name, template_name):
     positive_prompt = ""
     negative_prompt = ""
+    if file_name:
+        file_name = os.path.basename(file_name)
     file_path = os.path.join(project_dir, "styles", file_name)
     file_path2 = os.path.join(project_dir, "styles","more examples", file_name)
     _yaml_data = load_yaml_data(file_path) or load_yaml_data(file_path2)
@@ -126,8 +128,17 @@ def combine_multi(text_positive, text_negative,
 async def respond_to_request_templates_for_file(request):
     post = await request.post()
     file_name = post.get("file_name")
-    file_path = os.path.join(project_dir, "styles", file_name)
-    file_path2 = os.path.join(project_dir, "styles","more examples", file_name)
+    if not file_name:
+        return web.json_response(data={"templates": []})
+
+    try:
+        file_path = get_safe_path(os.path.join(project_dir, "styles"), file_name)
+        file_path2 = get_safe_path(
+            os.path.join(project_dir, "styles", "more examples"), file_name
+        )
+    except ValueError as e:
+        return web.json_response({"status": "error", "message": str(e)}, status=400)
+
     yaml_data = load_yaml_data(file_path) or load_yaml_data(file_path2)
     templates = read_styles(yaml_data)
     data = {"templates": templates}

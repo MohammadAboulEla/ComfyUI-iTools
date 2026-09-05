@@ -51,6 +51,18 @@ class FileHandler:
         return text.replace('\\"', '"').replace("\\'", "'")
 
 
+def get_safe_path(base_dir, filename):
+    """Sanitize and resolve filename, preventing path traversal attacks."""
+    safe_name = os.path.basename(filename)
+    if not safe_name or safe_name in (".", ".."):
+        raise ValueError("Invalid filename")
+    base_resolved = os.path.realpath(base_dir)
+    resolved = os.path.realpath(os.path.join(base_resolved, safe_name))
+    if os.path.commonpath([base_resolved, resolved]) != base_resolved:
+        raise ValueError("Path traversal detected")
+    return resolved
+
+
 def base64_to_pil(base64_string):
     header, encoded = base64_string.split(",", 1)  # Remove the data URL header
     image_data = base64.b64decode(encoded)

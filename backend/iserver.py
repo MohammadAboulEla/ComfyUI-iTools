@@ -3,7 +3,7 @@ from PIL import Image  # type: ignore
 from aiohttp import web  # type: ignore
 from server import PromptServer  # type: ignore
 
-from .shared import project_dir, styles
+from .shared import project_dir, styles, get_safe_path
 from .prompter import load_yaml_data, read_styles, read_replace_and_combine
 
 # PAINT NODE SERVICES
@@ -24,13 +24,24 @@ async def respond_to_request_save_paint(request):
     # Define the directory where the images will be saved
     save_directory = os.path.join(project_dir, "backend")
 
+    try:
+        foreground_path = get_safe_path(save_directory, foreground_file.filename)
+        background_path = get_safe_path(save_directory, background_file.filename)
+    except ValueError as e:
+        return web.json_response({"status": "error", "message": str(e)}, status=400)
+
+    # Validate image extensions
+    valid_exts = (".png", ".jpg", ".jpeg", ".webp")
+    if not (foreground_path.lower().endswith(valid_exts) and background_path.lower().endswith(valid_exts)):
+        return web.json_response(
+            {"status": "error", "message": "Invalid file extension"}, status=400
+        )
+
     # Save the foreground file
-    foreground_path = os.path.join(save_directory, foreground_file.filename)
     with open(foreground_path, "wb") as f:
         f.write(foreground_file.file.read())
 
     # Save the background file
-    background_path = os.path.join(save_directory, background_file.filename)
     with open(background_path, "wb") as f:
         f.write(background_file.file.read())
 
@@ -56,9 +67,11 @@ async def respond_to_request_the_paint_file(request):
     # Define the directory where the images are saved
     save_directory = os.path.join(project_dir, "backend")
 
-    # Define file paths
-    foreground_path = os.path.join(save_directory, f"{filename_prefix}_foreground.png")
-    background_path = os.path.join(save_directory, f"{filename_prefix}_background.png")
+    try:
+        foreground_path = get_safe_path(save_directory, f"{filename_prefix}_foreground.png")
+        background_path = get_safe_path(save_directory, f"{filename_prefix}_background.png")
+    except ValueError as e:
+        return web.json_response({"status": "error", "message": str(e)}, status=400)
 
     # Check if both files exist
     if not os.path.exists(foreground_path) or not os.path.exists(background_path):
@@ -97,10 +110,12 @@ async def respond_to_request_load_img(request):
     # Define the directory where the images are saved
     save_directory = os.path.join(project_dir, "backend")
 
-    # Define file paths
-    img_path = os.path.join(save_directory, f"{filename_prefix}.png")
+    try:
+        img_path = get_safe_path(save_directory, f"{filename_prefix}.png")
+    except ValueError as e:
+        return web.json_response({"status": "error", "message": str(e)}, status=400)
 
-    # Check if both files exist
+    # Check if file exists
     if not os.path.exists(img_path):
         return web.json_response(
             {"status": "error", "message": "File not found"}, status=404
@@ -192,9 +207,17 @@ async def get_styler_data(request):
 async def get_style_templates(request):
     post = await request.post()
     file_name = post.get("file_name")
+    if not file_name:
+        return web.json_response({"templates": []})
 
-    file_path = os.path.join(project_dir, "styles", file_name)
-    file_path2 = os.path.join(project_dir, "styles", "more examples", file_name)
+    try:
+        file_path = get_safe_path(os.path.join(project_dir, "styles"), file_name)
+        file_path2 = get_safe_path(
+            os.path.join(project_dir, "styles", "more examples"), file_name
+        )
+    except ValueError as e:
+        return web.json_response({"status": "error", "message": str(e)}, status=400)
+
     yaml_data = load_yaml_data(file_path) or load_yaml_data(file_path2)
     templates = read_styles(yaml_data)
 
@@ -206,8 +229,11 @@ async def merge_style(request):
     post = await request.post()
     prompt = post.get("prompt", "")
     negative = post.get("negative", "")
-    style_file = post.get("style_file")
-    template_name = post.get("template_name")
+    style_file = post.get("style_file", "")
+    template_name = post.get("template_name", "")
+
+    if style_file:
+        style_file = os.path.basename(style_file)
 
     pos, neg, used = read_replace_and_combine(
         template_name, prompt, negative, style_file

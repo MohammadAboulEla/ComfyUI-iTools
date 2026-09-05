@@ -1,7 +1,7 @@
 import os
 from aiohttp import web
 from server import PromptServer
-from .shared import load_yaml_data, read_styles, clean_text, project_dir
+from .shared import load_yaml_data, read_styles, clean_text, project_dir, get_safe_path
 import random
 
 file_name = "basic.yaml"
@@ -10,7 +10,9 @@ yaml_data = load_yaml_data(file_path)
 templates = read_styles(yaml_data)
 
 def read_replace_and_combine(template_name, positive_prompt, negative_prompt, _file_name):
-
+    if not _file_name:
+        return clean_text(positive_prompt), clean_text(negative_prompt), ""
+    _file_name = os.path.basename(_file_name)
     _file_path = os.path.join(project_dir, "styles", _file_name)
     _file_path2 = os.path.join(project_dir, "styles", "more examples", _file_name)
     _yaml_data = load_yaml_data(_file_path) or load_yaml_data(_file_path2)
@@ -82,11 +84,17 @@ async def respond_to_js_message(request):
     global templates
 
     post = await request.post()
-    file_name = post.get('message')
-    # print("Post received", file_name)
+    raw_file_name = post.get('message')
+    if not raw_file_name:
+        return web.json_response(data={"new_templates": []})
 
-    file_path = os.path.join(project_dir, "styles", file_name)
-    file_path2 = os.path.join(project_dir, "styles","more examples", file_name)
+    try:
+        file_path = get_safe_path(os.path.join(project_dir, "styles"), raw_file_name)
+        file_path2 = get_safe_path(os.path.join(project_dir, "styles", "more examples"), raw_file_name)
+    except ValueError as e:
+        return web.json_response({"status": "error", "message": str(e)}, status=400)
+
+    file_name = os.path.basename(raw_file_name)
     yaml_data = load_yaml_data(file_path) or load_yaml_data(file_path2)
     templates = read_styles(yaml_data)
 
