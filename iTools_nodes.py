@@ -1405,27 +1405,4 @@ def append_extra_nodes():
         except ModuleNotFoundError as e:
             pass
 
-    if allow_experimental_nodes:
-        try:
-            from .experimental.experimental_nodes import (
-                IToolsFreeChat,
-                IToolsFreeSchnell,
-            )
-
-            NODE_CLASS_MAPPINGS["iToolsFreeChat"] = IToolsFreeChat
-            NODE_DISPLAY_NAME_MAPPINGS["iToolsFreeChat"] = (
-                "Free Chat (API)" if use_simple_names else "iTools Free Chat (API)"
-            )
-
-            NODE_CLASS_MAPPINGS["iToolsFreeSchnell"] = IToolsFreeSchnell
-            NODE_DISPLAY_NAME_MAPPINGS["iToolsFreeSchnell"] = (
-                "Free Schnell (API)"
-                if use_simple_names
-                else "iTools Free Schnell (API)"
-            )
-
-        except ModuleNotFoundError as e:
-            pass
-
-
 append_extra_nodes()

@@ -3,6 +3,16 @@ name = "comfyui-itools"
 description = "Whether you're a casual user or a power user, iTools provides the quality-of-life improvements you need to make your ComfyUI experience more efficient and enjoyable."
 version = "0.7.2"
 license = {file = "LICENSE"}
+dependencies = [
+    "Pillow",
+    "numpy",
+    "torch",
+    "pyyaml"
+]
+
+[project.optional-dependencies]
+rembg = ["rembg[gpu]"]
+together = ["together"]
 
 [project.urls]
 Repository = "https://github.com/MohammadAboulEla/ComfyUI-iTools"

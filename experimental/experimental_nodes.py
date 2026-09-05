@@ -7,7 +7,6 @@ from ..backend.shared import (
     base64_to_pil,
     any_type,
     FlexibleOptionalInputType,
-    get_together_client,
 )
 import os
 import folder_paths  # type: ignore
@@ -16,88 +15,6 @@ import numpy as np  # type: ignore
 import torch  # type: ignore
 import hashlib
 from ..backend import iserver
-
-# experimental nodes
-class IToolsFreeSchnell:
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "prompt": ("STRING", {"forceInput": True}),
-                "width": ("INT", {"default": 1024, "min": 0, "max": 2048}),
-                "height": ("INT", {"default": 1024, "min": 0, "max": 2048}),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xFFFFFFFF}),
-                # "batch": ("INT", {"default": 1, "min": 1, "max": 8}),
-            }
-        }
-
-    CATEGORY = "iTools"
-
-    RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("image",)
-    FUNCTION = "generate_image"
-    DESCRIPTION = "Will return free Flux-Schnell image from a together.ai free API"
-
-    def generate_image(self, prompt, width, height, seed):
-        client = get_together_client()
-        response = client.images.generate(
-            prompt=prompt,
-            model="black-forest-labs/FLUX.1-schnell-Free",
-            width=width,
-            height=height,
-            steps=4,
-            n=1,
-            seed=seed,
-            response_format="b64_json",
-        )
-        images = []
-        # # # Decode the base64 image
-        image_data = base64.b64decode(response.data[0].b64_json)
-        image = Image.open(io.BytesIO(image_data))
-        images.append(pil2tensor(image))
-        return images
-
-
-class IToolsFreeChat:
-    @classmethod
-    def INPUT_TYPES(s):
-        models = [
-            "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
-            "meta-llama/Llama-Vision-Free",
-            "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
-        ]
-        return {
-            "required": {
-                "model": (
-                    models,
-                    {"default": "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"},
-                ),
-                "chat": (
-                    "STRING",
-                    {
-                        "default": "",
-                        "placeholder": "Chat in supported languages",
-                        "multiline": True,
-                    },
-                ),
-            }
-        }
-
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("answer",)
-    FUNCTION = "chat"
-    OUTPUT_NODE = True
-    CATEGORY = "iTools"
-    DESCRIPTION = "Chat with free Together.ai language models"
-
-    def chat(self, model, chat):
-        client = get_together_client()
-        response = client.chat.completions.create(
-            model=model, messages=[{"role": "user", "content": chat}], stream=False
-        )
-        answer = response.choices[0].message.content
-        # print(answer)
-        return (answer,)
 
 # dev nodes
 class IToolsTestNode:

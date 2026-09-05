@@ -242,13 +242,15 @@ export class SmartImage extends BaseSmartWidget {
         this.fetchMaskedImageFromAPI();
       } else {
         console.error("Error:", result.message);
+        alert(result.message || "Background removal failed.");
+        this.loader.isVisible = false;
       }
     } catch (error) {
       console.error("Error fetching the drawing:", error);
+      alert("Error during background removal: " + error.message);
+      this.loader.isVisible = false;
     } finally {
-      // this.isMasked = true;
-      // this.loader.markDelete = true;
-      // this.loader.isVisible = false;
+      this.loader.isVisible = false;
     }
   }
 

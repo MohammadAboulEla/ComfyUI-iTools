@@ -9,8 +9,6 @@ from PIL import Image  # type: ignore
 import json
 import base64
 import io
-import subprocess
-import sys
 
 
 class FileHandler:
@@ -51,11 +49,6 @@ class FileHandler:
 
     def unescape_quotes(self, text):
         return text.replace('\\"', '"').replace("\\'", "'")
-
-
-def install_package(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 
 def base64_to_pil(base64_string):
@@ -219,42 +212,6 @@ def pil2mask(image):
     if mask.dim() == 2:
         mask = mask.unsqueeze(0)  # Shape: [1, H, W]
     return mask
-
-
-# deprecated
-def get_together_client():
-    ud_dir = os.path.join(folder_paths.base_path, "user", "default")
-    settings_file = os.path.join(ud_dir, "comfy.settings.json")
-
-    with open(settings_file, "r") as file:
-        settings = json.load(file)
-
-    together_api = settings.get("iTools.Nodes. together.ai Api Key", "None")
-
-    try:
-        from together import Together  # type: ignore
-    except ImportError:
-        install_package("together")
-        from together import Together  # type: ignore # re-import after installation
-
-    api_key = together_api
-    if not api_key or api_key == "None":
-        api_key = os.environ.get("TOGETHER_API_KEY")
-
-    if not api_key:
-        raise MyCustomError(
-            "Together.ai API key not found.\n"
-            "Get a free key by signing in at together.ai,\n"
-            "then add it in iTools settings or set the TOGETHER_API_KEY environment variable.\n"
-            "Finally, restart ComfyUI."
-        )
-
-    try:
-        client = Together(api_key=api_key)
-    except Exception as e:
-        raise MyCustomError("Failed to initialize Together client.") from e
-
-    return client
 
 
 # get allow beta nodes

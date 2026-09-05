@@ -41,7 +41,7 @@ const itoolsSettings = [
     type: "boolean",
     defaultValue: false,
     tooltip:
-      "Give a permission to download 209mb models needed for removing background from images.\n\n As for this Beta version models are saved in the user home folder in the .u2net directory.",
+      "Requires 'rembg' library installed (pip install rembg[gpu] or pip install rembg). Enables background removal/masking in iTools Paint Node.\n\nNote: rembg downloads the model (~176MB) to your user home folder (.u2net) on first use.",
     toastMsg: "Refresh your browser",
   },
   {

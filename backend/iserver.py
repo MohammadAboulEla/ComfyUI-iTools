@@ -3,7 +3,7 @@ from PIL import Image  # type: ignore
 from aiohttp import web  # type: ignore
 from server import PromptServer  # type: ignore
 
-from .shared import project_dir, install_package, styles
+from .shared import project_dir, styles
 from .prompter import load_yaml_data, read_styles, read_replace_and_combine
 
 # PAINT NODE SERVICES
@@ -121,12 +121,13 @@ async def respond_to_request_load_img(request):
 
 
 def removeBackground(input_path, output_path):
-    # Try importing rembg
     try:
         from rembg import remove  # type: ignore
-    except ImportError:
-        install_package("rembg[gpu]")
-        from rembg import remove  # type: ignore # Retry the import after installation
+    except ImportError as e:
+        raise ImportError(
+            "The 'rembg' package is required for background removal. "
+            "Please install it manually: pip install rembg[gpu] or pip install rembg"
+        ) from e
 
     input_img = Image.open(input_path)
     output_img = remove(input_img)
@@ -157,14 +158,23 @@ async def respond_to_request_mask_img(request):
 
     # Process the saved file
     img_out = os.path.join(save_directory, "iToolsMaskedImg.png")
-    removeBackground(temp_file_path, img_out)
-
-    # Clean up the temporary file if needed
-    if os.path.exists(temp_file_path):
-        try:
-            os.remove(temp_file_path)
-        except Exception as e:
-            pass
+    try:
+        removeBackground(temp_file_path, img_out)
+    except ImportError as e:
+        return web.json_response(
+            {"status": "error", "message": str(e)}, status=500
+        )
+    except Exception as e:
+        return web.json_response(
+            {"status": "error", "message": f"Background removal failed: {e}"}, status=500
+        )
+    finally:
+        # Clean up the temporary file if needed
+        if os.path.exists(temp_file_path):
+            try:
+                os.remove(temp_file_path)
+            except Exception:
+                pass
 
     return web.json_response(
         {
