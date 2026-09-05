@@ -386,7 +386,9 @@ app.registerExtension({
       // Pinned to the node, top left of the preview area
       if (noteButton) {
         const targetImg = noteTargetImage();
-        noteButton.isVisible = !!previewWidget && !!node.imgs?.length;
+        // Hidden in the history grid, there is no single image to attach a note to
+        const inHistoryGrid = !compare && node.imageIndex == null && node.imgs?.length > 1;
+        noteButton.isVisible = !!previewWidget && !!node.imgs?.length && !inHistoryGrid;
         if (typeof previewWidget?.y === "number") noteButton.myY = previewWidget.y + 6;
         noteButton.text = getNote(targetImg) ? "Edit Note" : "Add Note";
       }
