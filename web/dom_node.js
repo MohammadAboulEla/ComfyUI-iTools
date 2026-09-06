@@ -2,7 +2,10 @@ import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
 
-
+/* this node is compatible with ComfyUI Node.2.
+I use this node as a perfect simple example for an AI agent
+to understand how to create a DOM widget.
+*/
 app.registerExtension({
   name: "iTools.domNode",
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
