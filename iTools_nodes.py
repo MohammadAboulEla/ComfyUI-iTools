@@ -1202,9 +1202,18 @@ class IToolsImageAdjust(io.ComfyNode):
 
     @classmethod
     def define_schema(cls) -> io.Schema:
+        display_name = (
+            NODE_DISPLAY_NAME_MAPPINGS.get("iToolsImageAdjust", "Image Adjustments 🎛️")
+            if "NODE_DISPLAY_NAME_MAPPINGS" in globals()
+            else (
+                "Image Adjustments 🎛️"
+                if get_user_node_display_name_preferences()
+                else "iTools Image Adjustments 🎛️"
+            )
+        )
         return io.Schema(
-            node_id="iToolsImageAdjust", # same as node mapping
-            display_name="Image Adjustments 🎛️", # same as node mapping
+            node_id="iToolsImageAdjust",  # same as node mapping
+            display_name=display_name,
             category="iTools",
             description=(
                 "Upload an image, right click to paste image from clipboard, or connect one from the workflow, then use the "
@@ -1362,7 +1371,7 @@ BASE_MAPPINGS = {
     "iToolsPromptRecord": "Prompt Record 🪶",
     "iToolsInstructorNode": "Instructor 👨🏻‍🏫",
     "iToolsPromptBuilder": "Prompt Builder 🛖",
-    "iToolsImageAdjust": "Image Adjustments", # V3 node so name is overriden by node display name
+    "iToolsImageAdjust": "Image Adjustments 🎛️",
 }
 
 
