@@ -95,6 +95,7 @@ app.registerExtension({
 
     let _lastGraphScale = 0;
     node.addDOMWidget("PaintWidget", "custom", container, {
+      tooltip: 'Paint Widget',
       getValue: () => ({}),
       setValue: (v) => {},
       getMinHeight: () => NODE_H,
@@ -111,7 +112,7 @@ app.registerExtension({
         }
       },
     });
-
+    widget.tooltip = 'Paint Widget'
     // Intercept addCustomWidget BEFORE any Smart* widget is constructed, so
     // widgets land in node._smartWidgets (owned by us) rather than in
     // node.widgets (where litegraph would also try to draw them onto its own

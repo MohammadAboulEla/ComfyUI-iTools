@@ -107,6 +107,7 @@ app.registerExtension({
 
     // Create the widget
     const widget = node.addDOMWidget("CounterWidget", "custom", container, {
+      tooltip: 'Counter Widget',
       getValue: () => ({
         count: parseInt(counterValue.textContent),
         text: textarea.value
@@ -123,7 +124,7 @@ app.registerExtension({
       onDraw: (ctx) => {
       }
     });
-    
+    widget.tooltip = 'Counter Widget'
     // Apply margin directly to the container
     container.style.marginTop = "0px";
     

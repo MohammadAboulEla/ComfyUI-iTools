@@ -496,6 +496,7 @@ app.registerExtension({
     // Node setup
     node.size = [320, 260];
     const widget = node.addDOMWidget("PromptBuilderWidget", "custom", container, {
+      tooltip: "Prompt Builder",
       getValue: () => {
         return {
           prompt: promptArea.value,
@@ -531,6 +532,7 @@ app.registerExtension({
         updateStyleLabel();
       },
     });
+    widget.tooltip = "Prompt Builder";
     // init size
     node.size = [400, 300];
     node.onResize = () => {

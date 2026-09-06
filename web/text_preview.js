@@ -6,6 +6,18 @@ app.registerExtension({
   name: "iTools.previewText",
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
     if (nodeData.name === "iToolsPreviewText") {
+      if (!nodeData.input) nodeData.input = {};
+      if (!nodeData.input.optional) nodeData.input.optional = {};
+      nodeData.input.optional.text2 = ["STRING", { multiline: true, tooltip: "Preview Text" }];
+
+      const origAddCustomWidget = nodeType.prototype.addCustomWidget;
+      nodeType.prototype.addCustomWidget = function (w) {
+        if (w && !w.tooltip) {
+          w.tooltip = "Preview Text";
+        }
+        return origAddCustomWidget ? origAddCustomWidget.apply(this, arguments) : undefined;
+      };
+
       function populate(text) {
         if (this.widgets?.length > 0) {
           this.widgets.slice(0).forEach((w) => w.onRemove?.());
@@ -15,15 +27,14 @@ app.registerExtension({
         const values = Array.isArray(text) ? text.filter(Boolean) : [text];
 
         for (const value of values) {
-          const widget = ComfyWidgets["STRING"](this, "text2", ["STRING", { multiline: true }], app).widget;
+          const widget = ComfyWidgets["STRING"](this, "text2", ["STRING", { multiline: true, tooltip: "Preview Text" }], app).widget;
 
-          // Check if widget and inputEl exist
-          if (widget && widget.inputEl) {
-            widget.inputEl.readOnly = true;
-            widget.inputEl.style.opacity = "0.8";
-            widget.value = value;
-          } else if (widget) {
-            // Fallback: If inputEl doesn't exist, just set the value
+          if (widget) {
+            widget.tooltip = "Preview Text";
+            if (widget.inputEl) {
+              widget.inputEl.readOnly = true;
+              widget.inputEl.style.opacity = "0.8";
+            }
             widget.value = value;
           }
         }

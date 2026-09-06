@@ -541,6 +541,7 @@ app.registerExtension({
     node.size = [310, 380];
 
     let widget = node.addDOMWidget("InstructorWidget", "custom", container, {
+      tooltip: 'Instructor',
       getValue: () => {
         const finalStrings = [];
         const allTemplates = getMergedTemplates();
@@ -574,7 +575,7 @@ app.registerExtension({
         }
       },
     });
-
+    widget.tooltip = 'Instructor'
     renderList();
     node.setDirtyCanvas(true, true);
 
