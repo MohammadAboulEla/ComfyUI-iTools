@@ -2,6 +2,7 @@ __pycache__
 .vscode
 .idea
 .claude
+.agents
 ignore
 excluded
 
