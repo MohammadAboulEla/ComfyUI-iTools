@@ -1241,24 +1241,42 @@ class IToolsImageAdjust(io.ComfyNode):
         image_data     = state.get("imageData", "")
         image_path     = state.get("imagePath", "")
 
+        MAX_BASE64_CHARS = 40 * 1024 * 1024  # ~30MB decoded payload cap
+        MAX_IMAGE_DIMENSION = 8192  # Max width/height constraint against decompression bombs
+
         # Primary path: JS has already rendered all adjustments into processedImageData.
         # We just decode it — preview and output are guaranteed to match.
         if processed_data:
             if "," in processed_data:
                 processed_data = processed_data.split(",", 1)[1]
-            pil_img = Image.open(py_io.BytesIO(base64.b64decode(processed_data))).convert("RGB")
+            if len(processed_data) > MAX_BASE64_CHARS:
+                raise ValueError("processedImageData exceeds the maximum allowed size")
+            with Image.open(py_io.BytesIO(base64.b64decode(processed_data))) as img:
+                if img.width > MAX_IMAGE_DIMENSION or img.height > MAX_IMAGE_DIMENSION:
+                    raise ValueError(f"processedImageData dimensions ({img.width}x{img.height}) exceed maximum allowed ({MAX_IMAGE_DIMENSION}x{MAX_IMAGE_DIMENSION})")
+                pil_img = img.convert("RGB")
 
         # Fallback: API / headless mode / optimal workflow path — JS does not send processedImageData bloat
         elif image is not None or image_data or image_path:
             if image is not None:
+                if image.shape[1] > MAX_IMAGE_DIMENSION or image.shape[2] > MAX_IMAGE_DIMENSION:
+                    raise ValueError(f"Image tensor dimensions exceed maximum allowed ({MAX_IMAGE_DIMENSION}x{MAX_IMAGE_DIMENSION})")
                 arr = (image[0].cpu().numpy() * 255).clip(0, 255).astype(np.uint8)
                 pil_img = Image.fromarray(arr).convert("RGB")
             elif image_data:
                 raw = image_data.split(",", 1)[1] if "," in image_data else image_data
-                pil_img = Image.open(py_io.BytesIO(base64.b64decode(raw))).convert("RGB")
+                if len(raw) > MAX_BASE64_CHARS:
+                    raise ValueError("imageData exceeds the maximum allowed size")
+                with Image.open(py_io.BytesIO(base64.b64decode(raw))) as img:
+                    if img.width > MAX_IMAGE_DIMENSION or img.height > MAX_IMAGE_DIMENSION:
+                        raise ValueError(f"imageData dimensions ({img.width}x{img.height}) exceed maximum allowed ({MAX_IMAGE_DIMENSION}x{MAX_IMAGE_DIMENSION})")
+                    pil_img = img.convert("RGB")
             elif image_path:
                 full_path = folder_paths.get_annotated_filepath(image_path)
-                pil_img = node_helpers.pillow(Image.open, full_path).convert("RGB")
+                img = node_helpers.pillow(Image.open, full_path)
+                if img.width > MAX_IMAGE_DIMENSION or img.height > MAX_IMAGE_DIMENSION:
+                    raise ValueError(f"Image file dimensions ({img.width}x{img.height}) exceed maximum allowed ({MAX_IMAGE_DIMENSION}x{MAX_IMAGE_DIMENSION})")
+                pil_img = img.convert("RGB")
 
             brightness  = state.get("brightness",  0)   / 100.0
             contrast    = state.get("contrast",   100)  / 100.0

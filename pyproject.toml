@@ -12,7 +12,6 @@ dependencies = [
 
 [project.optional-dependencies]
 rembg = ["rembg[gpu]"]
-together = ["together"]
 
 [project.urls]
 Repository = "https://github.com/MohammadAboulEla/ComfyUI-iTools"
