@@ -94,7 +94,7 @@ app.registerExtension({
      const innerCtx = innerCanvas.getContext("2d", { alpha: false });
 
     let _lastGraphScale = 0;
-    node.addDOMWidget("PaintWidget", "custom", container, {
+    const widget = node.addDOMWidget("PaintWidget", "custom", container, {
       tooltip: 'Paint Widget',
       getValue: () => ({}),
       setValue: (v) => {},
@@ -112,7 +112,7 @@ app.registerExtension({
         }
       },
     });
-    widget.tooltip = 'Paint Widget'
+    widget.tooltip = 'Paint Widget';
     // Intercept addCustomWidget BEFORE any Smart* widget is constructed, so
     // widgets land in node._smartWidgets (owned by us) rather than in
     // node.widgets (where litegraph would also try to draw them onto its own
