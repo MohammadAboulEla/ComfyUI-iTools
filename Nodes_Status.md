@@ -1,10 +1,10 @@
 # Node status and known issues
+- All nodes are now located in the `nodes` folder, and some of them are related to JS files in the `web` folder. I wish the Python and JS files had matching names to make them easier to identify.
+
 
 - My final goal is to make all nodes compatible with ComfyUI Node 2.0 and, optionally, have them all follow the new `io.Schema` system. For now, only the `IToolsImageAdjust` node supports both.
 
-- My `SmartWidget` and its inheritance system seem to be broken after the recent ComfyUI updates. For now, the easiest approach may be to use them inside a `DOMWidget` and add the DOM to the node.
-
-`IToolsPaintNode` is a perfect example. It moves itself as a single widget in `web/paint_node.js` while keeping its old design and behavior.
+- My `SmartWidget` and its inheritance system seem to be broken after the recent ComfyUI updates. I think I have to stop using it in all nodes. except for I may leave them for now `IToolsPaintNode` It moves itself as a single widget in `web/paint_node.js` while keeping its old design and behavior and at least it works.
 
 
 ## core
@@ -114,6 +114,8 @@ bad code but works for now
 not compatible with ComfyUI Node.2.
 
 ## dev
+
+dev nodes are not ment to be for users they are for me and for ai agents to be used as ref or guides of how to creat nodes.
 
 ### IToolsTestNode:
 
