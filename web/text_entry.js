@@ -15,7 +15,7 @@ app.registerExtension({
 
     const w = node.widgets.find((w) => w.name === "timeline_data");
     if (w) {
-      console.log("iTools: Found timeline_data widget", node);
+      if (allow_debug) console.log("iTools: Found timeline_data widget", node);
       w.hidden = true; // This hides it from the UI but keeps it in node.widgets
     }
 
