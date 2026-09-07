@@ -1,437 +1,461 @@
 import { app } from "../../../scripts/app.js";
-import { allow_debug } from "./js_shared.js";
-import { Shapes } from "./utils.js";
-import { BaseSmartWidget, BaseSmartWidgetManager,} from "./makadi/BaseSmartWidget.js";
-import { SmartButton } from "./makadi/SmartButton.js";
+import { api } from "../../../scripts/api.js";
 
 app.registerExtension({
   name: "iTools.compareNode",
+
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
     if (nodeData.name === "iToolsCompareImage") {
+      nodeType.prototype.onExecuted = function (message) {
+        delete this.imgs;
+        delete this.images;
+        if (this._itoolsOnExecuted) {
+          this._itoolsOnExecuted(message);
+        }
+      };
     }
   },
+
   async nodeCreated(node) {
     if (node.comfyClass !== "iToolsCompareImage") {
       return;
     }
 
-    // init size
-    node.size = [285, 330];
+    delete node.imgs;
+    delete node.images;
 
-    let compare = null;
-    let mouse = {
-      mouseInNode: false,
-      x: 0,
-      y: 0,
+    const MIN_WIDTH = 340;
+    const MIN_HEIGHT = 360;
+    node.size = [Math.max(node.size?.[0] || MIN_WIDTH, MIN_WIDTH), Math.max(node.size?.[1] || MIN_HEIGHT, MIN_HEIGHT)];
+
+    // Prevent default Litegraph preview drawing
+    node.onDrawBackground = function (ctx) {
+      // Intentionally empty: all rendering handled by custom DOM widget
     };
-    
 
-    function turnAllButtonsOff() {
-      const buttons = node.widgets.filter((widget) => widget instanceof SmartButton);
+    node.onExecuted = function (message) {
+      delete node.imgs;
+      delete node.images;
+      if (node._itoolsOnExecuted) {
+        node._itoolsOnExecuted(message);
+      }
+    };
+
+    // State
+    let imgA = null;
+    let imgB = null;
+    let compareMode = "|"; // "A", "B", "|", "O"
+    let splitRatio = 0.5; // 0..1 for split mode
+    let lensRelPos = { x: 0.5, y: 0.5 };
+    let isHovering = false;
+
+    // ── DOM Construction ───────────────────────────────────────────────────
+    const container = document.createElement("div");
+    container.className = "itools-compare-widget";
+    container.style.cssText = `
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      background: #181818;
+      border-radius: 8px;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+    `;
+
+    // Toolbar
+    const toolbar = document.createElement("div");
+    toolbar.className = "itools-compare-toolbar";
+    toolbar.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 8px;
+      background: #222222;
+      border-bottom: 1px solid #333333;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    `;
+
+    function createToolbarButton(label, tooltip, mode) {
+      const btn = document.createElement("button");
+      btn.textContent = label;
+      btn.title = tooltip;
+      btn.style.cssText = `
+        background: #2a2a2a;
+        color: #dddddd;
+        border: 1px solid #505050;
+        border-radius: 4px;
+        padding: 3px 12px;
+        font-size: 11px;
+        font-weight: 500;
+        cursor: pointer;
+        outline: none;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+        white-space: nowrap;
+      `;
+      btn.onclick = () => {
+        compareMode = mode;
+        updateButtons();
+        requestRender();
+      };
+      return btn;
+    }
+
+    const btnA = createToolbarButton("A", "Show Image A only", "A");
+    const btnB = createToolbarButton("B", "Show Image B only", "B");
+    const btnSplit = createToolbarButton("|", "Split Screen Comparison", "|");
+    const btnLens = createToolbarButton("O", "Circular Reveal Lens", "O");
+
+    const buttons = [btnA, btnB, btnSplit, btnLens];
+    buttons.forEach((b) => toolbar.appendChild(b));
+    container.appendChild(toolbar);
+
+    function updateButtons() {
       buttons.forEach((b) => {
-        b.isActive = false;
-        b.color = b.originalColor;
-        b.textColor = b.originalTextColor;
+        const isActive =
+          (b === btnA && compareMode === "A") ||
+          (b === btnB && compareMode === "B") ||
+          (b === btnSplit && compareMode === "|") ||
+          (b === btnLens && compareMode === "O");
+
+        if (isActive) {
+          b.style.background = "#80a1c0";
+          b.style.color = "#000000";
+          b.style.borderColor = "#a0c4e8";
+        } else {
+          b.style.background = "#2a2a2a";
+          b.style.color = "#dddddd";
+          b.style.borderColor = "#505050";
+        }
+      });
+    }
+    updateButtons();
+
+    // Canvas wrapper
+    const canvasWrap = document.createElement("div");
+    canvasWrap.style.cssText = `
+      position: relative;
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      min-height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #141414;
+      overflow: hidden;
+      cursor: default;
+    `;
+
+    const canvas = document.createElement("canvas");
+    canvas.style.cssText = `
+      width: 100%;
+      height: 100%;
+      display: block;
+      outline: none;
+    `;
+    canvasWrap.appendChild(canvas);
+    container.appendChild(canvasWrap);
+
+    const ctx = canvas.getContext("2d");
+
+    const compareWay = app.extensionManager?.setting?.get("iTools.Nodes.Compare Mode", "makadi");
+
+    // ── Throttled Canvas Rendering ─────────────────────────────────────────
+    let renderPending = false;
+    function requestRender() {
+      if (renderPending) return;
+      renderPending = true;
+      requestAnimationFrame(() => {
+        renderPending = false;
+        render();
       });
     }
 
-    function toggleButtonActivation(button) {
-      // turn them all off
-      turnAllButtonsOff();
-      // activate this one
-      if (button.isActive) {
-        button.color = button.originalColor;
-        button.textColor = button.originalTextColor;
-      } else {
-        button.color = "#80a1c0";
-        button.textColor = "black";
-      }
-      button.isActive = !button.isActive;
-    }
+    function render() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvasWrap.getBoundingClientRect();
+      const w = Math.round(rect.width);
+      const h = Math.round(rect.height);
 
-    function createButtons(startVisible = true) {
-      const bx = 50;
-      const by = 12;
-      const r = 25;
-      const offset = 30;
-      const buttonFont = "14px Arial";
+      if (w <= 0 || h <= 0) return;
 
-      const a = new SmartButton(bx, by, r, 20, node, "A");
-      a.allowVisualHover = true;
-      a.textYoffset = 1.1;
-      a.isVisible = startVisible;
-      a.shape = Shapes.CIRCLE;
-      a.outlineWidth = 1;
-      a.outlineColor = "#656565";
-      a.color = "#222222";
-      a.font = buttonFont;
-      a.onClick = async () => {
-        toggleButtonActivation(a);
-        initCompare("A");
-      };
-
-      const b = new SmartButton(bx + offset, by, r, 20, node, "B");
-      b.allowVisualHover = true;
-      b.textYoffset = 1.1;
-      b.isVisible = startVisible;
-      b.shape = Shapes.CIRCLE;
-      b.outlineWidth = 1;
-      b.outlineColor = "#656565";
-      b.color = "#222222";
-      b.font = buttonFont;
-      b.onClick = async () => {
-        toggleButtonActivation(b);
-        initCompare("B");
-      };
-
-      const c = new SmartButton(bx + 2 * offset, by, r, 20, node, "|");
-      c.allowVisualHover = true;
-      c.textYoffset = -0.05;
-      c.isVisible = startVisible;
-      c.shape = Shapes.CIRCLE;
-      c.outlineWidth = 1;
-      c.outlineColor = "#656565";
-      c.color = "#222222";
-      c.font = buttonFont;
-      c.onClick = () => {
-        toggleButtonActivation(c);
-        initCompare("|");
-      };
-
-      const o = new SmartButton(bx + 3 * offset, by, r, 20, node, "O");
-      o.allowVisualHover = true;
-      o.textYoffset = 1.1;
-      o.isVisible = startVisible;
-      o.shape = Shapes.CIRCLE;
-      o.outlineWidth = 1;
-      o.outlineColor = "#656565";
-      o.color = "#222222";
-      o.font = buttonFont;
-      o.onClick = () => {
-        toggleButtonActivation(o);
-        initCompare("O");
-      };
-    }
-
-    createButtons();
-
-    async function initCompare(compareMode) {
-      if (compareMode === "|") {
-        compare = { mode: "|" };
-      } else if (compareMode === "O") {
-        compare = { mode: "O" };
-      } else if (compareMode === "A") {
-        compare = { mode: "A" };
-      } else if (compareMode === "B") {
-        compare = { mode: "B" };
-      }
-    }
-
-    node.onExecuted = async function (message) {
-      // await for !node.imgs
-      for (let i = 0; i < 30 && !node.imgs; i++) {
-        if (allow_debug) console.log("wait...", i);
-        await new Promise((resolve) => setTimeout(resolve, 100));
+      if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
       }
 
-      // await for ImagePreviewWidget
-      const previewWidget = node.widgets.find((widget) => !(widget instanceof BaseSmartWidget));
-      for (let i = 0; i < 30 && !previewWidget; i++) {
-        if (allow_debug) console.log("wait...", i);
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      }
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
 
-      if (!previewWidget) {
-        if (allow_debug) console.log("ImagePreviewWidget not found");
+      if (!imgA && !imgB) {
+        ctx.fillStyle = "#555555";
+        ctx.font = "12px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("No Images to Compare", w / 2, h / 2);
+        ctx.restore();
         return;
       }
 
-      // Override draw function in ImagePreviewWidget
-      const originalDraw = previewWidget.draw;
-      previewWidget.draw = function (ctx, node, widget_width, y, widget_height, ...args) {
-        // originalDraw.apply(this, [ctx, node, widget_width, y, widget_height, ...args]);
-        overrideDraw(node, widget_width, y, ctx, compare, mouse);
-      };
+      // Single image fallback if one is missing
+      if (!imgA || !imgB) {
+        const single = imgA || imgB;
+        if (single && single.naturalWidth) {
+          const scale = Math.min(w / single.naturalWidth, h / single.naturalHeight);
+          const dw = single.naturalWidth * scale;
+          const dh = single.naturalHeight * scale;
+          ctx.drawImage(single, (w - dw) / 2, (h - dh) / 2, dw, dh);
+        }
+        ctx.restore();
+        return;
+      }
 
-      // if no compare mode use default
-      if (!compare && node.imgs) {
-        compare = { mode: "|" };
-        const cB = node.widgets.find((widget) => widget.text === "|");
-        toggleButtonActivation(cB);
+      // Both images available
+      const scaleA = Math.min(w / (imgA.naturalWidth || 1), h / (imgA.naturalHeight || 1));
+      const scaleB = Math.min(w / (imgB.naturalWidth || 1), h / (imgB.naturalHeight || 1));
+      const scale = Math.min(scaleA, scaleB);
+
+      const imgW = Math.max(imgA.naturalWidth * scale, imgB.naturalWidth * scale);
+      const imgH = Math.max(imgA.naturalHeight * scale, imgB.naturalHeight * scale);
+      const imgX = (w - imgW) / 2;
+      const imgY = (h - imgH) / 2;
+
+      const leftImg = compareWay === "makadi" ? imgA : imgB;
+      const rightImg = compareWay === "makadi" ? imgB : imgA;
+
+      if (compareMode === "A") {
+        const sw = imgA.naturalWidth * scale;
+        const sh = imgA.naturalHeight * scale;
+        ctx.drawImage(imgA, (w - sw) / 2, (h - sh) / 2, sw, sh);
+      } else if (compareMode === "B") {
+        const sw = imgB.naturalWidth * scale;
+        const sh = imgB.naturalHeight * scale;
+        ctx.drawImage(imgB, (w - sw) / 2, (h - sh) / 2, sw, sh);
+      } else if (compareMode === "|") {
+        const splitX = isHovering
+          ? Math.max(imgX, Math.min(imgX + imgW, imgX + imgW * splitRatio))
+          : w / 2;
+
+        // Draw Left Side
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, splitX, h);
+        ctx.clip();
+        const lW = leftImg.naturalWidth * scale;
+        const lH = leftImg.naturalHeight * scale;
+        ctx.drawImage(leftImg, (w - lW) / 2, (h - lH) / 2, lW, lH);
+        ctx.restore();
+
+        // Draw Right Side
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(splitX, 0, w - splitX, h);
+        ctx.clip();
+        const rW = rightImg.naturalWidth * scale;
+        const rH = rightImg.naturalHeight * scale;
+        ctx.drawImage(rightImg, (w - rW) / 2, (h - rH) / 2, rW, rH);
+        ctx.restore();
+
+        // Split Divider Line
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(splitX, imgY);
+        ctx.lineTo(splitX, imgY + imgH);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+        ctx.lineWidth = 2;
+        ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+        ctx.shadowBlur = 4;
+        ctx.stroke();
+        ctx.restore();
+      } else if (compareMode === "O") {
+        // Mode "O": Circular Reveal Lens
+        const bgImg = leftImg;
+        const lensImg = rightImg;
+
+        // 1. Draw Background Image
+        const bgW = bgImg.naturalWidth * scale;
+        const bgH = bgImg.naturalHeight * scale;
+        ctx.drawImage(bgImg, (w - bgW) / 2, (h - bgH) / 2, bgW, bgH);
+
+        // 2. Calculate Lens Position
+        const lensX = isHovering ? lensRelPos.x * w : w / 2;
+        const lensY = isHovering ? lensRelPos.y * h : h / 2;
+        const radius = Math.min(w, h) * 0.18;
+
+        // 3. Draw Lens Mask & Overlay Image
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(lensX, lensY, radius, 0, Math.PI * 2);
+        ctx.clip();
+
+        const ovW = lensImg.naturalWidth * scale;
+        const ovH = lensImg.naturalHeight * scale;
+        ctx.drawImage(lensImg, (w - ovW) / 2, (h - ovH) / 2, ovW, ovH);
+        ctx.restore();
+
+        // 4. Subtle Border around the Lens
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(lensX, lensY, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+        ctx.lineWidth = 2;
+        ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+        ctx.shadowBlur = 4;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      ctx.restore();
+    }
+
+    // ── Mouse Handling ─────────────────────────────────────────────────────
+    canvasWrap.onmouseenter = () => {
+      isHovering = true;
+    };
+
+    canvasWrap.onmouseleave = () => {
+      isHovering = false;
+      splitRatio = 0.5;
+      lensRelPos = { x: 0.5, y: 0.5 };
+      requestRender();
+    };
+
+    canvasWrap.onmousemove = (e) => {
+      if (!imgA || !imgB) return;
+      const rect = canvasWrap.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      if (compareMode === "|") {
+        splitRatio = Math.max(0, Math.min(1, x / rect.width));
+        requestRender();
+      } else if (compareMode === "O") {
+        lensRelPos = {
+          x: Math.max(0, Math.min(1, x / rect.width)),
+          y: Math.max(0, Math.min(1, y / rect.height)),
+        };
+        requestRender();
       }
     };
 
-    node.onResize = function (newSize) {
-      // limit width size while resizing
-      node.size[0] = Math.max(285, newSize[0]);
-    };
+    // ── Execution Handler ──────────────────────────────────────────────────
+    node._itoolsOnExecuted = function (message) {
+      delete node.imgs;
+      delete node.images;
+      if (node.widgets) {
+        node.widgets = node.widgets.filter((w) => w.name === "CompareWidget");
+      }
 
-    const originalClick = app.canvas.canvas.onclick;
-    app.canvas.canvas.onclick = (e) => {
-      if (originalClick) {
-        originalClick.call(app.canvas.canvas, e);
+      const listA =
+        message?.itools_compare_a ||
+        message?.itools_compare?.a ||
+        (Array.isArray(message?.itools_compare) && message.itools_compare.length > 0 ? [message.itools_compare[0]] : null) ||
+        (Array.isArray(message?.images) && message.images.length > 0 ? [message.images[0]] : null);
+
+      const listB =
+        message?.itools_compare_b ||
+        message?.itools_compare?.b ||
+        (Array.isArray(message?.itools_compare) && message.itools_compare.length > 1 ? [message.itools_compare[1]] : null) ||
+        (Array.isArray(message?.images) && message.images.length > 1 ? [message.images[1]] : null);
+
+      if (listA?.length) {
+        const itemA = listA[0];
+        const urlA = api.apiURL(
+          `/view?filename=${encodeURIComponent(itemA.filename)}&type=${encodeURIComponent(
+            itemA.type || "temp"
+          )}&subfolder=${encodeURIComponent(itemA.subfolder || "")}&t=${Date.now()}`
+        );
+        const imA = new Image();
+        imA.crossOrigin = "anonymous";
+        imA.onload = () => {
+          imgA = imA;
+          requestRender();
+        };
+        imA.src = urlA;
+      }
+
+      if (listB?.length) {
+        const itemB = listB[0];
+        const urlB = api.apiURL(
+          `/view?filename=${encodeURIComponent(itemB.filename)}&type=${encodeURIComponent(
+            itemB.type || "temp"
+          )}&subfolder=${encodeURIComponent(itemB.subfolder || "")}&t=${Date.now()}`
+        );
+        const imB = new Image();
+        imB.crossOrigin = "anonymous";
+        imB.onload = () => {
+          imgB = imB;
+          requestRender();
+        };
+        imB.src = urlB;
       }
     };
 
-    // not ready yet 🤔
-    async function swapO(originalOrder) {
-      // await new Promise((resolve) => setTimeout(resolve, 200));
-      if (compare && compare.mode === "O" && node.imgs && node.imgs.length > 1) {
-        // Swap the first two images
-        [node.imgs[0], node.imgs[1]] = [node.imgs[1], node.imgs[0]];
-        // Force canvas redraw
-        node.setDirtyCanvas(true, false);
-      } else {
-        // Restore original order
-        node.imgs = originalOrder;
-        node.setDirtyCanvas(true, false);
+    // ── Add Custom DOM Widget ──────────────────────────────────────────────
+    node.addDOMWidget("CompareWidget", "custom", container, {
+      tooltip: "iTools Image Compare",
+    });
+
+    // ── Size Guard between Node 1 and Node 2 ───────────────────────────────
+    let sizeGuardDiff = null;
+
+    function measureSizeGuard() {
+      const wrapper = container.parentElement;
+      if (!wrapper || !node.size) return;
+      const wrapperH = wrapper.getBoundingClientRect().height;
+      if (wrapperH > 0) {
+        sizeGuardDiff = node.size[1] - wrapperH;
       }
     }
 
-    // not ready yet
-    function cycleZoom() {
-      if (compare.mode === "|" && node.imgs && node.imgs.length > 1) {
-        // cycle through all zooming steps
-        node.setDirtyCanvas(true, false);
+    function enforceWrapperSize() {
+      const wrapper = container.parentElement;
+      if (!wrapper || !node.size || sizeGuardDiff === null) return;
+
+      const desiredWrapperH = Math.max(MIN_HEIGHT - 60, node.size[1] - sizeGuardDiff);
+      const currentH = wrapper.getBoundingClientRect().height;
+
+      if (Math.abs(currentH - desiredWrapperH) > 2) {
+        wrapper.style.height = `${desiredWrapperH}px`;
+        wrapper.style.maxHeight = `${desiredWrapperH}px`;
+        wrapper.style.overflow = "hidden";
+        requestRender();
       }
     }
 
-    node.onMouseEnter = (e) => {
-      mouse.mouseInNode = true;
+    const ro = new ResizeObserver(() => {
+      requestRender();
+    });
+    ro.observe(canvasWrap);
+
+    const wrapperRo = new ResizeObserver(() => enforceWrapperSize());
+
+    node.onResize = function (size) {
+      size[0] = Math.max(MIN_WIDTH, size[0]);
+      size[1] = Math.max(MIN_HEIGHT, size[1]);
+      if (sizeGuardDiff === null) measureSizeGuard();
+      enforceWrapperSize();
+      requestRender();
     };
 
-    node.onMouseLeave = (e) => {
-      mouse.mouseInNode = false;
-    };
-
-    node.onMouseMove = (e, pos) => {
-      if (mouse.mouseInNode) {
-        const graphMouse = app.canvas.graph_mouse;
-        mouse.x = graphMouse[0] - node.pos[0];
-        mouse.y = graphMouse[1] - node.pos[1];
-      }
-    };
-
-    const originalMenuOptions = node.getExtraMenuOptions;
-    node.getExtraMenuOptions = function (_, options) {
-      if (originalMenuOptions) {
-        originalMenuOptions.call(node, _, options);
-      }
-      if (node.imgs) {
-        // If node node has images then we add an open in new tab item
-        let img = null;
-
-        if (compare.mode === "A") {
-          img = node.imgs[0];
-        } else if (compare.mode === "B") {
-          img = node.imgs[1];
-        }
-
-        if (img) {
-          options.unshift(
-            {
-              content: "Open Image",
-              callback: () => {
-                const url = new URL(img.src);
-                url.searchParams.delete("preview");
-                window.open(url, "_blank");
-              },
-            },
-            ...getCopyImageOption(img),
-            {
-              content: "Save Image",
-              callback: () => {
-                const a = document.createElement("a");
-                const url = new URL(img.src);
-                url.searchParams.delete("preview");
-                a.href = url.toString();
-                a.setAttribute("download", new URLSearchParams(url.search).get("filename"));
-                document.body.append(a);
-                a.click();
-                requestAnimationFrame(() => a.remove());
-              },
-            }
-          );
-        }
-      }
-    };
-
-    const m = new BaseSmartWidgetManager(node, "iToolsCompareImage");
     const origOnRemoved = node.onRemoved;
     node.onRemoved = function () {
       origOnRemoved?.apply(this, arguments);
-      m.destroy()
-    }
+      ro.disconnect();
+      wrapperRo.disconnect();
+    };
+
+    // Initial render
+    setTimeout(() => {
+      measureSizeGuard();
+      if (container.parentElement) wrapperRo.observe(container.parentElement);
+      updateButtons();
+      render();
+    }, 50);
   },
 });
-
-const compareWay = app.extensionManager.setting.get("iTools.Nodes.Compare Mode", "makadi");
-function overrideDraw(node, widget_width, y, ctx, compare, mouse) {
-  if (!compare || !compare.mode || !node.imgs || node.imgs.length < 2) return;
-
-  let img1 = node.imgs[0];
-  let img2 = node.imgs[node.imgs.length > 2 ? Math.floor(node.imgs.length / 2) : 1];
-
-  const dw = widget_width;
-  const dh = node.size[1] - y;
-
-  // 1. Calculate parameters to force both images to the same height (dh)
-  const getParams = (img) => {
-    const scale = dh / img.naturalHeight;
-    const w = img.naturalWidth * scale;
-    // If the resulting width is wider than the widget, scale down further
-    const finalScale = w > dw ? dw / w : 1; 
-    
-    const finalW = w * finalScale;
-    const finalH = dh * finalScale;
-
-    return {
-      x: (dw - finalW) / 2,
-      y: y + (dh - finalH) / 2,
-      w: finalW,
-      h: finalH
-    };
-  };
-
-  const p1 = getParams(img1);
-  const p2 = getParams(img2);
-
-  // 2. Determine the shared interaction bounds (the container area)
-  const viewW = Math.max(p1.w, p2.w);
-  const viewH = Math.max(p1.h, p2.h);
-  const imgX = (dw - viewW) / 2;
-  const imgY = y + (dh - viewH) / 2;
-
-  // 3. Mouse Logic
-  let mouseX, mouseY;
-  if (compareWay === "makadi") {
-    const graphMouse = app.canvas.graph_mouse;
-    mouseX = graphMouse[0] - node.pos[0];
-    mouseY = graphMouse[1] - node.pos[1];
-  } else {
-    mouseX = mouse.mouseInNode ? mouse.x : dw / 2;
-    mouseY = mouse.mouseInNode ? mouse.y : y + dh / 2;
-  }
-
-  // 4. Drawing
-  if (compare.mode === "|") {
-    const splitX = Math.max(imgX, Math.min(mouseX, imgX + viewW));
-    
-    const left = (compareWay === "makadi") ? {img: img1, p: p1} : {img: img2, p: p2};
-    const right = (compareWay === "makadi") ? {img: img2, p: p2} : {img: img1, p: p1};
-
-    // Draw Left Side
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(0, y, splitX, dh); // Clip left side of the widget
-    ctx.clip();
-    ctx.drawImage(left.img, left.p.x, left.p.y, left.p.w, left.p.h);
-    ctx.restore();
-
-    // Draw Right Side
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(splitX, y, dw - splitX, dh); // Clip right side of the widget
-    ctx.clip();
-    ctx.drawImage(right.img, right.p.x, right.p.y, right.p.w, right.p.h);
-    ctx.restore();
-
-} else if (compare.mode === "O") {
-    const radius = Math.min(dw, dh) * 0.15;
-
-    // Determine background vs overlay based on compareWay
-    const bg = (compareWay === "makadi") ? {img: img1, p: p1} : {img: img2, p: p2};
-    const overlay = (compareWay === "makadi") ? {img: img2, p: p2} : {img: img1, p: p1};
-
-    // 1. Draw the background image
-    ctx.drawImage(bg.img, bg.p.x, bg.p.y, bg.p.w, bg.p.h);
-
-    // 2. Draw the circular clip for the second image
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(mouseX, mouseY, radius, 0, Math.PI * 2);
-    ctx.clip();
-    
-    ctx.drawImage(overlay.img, overlay.p.x, overlay.p.y, overlay.p.w, overlay.p.h);
-    ctx.restore();
-
-    // Optional: Draw a subtle border around the circle so you can see it better
-    // ctx.beginPath();
-    // ctx.arc(mouseX, mouseY, radius, 0, Math.PI * 2);
-    // ctx.strokeStyle = "rgba(255,255,255,0.5)";
-    // ctx.stroke();
-  } else if (compare.mode === "A") {
-    ctx.drawImage(img1, p1.x, p1.y, p1.w, p1.h);
-  } else if (compare.mode === "B") {
-    ctx.drawImage(img2, p2.x, p2.y, p2.w, p2.h);
-  }
-}
-
-function getCopyImageOption(img) {
-  if (typeof window.ClipboardItem === "undefined") return [];
-  return [
-    {
-      content: "Copy Image",
-      callback: async () => {
-        const url = new URL(img.src);
-        url.searchParams.delete("preview");
-
-        const writeImage = async (blob) => {
-          await navigator.clipboard.write([
-            new ClipboardItem({
-              [blob.type]: blob,
-            }),
-          ]);
-        };
-
-        try {
-          const data = await fetch(url);
-          const blob = await data.blob();
-          try {
-            await writeImage(blob);
-          } catch (error) {
-            // Chrome seems to only support PNG on write, convert and try again
-            if (blob.type !== "image/png") {
-              const canvas = $el("canvas", {
-                width: img.naturalWidth,
-                height: img.naturalHeight,
-              });
-              const ctx = canvas.getContext("2d");
-              let image;
-              if (typeof window.createImageBitmap === "undefined") {
-                image = new Image();
-                const p = new Promise((resolve, reject) => {
-                  image.onload = resolve;
-                  image.onerror = reject;
-                }).finally(() => {
-                  URL.revokeObjectURL(image.src);
-                });
-                image.src = URL.createObjectURL(blob);
-                await p;
-              } else {
-                image = await createImageBitmap(blob);
-              }
-              try {
-                ctx.drawImage(image, 0, 0);
-                canvas.toBlob(writeImage, "image/png");
-              } finally {
-                if (typeof image.close === "function") {
-                  image.close();
-                }
-              }
-
-              return;
-            }
-            throw error;
-          }
-        } catch (error) {
-          toastStore.addAlert(
-            t("toastMessages.errorCopyImage", {
-              error: error.message ?? error,
-            })
-          );
-        }
-      },
-    },
-  ];
-}
