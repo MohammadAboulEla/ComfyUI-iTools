@@ -64,6 +64,24 @@ app.registerExtension({
       user-select: none;
     `;
 
+    container.addEventListener(
+      "wheel",
+      (e) => {
+        if (app.canvas?.processMouseWheel) {
+          app.canvas.processMouseWheel(e);
+        } else {
+          const targetCanvas =
+            app.canvas?.canvas ||
+            document.querySelector("canvas.graph-canvas") ||
+            document.querySelector(".litegraph canvas");
+          if (targetCanvas) {
+            targetCanvas.dispatchEvent(new WheelEvent("wheel", e));
+          }
+        }
+      },
+      { passive: false },
+    );
+
     // Toolbar
     const toolbar = document.createElement("div");
     toolbar.className = "itools-compare-toolbar";
