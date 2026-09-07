@@ -84,19 +84,20 @@ app.registerExtension({
     };
 
     // ── Native HTML Toolbar ───────────────────────────────────────────────
+    const TOOLBAR_HEIGHT = 24;
     const toolbar = document.createElement("div");
     toolbar.className = "itools-prompt-record-toolbar";
     toolbar.style.cssText = `
       display: flex;
       align-items: center;
-      gap: 4px;
-      padding: 4px 6px;
-      background: #222222;
-      border-bottom: 1px solid #333333;
-      border-radius: 4px 4px 0 0;
+      background: transparent;
+      margin: 0;
+      padding: 0;
       box-sizing: border-box;
       width: 100%;
+      height: ${TOOLBAR_HEIGHT}px;
       user-select: none;
+      overflow: hidden;
     `;
 
     function createToolbarButton(label, tooltip, onClick, isRoundL, isRoundR) {
@@ -108,7 +109,9 @@ app.registerExtension({
         color: #dddddd;
         border: 1px solid #505050;
         border-radius: ${isRoundL ? "4px 0 0 4px" : isRoundR ? "0 4px 4px 0" : "0"};
-        padding: 3px 8px;
+        padding: 2px 8px;
+        height: 22px;
+        line-height: 18px;
         font-size: 11px;
         font-family: inherit;
         cursor: pointer;
@@ -235,8 +238,10 @@ app.registerExtension({
       toolbar,
       {
         serialize: false,
+        getHeight: () => TOOLBAR_HEIGHT,
       },
     );
+    toolbarWidget.computeSize = (width) => [width, TOOLBAR_HEIGHT];
 
     // Place toolbar widget above the text widget
     if (node.widgets) {
@@ -249,6 +254,19 @@ app.registerExtension({
         node.widgets.splice(textIdx, 0, toolbarWidget);
       }
     }
+
+    setTimeout(() => {
+      const wrapper = toolbar.parentElement;
+      if (wrapper) {
+        wrapper.style.setProperty("margin", "0", "important");
+        wrapper.style.setProperty("padding", "0", "important");
+        wrapper.style.setProperty("height", `${TOOLBAR_HEIGHT}px`, "important");
+        wrapper.style.setProperty("min-height", `${TOOLBAR_HEIGHT}px`, "important");
+        wrapper.style.setProperty("max-height", `${TOOLBAR_HEIGHT}px`, "important");
+        wrapper.style.setProperty("overflow", "hidden", "important");
+      }
+      node.setDirtyCanvas?.(true, true);
+    }, 10);
 
     // Override queuePrompt to auto-record prompt
     const originalQueuePrompt = app.queuePrompt;
