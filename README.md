@@ -27,6 +27,9 @@ Whether you're a casual user or a power user, iTools brings quality-of-life impr
 ## Known issues:
 4 of 22 nodes are not yet compatible with ComfyUI Node.2 (Beta). I’m working to make most nodes fully supported in both modes, but frequent ComfyUI updates may cause occasional issues. Keep in mind that Node.2 is also still in (Beta).
 
+- **iTools Image Preview (`IToolsPreviewImage`):** Works but currently has visual bugs after recent ComfyUI updates 
+- **iTools Image Compare (`IToolsCompareImage`):** currently has visual bugs after recent ComfyUI updates 
+
 #### Unsupported Nodes in Node.2:
 - iTools Prompt Record
 - iTools Image Preview
