@@ -485,12 +485,10 @@ app.registerExtension({
     };
 
     node.onMouseEnter = (e) => {
-      if(allow_debug) console.log('node.y',node.y);
       mouse.mouseInNode = true;
     };
 
     node.onMouseLeave = (e) => {
-
       mouse.mouseInNode = false;
     };
 

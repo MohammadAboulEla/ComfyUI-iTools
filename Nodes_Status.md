@@ -4,7 +4,6 @@
 
 - My final goal is to make all nodes compatible with ComfyUI Node 2.0 and, optionally, have them all follow the new `io.Schema` system. For now, only the `IToolsImageAdjust` node supports both.
 
-- My `SmartWidget` and its inheritance system seem to be broken after the recent ComfyUI updates. I think I have to stop using it in all nodes. except for I may leave them for now `IToolsPaintNode` It moves itself as a single widget in `web/paint_node.js` while keeping its old design and behavior and at least it works.
 
 
 ## core
@@ -92,15 +91,22 @@ ok. and compatible with ComfyUI Node.2.
 
 ### IToolsPreviewImage:
 
-broken like all nodes that uses SmartButton class.
+works but now has visual bugs. after recen Comfyui updates
+last worked version were in commit
+37f752ba07b57e51d908d820df25dd794aeafab1
+and not compatible with ComfyUI Node.2
 
 ### IToolsCompareImage:
 
-broken like all nodes that uses SmartButton class.
+works but now has visual bugs. after recen Comfyui updates
+last worked version were in commit
+37f752ba07b57e51d908d820df25dd794aeafab1
+and not compatible with ComfyUI Node.2
+
 
 ### IToolsPromptRecord:
 
-broken like all nodes that uses SmartButton class.
+works but not compatible with ComfyUI Node.2
 
 ## experimental
 

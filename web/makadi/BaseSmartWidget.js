@@ -5,6 +5,7 @@ import { domCtx } from "./DomCtx.js";
 export class BaseSmartWidget {
   constructor(node) {
     this.node = node;
+    this.isSmartWidget = true;
     this._autoAddSelfToNode = true;
     this._markDelete = false;
     this._mousePos = [0, 0];
@@ -199,14 +200,15 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
     const scoped = this.node._useDomCtx || this.node.type === this.nodeName;
     if (!scoped) return;
     const smart = this.getSmartWidgets();
+    
     for (let i = 0; i < smart.length; i++) {
       const w = smart[i];
-      if (w instanceof BaseSmartWidget) w[fnName]?.(e);
+      if ((w.isSmartWidget || w instanceof BaseSmartWidget) && typeof w[fnName] === "function") w[fnName](e);
     }
     const others = this.otherWidgets;
     for (let i = 0; i < others.length; i++) {
       const w = others[i];
-      if (w instanceof BaseSmartWidget) w[fnName]?.(e);
+      if ((w.isSmartWidget || w instanceof BaseSmartWidget) && typeof w[fnName] === "function") w[fnName](e);
     }
   }
 
@@ -247,12 +249,12 @@ export class BaseSmartWidgetManager extends BaseSmartWidget {
     const smart = this.getSmartWidgets();
     for (let i = 0; i < smart.length; i++) {
       const w = smart[i];
-      if (w instanceof BaseSmartWidget && w.draw) w.draw(ctx);
+      if ((w.isSmartWidget || w instanceof BaseSmartWidget) && typeof w.draw === "function") w.draw(ctx);
     }
     const others = this.otherWidgets;
     for (let i = 0; i < others.length; i++) {
       const w = others[i];
-      if (w instanceof BaseSmartWidget && w.draw) w.draw(ctx);
+      if ((w.isSmartWidget || w instanceof BaseSmartWidget) && typeof w.draw === "function") w.draw(ctx);
     }
   }
 
