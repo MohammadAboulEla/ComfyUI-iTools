@@ -104,7 +104,8 @@ ok. and compatible with ComfyUI Node.2.
 
 ### IToolsPromptRecord:
 
-works but not compatible with ComfyUI Node.2
+ok. and compatible with ComfyUI Node.2.
+(follows new io.Schema system and uses a native HTML DOM toolbar widget)
 
 ## experimental
 

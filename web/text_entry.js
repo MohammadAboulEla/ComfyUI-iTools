@@ -1,9 +1,6 @@
 import { api } from "../../../scripts/api.js";
 import { app } from "../../../scripts/app.js";
 import { allow_debug } from "./js_shared.js";
-import { Shapes } from "./utils.js";
-import { BaseSmartWidgetManager } from "./makadi/BaseSmartWidget.js";
-import { SmartButton } from "./makadi/SmartButton.js";
 import { inputsHistoryShow } from "./prompt_gallery.js";
 
 app.registerExtension({
@@ -13,27 +10,44 @@ app.registerExtension({
       return;
     }
 
-    const w = node.widgets.find((w) => w.name === "timeline_data");
-    if (w) {
-      if (allow_debug) console.log("iTools: Found timeline_data widget", node);
-      w.hidden = true; // This hides it from the UI but keeps it in node.widgets
+    const historyWidget = node.widgets?.find((w) => w.name === "timeline_data");
+    if (historyWidget) {
+      historyWidget.hidden = true;
     }
 
-    // init size
-    node.size = [300, 150];
+    const MIN_WIDTH = 280;
+    const MIN_HEIGHT = 60;
+    
+    node.size = [
+      Math.max(node.size?.[0] || MIN_WIDTH, MIN_WIDTH),
+      Math.max(node.size?.[1] || MIN_HEIGHT, MIN_HEIGHT),
+    ];
 
-    setTimeout(() => {
-      node.setDirtyCanvas(true, true);
-    }, 100);
+    // Helper to get and set textarea content across Litegraph & Node 2.0
+    function getTextValue() {
+      const w = node.widgets?.find((w) => w.name === "text" || w.type === "customtext");
+      if (!w) return "";
+      if (w.options?.getValue) return w.options.getValue() || "";
+      if (w.inputEl) return w.inputEl.value || "";
+      return w.value || "";
+    }
 
-    // vars
-    let inputWidget = node.widgets.filter((w) => w.type == "customtext");
-
-    // Use the hidden widget defined in Python for persistence
-    const historyWidget = node.widgets.find((w) => w.name === "timeline_data");
+    function setTextValue(text) {
+      const w = node.widgets?.find((w) => w.name === "text" || w.type === "customtext");
+      if (!w) return;
+      if (w.options?.setValue) {
+        w.options.setValue(text);
+      } else if (w.inputEl) {
+        w.inputEl.value = text;
+        w.value = text;
+        w.inputEl.dispatchEvent(new Event("input"));
+      } else {
+        w.value = text;
+      }
+      node.setDirtyCanvas?.(true, true);
+    }
 
     const _inputsHistory = [];
-    // Proxy handles synchronization whenever the array is modified (push, splice, length=0)
     const inputsHistory = new Proxy(_inputsHistory, {
       set(target, prop, value) {
         const res = Reflect.set(target, prop, value);
@@ -49,7 +63,7 @@ app.registerExtension({
       },
     });
 
-    // Restore history when the workflow is loaded
+    // Restore history when workflow is loaded
     const originalOnConfigure = node.onConfigure;
     node.onConfigure = function (data) {
       if (originalOnConfigure) originalOnConfigure.apply(this, arguments);
@@ -59,8 +73,9 @@ app.registerExtension({
           if (Array.isArray(saved)) {
             _inputsHistory.length = 0;
             _inputsHistory.push(...saved);
-            if (allow_debug)
+            if (allow_debug) {
               console.log("iTools: Timeline restored", _inputsHistory.length);
+            }
           }
         } catch (e) {
           if (allow_debug) console.log("iTools: Failed to parse timeline data");
@@ -68,196 +83,200 @@ app.registerExtension({
       }
     };
 
-    function createButtons(startVisible = true) {
-      const bx = 10;
-      const by = 9;
-      const h = 19;
-      const buttonFont = "12px Arial";
-      let currentX = bx;
+    // ── Native HTML Toolbar ───────────────────────────────────────────────
+    const toolbar = document.createElement("div");
+    toolbar.className = "itools-prompt-record-toolbar";
+    toolbar.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 6px;
+      background: #222222;
+      border-bottom: 1px solid #333333;
+      border-radius: 4px 4px 0 0;
+      box-sizing: border-box;
+      width: 100%;
+      user-select: none;
+    `;
 
-      const a = new SmartButton(bx, by, 20, h, node, "✖" || "✂" || "✘" || "🧹");
-      a.allowVisualHover = true;
-      a.textYoffset = 1;
-      a.isVisible = startVisible;
-      a.shape = Shapes.ROUND_L;
-      a.outline = true;
-      a.outlineWidth = 0.9;
-      a.outlineColor = "#656565";
-      a.color = "#222222";
-      a.font = buttonFont;
-      a.computeSize = () => [-20, -20]; // number of buttons * 4
-      a.onClick = async () => {
-        // Copy content of inputWidget
-        // const t = inputWidget[0].options.getValue();
-        // const t2 = await navigator.clipboard.writeText(t);
-
-        // Clear inputWidget
-        inputWidget[0].options.setValue("");
+    function createToolbarButton(label, tooltip, onClick, isRoundL, isRoundR) {
+      const btn = document.createElement("button");
+      btn.textContent = label;
+      btn.title = tooltip || "";
+      btn.style.cssText = `
+        background: #2a2a2a;
+        color: #dddddd;
+        border: 1px solid #505050;
+        border-radius: ${isRoundL ? "4px 0 0 4px" : isRoundR ? "0 4px 4px 0" : "0"};
+        padding: 3px 8px;
+        font-size: 11px;
+        font-family: inherit;
+        cursor: pointer;
+        outline: none;
+        white-space: nowrap;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+        margin-right: -1px;
+      `;
+      btn.onmouseenter = () => {
+        btn.style.background = "#3a3a3a";
+        btn.style.borderColor = "#707070";
       };
-      currentX += 20;
+      btn.onmouseleave = () => {
+        btn.style.background = "#2a2a2a";
+        btn.style.borderColor = "#505050";
+      };
+      btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClick();
+      };
+      return btn;
+    }
 
-      const b = new SmartButton(currentX, by, 38, h, node, "Copy");
-      b.allowVisualHover = true;
-      b.textYoffset = 1;
-      b.isVisible = startVisible;
-      b.shape = Shapes.SQUARE;
-      b.outline = true;
-      b.outlineWidth = 0.9;
-      b.outlineColor = "#656565";
-      b.color = "#222222";
-      b.font = buttonFont;
-      b.onClick = async () => {
-        const t = inputWidget[0].options.getValue();
-        // copy if t is not empty
+    const clearBtn = createToolbarButton(
+      "✖",
+      "Clear text",
+      () => {
+        setTextValue("");
+      },
+      true,
+      false,
+    );
+
+    const copyBtn = createToolbarButton(
+      "Copy",
+      "Copy text to clipboard",
+      async () => {
+        const t = getTextValue();
         if (t && t.trim() !== "") {
-          await navigator.clipboard.writeText(t);
+          try {
+            await navigator.clipboard.writeText(t);
+            app.extensionManager?.toast?.add({
+              severity: "success",
+              summary: "Copied",
+              detail: "Text copied to clipboard",
+              life: 1500,
+            });
+          } catch (_) {}
         }
-      };
-      currentX += 38;
+      },
+      false,
+      false,
+    );
 
-      const c = new SmartButton(currentX, by, 40, h, node, "Paste");
-      c.allowVisualHover = true;
-      c.textYoffset = 1;
-      c.isVisible = startVisible;
-      c.shape = Shapes.SQUARE;
-      c.outlineWidth = 0.9;
-      c.outline = true;
-      c.outlineColor = "#656565";
-      c.color = "#222222";
-      c.font = buttonFont;
-      c.onClick = async () => {
-        // get value from clipboard
-        const t = await navigator.clipboard.readText();
-        inputWidget[0].options.setValue(t);
-      };
-      currentX += 40;
+    const pasteBtn = createToolbarButton(
+      "Paste",
+      "Paste from clipboard",
+      async () => {
+        try {
+          const t = await navigator.clipboard.readText();
+          if (t) setTextValue(t);
+        } catch (_) {}
+      },
+      false,
+      false,
+    );
 
-      const add = new SmartButton(
-        currentX,
-        by,
-        20,
-        h,
-        node,
-        "▶" || "✚" || "➤" || "Add to",
-      );
-      add.allowVisualHover = true;
-      add.textYoffset = 1;
-      add.isVisible = startVisible;
-      add.shape = Shapes.SQUARE;
-      add.outline = true;
-      add.outlineWidth = 0.9;
-      add.outlineColor = "#656565";
-      add.color = "#222222";
-      add.font = buttonFont;
-      add.onClick = () => {
-        const t = inputWidget[0].options.getValue();
+    const addBtn = createToolbarButton(
+      "▶",
+      "Add current prompt to Timeline",
+      () => {
+        const t = getTextValue();
         if (t && t.trim() !== "") {
           if (!inputsHistory.includes(t)) {
             inputsHistory.push(t);
-            if (allow_debug) console.log("Text added to Timeline");
-            // Show success message
-            app.extensionManager.toast.add({
+            app.extensionManager?.toast?.add({
               severity: "success",
               summary: "Success",
-              detail: "Current prompt has been added to the Timeline.",
+              detail: "Current prompt added to Timeline.",
               life: 2000,
             });
           } else {
-            // Show success message
-            app.extensionManager.toast.add({
+            app.extensionManager?.toast?.add({
               severity: "info",
-              summary: "info",
-              detail: "Current prompt already exists in the Timeline!",
+              summary: "Info",
+              detail: "Current prompt already in Timeline.",
               life: 2000,
             });
           }
         }
-      };
-      currentX += 20;
+      },
+      false,
+      false,
+    );
 
-      const his = new SmartButton(
-        currentX,
-        by,
-        72,
-        h,
-        node,
-        "Timeline 🧾" || "Run History",
+    const timelineBtn = createToolbarButton(
+      "Timeline 🧾",
+      "Open Prompt Timeline History",
+      () => {
+        const targetWidget = [
+          {
+            options: {
+              setValue: (val) => setTextValue(val),
+              getValue: () => getTextValue(),
+            },
+          },
+        ];
+        inputsHistoryShow(inputsHistory, targetWidget);
+      },
+      false,
+      true,
+    );
+
+    toolbar.appendChild(clearBtn);
+    toolbar.appendChild(copyBtn);
+    toolbar.appendChild(pasteBtn);
+    toolbar.appendChild(addBtn);
+    toolbar.appendChild(timelineBtn);
+
+    const toolbarWidget = node.addDOMWidget(
+      "PromptRecordToolbar",
+      "custom",
+      toolbar,
+      {
+        serialize: false,
+      },
+    );
+
+    // Place toolbar widget above the text widget
+    if (node.widgets) {
+      const toolbarIdx = node.widgets.indexOf(toolbarWidget);
+      const textIdx = node.widgets.findIndex(
+        (w) => w.name === "text" || w.type === "customtext",
       );
-      his.allowVisualHover = true;
-      his.textYoffset = 1;
-      his.isVisible = startVisible;
-      his.shape = Shapes.ROUND_R;
-      his.outline = true;
-      his.outlineWidth = 0.9;
-      his.outlineColor = "#656565";
-      his.color = "#222222";
-      his.font = buttonFont;
-      his.onClick = () => {
-        inputsHistoryShow(inputsHistory, inputWidget);
-        if (allow_debug) console.log("node", node);
-      };
-      currentX += 72;
-
-      // const u = new SmartButton(currentX, by, r - 20, h, node, "↺");
-      // u.allowVisualHover = true;
-      // u.textYoffset = 1;
-      // u.isVisible = startVisible;
-      // u.shape = Shapes.CIRCLE;
-      // u.outlineWidth = 0.9;
-      // u.outlineColor = "#656565";
-      // u.color = "#222222";
-      // u.font = buttonFont;
-      // u.onClick = () => {};
-
-      // const n = new SmartButton(currentX, by, r - 20, h, node, "↻");
-      // n.allowVisualHover = true;
-      // n.textYoffset = 1;
-      // n.isVisible = startVisible;
-      // n.shape = Shapes.CIRCLE;
-      // n.outlineWidth = 0.9;
-      // n.outlineColor = "#656565";
-      // n.color = "#222222";
-      // n.font = buttonFont;
-      // n.onClick = () => {};
+      if (toolbarIdx !== -1 && textIdx !== -1 && toolbarIdx > textIdx) {
+        node.widgets.splice(toolbarIdx, 1);
+        node.widgets.splice(textIdx, 0, toolbarWidget);
+      }
     }
-    createButtons();
 
-    // Override the queuePrompt method
+    // Override queuePrompt to auto-record prompt
     const originalQueuePrompt = app.queuePrompt;
     app.queuePrompt = function () {
-      const t = inputWidget[0].options.getValue();
+      const t = getTextValue();
       if (t && t.trim() !== "" && !inputsHistory.includes(t)) {
         inputsHistory.push(t);
-        if (allow_debug) console.log("Inputs history updated");
       }
-      // Call the original method and return its result
       return originalQueuePrompt.apply(this, arguments);
     };
 
-    // Add event listener for execution_complete
-    api.addEventListener("execution_success", (event) => {
-      // check if linked
-      if (node.inputs[0].link) {
-        const t = node.executionText;
+    api.addEventListener("execution_success", () => {
+      if (node.inputs?.[0]?.link) {
+        const t = node.executionText || getTextValue();
         if (t && t.trim() !== "" && !inputsHistory.includes(t)) {
           inputsHistory.push(t);
-          if (allow_debug)
-            console.log("Inputs history updated from linked node");
         }
       }
     });
 
     node.onResize = function (newSize) {
-      // limit width size while resizing
-      node.size[0] = Math.max(250, newSize[0]);
-      // node.size[1] = Math.max(150, newSize[1]);
+      newSize[0] = Math.max(MIN_WIDTH, newSize[0]);
+      newSize[1] = Math.max(MIN_HEIGHT, newSize[1]);
     };
 
-    const m = new BaseSmartWidgetManager(node, "iToolsPromptRecord");
     const origOnRemoved = node.onRemoved;
     node.onRemoved = function () {
       origOnRemoved?.apply(this, arguments);
-      m.destroy();
     };
   },
 });
