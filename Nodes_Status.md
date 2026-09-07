@@ -91,10 +91,9 @@ ok. and compatible with ComfyUI Node.2.
 
 ### IToolsPreviewImage:
 
-works but now has visual bugs. after recen Comfyui updates
-last worked version were in commit
-37f752ba07b57e51d908d820df25dd794aeafab1
-and not compatible with ComfyUI Node.2
+ok. and compatible with ComfyUI Node.2.
+(follows new io.Schema system and uses a custom DOM preview widget)
+
 
 ### IToolsCompareImage:
 
